@@ -9,9 +9,8 @@
 #ifndef VUL_LINKED_LIST_HPP
 #define VUL_LINKED_LIST_HPP
 
-#include <malloc.h>
-#include <assert.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 
 /**
  * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!

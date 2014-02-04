@@ -16,6 +16,8 @@
  */
 //#define VUL_DEFINE
 
+#include <stdlib.h>
+#include <malloc.h>
 #if defined( VUL_WINDOWS )
 	#include <WinSock2.h>
 	#include <Windows.h>

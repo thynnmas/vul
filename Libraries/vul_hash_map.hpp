@@ -21,9 +21,8 @@
 #ifndef VUL_hash_map_t_HPP
 #define VUL_hash_map_t_HPP
 
-#include <malloc.h>
-#include <stddef.h>
-#include <assert.h>
+#include <cstddef>
+#include <cassert>
 
 /**
  * If enabled, iterators look for undefined/illegal behaviour during loops.

@@ -11,9 +11,8 @@
 #ifndef VUL_skip_list_t_HPP
 #define VUL_skip_list_t_HPP
 
-#include <malloc.h>
-#include <assert.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 
 /**
  * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!

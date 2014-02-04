@@ -13,9 +13,8 @@
 #ifndef VUL_RESIZEABLE_ARRAY_HPP
 #define VUL_RESIZEABLE_ARRAY_HPP
 
-#include <malloc.h>
-#include <stddef.h>
-#include <assert.h>
+#include <cstddef>
+#include <cassert>
 
 /**
  * If enabled, iterators look for undefined/illegal behaviour during loops.

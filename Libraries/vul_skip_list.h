@@ -11,6 +11,7 @@
 #define VUL_SKIP_LIST_H
 
 #include <malloc.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 

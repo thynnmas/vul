@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <malloc.h>
 
 // Define in exactly_one_ C/CPP file.
 //#define VUL_DEFINE

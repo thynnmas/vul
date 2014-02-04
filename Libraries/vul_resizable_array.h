@@ -11,6 +11,7 @@
 #ifndef VUL_RESIZEABLE_ARRAY_H
 #define VUL_RESIZEABLE_ARRAY_H
 
+#include <stdlib.h>
 #include <malloc.h>
 #include <assert.h>
 #include <string.h>

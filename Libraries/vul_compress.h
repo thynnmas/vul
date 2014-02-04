@@ -26,6 +26,7 @@
 #ifndef VUL_COMPRESS_H
 #define VUL_COMPRESS_H
 
+#include <stdlib.h>
 #include <malloc.h>
 #include <assert.h>
 #include <string.h>

@@ -22,6 +22,7 @@
 #define VUL_HASH_MAP_H
 
 #include <malloc.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 

@@ -11,9 +11,8 @@
 #ifndef VUL_GRAPH_HPP
 #define VUL_GRAPH_HPP
 
-#include <malloc.h>
-#include <assert.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 
 #include "vul_resizable_array.hpp"
 

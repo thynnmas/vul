@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <io.h>
 #include <assert.h>
+#include <malloc.h>
 #include "vul_string.h"
 
 #define VUL_TRUE 1

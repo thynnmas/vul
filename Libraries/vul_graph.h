@@ -12,6 +12,7 @@
 #define VUL_GRAPH_H
 
 #include <malloc.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 

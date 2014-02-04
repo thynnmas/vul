@@ -10,9 +10,8 @@
 #ifndef VUL_queue_t_HPP
 #define VUL_queue_t_HPP
 
-#include <malloc.h>
-#include <assert.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 
 namespace vul {
 

@@ -8,8 +8,8 @@
  *   the MIT licence applies (see the LICENCE file)
  */
 
-#ifndef VUL_CLOCK_H
-#define VUL_CLOCK_H
+#ifndef vul_timer_H
+#define vul_timer_H
 
 // Define in exactly _one_ C/CPP file
 //#define VUL_DEFINE
@@ -19,19 +19,25 @@
 //#define VUL_LINUX
 //#define VUL_OSX
 
+#include <malloc.h>
+#include <stdlib.h>
 #include <time.h>
 #include <math.h>
 #if defined( VUL_WINDOWS )
 	#include <windows.h>
 #elif defined( VUL_LINUX )
-
+	#include <unistd.h>
+	#include <sys/resource.h>
+	#include <sys/times.h>
 #elif defined( VUL_OSX )
-
+	#include <mach/mach.h>
+	#include <mach/mach_time.h>
+	#include <unistd.h>
 #else
 	vul needs an operating system defined.
 #endif
 
-struct vul_clock_t {
+struct vul_timer_t {
 #if defined( VUL_WINDOWS )
 	clock_t zero;
 
@@ -42,16 +48,17 @@ struct vul_clock_t {
 
 	DWORD_PTR clock_mask;
 #elif defined( VUL_LINUX )
-	STUFF
+	timespec start_spec;
 #elif defined( VUL_OSX )
-	STUFF
+	uint64_t start;
+	mach_timebase_info_data_t timebase_info;
 #endif
 };
 
 #ifndef VUL_DEFINE
-static void vul_clock_reset( vul_clock_t *c );
+static void vul_timer_reset( vul_timer_t *c );
 #else
-static void vul_clock_reset( vul_clock_t *c )
+static void vul_timer_reset( vul_timer_t *c )
 {
 #if defined( VUL_WINDOWS )
 	// Get the current process core mask
@@ -83,32 +90,34 @@ static void vul_clock_reset( vul_clock_t *c )
 	c->last_time = 0;
 	c->zero = clock( );
 #elif defined( VUL_LINUX )
-		STUFF
+	c->zero = clock( );
+	clock_gettime( c->zero, &c->start_spec );
 #elif defined( VUL_OSX )
-		STUFF
+	c->start = mach_absolute_time( );
+	mach_timebase_info( &c->timebase_info );
 #endif
 }
 #endif
 
 #ifndef VUL_DEFINE
-static vul_clock_t *vul_makevul_clock_create_clock( );
+static vul_timer_t *vul_timer_create( );
 #else
-static vul_clock_t *vul_clock_create( )
+static vul_timer_t *vul_timer_create( )
 {
-	vul_clock_t *c;
+	vul_timer_t *c;
 
-	c = ( vul_clock_t* )malloc( sizeof( vul_clock_t ) );
+	c = ( vul_timer_t* )malloc( sizeof( vul_timer_t ) );
 	assert( c != NULL ); // Make sure malloc didn't fail
-	vul_clock_reset( c );
+	vul_timer_reset( c );
 	
 	return c;
 }
 #endif
 
 #ifndef VUL_DEFINE
-static void vul_clock_destroy( vul_clock_t *c );
+static void vul_timer_destroy( vul_timer_t *c );
 #else
-static void vul_clock_destroy( vul_clock_t *c )
+static void vul_timer_destroy( vul_timer_t *c )
 {
 	free( c );
 }
@@ -116,9 +125,9 @@ static void vul_clock_destroy( vul_clock_t *c )
 
 
 #ifndef VUL_DEFINE
-static unsigned long long vul_clock_get_millis( vul_clock_t *c );
+static unsigned long long vul_timer_get_millis( vul_timer_t *c );
 #else
-static unsigned long long vul_clock_get_millis( vul_clock_t *c )
+static unsigned long long vul_timer_get_millis( vul_timer_t *c )
 {
 #if defined( VUL_WINDOWS )
 	LARGE_INTEGER current_time;
@@ -152,17 +161,31 @@ static unsigned long long vul_clock_get_millis( vul_clock_t *c )
 
 	return new_ticks;
 #elif defined( VUL_LINUX )
-		STUFF
+	timespec ts, temp;
+	clock_gettime( c->zero, &ts );
+
+	if( ( ts.tv_nsec - c->start_spec.tv_nsec ) < 0 ) {
+		temp.tv_sec = ts.tv_sec - c->start_spec.tv_sec - 1;
+		temp.tv_nsec = 1000000000 + ts.tv_nsec - c->start_spec.tv_nsec;
+	} else {
+		temp.tv_sec = ts.tv_sec - c->start_spec.tv_sec;
+		temp.tv_nsec = ts.tv_nsec - c->start_spec.tv_nsec;
+	}
+		
+	return temp.tv_nsec / 1000000;
 #elif defined( VUL_OSX )
-		STUFF
+	uint64_t end = mach_absolute_time( );
+	uint64_t elapsed = end - c->start;
+	uint64_t nsec = elapsed * c->timebase_info.numer / timebase_info.denom;
+	return nsec / 1000000;
 #endif
 }
 #endif
 
 #ifndef VUL_DEFINE
-static unsigned long long vul_clock_get_millis_cpu( vul_clock_t *c );
+static unsigned long long vul_timer_get_millis_cpu( vul_timer_t *c );
 #else
-static unsigned long long vul_clock_get_millis_cpu( vul_clock_t *c )
+static unsigned long long vul_timer_get_millis_cpu( vul_timer_t *c )
 {
 	clock_t new_clock = clock( );
 	return ( unsigned long long ) ( ( double )( new_clock - c->zero ) / ( ( double )CLOCKS_PER_SEC / 1000.0 ) );
@@ -171,9 +194,9 @@ static unsigned long long vul_clock_get_millis_cpu( vul_clock_t *c )
 
 
 #ifndef VUL_DEFINE
-static unsigned long long vul_clock_get_micros( vul_clock_t *c );
+static unsigned long long vul_timer_get_micros( vul_timer_t *c );
 #else
-static unsigned long long vul_clock_get_micros( vul_clock_t *c )
+static unsigned long long vul_timer_get_micros( vul_timer_t *c )
 {
 #if defined( VUL_WINDOWS )
 	LARGE_INTEGER current_time;
@@ -209,18 +232,32 @@ static unsigned long long vul_clock_get_micros( vul_clock_t *c )
 
 
 	return new_micro;
-#elif defined( VUL_LINUX )
-		STUFF
+#elif defined( VUL_LINUX )	
+	timespec ts, temp;
+	clock_gettime( c->zero, &ts );
+
+	if( ( ts.tv_nsec - c->start_spec.tv_nsec ) < 0 ) {
+		temp.tv_sec = ts.tv_sec - c->start_spec.tv_sec - 1;
+		temp.tv_nsec = 1000000000 + ts.tv_nsec - c->start_spec.tv_nsec;
+	} else {
+		temp.tv_sec = ts.tv_sec - c->start_spec.tv_sec;
+		temp.tv_nsec = ts.tv_nsec - c->start_spec.tv_nsec;
+	}
+		
+	return temp.tv_nsec / 1000;
 #elif defined( VUL_OSX )
-		STUFF
+	uint64_t end = mach_absolute_time( );
+	uint64_t elapsed = end - c->start;
+	uint64_t nsec = elapsed * c->timebase_info.numer / timebase_info.denom;
+	return nsec / 1000;
 #endif
 }
 #endif
 
 #ifndef VUL_DEFINE
-static unsigned long long vul_clock_get_micros_cpu( vul_clock_t *c );
+static unsigned long long vul_timer_get_micros_cpu( vul_timer_t *c );
 #else
-static unsigned long long vul_clock_get_micros_cpu( vul_clock_t *c )
+static unsigned long long vul_timer_get_micros_cpu( vul_timer_t *c )
 {
 	clock_t new_clock = clock( );
 	return ( unsigned long long ) ( ( double )( new_clock - c->zero ) / ( ( double )CLOCKS_PER_SEC / 1000000.0 ) );

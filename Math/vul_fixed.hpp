@@ -31,9 +31,6 @@ namespace vul {
 	struct half;
 
 	template< int Q >
-	struct fixed_64;
-
-	template< int Q >
 	struct fixed_32 {
 		int data;
 
@@ -47,13 +44,9 @@ namespace vul {
 		explicit fixed_32< Q >( double a );
 		template< int Q32 >
 		explicit fixed_32< Q >( fixed_32< Q32 > a );
-		template< int Q64 >
-		explicit fixed_32< Q >( fixed_64< Q64 > a );
 		operator half( ) const;
 		operator float( ) const;
 		operator double( ) const;
-		template< int Q64 >
-		operator fixed_64< Q64 >( ) const;
 		template< int Q32 >
 		operator fixed_32< Q32 >( ) const; // Different Q
 
@@ -158,13 +151,6 @@ namespace vul {
 		// Just shift ir Q-Q32.
 		data = a.data << ( Q - Q32 );
 	}
-	template< int Q >
-	template< int Q64 >
-	fixed_32< Q >::fixed_32( fixed_64< Q64 > a )
-	{
-		// Just shift ir Q32-Q64.
-		data = a.data << ( Q - Q64 );
-	}
 	
 	template< int Q >
 	fixed_32< Q >::operator half( ) const
@@ -192,17 +178,6 @@ namespace vul {
 
 		// Just shift ir Q32-Q.
 		r.data = a.data << ( Q32 - Q );
-
-		return r;
-	}
-	template< int Q >
-	template< int Q64 >
-	fixed_32< Q >::operator fixed_64< Q64 >( ) const
-	{
-		fixed_64< Q64 > r;
-
-		// Just shift ir Q64-Q.
-		r.data = a.data << ( Q64 - Q );
 
 		return r;
 	}

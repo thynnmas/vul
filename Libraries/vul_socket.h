@@ -6,6 +6,8 @@
  * ¹ If public domain is not legally valid in your country and or legal area,
  *   the MIT licence applies (see the LICENCE file)
  */
+#ifndef VUL_SOCKET_H
+#define VUL_SOCKET_H
 
 /**
  * Define the correct OS
@@ -236,4 +238,6 @@ int vul_socket_address_destroy( vul_address_t *a )
 {
 	freeaddrinfo( ( PADDRINFOA )&a->addr );
 }
+#endif
+
 #endif

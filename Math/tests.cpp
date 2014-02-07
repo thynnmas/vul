@@ -367,7 +367,6 @@ void test_matrix( )
 
 	printf( " minComponent: %f\t maxComponent: %f\n", minComponent( mv ), maxComponent( mv ) );
 
-	// @TODO: These 
 	gvr = gv * glm::mat3( 1.f );
 	vr = v * makeIdentity< f32_t, 3 >( );
 	printf( " vec             | [ %f, %f, %f ]\n"
@@ -515,6 +514,179 @@ void test_point( )
 
 	printf( "AOK\n" );
 }
+// Quick simple RNG based on Xorhash
+struct RNG
+{
+	unsigned int m_state;
+
+	void seed(unsigned int seed)
+	{
+		// Thomas Wang's integer hash, as reported by Bob Jenkins
+		seed = (seed ^ 61) ^ (seed >> 16);
+		seed *= 9;
+		seed = seed ^ (seed >> 4);
+		seed *= 0x27d4eb2d;
+		seed = seed ^ (seed >> 15);
+		m_state = seed;
+	}
+
+	unsigned int randUint()
+	{
+		// Xorshift algorithm from George Marsaglia's paper
+		m_state ^= (m_state << 13);
+		m_state ^= (m_state >> 17);
+		m_state ^= (m_state << 5);
+		return m_state;
+	}
+
+	float randFloat()
+	{
+		return float(randUint()) * (1.0f / 4294967296.0f);
+	}
+
+	float randFloat(float min, float max)
+	{
+		return min + (min - max)*randFloat();
+	}
+};
+
+#include "vul_timer.hpp"
+#include "vul_aosoa.hpp"
+void bench_aabbs( )
+{
+#define COUNT 10000
+#define ITERATIONS 100
+	AABB< f32_t, 3 > *aabbs, *outs, *outs_aosoa,  *outs_aosoaw;
+	Affine< f32_t, 3 > trans;
+	AABB< __m128, 3> *aosoa_aabbs, *aosoa_outs;
+	AABB< __m256, 3> *aosoa_aabbsw, *aosoa_outsw;
+	ui32_t i, j;
+	RNG rng;
+	Quaternion< f32_t > quat;
+	ui64_t tPack, tTrans, tUnpack;
+	timer_t t;
+	
+	aabbs = new AABB< f32_t, 3 >[ COUNT ];
+	outs = new AABB< f32_t, 3 >[ COUNT ];
+	outs_aosoa = new AABB< f32_t, 3 >[ COUNT ];
+	outs_aosoaw = new AABB< f32_t, 3 >[ COUNT ];
+
+	aosoa_aabbs = static_cast< AABB< __m128, 3 >* >( _aligned_malloc( sizeof( AABB< __m128, 3 > ) * ( COUNT / 4 ), 16 ) );
+	aosoa_outs = static_cast< AABB< __m128, 3 >* >( _aligned_malloc( sizeof( AABB< __m128, 3 > ) * ( COUNT / 4 ), 16 ) );
+
+	aosoa_aabbsw = static_cast< AABB< __m256, 3 >* >( _aligned_malloc( sizeof( AABB< __m256, 3 > ) * ( COUNT / 4 ), 32 ) );
+	aosoa_outsw = static_cast< AABB< __m256, 3 >* >( _aligned_malloc( sizeof( AABB< __m256, 3 > ) * ( COUNT / 4 ), 32 ) );
+
+	rng.seed( 47 );
+	// Fill with random data.
+	for( i = 0; i < COUNT; ++i )
+	{
+		aabbs[ i ]._min[ 0 ] = rng.randFloat( -10, 10 );
+		aabbs[ i ]._min[ 1 ] = rng.randFloat( -10, 10 );
+		aabbs[ i ]._min[ 2 ] = rng.randFloat( -10, 10 );
+		aabbs[ i ]._max[ 0 ] = aabbs[ i ]._min[ 0 ] + rng.randFloat( 1, 10 );
+		aabbs[ i ]._max[ 1 ] = aabbs[ i ]._min[ 1 ] + rng.randFloat( 1, 10 );
+		aabbs[ i ]._max[ 2 ] = aabbs[ i ]._min[ 2 ] + rng.randFloat( 1, 10 );
+	}
+	quat = makeQuatFromAxisAngle( 
+					normalize( makeVector< f32_t >( rng.randFloat( -1, 1 ), 
+													rng.randFloat( -1, 1 ), 
+													rng.randFloat( -1, 1 ) ) ),
+													rng.randFloat( 0.f, 2.f * VUL_PI ) );
+	trans.mat = makeMatrix( quat );
+	trans.vec[ 0 ] = rng.randFloat( -10, 10 );
+	trans.vec[ 1 ] = rng.randFloat( -10, 10 );
+	trans.vec[ 2 ] = rng.randFloat( -10, 10 );
+	
+	// Time singe-aabb operations
+	t.reset( );
+	for( j = 0; j < ITERATIONS / 10; ++j )
+	{
+		for( i = 0; i < COUNT; ++i )
+		{
+			outs[ i ] = transform( aabbs[ i ], trans );
+		}
+	}
+	tTrans = t.milliseconds( ) * 10;
+	printf( "Single: %llu.%04llus\n", tTrans / 1000LL, tTrans % 1000LL );
+	// Time AOSOA with pack and unpack in it (but each stage coutned separately)
+	t.reset( );
+	for( j = 0; j < ITERATIONS; ++j )
+	{
+		pack< 3 >( aosoa_aabbs, aabbs, ( ui32_t )COUNT );
+	}
+	tPack = t.milliseconds( );
+	t.reset( );
+	for( j = 0; j < ITERATIONS; ++j )
+	{
+		transform3D( aosoa_outs, aosoa_aabbs, trans, COUNT );
+	}
+	tTrans = t.milliseconds( );
+	t.reset( );
+	for( j = 0; j < ITERATIONS; ++j )
+	{
+		unpack< 3 >( outs_aosoa, aosoa_outs, COUNT );
+	}
+	tUnpack = t.milliseconds( );
+	printf( "SSE:%llu.%04llus (pack: %llu.%04llus, trans: %llu.%04llus, unpack: %llu.%04llus )\n",
+				( tPack + tTrans + tUnpack ) / 1000LL, ( tPack + tTrans + tUnpack ) % 1000LL, 
+				tPack / 1000LL, tPack % 1000LL,
+				tTrans / 1000LL, tTrans % 1000LL, 
+				tUnpack / 1000LL, tUnpack % 1000LL );
+	// Time wide AOSOA with pack and unpack in it (but each stage coutned separately)
+	t.reset( );
+	for( j = 0; j < ITERATIONS; ++j )
+	{
+		pack< 3 >( aosoa_aabbsw, aabbs, ( ui32_t )COUNT );
+	}
+	tPack = t.milliseconds( );
+	t.reset( );
+	for( j = 0; j < ITERATIONS; ++j )
+	{
+		transform3D( aosoa_outsw, aosoa_aabbsw, trans, COUNT );
+	}
+	tTrans = t.milliseconds( );
+	t.reset( );
+	for( j = 0; j < ITERATIONS; ++j )
+	{
+		unpack< 3 >( outs_aosoaw, aosoa_outsw, COUNT );
+	}
+	tUnpack = t.milliseconds( );
+	printf( "SSE:%llu.%04llus (pack: %llu.%04llus, trans: %llu.%04llus, unpack: %llu.%04llus )\n",
+				( tPack + tTrans + tUnpack ) / 1000LL, ( tPack + tTrans + tUnpack ) % 1000LL, 
+				tPack / 1000LL, tPack % 1000LL,
+				tTrans / 1000LL, tTrans % 1000LL, 
+				tUnpack / 1000LL, tUnpack % 1000LL );
+	// Check that we agree!
+	/*
+	float absEpsilon = 1e-5f;
+	float relEpsilon = 1e-5f;
+	for( i = 0; i < COUNT; ++i )
+	{
+		if( fabs( outs[ i ]._min[ 0 ] - outs_aosoa[ i ]._min[ 0 ] ) > max( absEpsilon, relEpsilon * fabs( outs[ i ]._min[ 0 ] ) ) ||
+			fabs( outs[ i ]._min[ 1 ] - outs_aosoa[ i ]._min[ 1 ] ) > max( absEpsilon, relEpsilon * fabs( outs[ i ]._min[ 1 ] ) ) ||
+			fabs( outs[ i ]._min[ 2 ] - outs_aosoa[ i ]._min[ 2 ] ) > max( absEpsilon, relEpsilon * fabs( outs[ i ]._min[ 2 ] ) ) ||
+			fabs( outs[ i ]._max[ 0 ] - outs_aosoa[ i ]._max[ 0 ] ) > max( absEpsilon, relEpsilon * fabs( outs[ i ]._max[ 0 ] ) ) ||
+			fabs( outs[ i ]._max[ 1 ] - outs_aosoa[ i ]._max[ 1 ] ) > max( absEpsilon, relEpsilon * fabs( outs[ i ]._max[ 1 ] ) ) ||
+			fabs( outs[ i ]._max[ 2 ] - outs_aosoa[ i ]._max[ 2 ] ) > max( absEpsilon, relEpsilon * fabs( outs[ i ]._max[ 2 ] ) ) )
+		{
+			printf( "Mismatch( %d ):\n   ( %f %f %f )x( %f %f %f )\n != ( %f %f %f )x( %f %f %f )\n", i, 
+				outs[ i ]._min[ 0 ], outs[ i ]._min[ 1 ], outs[ i ]._min[ 2 ],
+				outs[ i ]._max[ 0 ], outs[ i ]._max[ 1 ], outs[ i ]._max[ 2 ],
+				outs_aosoa[ i ]._min[ 0 ], outs_aosoa[ i ]._min[ 1 ], outs_aosoa[ i ]._min[ 2 ],
+				outs_aosoa[ i ]._max[ 0 ], outs_aosoa[ i ]._max[ 1 ], outs_aosoa[ i ]._max[ 2 ] );
+		}
+	}*/
+
+	delete [] aabbs;
+	delete [] outs;
+	delete [] outs_aosoa;
+	delete [] outs_aosoaw;
+	_aligned_free( aosoa_aabbs );
+	_aligned_free( aosoa_outs );
+	_aligned_free( aosoa_aabbsw );
+	_aligned_free( aosoa_outsw );
+}
 
 int main( int argc, char **argv )
 {
@@ -534,6 +706,8 @@ int main( int argc, char **argv )
 	printf( "\nTesting AABBs\n" );
 	test_aabb( );
 	// @TODO: Test quaternions
+
+	bench_aabbs( );
 	
 	// Wait for input
 	char buffer[ 1024 ];

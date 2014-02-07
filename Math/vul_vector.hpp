@@ -13,18 +13,15 @@
  *   the MIT licence applies (see the LICENCE file)
  */
 
-#ifndef VUL_VECTOR_H
-#define VUL_VECTOR_H
+#ifndef VUL_VECTOR_HPP
+#define VUL_VECTOR_HPP
 
 #include "vul_types.hpp"
 #include <assert.h>
 
 /**
- * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!
+ * Define this for the c++11 version
  */
-//#define VUL_DEFINE
-
-// Define this for the c++11 version
 //#define VUL_CPLUSPLUS11
 
 namespace vul {
@@ -51,6 +48,7 @@ namespace vul {
 		explicit Vector< T, n >( f32_t (& a)[ n ] ); 				// From float arrays, to interface with other libraries
 		explicit Vector< T, n >( i32_t (& a)[ n ] ); 				// From int arrays, to interface with other libraries
 		explicit Vector< T, n >( const Point< T, n > &p );		// Explicit conversion from a point
+		explicit Vector< T, n >( float val ); 						// Initialize to single value from a float
 #endif
 		// Operators
 		Vector< T, n >& operator=( const Vector< T, n > & rhs );
@@ -60,10 +58,10 @@ namespace vul {
 		Vector< T, n >& operator*=( T scalar );
 		Vector< T, n >& operator/=( T scalar );
 
-		Vector< T, n >& operator+=( Vector< T, n > vec ); // Componentwise addition
-		Vector< T, n >& operator-=( Vector< T, n > vec ); // Componentwise subtraction
-		Vector< T, n >& operator*=( Vector< T, n > vec ); // Componentwise multiplication
-		Vector< T, n >& operator/=( Vector< T, n > vec ); // Componentwise division
+		Vector< T, n >& operator+=( const Vector< T, n > &vec ); // Componentwise addition
+		Vector< T, n >& operator-=( const Vector< T, n > &vec ); // Componentwise subtraction
+		Vector< T, n >& operator*=( const Vector< T, n > &vec ); // Componentwise multiplication
+		Vector< T, n >& operator/=( const Vector< T, n > &vec ); // Componentwise division
 		
 		T &operator[ ]( i32_t i ); // Index selector
 		T const &operator[ ]( i32_t i ) const; // Index selector, const
@@ -80,6 +78,7 @@ namespace vul {
 
 #ifdef VUL_CPLUSPLUS11
 		Vector< T, 2 >( T x, T y ); 
+		Vector< T, 2 >( float x, float y ); 
 #endif
 	};
 	template < typename T >
@@ -95,6 +94,7 @@ namespace vul {
 #ifdef VUL_CPLUSPLUS11
 		Vector< T, 3 >( T x, T y, T z ); 
 		Vector< T, 3 >( Vector< T, 2 > xy, T z );
+		Vector< T, 3 >( float x, float y, float z ); 
 #else
 		Vector< T, 2 > & xy( ) { return reinterpret_cast< Vector< T, 2 > & >( data ); }
 		const Vector< T, 2 > & xy( ) const { return reinterpret_cast< const Vector< T, 2 > & >( data ); }
@@ -116,6 +116,7 @@ namespace vul {
 		Vector< T, 4 >( T x, T y, T z, T w ); 
 		Vector< T, 4 >( Vector< T, 2 > xy, Vector< T, 2 > zw ); 
 		Vector< T, 4 >( Vector< T, 3 > xyz, T w ); 
+		Vector< T, 4 >( float x, float y, float z, float w ); 
 #else
 		Vector< T, 2 > & xy( ) { return reinterpret_cast< Vector< T, 2 > & >( data ); }
 		const Vector< T, 2 > & xy( ) const { return reinterpret_cast< const Vector< T, 2 > & >( data ); }
@@ -184,6 +185,9 @@ namespace vul {
 	template< typename T, i32_t n >
 	Vector< T, n > makeVector( const Point< T, n > &p );
 
+	template< typename T, i32_t n >
+	Vector< T, n > makeVector( float val );
+
 	// Specialization variations
 	template< typename T >
 	Vector< T, 2 > makeVector( T x, T y );
@@ -197,6 +201,13 @@ namespace vul {
 	Vector< T, 4 > makeVector( Vector< T, 2 > xy, Vector< T, 2 > zw );
 	template< typename T >
 	Vector< T, 4 > makeVector( Vector< T, 3 > xyz, T w );
+	// Specialization variations with float arguments	
+	template< typename T >
+	Vector< T, 2 > makeVector( float x, float y );
+	template< typename T >
+	Vector< T, 3 > makeVector( float x, float y, float z );
+	template< typename T >
+	Vector< T, 4 > makeVector( float x, float y, float z, float w );
 
 	// Anything from float and int arrays; to interface with other libraries
 	template< typename T, i32_t n >
@@ -254,8 +265,10 @@ namespace vul {
 	template< typename T, i32_t n >
 	Vector< T, n > operator-( const Vector< T, n > &vec );
 
-	template< typename T, i32_t n >
-	Vector< T, 3 > cross( const Vector< T, n > &a, const Vector< T, n > &b ); // Cross product only defined in 3D (@TODO: include 2D as well?)
+	template< typename T >
+	Vector< T, 3 > cross( const Vector< T, 3 > &a, const Vector< T, 3 > &b ); // Cross product only defined in 3D
+	template< typename T >
+	Vector< T, 2 > cross( const Vector< T, 2 > &a, const Vector< T, 2 > &b ); // Cross product only defined in 3D
 	template< typename T, i32_t n >
 	T dot( const Vector< T, n > &a, const Vector< T, n > &b ); 
 
@@ -356,30 +369,52 @@ namespace vul {
 			data[ i ] = p[ i ];
 		}		
 	}
+	
+	template< typename T, i32_t n >
+	Vector< T, n >( float val )
+	{
+		i32_t i;
+		for( i = 0; i < n; ++i ) {
+			data[ i ] = T( val );
+		}
+	}
 
 	// Specialization variations
 	template < typename T >
-	Vector< T, n >::Vector< T, 2 >( T x, T y ) 
+	Vector< T, 2 >::Vector( T x, T y ) 
 	{
 		data[ 0 ] = x; 
 		data[ 1 ] = y;
 	}
 	template < typename T >
-	Vector< T, n >::Vector< T, 3 >( T x, T y, T z ) 
+	Vector< T, 2 >::Vector( float x, float y )
+	{
+		data[ 0 ] = T( x );
+		data[ 1 ] = T( y );
+	}
+	template < typename T >
+	Vector< T, 3 >::Vector( T x, T y, T z ) 
 	{
 		data[ 0 ] = x; 
 		data[ 1 ] = y; 
 		data[ 2 ] = z; 
 	}
 	template < typename T >
-	Vector< T, n >::Vector< T, 3 >( Vector< T, 2 > xy, T z ) 
+	Vector< T, 3 >::Vector( Vector< T, 2 > xy, T z ) 
 	{ 
 		data[ 0 ] = xy[ 0 ];
 		data[ 1 ] = xy[ 1 ];
 		data[ 2 ] = z; 
 	}
 	template < typename T >
-	Vector< T, n >::Vector< T, 4 >( T x, T y, T z, T w )
+	Vector< T, 3 >::Vector( float x, float y, float z )
+	{
+		data[ 0 ] = T( x );
+		data[ 1 ] = T( y );
+		data[ 2 ] = T( z ); 
+	}
+	template < typename T >
+	Vector< T, 4 >::Vector( T x, T y, T z, T w )
 	{ 
 		data[ 0 ] = x;
 		data[ 1 ] = y;
@@ -387,7 +422,7 @@ namespace vul {
 		data[ 3 ] = w; 
 	}
 	template < typename T >
-	Vector< T, n >::Vector< T, 4 >( Vector< T, 2 > xy, Vector< T, 2 > zw )
+	Vector< T, 4 >::Vector( Vector< T, 2 > xy, Vector< T, 2 > zw )
 	{
 		data[ 0 ] = xy[ 0 ]; 
 		data[ 1 ] = xy[ 1 ]; 
@@ -395,12 +430,20 @@ namespace vul {
 		data[ 3 ] = zw[ 1 ];
 	}
 	template < typename T >
-	Vector< T, n >::Vector< T, 4 >( Vector< T, 3 > xyz, T w )
+	Vector< T, 4 >::Vector( Vector< T, 3 > xyz, T w )
 	{
 		data[ 0 ] = xyz[ 0 ]; 
 		data[ 1 ] = xyz[ 1 ];
 		data[ 2 ] = xyz[ 2 ];
 		data[ 3 ] = w;
+	}
+	template < typename T >
+	Vector< T, 4 >::Vector( float x, float y, float z, float w )
+	{
+		data[ 0 ] = T( x );
+		data[ 1 ] = T( y );
+		data[ 2 ] = T( z ); 
+		data[ 3 ] = T( w );
 	}
 	
 #else
@@ -467,6 +510,19 @@ namespace vul {
 		return v;
 	}
 
+	template < typename T, i32_t n >
+	Vector< T, n > makeVector( float val )
+	{
+		Vector< T, n > v;
+		i32_t i;
+
+		for( i = 0; i < n; ++i ) {
+			v[ i ] = T( val );
+		}
+
+		return v;
+	}
+
 	// Specialization variations
 	template< typename T >
 	Vector< T, 2 > makeVector( T x, T y )
@@ -523,6 +579,33 @@ namespace vul {
 		v[ 2 ] = xyz[ 2 ]; 
 		v[ 3 ] = w;
 		return v; 
+	}
+	template< typename T >
+	Vector< T, 2 > makeVector( float x, float y )
+	{
+		Vector< T, 2 > v;
+		v[ 0 ] = T( x );
+		v[ 1 ] = T( y );
+		return v;
+	}
+	template< typename T >
+	Vector< T, 3 > makeVector( float x, float y, float z )
+	{
+		Vector< T, 3 > v;
+		v[ 0 ] = T( x );
+		v[ 1 ] = T( y );
+		v[ 2 ] = T( z );
+		return v;
+	}
+	template< typename T >
+	Vector< T, 4 > makeVector( float x, float y, float z, float w )
+	{
+		Vector< T, 4 > v;
+		v[ 0 ] = T( x );
+		v[ 1 ] = T( y );
+		v[ 2 ] = T( z );
+		v[ 3 ] = T( w );
+		return v;
 	}
 	
 	// Anything from float and int arrays; to interface with other libraries
@@ -625,7 +708,7 @@ namespace vul {
 	}
 	
 	template< typename T, i32_t n >
-	Vector< T, n >& Vector< T, n >::operator+=( Vector< T, n > vec )
+	Vector< T, n >& Vector< T, n >::operator+=( const Vector< T, n > &vec )
 	{
 		i32_t i;
 
@@ -637,7 +720,7 @@ namespace vul {
 	}
 
 	template< typename T, i32_t n >
-	Vector< T, n >& Vector< T, n >::operator-=( Vector< T, n > vec )
+	Vector< T, n >& Vector< T, n >::operator-=( const Vector< T, n > &vec )
 	{
 		i32_t i;
 
@@ -649,7 +732,7 @@ namespace vul {
 	}
 
 	template< typename T, i32_t n >
-	Vector< T, n >& Vector< T, n >::operator*=( Vector< T, n > vec )
+	Vector< T, n >& Vector< T, n >::operator*=( const Vector< T, n > &vec )
 	{
 		i32_t i;
 
@@ -661,7 +744,7 @@ namespace vul {
 	}
 
 	template< typename T, i32_t n >
-	Vector< T, n >& Vector< T, n >::operator/=( Vector< T, n > vec )
+	Vector< T, n >& Vector< T, n >::operator/=( const Vector< T, n > &vec )
 	{
 		i32_t i;
 
@@ -1002,7 +1085,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = std::max( a[ i ], b[ i ] );
+			v[ i ] = std::min( a[ i ], b[ i ] );
 		}
 
 		return v;

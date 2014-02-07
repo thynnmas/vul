@@ -12,11 +12,16 @@
  * ¹ If public domain is not legally valid in your country and or legal area,
  *   the MIT licence applies (see the LICENCE file)
  */
-#ifndef VUL_QUATERNION_H
-#define VUL_QUATERNION_H
+#ifndef VUL_QUATERNION_HPP
+#define VUL_QUATERNION_HPP
 
 #include "vul_types.hpp"
 #include "vul_vector.hpp"
+
+/**
+ * Define this for the c++11 version
+ */
+//#define VUL_CPLUSPLUS11
 
 /**
  * PI...
@@ -28,11 +33,6 @@
  * is performed instead of a spherical one.
  */
 #define VUL_QUATERNION_SLERP_EPSILON 1e-03
-
-/**
- * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!
- */
-//#define VUL_DEFINE
 
 namespace vul {
 	

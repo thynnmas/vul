@@ -10,10 +10,15 @@
  * ¹ If public domain is not legally valid in your country and or legal area,
  *   the MIT licence applies (see the LICENCE file)
  */
-#ifndef VUL_POINT_H
-#define VUL_POINT_H
+#ifndef VUL_POINT_HPP
+#define VUL_POINT_HPP
 
 #include "vul_types.hpp"
+
+/**
+ * Define this for the c++11 version
+ */
+//#define VUL_CPLUSPLUS11
 
 namespace vul {
 	
@@ -35,15 +40,32 @@ namespace vul {
 		explicit Point< T, n >( i32_t (& a)[ n ] ); 				// From int arrays, to interface with other libraries
 		explicit Point< T, n >( const Vector< T, n > &vec );	// Explicit conversion from a vector
 #endif
-		// Operators
+		/**
+		 * Copy assignment operator.
+		 */
 		Point< T, n >& operator=( const Point< T, n > & rhs );
 	
-		Point< T, n >& operator+=( const Vector< T, n > &vec ); // Translation
-		Point< T, n >& operator*=( const Vector< T, n > &vec ); // Componentwise multiplication
-		Point< T, n >& operator/=( const Vector< T, n > &vec ); // Componentwise division
+		/**
+		 * Translation of the point by the given vector.
+		 */
+		Point< T, n >& operator+=( const Vector< T, n > &vec );
+		/**
+		 * Componentwise multiplication.
+		 */
+		Point< T, n >& operator*=( const Vector< T, n > &vec );
+		/**
+		 * Componentwise division.
+		 */
+		Point< T, n >& operator/=( const Vector< T, n > &vec );
 		
-		T &operator[ ]( i32_t i ); // Index selector
-		T const &operator[ ]( i32_t i ) const; // Index selector, const
+		/**
+		 * Indexing operator.
+		 */
+		T &operator[ ]( i32_t i );
+		/**
+		 * Constant indexing operator.
+		 */
+		T const &operator[ ]( i32_t i ) const;
 	};
 
 
@@ -74,36 +96,80 @@ namespace vul {
 	Point< T, 4 > makePoint( T x, T y, T z, T w );
 
 	// Operations
+	/**
+	 * Componentwise coparison. Returns a vector of boolean indicating if
+	 * compnents in corresponding positions are equal.
+	 */
 	template< typename T, i32_t n >
 	Vector< bool, n > operator==( const Point< T, n > &a, const Point< T, n > &b );
+	/**
+	 * Componentwise coparison. Returns a vector of boolean indicating if
+	 * compnents in corresponding positions are not equal.
+	 */
 	template< typename T, i32_t n >
 	Vector< bool, n > operator!=( const Point< T, n > &a, const Point< T, n > &b );
 
+	/**
+	 * Translate point a by vector b. Returns the resulting point.
+	 */
 	template< typename T, i32_t n >
-	Point< T, n > operator+( const Point< T, n > &a, const Vector< T, n > &b ); // Translate a by b
+	Point< T, n > operator+( const Point< T, n > &a, const Vector< T, n > &b );
+	/**
+	 * Find the translation between points a and b, and return it as a vector.
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > operator-( const Point< T, n > &a, const Point< T, n > &b ); // Find translation from a to b
+	Vector< T, n > operator-( const Point< T, n > &a, const Point< T, n > &b );
 	
+	/**
+	 * Componentwise min( compnent, b )
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > min( const Point< T, n > &a, T b );				// Componentwise min( x, b )
+	Vector< T, n > min( const Point< T, n > &a, T b );
+	/**
+	 * Componentwise max( compnent, b ).
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > max( const Point< T, n > &a, T b );				// Componentwise max( x, b )
+	Vector< T, n > max( const Point< T, n > &a, T b );
+	/**
+	 * Componentwise min( compnent_a, compnent_b )
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > min( const Point< T, n > &a, const Point< T, n > &b );	// Componentwise min( xa, xb )
+	Vector< T, n > min( const Point< T, n > &a, const Point< T, n > &b );
+	/**
+	 * Componentwise max( compnent_a, compnent_b )
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > max( const Point< T, n > &a, const Point< T, n > &b );	// Componentwise max( xa, xb )
+	Vector< T, n > max( const Point< T, n > &a, const Point< T, n > &b );
+	/**
+	 * Compnentwise abs
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > abs( const Point< T, n > &a );					// Componentwise abs
+	Vector< T, n > abs( const Point< T, n > &a );
+	/**
+	 * Componentwise clamp
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > clamp( const Point< T, n > &a, T mini, T maxi );	// Componentwise clamp( x, min, max )	
+	Vector< T, n > clamp( const Point< T, n > &a, T mini, T maxi );
+	/**
+	 * Componentwise saturate, so clamp( x, 0, 1 )
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > saturate( const Point< T, n > &a );				// Componentwise saturate, so clamp( x, 0, 1 )
+	Vector< T, n > saturate( const Point< T, n > &a );
+	/**
+	 * Componentwise linear interpolation based on t.
+	 */
 	template< typename T, i32_t n, typename T_t >
-	Vector< T, n > lerp( const Point< T, n > &mini, const Point< T, n > &maxi, T_t t );	// Componentwise lerp based on t
+	Vector< T, n > lerp( const Point< T, n > &mini, const Point< T, n > &maxi, T_t t );
+	/**
+	 * Returns the smallest compnent.
+	 */
 	template< typename T, i32_t n >
-	T minComponent( const Point< T, n > &a );			// Returns the smalles component
+	T minComponent( const Point< T, n > &a );
+	/**
+	 * Returns the largest compnent.
+	 */
 	template< typename T, i32_t n >
-	T maxComponent( const Point< T, n > &a );			// Returns the largest component
+	T maxComponent( const Point< T, n > &a );
 		
 	
 	//---------------------------

@@ -4,29 +4,31 @@
  * This file contains an implementation of IEEE 754 half precision flaoting point.
  * It also contains interfaces to the fixed point types of vul_fixed.h
  * if VUL_HALF_TABLE is defined, a lookup table is used for single/half
- * conversions, at the expense of 8576+1536 bytes of memory.
+ * conversions, at the expense of 8576+1536 bytes of memory. ( see: ftp://ftp.fox-toolkit.org/pub/fasthalffloatconversion.pdf )
  * If VUL_HALF_SSE is defined, the SSE instructions _mm_cvtph_ps & _mm_vctps_ph
- * are used for single/half conversions.  ( see: ftp://ftp.fox-toolkit.org/pub/fasthalffloatconversion.pdf )
- * Otherwise, a slower runtime calcultion is done.
+ * are used for single/half conversions.
+ * Otherwise, a slower runtime calculation is done.
  * 
  * ¹ If public domain is not legally valid in your country and or legal area,
  *   the MIT licence applies (see the LICENCE file)
  */
 
-#ifndef VUL_HALF_H
-#define VUL_HALF_H
+#ifndef VUL_HALF_HPP
+#define VUL_HALF_HPP
 
 #include <algorithm>
 #include <limits>
 #include <climits>
 #include <cmath>
 
-// Define this in exactly one C/CPP file to define the otherwise declared fucntions.
-//#define VUL_DEFINE
+/**
+ * Define this for the c++11 version
+ */
+//#define VUL_CPLUSPLUS11
 
 // Choose one or neither of these
 //#define VUL_HALF_TABLE // @TODO: Actually calculate the table and include it!
-//#define VUL_HALF_SSE
+//#define VUL_HALF_SSE // @TODO: Fix this; doesn't work atm.
 
 namespace vul {
 
@@ -111,6 +113,9 @@ namespace vul {
 	half operator-( half a );
 #endif
 
+	// We extend fabs
+	half abs( half a );
+
 	// Mass conversion functions. These use 4-wide SSE if VUL_HALF_SSE are defined. @TODO: 8-wide SSE!
 	void vul_single_to_half_array( half *out, float *in, unsigned int count );
 	void vul_half_to_single_array( float *out, half *in, unsigned int count );
@@ -139,7 +144,7 @@ namespace vul {
 #if defined( VUL_HALF_TABLE )
 		
 #elif defined( VUL_HALF_SSE )
-		data = _cvtss_sh( a );
+		data = _mm_cvtph_ps( a );
 #else
 		int i, te;
 		unsigned int f, e;
@@ -540,6 +545,15 @@ namespace vul {
 		return r;
 	}
 #endif
+	
+	half fabs( half a )
+	{
+		half r;
+		
+		r.data = a.data & 0x7fff;
+
+		return r;
+	}
 
 	// Mass conversion functions
 	void vul_single_to_half_array( half *out, float *in, unsigned int count )

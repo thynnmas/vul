@@ -4,7 +4,7 @@
  * A matrix math library for generic matrices. Format inspired by 
  * http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/
  * Specializations for 2x2, 3x3 & 4x4 matrices of all reasonable float,
- * fixed, int and uint types (not 128bit) are made. i32_terfaces with
+ * fixed, int and uint types (not 128bit) are made. Interfaces with
  * the vectors of vul_vector.h
  *
  * The matrices are scalar. Vectors are column vectors!
@@ -13,25 +13,15 @@
  *   the MIT licence applies (see the LICENCE file)
  */
 
-#ifndef VUL_MATRIX_H
-#define VUL_MATRIX_H
+#ifndef VUL_MATRIX_HPP
+#define VUL_MATRIX_HPP
 
 #include "vul_types.hpp"
 
 /**
- * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!
+ * Define this for the c++11 version
  */
-//#define VUL_DEFINE
-
-// Define the right one of these to compile with your SSE versions for SIMD functions. 
-// Otherwise, scalar is generated.
-//#define VUL_SSE2
-//#define VUL_SSE3
-#if defined( VUL_SSE2 ) || defined( VUL_SSE3 )
-	#include <mmintrin.h>
-	#include <emmintrin.h>
-	#include <xmmintrin.h>
-#endif
+//#define VUL_CPLUSPLUS11
 
 namespace vul {
 	
@@ -59,15 +49,39 @@ namespace vul {
 		explicit Matrix< T, cols, rows >( std::initializer_list<T> list );	// From initializer list. Componentwise init is non-c++11 equivalent.
 #endif	
 		// Operators
+		/**
+		 * Componentwise addition.
+		 */
 		Matrix< T, cols, rows >& operator+=( T scalar );
+		/**
+		 * Componentwise subtraction.
+		 */
 		Matrix< T, cols, rows >& operator-=( T scalar );
+		/**
+		 * Componentwise multiplication.
+		 */
 		Matrix< T, cols, rows >& operator*=( T scalar );
+		/**
+		 * Componentwise division.
+		 */
 		Matrix< T, cols, rows >& operator/=( T scalar );
 
-		Matrix< T, cols, rows >& operator+=( const Matrix< T, cols, rows > &rhs ); // Componentwise addition
-		Matrix< T, cols, rows >& operator-=( const Matrix< T, cols, rows > &rhs ); // Componentwise subtraction
+		/**
+		 * Componentwise addition of two matrices.
+		 */
+		Matrix< T, cols, rows >& operator+=( const Matrix< T, cols, rows > &rhs );
+		/**
+		 * Componentwise subtraction of two matrices.
+		 */
+		Matrix< T, cols, rows >& operator-=( const Matrix< T, cols, rows > &rhs );
 		
+		/**
+		 * Indexing operator.
+		 */
 		T &operator( )( i32_t c, i32_t r );
+		/**
+		 * Constant indexing operator.
+		 */
 		T const &operator( )( i32_t c, i32_t r ) const;
 	};
 
@@ -173,71 +187,163 @@ namespace vul {
 	void copy( Matrix< T, dstc, dstr > *dst, const Matrix< T, srcc, srcr > &src );
 
 	// Operations
+	/**
+	 * Componentwise comparison. Returns a matrix of bools indicating if the compnents 
+	 * in the corresponding position are equal.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< bool, cols, rows > operator==( const Matrix< T, cols, rows > &a, const Matrix< T, cols, rows > &b );
+	/**
+	 * Componentwise comparison. Returns a matrix of bools indicating if the compnents 
+	 * in the corresponding position are not equal.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< bool, cols, rows > operator!=( const Matrix< T, cols, rows > &a, const Matrix< T, cols, rows > &b );
 
+	/**
+	 * Returns true if all compnents are true. Is valid for any type if( T ) is valid.
+	 * Equivalent of AND-ing together all compnents.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	bool all( const Matrix< T, cols, rows > &mat ); // ANDs together all elements and returns the result
+	bool all( const Matrix< T, cols, rows > &mat );
+	/**
+	 * Returns true if any compnents is true. Is valid for any type if( T ) is valid.
+	 * Equivalent of OR-ing together all compnents.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	bool any( const Matrix< T, cols, rows > &mat ); // ORs together all elements and returns the result
+	bool any( const Matrix< T, cols, rows > &mat );
+	/**
+	 * Returns the first compnent that is evaluated to true by if( T ).
+	 * Equivalent to the ?: selector. Does
+	 * mat[0][0] ? mat[0][0] : ( mat[0][1] ? mat[0][1] : ... )
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	T select( const Matrix< T, cols, rows > &mat ); // Componentwise ?: selector { mat[0][0] ? mat[0][0] : ( mat[0][1] ? mat[0][1] : ... ) }
+	T select( const Matrix< T, cols, rows > &mat ); 
 
+	/**
+	 * Componentwise addition.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > operator+( const Matrix< T, cols, rows >& mat, T scalar );
+	/**
+	 * Componentwise subtraction.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > operator-( const Matrix< T, cols, rows >& mat, T scalar );
+	/**
+	 * Componentwise multiplication.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > operator*( const Matrix< T, cols, rows >& mat, T scalar );
+	/**
+	 * Componentwise division.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > operator/( const Matrix< T, cols, rows >& mat, T scalar );
 
+	/**
+	 * Componentwise addition of matrices.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > operator+( const Matrix< T, cols, rows >& a, const Matrix< T, cols, rows > &b ); // Componentwise addition
+	/**
+	 * Componentwise subtraction of matrices.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > operator-( const Matrix< T, cols, rows >& a, const Matrix< T, cols, rows > &b ); // Componentwise subtraction
 	
+	/**
+	 * Componentwise min( compnent, b ).
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > min( const Matrix< T, cols, rows > &a, T b );				// Componentwise min( x, b )
+	Matrix< T, cols, rows > min( const Matrix< T, cols, rows > &a, T b );
+	/**
+	 * Componentwise max( compnent, b ).
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > max( const Matrix< T, cols, rows > &a, T b );				// Componentwise max( x, b )
+	Matrix< T, cols, rows > max( const Matrix< T, cols, rows > &a, T b );
+	/**
+	 * Componentwise absolute value.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > abs( const Matrix< T, cols, rows > &a );					// Componentwise abs
+	Matrix< T, cols, rows > abs( const Matrix< T, cols, rows > &a );
+	/**
+	 * Compomentwise clamp( x, min, max ).
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > clamp( const Matrix< T, cols, rows > &a, T mini, T maxi );	// Componentwise clamp( x, min, max )	
+	Matrix< T, cols, rows > clamp( const Matrix< T, cols, rows > &a, T mini, T maxi );
+	/**
+	 * Compomentwise saturate, so clamp( x, 0, 1 ).
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > saturate( const Matrix< T, cols, rows > &a );				// Componentwise saturate, so clamp( x, 0, 1 )
+	Matrix< T, cols, rows > saturate( const Matrix< T, cols, rows > &a );
+	/** 
+	 * Componentwise linear interpolation based on t.
+	 */
 	template< typename T, i32_t cols, i32_t rows, typename T_t >
-	Matrix< T, cols, rows > lerp( const Matrix< T, cols, rows > &mini, const Matrix< T, cols, rows > &maxi, T_t t );	// Componentwise lerp based on t
+	Matrix< T, cols, rows > lerp( const Matrix< T, cols, rows > &mini, const Matrix< T, cols, rows > &maxi, T_t t );
+	/**
+	 * Returns the smalles compnent.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	T minComponent( const Matrix< T, cols, rows > &a );			// Returns the smalles component
+	T minComponent( const Matrix< T, cols, rows > &a );
+	/**
+	 * Returns the largest compnent.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	T maxComponent( const Matrix< T, cols, rows > &a );			// Returns the largest component
+	T maxComponent( const Matrix< T, cols, rows > &a );
 	
+	/**
+	 * Matrix multiplication. This is NOT componentwise, but proper matrix mul.
+	 */
 	template< typename T, i32_t cola, i32_t shared, i32_t colb >
-	Matrix< T, cola, colb > operator*( const Matrix< T, cola, shared > &a, const Matrix< T, shared, colb > &b ); // Matrix multiplication, NOT componentwise
+	Matrix< T, cola, colb > operator*( const Matrix< T, cola, shared > &a, const Matrix< T, shared, colb > &b );
 	
+	/** 
+	 * Right-side multiplication of a matrix and a column vector.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	Vector< T, rows > operator*( const Matrix< T, cols, rows >& mat, Vector< T, cols > vec );		// Right-side multiplication. Column vectors!
+	Vector< T, rows > operator*( const Matrix< T, cols, rows >& mat, Vector< T, cols > vec );
+	/** 
+	 * Left-side multiplication of a matrix and a column vector.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
 	Vector< T, cols > operator*( Vector< T, rows > vec , const Matrix< T, cols, rows >& mat);	
+	/** 
+	 * Right-side multiplication of a matrix and a point interpreted as a column vector.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	Point< T, rows > operator*( const Matrix< T, cols, rows >& mat, Point< T, cols > vec );		// Right-side multiplication. Column vectors!
+	Point< T, rows > operator*( const Matrix< T, cols, rows >& mat, Point< T, cols > vec );
+	/** 
+	 * Left-side multiplication of a matrix and a point interpreted as a column vector.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	Point< T, cols > operator*( Point< T, rows > vec , const Matrix< T, cols, rows >& mat);		// Left-side multiplication. Column vectors!
+	Point< T, cols > operator*( Point< T, rows > vec , const Matrix< T, cols, rows >& mat);
 	
 	// Functions
+	/**
+	 * Returns the inverse of the matrix.
+	 */
 	template< typename T, i32_t n >
-	Matrix< T, n, n > inverse( const Matrix< T, n, n > &mat );		// Returns the inverse
+	Matrix< T, n, n > inverse( const Matrix< T, n, n > &mat );
+	/**
+	 * Returns the transpose of the matrix.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > transpose( const Matrix< T, cols, rows > &mat );	// Returns the transpose
+	Matrix< T, cols, rows > transpose( const Matrix< T, cols, rows > &mat );
 	
+	/**
+	 * Calculates the determinant of the matrix. This is the 2x2 special case.
+	 */
 	template< typename T >
-	f32_t determinant( const Matrix< T, 2, 2 > &mat );	// 2x2 is special case
+	f32_t determinant( const Matrix< T, 2, 2 > &mat );
+	/**
+	 * Calculates the determinant of the matrix. Recursively simplifies down to
+	 * the 2x2 case. Uses vul_matrix_find_most_zero at every level to recurse down
+	 * the path with the least sub-expressions at that level.
+	 */
 	template< typename T, i32_t cols, i32_t rows >
-	f32_t determinant( const Matrix< T, cols, rows > &mat );	// General case, recursively simplifies to 2x2. @TODO: Write 3x3 or 4x4 for speed?
+	f32_t determinant( const Matrix< T, cols, rows > &mat );
 
 	/** 
 	 * Returns the column at index n in the given matrix.
@@ -251,24 +357,31 @@ namespace vul {
 	Vector< T, cols > row( const Matrix< T, cols, rows > &mat, i32_t n );
 
 	
-	// Helper function to speed up determinant calculation
+	/**
+	 * Describes the type of column or row that contains the most zeroes.
+	 * Used by vul_matrix_zero_helper.
+	 */
 	enum vul_matrix_zero_type {
 		VUL_MATRIX_COLUMN = 0,
 		VUL_MATRIX_ROW = 1
 	};
+	/**
+	 * The result of vul_matrix_find_most_zero, this describes the column or
+	 * row with the most zeroes in a matrix.
+	 */
 	struct vul_matrix_zero_helper {
 		vul_matrix_zero_type type;
 		i32_t index;
 		i32_t count;
 	};
-	template< typename T, i32_t cols, i32_t rows > // Helper function. Counts the number of zeros in each column and row. Returns a helper with row/column type, index and count
+	/** 
+	 * Helper function of detereminant.
+	 * Counts the number of zeros in each column and row. 
+	 * Returns a vul_matrix_zero_helper with row/column type, index and count
+	 */
+	template< typename T, i32_t cols, i32_t rows >
 	vul_matrix_zero_helper vul_matrix_find_most_zero( const Matrix< T, cols, rows > &mat );
 	
-
-	// SIMD functions
-	// @TODO: More SIMD matrix functions
-	
-
 	//---------------------------
 	// Definitions
 	//

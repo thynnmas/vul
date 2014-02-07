@@ -9,17 +9,17 @@
  * ¹ If public domain is not legally valid in your country and or legal area,
  *   the MIT licence applies (see the LICENCE file)
  */
-#ifndef VUL_AFFINE_H
-#define VUL_AFFINE_H
+#ifndef VUL_AFFINE_HPP
+#define VUL_AFFINE_HPP
 
 #include "vul_types.hpp"
 #include "vul_quaternion.hpp"
+#include "vul_matrix.hpp"
 
 /**
- * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!
+ * Define this for the c++11 version
  */
-//#define VUL_DEFINE
-
+//#define VUL_CPLUSPLUS11
 
 namespace vul {
 
@@ -57,15 +57,27 @@ namespace vul {
 	Affine< T, n > makeAffine( const Matrix< T, n, n > &mat, const Vector< T, n > &vec );	// Constructor from Mat<n,n> & Vec<n>.
 #endif
 
+	/**
+	 * Apply an affine transformation to the point, including translation.
+	 */
 	template< typename T, i32_t n >
-	Point< T, n > operator*( const Affine< T, n > &a, const Point< T, n> &p );	// Apply an affine transformation (this includes translation)
+	Point< T, n > operator*( const Affine< T, n > &a, const Point< T, n> &p );
+	/**
+	 * Apply an affine transformation to the vector. This does not translate.
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > operator*( const Affine< T, n > &a, const Vector< T, n> &p );// Apply an affine transformation (this does not include translation)
+	Vector< T, n > operator*( const Affine< T, n > &a, const Vector< T, n> &p );
 
+	/**
+	 * Creates a 3D affine transformation to a 4x4 homogenous tronsformation matrix.
+	 */
 	template< typename T >
-	Matrix< T, 4, 4 > makeHomogeneousFromAffine( const Affine< T, 3 > &a );	// Converts a 3D affine transformation to the corresponding 4x4 matrix for homogenous coordinates.
+	Matrix< T, 4, 4 > makeHomogeneousFromAffine( const Affine< T, 3 > &a );
+	/**
+	 * Construct a 3D affine transformation from translation, scale and orientation bases.
+	 */
 	template< typename T >
-	Affine< T, 3 > makeAffine3D( const Vector< T, 3 > &translation, const Vector< T, 3 > &scale, const Quaternion< T > &orientation );	// Constructor from Mat<n,n> & Vec<n>.
+	Affine< T, 3 > makeAffine3D( const Vector< T, 3 > &translation, const Vector< T, 3 > &scale, const Quaternion< T > &orientation );
 
 	//---------------------------
 	// Definitions

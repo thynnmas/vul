@@ -14,11 +14,13 @@
  *   the MIT licence applies (see the LICENCE file)
  */
 
-#ifndef VUL_FIXED_H
-#define VUL_FIXED_H
+#ifndef VUL_FIXED_HPP
+#define VUL_FIXED_HPP
 
-// Define this in exactly _one_ C/CPP file.
-//#define VUL_DEFINE
+/**
+ * Define this for the c++11 version
+ */
+//#define VUL_CPLUSPLUS11
 
 #include <cmath>
 
@@ -61,6 +63,12 @@ namespace vul {
 		fixed_32< Q > &operator-=( float rhs );
 		fixed_32< Q > &operator*=( float rhs );
 		fixed_32< Q > &operator/=( float rhs );
+		
+		fixed_32< Q > &operator=( double rhs );
+		fixed_32< Q > &operator+=( double rhs );
+		fixed_32< Q > &operator-=( double rhs );
+		fixed_32< Q > &operator*=( double rhs );
+		fixed_32< Q > &operator/=( double rhs );
 
 		fixed_32< Q > &operator++( );
 		fixed_32< Q > &operator--( );
@@ -95,11 +103,15 @@ namespace vul {
 	fixed_32< Q > const operator+( fixed_32< Q > a );
 	template< int Q >
 	fixed_32< Q > const operator-( fixed_32< Q > a );
+	
+	// We extend fabs
+	template< int Q >
+	fixed_32< Q > abs( fixed_32< Q > a );
 
 	// Since VC++ doesn't supply a round(), we write our own:
 	float round( float v );
 	double round( double v );
-
+	
 
 	//---------------------------
 	// Definitions
@@ -207,7 +219,7 @@ namespace vul {
 		long temp;
 
 		K = ( 2 << ( Q - 1 ) );
-		temp = ( long )data * ( long )rhs.data;
+		temp = ( long long )data * ( long long )rhs.data;
 		temp += K;
 
 		data = temp >> Q;
@@ -218,7 +230,7 @@ namespace vul {
 	{
 		long temp;
 
-		temp = ( long )data << Q;
+		temp = ( long long )data << Q;
 		temp += rhs.data / 2;
 		data = temp / rhs.data;
 		return *this;
@@ -249,7 +261,7 @@ namespace vul {
 		long long temp;
 
 		K = ( 2 << ( Q - 1 ) );
-		temp = ( long )data * ( long )round( rhs * std::pow( 2, Q ) );
+		temp = ( long long )data * ( long long )round( rhs * std::pow( 2, Q ) );
 		temp += K;
 
 		data = temp >> Q;
@@ -262,12 +274,56 @@ namespace vul {
 		int b;
 
 		b = round( rhs * std::pow( 2, Q ) );
-		temp = ( long )data << Q;
+		temp = ( long long )data << Q;
 		temp += b / 2;
 		data = temp / b;
 		return *this;
 	}
 	
+	template< int Q >
+	fixed_32< Q > &fixed_32< Q >::operator=( double rhs )
+	{
+		data = round( rhs * std::pow( 2, Q ) );
+		return *this;
+	}
+	template< int Q >
+	fixed_32< Q > &fixed_32< Q >::operator+=( double rhs )
+	{
+		data += round( rhs * std::pow( 2, Q ) );
+		return *this;
+	}
+	template< int Q >
+	fixed_32< Q > &fixed_32< Q >::operator-=( double rhs )
+	{
+		data -= round( rhs * std::pow( 2, Q ) );
+		return *this;
+	}
+	template< int Q >
+	fixed_32< Q > &fixed_32< Q >::operator*=( double rhs )
+	{
+		int K;
+		long long temp;
+
+		K = ( 2 << ( Q - 1 ) );
+		temp = ( long long )data * ( long long )round( rhs * std::pow( 2, Q ) );
+		temp += K;
+
+		data = temp >> Q;
+		return *this;
+	}
+	template< int Q >
+	fixed_32< Q > &fixed_32< Q >::operator/=( double rhs )
+	{
+		long long temp;
+		int b;
+
+		b = round( rhs * std::pow( 2, Q ) );
+		temp = ( long long )data << Q;
+		temp += b / 2;
+		data = temp / b;
+		return *this;
+	}
+
 	template< int Q >
 	fixed_32< Q > &fixed_32< Q >::operator++( )
 	{
@@ -352,10 +408,10 @@ namespace vul {
 		long long temp;
 
 		K = ( 2 << ( Q - 1 ) );
-		temp = ( long )a.data * ( long )b.data;
+		temp = ( long long )a.data * ( long long )b.data;
 		temp += K;
 
-		r.data = ( int )( temp >> Q );
+		r.data = ( long )( temp >> Q );
 		return r;
 	}
 	template< int Q >
@@ -364,9 +420,9 @@ namespace vul {
 		fixed_32< Q > r;		
 		long long temp;
 
-		temp = ( long )a.data << Q;
+		temp = ( long long )a.data << Q;
 		temp += b.data / 2;
-		r.data = ( int )( temp / b.data );
+		r.data = ( long )( temp / b.data );
 		
 		return r;
 	}
@@ -386,6 +442,15 @@ namespace vul {
 		fixed_32< Q > r;
 
 		r.data = -a.data;
+
+		return r;
+	}
+	template< int Q >
+	fixed_32< Q > fabs( fixed_32< Q > a )
+	{
+		fixed_32< Q > r;
+		
+		r.data = abs( r.data );
 
 		return r;
 	}

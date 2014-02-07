@@ -67,14 +67,33 @@ namespace vul {
 		const Vector< T, 4 > & as_vec4( ) const { return reinterpret_cast< const Vector< T, 4 > & >( data ); }
 #endif
 		// Operators
+		/**
+		 * Compnentwise addition.
+		 */
 		Quaternion< T > &operator+=( const Quaternion &rhs );
+		/**
+		 * Compnentwise subtraction.
+		 */
 		Quaternion< T > &operator-=( const Quaternion &rhs );
 
+		/**
+		 * Compnentwise mutliplication.
+		 */
 		Quaternion< T > &operator*=( const T scalar );
+		/**
+		 * Quaternion multiplication.
+		 * @Note: This is not generally commutative.
+		 */
 		Quaternion< T > &operator*=( const Quaternion &rhs );
 
-		T &operator[ ]( i32_t i ); // Index selector
-		T const &operator[ ]( i32_t i ) const; // Index selector, const
+		/**
+		 * Indexing operator.
+		 */
+		T &operator[ ]( i32_t i );
+		/**
+		 * Constant indexing operator.
+		 */
+		T const &operator[ ]( i32_t i ) const;
 	}; 
 
 	typedef Quaternion< f32_t > quat;
@@ -100,34 +119,68 @@ namespace vul {
 	template< typename T >
 	Quaternion< T > makeQuat( i32_t (& a)[ 4 ] );
 #endif
+	/**
+	 * Construct a quaternion from and axis and an angle of rotation around that axis.
+	 */
 	template< typename T >
 	Quaternion< T > makeQuatFromAxisAngle( const Vector< T, 3 > &axis, T angleRadians );
+	/**
+	 * Construct a quaternion from a 3-axis system.
+	 */
 	template< typename T >
 	Quaternion< T > makeQuatFromAxes( const Vector< T, 3 > &x, const Vector< T, 3 > &y, const Vector< T, 3 > &z );
+	/**
+	 * Construct a quaternion from a rotation matrix.
+	 * Uses Ken Shoemake's algorithm from the 1987 SIGGRAPH course notes
+     * "Quaternion Calculus and Fast Animation".
+	 */
 	template< typename T >
 	Quaternion< T > makeQuatFromMatrix( const Matrix< T, 3, 3 > &mat );
 	// Special cases
+	/**
+	 * Create the zero-quaternion.
+	 */
 	template< typename T >
 	Quaternion< T > makeZero( );
+	/**
+	 * Create the identity quaternion.
+	 */
 	template< typename T >
 	Quaternion< T > makeIdentity( );
 
 	// Quaternion operators
+	/**
+	 * Componentwise addition.
+	 */
 	template< typename T >
 	Quaternion< T > operator+( const Quaternion< T > &a, const Quaternion< T > &b );
+	/**
+	 * Componentwise subtraction.
+	 */
 	template< typename T >
 	Quaternion< T > operator-( const Quaternion< T > &a, const Quaternion< T > &b );
 	
+	/**
+	 * Componentwise multiplication.
+	 */
 	template< typename T >
 	Quaternion< T > operator*( const Quaternion< T > &q, const T scalar );
+	
+	/**
+	* Quaternion multiplication.
+	* @Note: This is not generally commutative.
+	*/
 	template< typename T >
 	Quaternion< T > operator*( const Quaternion< T > &a, const Quaternion< T > &b );
 	/**
-	 * Rotate a vector by a quaternion
+	 * Rotate a vector by a quaternion.
 	 */
 	template< typename T >
 	Vector< T, 3 > operator*( const Quaternion< T > &q, const Vector< T, 3 > &v );
 	
+	/**
+	 * Negate a quaternion. Equivalent to filpping all axes.
+	 */
 	template< typename T >
 	Quaternion< T > operator-( const Quaternion< T > &q );
 
@@ -146,19 +199,39 @@ namespace vul {
 	Vector< bool, 4 > operator!=( const Quaternion< T > &a, const Quaternion< T > &b );
 	
 	// Quaternion functions
+	/**
+	 * Construct a 3x3 rotation matrix from the orientation of the given quaternion.
+	 */
 	template< typename T >
 	Matrix< T, 3, 3 > makeMatrix( const Quaternion< T > &quat );
-
+	/**
+	 * Compare two quaternions within a given tolerance.
+	 */
 	template< typename T >
 	bool equals( const Quaternion< T > &a, const Quaternion< T > &b, const T tolerance );
+	/**
+	 * Calculate the norm of the quaternion.
+	 */
 	template< typename T >
 	T norm( const Quaternion< T > &q );
+	/**
+	 * Normalize the quaternion. Not in place.
+	 */
 	template< typename T >
 	Quaternion< T > normalize( const Quaternion< T > &q );
+	/**
+	 * Returns the dot product of two quaternions, as if they were 4-vectors.
+	 */
 	template< typename T >
 	T dot( const Quaternion< T > &a, const Quaternion< T > &b );
+	/**
+	 * Calculates the inverse of a quaternion.
+	 */
 	template< typename T >
 	Quaternion< T > inverse( const Quaternion< T > &q );
+	/**
+	 * Calculates the normalized inverse of a quaternion.
+	 */
 	template< typename T >
 	Quaternion< T > unitInverse( const Quaternion< T > &q );
 	
@@ -340,11 +413,6 @@ namespace vul {
 		
 		return makeQuatFromMatrix( m );
 	}
-	/**
-	 * Construct a quaternion from a rotation matrix.
-	 * Uses Ken Shoemake's algorithm from the 1987 SIGGRAPH course notes
-     * "Quaternion Calculus and Fast Animation".
-	 */
 	template< typename T >
 	Quaternion< T > makeQuatFromMatrix( const Matrix< T, 3, 3 > &mat )
 	{
@@ -558,10 +626,12 @@ namespace vul {
 	{
 		Quaternion< T > r;
 		
+		// Negate the direction
 		r[ 0 ] = -q[ 0 ];
 		r[ 1 ] = -q[ 1 ];
 		r[ 2 ] = -q[ 2 ];
-		r[ 3 ] = -q[ 3 ];
+		// Maintain angle
+		r[ 3 ] = q[ 3 ];
 
 		return q;
 	}
@@ -672,19 +742,15 @@ namespace vul {
 
 		len = norm( q );
 
-		if( len > static_cast< T >( 0.f ) )
-		{
-			invLen = static_cast< T >( 1.f ) / len;
-			r[ 0 ] = -q[ 0 ] * invLen;
-			r[ 1 ] = -q[ 1 ] * invLen;
-			r[ 2 ] = -q[ 2 ] * invLen;
-			r[ 3 ] = q[ 3 ] * invLen;
-			return r;
-		} else {
-			// @TODO: Assert that len > 0 instead?
-			// Invalid, return zero.
-			return makeZero< T >( );
-		}
+		// Inv erse is only valid for length != 0.
+		assert( len > static_cast< T >( 0.f ) );
+
+		invLen = static_cast< T >( 1.f ) / len;
+		r[ 0 ] = -q[ 0 ] * invLen;
+		r[ 1 ] = -q[ 1 ] * invLen;
+		r[ 2 ] = -q[ 2 ] * invLen;
+		r[ 3 ] = q[ 3 ] * invLen;
+		return r;
 	}
 	template< typename T >
 	Quaternion< T > unitInverse( const Quaternion< T > &q )
@@ -727,7 +793,7 @@ namespace vul {
 			c0 = sin( ( one - t ) * angle ) * invSine;
 			c1 = sin( t * angle ) * invSine;
 			q = c0 * a + c1 * nb;
-			return normalize( q ); // @TODO: Test if normalization is nescessary
+			return normalize( q );
 		} else {
 			// Either a and b are very close, and we can lerp, 
 			// or a and b are almost inverses and we have infinite directions.

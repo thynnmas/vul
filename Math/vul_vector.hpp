@@ -265,10 +265,22 @@ namespace vul {
 	template< typename T, i32_t n >
 	Vector< T, n > operator-( const Vector< T, n > &vec );
 
+	/**
+	 * Cross product of two 3-vectors. Geometrically, this is a vector that is 
+	 * orthonormal two both vectors.
+	 */
 	template< typename T >
-	Vector< T, 3 > cross( const Vector< T, 3 > &a, const Vector< T, 3 > &b ); // Cross product only defined in 3D
+	Vector< T, 3 > cross( const Vector< T, 3 > &a, const Vector< T, 3 > &b ); 
+	/**
+	 * Cross product of 2-vectors. Geometrically, the sign of the returned value 
+	 * indicates whether b is to the right or left of a, if a is taken as the 
+	 * front-facing direction.
+	 */
 	template< typename T >
-	Vector< T, 2 > cross( const Vector< T, 2 > &a, const Vector< T, 2 > &b ); // Cross product only defined in 3D
+	T cross( const Vector< T, 2 > &a, const Vector< T, 2 > &b );
+	/**
+	 * The euclidian inner product of two vectors.
+	 */
 	template< typename T, i32_t n >
 	T dot( const Vector< T, n > &a, const Vector< T, n > &b ); 
 
@@ -998,9 +1010,15 @@ namespace vul {
 
 		return v;
 	}
+	
+	template< typename T >
+	T cross( const Vector< T, 2 > &a, const Vector< T, 2 > &b )
+	{
+		return a[ 0 ] * b[ 1 ] - a[ 1 ] * b[ 0 ];
+	}
 
-	template< typename T, i32_t n >
-	Vector< T, 3 > cross( const Vector< T, n > &a, const Vector< T, n > &b )
+	template< typename T >
+	Vector< T, 3 > cross( const Vector< T, 3 > &a, const Vector< T, 3 > &b )
 	{
 		Vector< T, n > v;
 		

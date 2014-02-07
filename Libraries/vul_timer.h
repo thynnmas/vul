@@ -24,6 +24,7 @@
 #include <time.h>
 #include <math.h>
 #if defined( VUL_WINDOWS )
+	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
 #elif defined( VUL_LINUX )
 	#include <unistd.h>

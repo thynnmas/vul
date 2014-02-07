@@ -20,6 +20,7 @@
 #include <ctime>
 #include <cmath>
 #if defined( VUL_WINDOWS )
+	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
 #elif defined( VUL_LINUX )
 	#include <unistd.h>
@@ -36,8 +37,8 @@
 namespace vul {
 	
 	typedef unsigned long long ui64_t;
-	typedef unsigned long ui32_t;
-	typedef signed long i32_t;
+	typedef unsigned int ui32_t;
+	typedef int i32_t;
 
 	/**
 	 * Clock class. Equivalent of the C-class vul_clock_t (but called

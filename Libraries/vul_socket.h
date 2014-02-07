@@ -21,8 +21,9 @@
 #include <stdlib.h>
 #include <malloc.h>
 #if defined( VUL_WINDOWS )
-	#include <WinSock2.h>
+	#define WIN32_LEAN_AND_MEAN
 	#include <Windows.h>
+	#include <WinSock2.h>
 	#include <WS2tcpip.h>
 #elif defined( VUL_LINUX )
 	#include <sys/socket.h>
@@ -110,45 +111,6 @@ int vul_socket_receive( vul_socket_t *s, vul_packet_t *p, ui32_t timeout_millis 
 }
 #endif
 
-/**
- * Opens a socket to the given address. Fills the given socket struct.
- */
-#ifndef VUL_DEFINE
-int vul_socket_open( vul_socket_t *s, vul_address_t *a );
-#else
-int vul_socket_open( vul_socket_t *s, vul_address_t *a )
-{
-	WSAData data;
-	WSAStartup( MAKEWORD( 2, 2 ), &data );
-	s->socket = INVALID_SOCKET;
-	s->socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if( s->socket == INVALID_SOCKET ) {
-		int ret = WSAGetLastError( );
-		WSACleanup( );
-		return ret;
-	}
-	return 0;
-}
-#endif
-
-/**
- * Closes the given socket.
- */
-#ifndef VUL_DEFINE
-int vul_socket_close( vul_socket_t *s );
-#else
-int vul_socket_close( vul_socket_t *s )
-{
-	int ret = shutdown( s->socket, SD_SEND );
-	if( ret == SOCKET_ERROR ) {
-		closesocket( s->socket );
-		ret = WSAGetLastError( );
-		WSACleanup( );
-		return ret;
-	}
-	return 0;
-}
-#endif
 
 /**
  * Binds to the given port, opens a listening socket.

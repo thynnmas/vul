@@ -23,7 +23,7 @@ int comp( const void *a, const void *b ) {
 
 void bench_sorts( )
 {
-	vul_clock_t clock;
+	vul_timer_t clock;
 	unsigned long long itime, stime, qtime, ttime;
 	int *inta, *intb, *intc, *intd, *inte, *intf;
 
@@ -103,18 +103,18 @@ void bench_sorts( )
 
 	printf( "Sort\t|\tInsert\t|\tShell\t|\tQuick\t|\tThynn\n" );
 
-	vul_clock_reset( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_insertion( insertiona, &comp );
-	itime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	itime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_shell( shella, &comp );
-	stime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	stime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_quick( quicka, &comp );
-	qtime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	qtime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_thynn( thynna, &comp );
-	ttime = vul_clock_get_millis_cpu( &clock );
+	ttime = vul_timer_get_millis_cpu( &clock );
 	printf( "%d\t|\t%llu.%04llus\t|\t%llu.%04llus\t|\t%llu.%04llus\t|\t%llu.%04llus\n",
 					SIZE_1,
 					itime / 1000LL, itime % 1000LL,
@@ -122,18 +122,18 @@ void bench_sorts( )
 					qtime / 1000LL, qtime % 1000LL,
 					ttime / 1000LL, ttime % 1000LL );
 	
-	vul_clock_reset( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_insertion( insertionb, &comp );
-	itime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	itime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_shell( shellb, &comp );
-	stime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	stime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_quick( quickb, &comp );
-	qtime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	qtime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_thynn( thynnb, &comp );
-	ttime = vul_clock_get_millis_cpu( &clock );
+	ttime = vul_timer_get_millis_cpu( &clock );
 	printf( "%d\t|\t%llu.%04llus\t|\t%llu.%04llus\t|\t%llu.%04llus\t|\t%llu.%04llus\n",
 					SIZE_2,
 					itime / 1000LL, itime % 1000LL,
@@ -141,18 +141,18 @@ void bench_sorts( )
 					qtime / 1000LL, qtime % 1000LL,
 					ttime / 1000LL, ttime % 1000LL );
 
-	vul_clock_reset( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_insertion( insertionc, &comp );
-	itime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	itime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_shell( shellc, &comp );
-	stime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	stime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_quick( quickc, &comp );
-	qtime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	qtime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_thynn( thynnc, &comp );
-	ttime = vul_clock_get_millis_cpu( &clock );
+	ttime = vul_timer_get_millis_cpu( &clock );
 	printf( "%d\t|\t%llu.%04llus\t|\t%llu.%04llus\t|\t%llu.%04llus\t|\t%llu.%04llus\n",
 					SIZE_3,
 					itime / 1000LL, itime % 1000LL,
@@ -160,18 +160,18 @@ void bench_sorts( )
 					qtime / 1000LL, qtime % 1000LL,
 					ttime / 1000LL, ttime % 1000LL );
 	
-	vul_clock_reset( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_insertion( insertiond, &comp );
-	itime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	itime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_shell( shelld, &comp );
-	stime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	stime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_quick( quickd, &comp );
-	qtime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	qtime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_thynn( thynnd, &comp );
-	ttime = vul_clock_get_millis_cpu( &clock );
+	ttime = vul_timer_get_millis_cpu( &clock );
 	printf( "%d\t|\t%llu.%04llus\t|\t%llu.%04llus\t|\t%llu.%04llus\t|\t%llu.%04llus\n",
 					SIZE_4,
 					itime / 1000LL, itime % 1000LL,
@@ -179,30 +179,30 @@ void bench_sorts( )
 					qtime / 1000LL, qtime % 1000LL,
 					ttime / 1000LL, ttime % 1000LL );
 	
-	vul_clock_reset( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_shell( shelle, &comp );
-	stime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	stime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_quick( quicke, &comp );
-	qtime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	qtime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_thynn( thynne, &comp );
-	ttime = vul_clock_get_millis_cpu( &clock );
+	ttime = vul_timer_get_millis_cpu( &clock );
 	printf( "%d\t|\t--\t|\t%llu.%04llus\t|\t%llu.%04llus\t|\t%llu.%04llus\n",
 					SIZE_5,
 					stime / 1000LL, stime % 1000LL,
 					qtime / 1000LL, qtime % 1000LL,
 					ttime / 1000LL, ttime % 1000LL );
 	
-	vul_clock_reset( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_shell( shellf, &comp );
-	stime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	stime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_quick( quickf, &comp );
-	qtime = vul_clock_get_millis_cpu( &clock );
-	vul_clock_reset( &clock );
+	qtime = vul_timer_get_millis_cpu( &clock );
+	vul_timer_reset( &clock );
 	vul_sort_vector_thynn( thynnf, &comp );
-	ttime = vul_clock_get_millis_cpu( &clock );
+	ttime = vul_timer_get_millis_cpu( &clock );
 	printf( "%d\t|\t--\t|\t%llu.%04llus\t|\t%llu.%04llus\t|\t%llu.%04llus\n",
 					SIZE_6,
 					stime / 1000LL, stime % 1000LL,
@@ -223,7 +223,7 @@ void bench_sorts( )
 #define SIZE_MULT_ITERATIONS 100000
 void bench_sorts_multiple( )
 {
-	vul_clock_t clock;
+	vul_timer_t clock;
 	unsigned long long itime, stime;
 	int **ints;
 
@@ -247,16 +247,16 @@ void bench_sorts_multiple( )
 	}
 	
 	
-	vul_clock_reset( &clock );
+	vul_timer_reset( &clock );
 	for( int i = 0; i < SIZE_MULT_ITERATIONS; ++i ) {
 		vul_sort_vector_insertion( insertion[ i ], &comp );
 	}
-	itime = vul_clock_get_millis( &clock );
-	vul_clock_reset( &clock );
+	itime = vul_timer_get_millis( &clock );
+	vul_timer_reset( &clock );
 	for( int i = 0; i < SIZE_MULT_ITERATIONS; ++i ) {
 		vul_sort_vector_shell( shell[ i ], &comp );
 	}
-	stime = vul_clock_get_millis_cpu( &clock );
+	stime = vul_timer_get_millis_cpu( &clock );
 	printf( "Insertion\t|\t%llu.%04llus\t|\nShell\t|\t%llu.%04llus\n",
 					itime / 1000LL, itime % 1000LL,
 					stime / 1000LL, stime % 1000LL);

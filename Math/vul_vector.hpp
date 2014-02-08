@@ -51,20 +51,53 @@ namespace vul {
 		explicit Vector< T, n >( float val ); 						// Initialize to single value from a float
 #endif
 		// Operators
+		/**
+		 * Copy assignment operator
+		 */
 		Vector< T, n >& operator=( const Vector< T, n > & rhs );
 
+		/**
+		 * Componentwise addition.
+		 */
 		Vector< T, n >& operator+=( T scalar );
+		/**
+		 * Componentwise subtraction.
+		 */
 		Vector< T, n >& operator-=( T scalar );
+		/**
+		 * Componentwise multiplication.
+		 */
 		Vector< T, n >& operator*=( T scalar );
+		/**
+		 * Componentwise division.
+		 */
 		Vector< T, n >& operator/=( T scalar );
 
-		Vector< T, n >& operator+=( const Vector< T, n > &vec ); // Componentwise addition
-		Vector< T, n >& operator-=( const Vector< T, n > &vec ); // Componentwise subtraction
-		Vector< T, n >& operator*=( const Vector< T, n > &vec ); // Componentwise multiplication
-		Vector< T, n >& operator/=( const Vector< T, n > &vec ); // Componentwise division
+		/**
+		 * Componentwise addition.
+		 */
+		Vector< T, n >& operator+=( const Vector< T, n > &vec );
+		/**
+		 * Componentwise subtraction.
+		 */
+		Vector< T, n >& operator-=( const Vector< T, n > &vec );
+		/**
+		 * Componentwise multiplication.
+		 */
+		Vector< T, n >& operator*=( const Vector< T, n > &vec );
+		/**
+		 * Componentwise division.
+		 */
+		Vector< T, n >& operator/=( const Vector< T, n > &vec );
 		
-		T &operator[ ]( i32_t i ); // Index selector
-		T const &operator[ ]( i32_t i ) const; // Index selector, const
+		/**
+		 * Indexing opertator.
+		 */
+		T &operator[ ]( i32_t i );
+		/**
+		 * Cosntant indexing opertator.
+		 */
+		T const &operator[ ]( i32_t i ) const;
 	};
 	
 	/*
@@ -224,44 +257,108 @@ namespace vul {
 	Vector< T, n > truncate( const Vector< T, m > &vec );
 
 	// Operations
-	template< typename T, i32_t n >	// Componentwise comparisons
+	/**
+	 * Comopnentwise comparsion. Returns a vector of bools indicating if
+	 * corresponding components are equal.
+	 */
+	template< typename T, i32_t n >
 	Vector< bool, n > operator==( const Vector< T, n > &a, const Vector< T, n > &b );
+	/**
+	 * Comopnentwise comparsion. Returns a vector of bools indicating if
+	 * corresponding components are not equal.
+	 */
 	template< typename T, i32_t n >
 	Vector< bool, n > operator!=( const Vector< T, n > &a, const Vector< T, n > &b );
+	/**
+	 * Comopnentwise comparsion. Returns a vector of bools indicating if
+	 * corresponding components of a are smaller than those of b.
+	 */
 	template< typename T, i32_t n >
 	Vector< bool, n > operator<( const Vector< T, n > &a, const Vector< T, n > &b );
+	/**
+	 * Comopnentwise comparsion. Returns a vector of bools indicating if
+	 * corresponding components of a are greater than those of b.
+	 */
 	template< typename T, i32_t n >
 	Vector< bool, n > operator>( const Vector< T, n > &a, const Vector< T, n > &b );
+	/**
+	 * Comopnentwise comparsion. Returns a vector of bools indicating if
+	 * corresponding components of a are smaller than or equal to those of b.
+	 */
 	template< typename T, i32_t n >
 	Vector< bool, n > operator<=( const Vector< T, n > &a, const Vector< T, n > &b );
+	/**
+	 * Comopnentwise comparsion. Returns a vector of bools indicating if
+	 * corresponding components of a are greater than or equal to those of b.
+	 */
 	template< typename T, i32_t n >
 	Vector< bool, n > operator>=( const Vector< T, n > &a, const Vector< T, n > &b );
 
+	/**
+	 * Returns true if all compnents are true. Is valid for any type if( T ) is valid.
+	 * Equivalent of AND-ing together all compnents.
+	 */
 	template< typename T, i32_t n >
-	bool all( const Vector< T, n > &vec ); // ANDs together all elements and returns the result
+	bool all( const Vector< T, n > &vec );
+	/**
+	 * Returns true if any compnents is true. Is valid for any type if( T ) is valid.
+	 * Equivalent of OR-ing together all compnents.
+	 */
 	template< typename T, i32_t n >
-	bool any( const Vector< T, n > &vec ); // ORs together all elements and returns the result
+	bool any( const Vector< T, n > &vec );
+	/**
+	 * Returns the first compnent that is evaluated to true by if( T ).
+	 * Equivalent to the ?: selector. Does
+	 * vec[0] ? vec[0] : ( vec[1] ? vec[1] : ... )
+	 */
 	template< typename T, i32_t n >
-	T select( const Vector< T, n > &vec ); // Componentwise ?: selector { vec[0] ? vec[0] : ( vec[1] ? vec[1] : ... ) } Returns 0 if all false
+	T select( const Vector< T, n > &vec );
 
+	/**
+	 * Componentwise addition. Not in place.
+	 */
 	template< typename T, i32_t n >
 	Vector< T, n > operator+( const Vector< T, n > &vec, const T scalar );
+	/**
+	 * Componentwise subtraction. Not in place.
+	 */
 	template< typename T, i32_t n >
 	Vector< T, n > operator-( const Vector< T, n > &vec, const T scalar );
+	/**
+	 * Componentwise multiplication. Not in place.
+	 */
 	template< typename T, i32_t n >
 	Vector< T, n > operator*( const Vector< T, n > &vec, const T scalar );
+	/**
+	 * Componentwise division. Not in place.
+	 */
 	template< typename T, i32_t n >
 	Vector< T, n > operator/( const Vector< T, n > &vec, const T scalar );
 
+	/**
+	 * Componentwise addition. Not in place.
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > operator+( const Vector< T, n > &a, const Vector< T, n > &b ); // Componentwise addition
+	Vector< T, n > operator+( const Vector< T, n > &a, const Vector< T, n > &b );
+	/**
+	 * Componentwise subtraction. Not in place.
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > operator-( const Vector< T, n > &a, const Vector< T, n > &b ); // Componentwise subtraction
+	Vector< T, n > operator-( const Vector< T, n > &a, const Vector< T, n > &b );
+	/**
+	 * Componentwise multiplication. Not in place.
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > operator*( const Vector< T, n > &a, const Vector< T, n > &b ); // Componentwise multiplication
+	Vector< T, n > operator*( const Vector< T, n > &a, const Vector< T, n > &b );
+	/**
+	 * Componentwise division. Not in place.
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > operator/( const Vector< T, n > &a, const Vector< T, n > &b ); // Componentwise division
+	Vector< T, n > operator/( const Vector< T, n > &a, const Vector< T, n > &b );
 	
+	/**
+	 * Negation operator. Negates every component.
+	 */
 	template< typename T, i32_t n >
 	Vector< T, n > operator-( const Vector< T, n > &vec );
 
@@ -284,39 +381,67 @@ namespace vul {
 	template< typename T, i32_t n >
 	T dot( const Vector< T, n > &a, const Vector< T, n > &b ); 
 
+	/**
+	 * Computes the norm of the vector.
+	 */
 	template< typename T, i32_t n >
-	T norm( const Vector< T, n > &a );								// @TODO: Make a versions of this that return float/fixed even if T is int?
+	T norm( const Vector< T, n > &a );
+	/**
+	 * Returns a normalized version of the vector. This does not alter the vector itself.
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > normalize( const Vector< T, n > &a );			// NOT in place
+	Vector< T, n > normalize( const Vector< T, n > &a );
+	/**
+	 * Componentwise min( x, b )
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > min( const Vector< T, n > &a, T b );				// Componentwise min( x, b )
+	Vector< T, n > min( const Vector< T, n > &a, T b );
+	/**
+	 * Componentwise max( x, b )
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > max( const Vector< T, n > &a, T b );				// Componentwise max( x, b )
+	Vector< T, n > max( const Vector< T, n > &a, T b );
+	/**
+	 * Componentwise min( a, b )
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > min( const Vector< T, n > &a, const Vector< T, n > &b );	// Componentwise min( xa, xb )
+	Vector< T, n > min( const Vector< T, n > &a, const Vector< T, n > &b );
+	/**
+	 * Componentwise max( a, b )
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > max( const Vector< T, n > &a, const Vector< T, n > &b );	// Componentwise max( xa, xb )
+	Vector< T, n > max( const Vector< T, n > &a, const Vector< T, n > &b );
+	/** 
+	 * Componentwise abs( a )
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > abs( const Vector< T, n > &a );					// Componentwise abs
+	Vector< T, n > abs( const Vector< T, n > &a );
+	/**
+	 * Componentwise clamp( a, mini, maxi )
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > clamp( const Vector< T, n > &a, T min, T max );	// Componentwise clamp( x, min, max )	
+	Vector< T, n > clamp( const Vector< T, n > &a, T mini, T maxi );
+	/**
+	 * Componentwise saturate, so clamp( a, 0, 1 )
+	 */
 	template< typename T, i32_t n >
-	Vector< T, n > saturate( const Vector< T, n > &a );				// Componentwise saturate, so clamp( x, 0, 1 )
+	Vector< T, n > saturate( const Vector< T, n > &a );
+	/**
+	 * Linear interpolation based on t.
+	 */
 	template< typename T, i32_t n, typename T_t >
-	Vector< T, n > lerp( const Vector< T, n > &min, const Vector< T, n > &max, T_t t );	// Componentwise lerp based on t
+	Vector< T, n > lerp( const Vector< T, n > &min, const Vector< T, n > &max, T_t t );
+	/**
+	 * Returns the smallest component.
+	 */
 	template< typename T, i32_t n >
-	T minComponent( const Vector< T, n > &a );			// Returns the smalles component
+	T minComponent( const Vector< T, n > &a );
+	/**
+	 * Returns the largest component.
+	 */
 	template< typename T, i32_t n >
-	T maxComponent( const Vector< T, n > &a );			// Returns the largest component
-
-	// Functions. This is essentially operators on arrays of vectors.
-	// @TODO: Vector functions
-
-	// SIMD functions (AOSOA version of things)
-	// @TODO: SIMD vector functions
-
+	T maxComponent( const Vector< T, n > &a );
 	
-
 	//---------------------------
 	// Definitions
 	//

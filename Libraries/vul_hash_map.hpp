@@ -12,11 +12,19 @@
  * For fast, good hash functions, these should be equivalent:
  *  - http://www.azillionmonkeys.com/qed/hash.html : LGPL 2.1
  *  - http://burtleburtle.net/bob/c/lookup3.c : Public Domain
- * There is also SpookyHash, which is a lot faster, but 64-bit only:
- *  - http://burtleburtle.net/bob/hash/spooky.html : Publidc Domain
+ * There is also SpookyHash, which is a faster, but 64-bit only:
+ *  - http://burtleburtle.net/bob/hash/spooky.html : Public Domain
  * 
  * ¹ If public domain is not legally valid in your country and or legal area,
  *   the MIT licence applies (see the LICENCE file)
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 #ifndef VUL_hash_map_t_HPP
 #define VUL_hash_map_t_HPP

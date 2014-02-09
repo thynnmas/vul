@@ -17,6 +17,7 @@
 #define VUL_VECTOR_HPP
 
 #include "vul_types.hpp"
+#include "vul_point.hpp"
 #include <assert.h>
 
 /**
@@ -29,10 +30,7 @@ namespace vul {
 	//----------------
 	// Declarations
 	//
-
-	template< typename T, i32_t n >
-	struct Point;
-
+	
 	// Generic Definitions
 	template< typename T, i32_t n >
 	struct Vector {
@@ -412,7 +410,7 @@ namespace vul {
 	template< typename T, i32_t n >
 	Vector< T, n > max( const Vector< T, n > &a, const Vector< T, n > &b );
 	/** 
-	 * Componentwise abs( a )
+	 * Componentwise std::abs( a )
 	 */
 	template< typename T, i32_t n >
 	Vector< T, n > abs( const Vector< T, n > &a );
@@ -1145,7 +1143,7 @@ namespace vul {
 	template< typename T >
 	Vector< T, 3 > cross( const Vector< T, 3 > &a, const Vector< T, 3 > &b )
 	{
-		Vector< T, n > v;
+		Vector< T, 3 > v;
 		
 		v[ 0 ] = ( a[ 1 ] * b[ 2 ] ) - ( b[ 1 ] * a[ 2 ] );
 		v[ 1 ] = ( a[ 2 ] * b[ 0 ] ) - ( b[ 2 ] * a[ 0 ] );

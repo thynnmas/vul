@@ -22,6 +22,9 @@
 
 namespace vul {
 	
+	template< typename T, i32_t n >
+	struct Vector;
+
 	//----------------
 	// Declarations
 	//

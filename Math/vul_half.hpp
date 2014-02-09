@@ -31,17 +31,14 @@
 //#define VUL_HALF_SSE // @TODO: Fix this; doesn't work atm.
 
 namespace vul {
+	
+	template< int Q >
+	struct fixed_32;
 
 	//----------------
 	// Declarations
 	//
-
-	template< int Q >
-	struct fixed_32;
-
-	template< int Q >
-	struct fixed_64;
-
+	
 	struct half {
 		unsigned short data;
 
@@ -54,14 +51,10 @@ namespace vul {
 		explicit half( double a );
 		template< int Q >
 		explicit half( fixed_32< Q > a );
-		template< int Q >
-		explicit half( fixed_64< Q > a );
 		operator float( ) const;
 		operator double( ) const;
 		template< int Q >
 		operator fixed_32< Q >( ) const;
-		template< int Q >
-		operator fixed_64< Q >( ) const;
 
 		half& operator=( half rhs );
 		half& operator+=( half rhs );
@@ -113,7 +106,6 @@ namespace vul {
 	half operator-( half a );
 #endif
 
-	// We extend fabs
 	half abs( half a );
 
 	// Mass conversion functions. These use 4-wide SSE if VUL_HALF_SSE are defined. @TODO: 8-wide SSE!
@@ -178,12 +170,6 @@ namespace vul {
 		// @TODO: I've been lazy here. Write a proper conversion from fixed_32 and test if faster!
 		*this = half( ( float )a );
 	}
-	template< int Q >
-	half::half( fixed_64< Q > a )
-	{
-		// @TODO: I've been lazy here. Write a proper conversion from fixed_64 and test if faster!
-		*this = half( ( float )a );
-	}
 	half::operator float( ) const
 	{
 #if defined( VUL_HALF_TABLE )
@@ -233,12 +219,6 @@ namespace vul {
 	{
 		// @TODO: I've been lazy here. Write a proper conversion to fixed_32 and test if it is faster!
 		return fixed32< Q >( ( float )*this );
-	}
-	template< int Q >
-	half::operator fixed_64< Q >( ) const
-	{
-		// @TODO: I've been lazy here. Write a proper conversion to fixed_64 and test if it is faster!
-		return fixed64< Q >( ( float )*this );
 	}
 
 	half& half::operator=( half rhs )
@@ -546,7 +526,7 @@ namespace vul {
 	}
 #endif
 	
-	half fabs( half a )
+	half abs( half a )
 	{
 		half r;
 		

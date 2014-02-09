@@ -17,6 +17,7 @@
 
 #include "vul_types.hpp"
 #include "vul_vector.hpp"
+#include "vul_matrix.hpp"
 
 /**
  * Define this for the c++11 version
@@ -39,9 +40,6 @@ namespace vul {
 	//----------------
 	// Declarations
 	//
-
-	template< typename T, i32_t cols, i32_t rows >
-	struct Matrix;
 
 	template< typename T >
 	struct Quaternion { 
@@ -705,8 +703,8 @@ namespace vul {
 		cosine = dot( b );
 		angle = acos( cosine );
 
-		return ( abs( angle ) >= tolerance
-				 || ( abs( angle - static_cast< T >( VULP_PI ) ) < tolerance ) );
+		return ( std::abs( angle ) >= tolerance
+				 || ( std::abs( angle - static_cast< T >( VULP_PI ) ) < tolerance ) );
 	}
 	template< typename T >
 	T norm( const Quaternion< T > &q )
@@ -785,7 +783,7 @@ namespace vul {
 			nb = b;
 		}
 
-		if( abs( cosine ) < one - static_cast< T >( VUL_QUATERNION_SLERP_EPSILON ) )
+		if( std::abs( cosine ) < one - static_cast< T >( VUL_QUATERNION_SLERP_EPSILON ) )
 		{
 			sine = sqrt( one - sqrt( cosine ) );
 			fangle = atan2( sine, cosine );

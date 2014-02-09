@@ -104,7 +104,6 @@ namespace vul {
 	template< int Q >
 	fixed_32< Q > const operator-( fixed_32< Q > a );
 	
-	// We extend fabs
 	template< int Q >
 	fixed_32< Q > abs( fixed_32< Q > a );
 
@@ -446,11 +445,11 @@ namespace vul {
 		return r;
 	}
 	template< int Q >
-	fixed_32< Q > fabs( fixed_32< Q > a )
+	fixed_32< Q > abs( fixed_32< Q > a )
 	{
 		fixed_32< Q > r;
 		
-		r.data = abs( r.data );
+		r.data = std::abs( r.data );
 
 		return r;
 	}

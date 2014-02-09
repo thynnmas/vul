@@ -8,6 +8,7 @@
  *		-SIMD functions for more things
  *		-Linear solvers
  *		-64-bit Q32 & Q12 fixed types.
+ *		-Faster matrix multiplication for large matrices.
  * 
  * ¹ If public domain is not legally valid in your country and or legal area,
  *   the MIT licence applies (see the LICENCE file)

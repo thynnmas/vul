@@ -116,7 +116,7 @@ namespace vul {
 
 	half abs( half a );
 
-	// Mass conversion functions. These use 4-wide SSE if VUL_HALF_SSE are defined. @TODO: 8-wide SSE!
+	// Mass conversion functions. These use 4-wide SSE if VUL_HALF_SSE are defined.
 	void vul_single_to_half_array( half *out, float *in, unsigned int count );
 	void vul_half_to_single_array( float *out, half *in, unsigned int count );
 	

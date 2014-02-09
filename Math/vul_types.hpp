@@ -18,8 +18,8 @@
 #ifndef VUL_TYPES_HPP
 #define VUL_TYPES_HPP
 
-#include "vul_half.hpp" // @TODO: Half precision float
-#include "vul_fixed.hpp" // @TODO: Fixed precision for 64 and 32 bits (48.16 / 24.8)
+#include "vul_half.hpp"
+#include "vul_fixed.hpp"
 
 namespace vul {
 

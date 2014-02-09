@@ -1006,7 +1006,6 @@ namespace vul {
 	template< typename T, i32_t cola, i32_t shared, i32_t colb >
 	Matrix< T, cola, colb > operator*( const Matrix< T, cola, shared >& a, const Matrix< T, shared, colb > &b )
 	{
-		// @TODO: Faster algorithm, especially for larger matrices!
 		Matrix< T, cola, colb > m;
 		i32_t i, j, k;
 		T sum;
@@ -1357,11 +1356,6 @@ namespace vul {
 		return v;
 	}
 
-	// @TODO: Matrix functions (mass multiplications, faster multiplication techniques, linear solvers!)
-
-
-	// @TODO: SIMD functions	
-	
 	// Helper function to speed up determinant calculation
 	template< typename T, i32_t cols, i32_t rows > // Helper function. Counts the number of zeros in each column, returning a the index of the column with most zeroes
 	vul_matrix_zero_helper vul_matrix_find_most_zero( const Matrix< T, cols, rows > &mat )

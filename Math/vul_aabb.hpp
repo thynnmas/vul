@@ -254,9 +254,10 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
-				corner[ j ] = ( ( j & ( 1 << ( j - 1 ) ) ) != 0 ) ? aabb._max[ j ] : aabb._min[ j ];
+				ui32_t t = ( i & ( 1 << j ) );
+				corner[ j ] = ( ( i & ( 1 << j ) ) != 0 ) ? aabb._max[ j ] : aabb._min[ j ];
 			}
-			corner = a * corner;
+			corner = ( a * corner ) + a.vec;
 			newmin = min( newmin, corner );
 			newmax = max( newmax, corner );
 		}
@@ -284,7 +285,6 @@ namespace vul {
 	template< typename T, i32_t n >
 	bool inside( const AABB< T, n > &aabb, const Point< T, n > &pt )
 	{
-		// @TODO: Check everywhere if we might need to use fabs or is std::abs handles it. Possibly define our own templated abs that delegates to abs, fabs or our halfabs
 		return all(									// Are all coordinates'
 					abs( pt - center( aabb ) )		// distance to the center
 					<=								// smaller than or equal to
@@ -303,6 +303,7 @@ namespace vul {
 	// AOSOA SSE functions
 	// These are specializations for vectors of sse types (see vul_aosoa.hpp)
 	//
+	/* @TODO: These don't agree with transform(); test both and check which is right! */
 	void transform3D( AABB< __m128, 3 > *out, const AABB< __m128, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count )
 	{
 		ui32_t i, j, simdCount;
@@ -311,7 +312,7 @@ namespace vul {
 		// Fill the matrix from the Affine
 		for( i = 0; i < 3; ++i ) {
 			for( j = 0;j < 3; ++j ) {
-				mat[ i ][ j ] = _mm_set1_ps( trans.mat( i, j ) );
+				mat[ i ][ j ] = _mm_set1_ps( trans.mat( j, i ) );
 			}
 		}
 		mat[ 3 ][ 0 ] = _mm_set1_ps( trans.vec[ 0 ] );
@@ -374,7 +375,7 @@ namespace vul {
 		// Fill the matrix from the Affine
 		for( i = 0; i < 3; ++i ) {
 			for( j = 0;j < 3; ++j ) {
-				mat[ i ][ j ] = _mm_set1_pd( trans.mat( i, j ) );
+				mat[ i ][ j ] = _mm_set1_pd( trans.mat( j, i ) );
 			}
 		}
 		mat[ 3 ][ 0 ] = _mm_set1_pd( trans.vec[ 0 ] );
@@ -438,7 +439,7 @@ namespace vul {
 		// Fill the matrix from the Affine
 		for( i = 0; i < 3; ++i ) {
 			for( j = 0;j < 3; ++j ) {
-				mat[ i ][ j ] = _mm256_set1_ps( trans.mat( i, j ) );
+				mat[ i ][ j ] = _mm256_set1_ps( trans.mat( j, i ) );
 			}
 		}
 		mat[ 3 ][ 0 ] = _mm256_set1_ps( trans.vec[ 0 ] );
@@ -449,12 +450,12 @@ namespace vul {
 		simdCount = ( count + 7 ) / 8;
 		for( i = 0; i < simdCount; ++i )
 		{
-			__m256 xNewMinis = {  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX };
-			__m256 xNewMaxes = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
-			__m256 yNewMinis = {  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX };
-			__m256 yNewMaxes = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
-			__m256 zNewMinis = {  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX };
-			__m256 zNewMaxes = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
+			__m256 xNewMinis = {  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX };
+			__m256 xNewMaxes = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
+			__m256 yNewMinis = {  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX };
+			__m256 yNewMaxes = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
+			__m256 zNewMinis = {  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX };
+			__m256 zNewMaxes = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
 			for( j = 0; j < 8; ++j )
 			{
@@ -502,7 +503,7 @@ namespace vul {
 		// Fill the matrix from the Affine
 		for( i = 0; i < 3; ++i ) {
 			for( j = 0;j < 3; ++j ) {
-				mat[ i ][ j ] = _mm256_set1_pd( trans.mat( i, j ) );
+				mat[ i ][ j ] = _mm256_set1_pd( trans.mat( j, i ) );
 			}
 		}
 		mat[ 3 ][ 0 ] = _mm256_set1_pd( trans.vec[ 0 ] );
@@ -513,12 +514,12 @@ namespace vul {
 		simdCount = ( count + 3) / 4;
 		for( i = 0; i < simdCount; ++i )
 		{
-			__m256d xNewMinis = {  DBL_MAX,  DBL_MAX };
-			__m256d xNewMaxes = { -DBL_MAX, -DBL_MAX };
-			__m256d yNewMinis = {  DBL_MAX,  DBL_MAX };
-			__m256d yNewMaxes = { -DBL_MAX, -DBL_MAX };
-			__m256d zNewMinis = {  DBL_MAX,  DBL_MAX };
-			__m256d zNewMaxes = { -DBL_MAX, -DBL_MAX };
+			__m256d xNewMinis = {  DBL_MAX,  DBL_MAX,  DBL_MAX,  DBL_MAX };
+			__m256d xNewMaxes = { -DBL_MAX, -DBL_MAX, -DBL_MAX, -DBL_MAX };
+			__m256d yNewMinis = {  DBL_MAX,  DBL_MAX,  DBL_MAX,  DBL_MAX };
+			__m256d yNewMaxes = { -DBL_MAX, -DBL_MAX, -DBL_MAX, -DBL_MAX };
+			__m256d zNewMinis = {  DBL_MAX,  DBL_MAX,  DBL_MAX,  DBL_MAX };
+			__m256d zNewMaxes = { -DBL_MAX, -DBL_MAX, -DBL_MAX, -DBL_MAX };
 
 			for( j = 0; j < 8; ++j )
 			{

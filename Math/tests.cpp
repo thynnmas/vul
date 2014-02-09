@@ -1,3 +1,20 @@
+/*
+ * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ *
+ * @TODO: Proper tests:
+ * We try to test all categories for all cases, and all edge cases 
+ * against static, precalculated results. In  addition, we use the
+ * current system time as a seed and test a not insignificant number
+ * of random cases against a reference implementation (glm as of now).
+ * The hope is that everyone runs the tests a few runs before trusting 
+ * our library and that we get good coverage this way.
+ * If the fuzzing fails, the seed is provided in output; please supply
+ * this with the bug report so we can reproduce.
+ * 
+ * ¹ If public domain is not legally valid in your country and or legal area,
+ *   the MIT licence applies (see the LICENCE file)
+ */
+
 #ifdef VUL_TEST
 
 #include <stdlib.h>
@@ -550,11 +567,16 @@ struct RNG
 	}
 };
 
+void test_quats( )
+{
+	// @TODO: Test quaternions!
+}
+
 #include "vul_timer.hpp"
 #include "vul_aosoa.hpp"
 void bench_aabbs( )
 {
-#define COUNT 10000
+#define COUNT 1024
 #define ITERATIONS 100
 	AABB< f32_t, 3 > *aabbs, *outs, *outs_aosoa,  *outs_aosoaw;
 	Affine< f32_t, 3 > trans;
@@ -574,8 +596,8 @@ void bench_aabbs( )
 	aosoa_aabbs = static_cast< AABB< __m128, 3 >* >( _aligned_malloc( sizeof( AABB< __m128, 3 > ) * ( COUNT / 4 ), 16 ) );
 	aosoa_outs = static_cast< AABB< __m128, 3 >* >( _aligned_malloc( sizeof( AABB< __m128, 3 > ) * ( COUNT / 4 ), 16 ) );
 
-	aosoa_aabbsw = static_cast< AABB< __m256, 3 >* >( _aligned_malloc( sizeof( AABB< __m256, 3 > ) * ( COUNT / 4 ), 32 ) );
-	aosoa_outsw = static_cast< AABB< __m256, 3 >* >( _aligned_malloc( sizeof( AABB< __m256, 3 > ) * ( COUNT / 4 ), 32 ) );
+	aosoa_aabbsw = static_cast< AABB< __m256, 3 >* >( _aligned_malloc( sizeof( AABB< __m256, 3 > ) * ( COUNT / 8 ), 32 ) );
+	aosoa_outsw = static_cast< AABB< __m256, 3 >* >( _aligned_malloc( sizeof( AABB< __m256, 3 > ) * ( COUNT / 8 ), 32 ) );
 
 	rng.seed( 47 );
 	// Fill with random data.
@@ -658,25 +680,30 @@ void bench_aabbs( )
 				tTrans / 1000LL, tTrans % 1000LL, 
 				tUnpack / 1000LL, tUnpack % 1000LL );
 	// Check that we agree!
-	/*
+	
 	float absEpsilon = 1e-5f;
 	float relEpsilon = 1e-5f;
 	for( i = 0; i < COUNT; ++i )
 	{
-		if( fabs( outs[ i ]._min[ 0 ] - outs_aosoa[ i ]._min[ 0 ] ) > max( absEpsilon, relEpsilon * fabs( outs[ i ]._min[ 0 ] ) ) ||
-			fabs( outs[ i ]._min[ 1 ] - outs_aosoa[ i ]._min[ 1 ] ) > max( absEpsilon, relEpsilon * fabs( outs[ i ]._min[ 1 ] ) ) ||
-			fabs( outs[ i ]._min[ 2 ] - outs_aosoa[ i ]._min[ 2 ] ) > max( absEpsilon, relEpsilon * fabs( outs[ i ]._min[ 2 ] ) ) ||
-			fabs( outs[ i ]._max[ 0 ] - outs_aosoa[ i ]._max[ 0 ] ) > max( absEpsilon, relEpsilon * fabs( outs[ i ]._max[ 0 ] ) ) ||
-			fabs( outs[ i ]._max[ 1 ] - outs_aosoa[ i ]._max[ 1 ] ) > max( absEpsilon, relEpsilon * fabs( outs[ i ]._max[ 1 ] ) ) ||
-			fabs( outs[ i ]._max[ 2 ] - outs_aosoa[ i ]._max[ 2 ] ) > max( absEpsilon, relEpsilon * fabs( outs[ i ]._max[ 2 ] ) ) )
+		if( std::abs( outs[ i ]._min[ 0 ] - outs_aosoa[ i ]._min[ 0 ] ) > max( absEpsilon, relEpsilon * std::abs( outs[ i ]._min[ 0 ] ) ) ||
+			std::abs( outs[ i ]._min[ 1 ] - outs_aosoa[ i ]._min[ 1 ] ) > max( absEpsilon, relEpsilon * std::abs( outs[ i ]._min[ 1 ] ) ) ||
+			std::abs( outs[ i ]._min[ 2 ] - outs_aosoa[ i ]._min[ 2 ] ) > max( absEpsilon, relEpsilon * std::abs( outs[ i ]._min[ 2 ] ) ) ||
+			std::abs( outs[ i ]._max[ 0 ] - outs_aosoa[ i ]._max[ 0 ] ) > max( absEpsilon, relEpsilon * std::abs( outs[ i ]._max[ 0 ] ) ) ||
+			std::abs( outs[ i ]._max[ 1 ] - outs_aosoa[ i ]._max[ 1 ] ) > max( absEpsilon, relEpsilon * std::abs( outs[ i ]._max[ 1 ] ) ) ||
+			std::abs( outs[ i ]._max[ 2 ] - outs_aosoa[ i ]._max[ 2 ] ) > max( absEpsilon, relEpsilon * std::abs( outs[ i ]._max[ 2 ] ) ) )
 		{
-			printf( "Mismatch( %d ):\n   ( %f %f %f )x( %f %f %f )\n != ( %f %f %f )x( %f %f %f )\n", i, 
-				outs[ i ]._min[ 0 ], outs[ i ]._min[ 1 ], outs[ i ]._min[ 2 ],
-				outs[ i ]._max[ 0 ], outs[ i ]._max[ 1 ], outs[ i ]._max[ 2 ],
-				outs_aosoa[ i ]._min[ 0 ], outs_aosoa[ i ]._min[ 1 ], outs_aosoa[ i ]._min[ 2 ],
-				outs_aosoa[ i ]._max[ 0 ], outs_aosoa[ i ]._max[ 1 ], outs_aosoa[ i ]._max[ 2 ] );
+			printf( "Mismatch in SSE 4-wide\n" );
 		}
-	}*/
+		if( std::abs( outs[ i ]._min[ 0 ] - outs_aosoaw[ i ]._min[ 0 ] ) > max( absEpsilon, relEpsilon * std::abs( outs[ i ]._min[ 0 ] ) ) ||
+			std::abs( outs[ i ]._min[ 1 ] - outs_aosoaw[ i ]._min[ 1 ] ) > max( absEpsilon, relEpsilon * std::abs( outs[ i ]._min[ 1 ] ) ) ||
+			std::abs( outs[ i ]._min[ 2 ] - outs_aosoaw[ i ]._min[ 2 ] ) > max( absEpsilon, relEpsilon * std::abs( outs[ i ]._min[ 2 ] ) ) ||
+			std::abs( outs[ i ]._max[ 0 ] - outs_aosoaw[ i ]._max[ 0 ] ) > max( absEpsilon, relEpsilon * std::abs( outs[ i ]._max[ 0 ] ) ) ||
+			std::abs( outs[ i ]._max[ 1 ] - outs_aosoaw[ i ]._max[ 1 ] ) > max( absEpsilon, relEpsilon * std::abs( outs[ i ]._max[ 1 ] ) ) ||
+			std::abs( outs[ i ]._max[ 2 ] - outs_aosoaw[ i ]._max[ 2 ] ) > max( absEpsilon, relEpsilon * std::abs( outs[ i ]._max[ 2 ] ) ) )
+		{
+			printf( "Mismatch in SSE 8-wide\n" );
+		}
+	}
 
 	delete [] aabbs;
 	delete [] outs;
@@ -706,9 +733,13 @@ int main( int argc, char **argv )
 	printf( "\nTesting AABBs\n" );
 	test_aabb( );
 	// @TODO: Test quaternions
+	printf( "\nTesting quaternions\n" );
+	test_quats( );
 
+	printf( "\nBenchmarking AABB transforms\n" );
 	bench_aabbs( );
 	
+	printf( "\nDone. Enter to close.\n" );
 	// Wait for input
 	char buffer[ 1024 ];
 	gets_s( buffer, 1024 );

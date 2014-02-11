@@ -295,7 +295,7 @@ namespace vul {
 	template< typename T, i32_t n >
 	Point< T, n > center( const AABB< T, n > &aabb )
 	{
-		return ( aabb._max + aabb._min ) * static_cast< T >( 0.5f );
+		return ( ( aabb._max.as_vec( ) + aabb._min.as_vec( ) ) * static_cast< T >( 0.5f ) ).as_point( );
 	}
 
 	template< typename T, i32_t n >

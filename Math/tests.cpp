@@ -13,6 +13,14 @@
  * 
  * ¹ If public domain is not legally valid in your country and or legal area,
  *   the MIT licence applies (see the LICENCE file)
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 #ifdef VUL_TEST
@@ -635,7 +643,7 @@ void bench_aabbs( )
 	t.reset( );
 	for( j = 0; j < ITERATIONS; ++j )
 	{
-		pack< 3 >( aosoa_aabbs, aabbs, ( ui32_t )COUNT );
+		pack( aosoa_aabbs, aabbs, ( ui32_t )COUNT );
 	}
 	tPack = t.milliseconds( );
 	t.reset( );
@@ -647,7 +655,7 @@ void bench_aabbs( )
 	t.reset( );
 	for( j = 0; j < ITERATIONS; ++j )
 	{
-		unpack< 3 >( outs_aosoa, aosoa_outs, COUNT );
+		unpack( outs_aosoa, aosoa_outs, COUNT );
 	}
 	tUnpack = t.milliseconds( );
 	printf( "SSE:%llu.%04llus (pack: %llu.%04llus, trans: %llu.%04llus, unpack: %llu.%04llus )\n",

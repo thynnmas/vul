@@ -288,8 +288,8 @@ namespace vul {
 	{
 		ui32_t simdCount, i, j;
 		 __m128 mini[ n ], maxi[ n ];
-		 Vector< __m128, n > _CRT_ALIGN(16) vmin;
-		 Vector< __m128, n > _CRT_ALIGN(16) vmax;
+		 Point< __m128, n > _CRT_ALIGN(16) vmin;
+		 Point< __m128, n > _CRT_ALIGN(16) vmax;
 		
 		simdCount = ( count + 3 ) / 4;
 		for( i = 0; i < simdCount; ++i )
@@ -305,8 +305,8 @@ namespace vul {
 									    in[ i * 4 + 2 ]._max[ j ], 
 									    in[ i * 4 + 3 ]._max[ j ] );
 			}
-			vmin = makeVector< __m128, n >( mini );
-			vmax = makeVector< __m128, n >( maxi );
+			vmin = makePoint< __m128, n >( mini );
+			vmax = makePoint< __m128, n >( maxi );
 			out[ i ] = makeAABB< __m128, n >( vmin, vmax );
 		}
 	}
@@ -315,8 +315,8 @@ namespace vul {
 	{
 		ui32_t simdCount, i, j;
 		__m128d mini[ n ], maxi[ n ];
-		 Vector< __m128d, n > _CRT_ALIGN(16) vmin;
-		 Vector< __m128d, n > _CRT_ALIGN(16) vmax;
+		 Point< __m128d, n > _CRT_ALIGN(16) vmin;
+		 Point< __m128d, n > _CRT_ALIGN(16) vmax;
 		
 		simdCount = ( count + 1 ) / 2;
 		for( i = 0; i < simdCount; ++i )
@@ -328,8 +328,8 @@ namespace vul {
 				maxi[ j ] = _mm_set_pd( in[ i * 2     ]._max[ j ], 
 									    in[ i * 2 + 1 ]._max[ j ] );
 			}
-			vmin = makeVector< __m128d, n >( mini );
-			vmax = makeVector< __m128d, n >( maxi );
+			vmin = makePoint< __m128d, n >( mini );
+			vmax = makePoint< __m128d, n >( maxi );
 			out[ i ] = makeAABB< __m128d, n >( vmin, vmax );
 		}
 	}
@@ -338,8 +338,8 @@ namespace vul {
 	{
 		ui32_t simdCount, i, j;
 		__m256 mini[ n ], maxi[ n ];
-		 Vector< __m256, n > _CRT_ALIGN(32) vmin;
-		 Vector< __m256, n > _CRT_ALIGN(32) vmax;
+		 Point< __m256, n > _CRT_ALIGN(32) vmin;
+		 Point< __m256, n > _CRT_ALIGN(32) vmax;
 		
 		simdCount = ( count + 7 ) / 8;
 		for( i = 0; i < simdCount; ++i )
@@ -363,8 +363,8 @@ namespace vul {
 									       in[ i * 8 + 6 ]._max[ j ], 
 									       in[ i * 8 + 7 ]._max[ j ] );
 			}
-			vmin = makeVector< __m256, n >( mini );
-			vmax = makeVector< __m256, n >( maxi );
+			vmin = makePoint< __m256, n >( mini );
+			vmax = makePoint< __m256, n >( maxi );
 			out[ i ] = makeAABB< __m256, n >( vmin, vmax );
 		}
 	}
@@ -373,8 +373,8 @@ namespace vul {
 	{
 		ui32_t simdCount, i, j;
 		__m256d mini[ n ], maxi[ n ];
-		 Vector< __m256d, n > _CRT_ALIGN(32) vmin;
-		 Vector< __m256d, n > _CRT_ALIGN(32) vmax;
+		 Point< __m256d, n > _CRT_ALIGN(32) vmin;
+		 Point< __m256d, n > _CRT_ALIGN(32) vmax;
 		
 		simdCount = ( count + 3 ) / 4;
 		for( i = 0; i < simdCount; ++i )
@@ -390,8 +390,8 @@ namespace vul {
 									       in[ i * 4 + 2 ]._max[ j ], 
 									       in[ i * 4 + 3 ]._max[ j ] );
 			}
-			vmin = makeVector< __m256d, n >( mini );
-			vmax = makeVector< __m256d, n >( maxi );
+			vmin = makePoint< __m256d, n >( mini );
+			vmax = makePoint< __m256d, n >( maxi );
 			out[ i ] = makeAABB< __m256d, n >( vmin, vmax );
 		}
 	}

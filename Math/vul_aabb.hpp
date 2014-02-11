@@ -21,6 +21,7 @@
 #include "vul_types.hpp"
 #include "vul_vector.hpp"
 #include "vul_matrix.hpp"
+#include "vul_affine.hpp"
 
 /**
  * Define this for the c++11 version
@@ -35,12 +36,13 @@ namespace vul {
 
 	template< typename T, i32_t n >
 	struct AABB {
-		Vector< T, n > _min;
-		Vector< T, n > _max;
+		Point< T, n > _min;
+		Point< T, n > _max;
 
 #ifdef VUL_CPLUSPLUS11
 		constexpr AABB< T, n >( );
 		explicit AABB< T, n >( const Vector< T, n > &mini, const Vector< T, n > &maxi );
+		explicit AABB< T, n >( const Point< T, n > &mini, const Point< T, n > &maxi );
 		explicit AABB< T, n >( T (& a)[ n ] );
 		explicit AABB< T, n >( f32_t[ n ] a );
 		explicit AABB< T, n >( i32_t[ n ] a );
@@ -68,7 +70,7 @@ namespace vul {
 	 * Returns the center of an AABB
 	 */
 	template< typename T, i32_t n >
-	Vector< T, n > center( const AABB< T, n > &aabb );
+	Point< T, n > center( const AABB< T, n > &aabb );
 	/** 
 	 * Returns half the extent of an AABB,
 	 * so corners are described by center( aabb ) +- extent( aabb ).
@@ -80,16 +82,12 @@ namespace vul {
 	 */
 	template< typename T, i32_t n >
 	bool inside( const AABB< T, n > &aabb, const Point< T, n > &pt );
-	/**
-	 * Tests if a vector (interpreted as a point) is inside an AABB. Not sensible for vectors, but useful
-	 * for speed in systems where points are represented with vectors.
-	 */
-	template< typename T, i32_t n >
-	bool inside( const AABB< T, n > &aabb, const Vector< T, n > &vec );
 
 #ifndef VUL_CPLUSPLUS11
 	template< typename T, i32_t n >
 	AABB< T, n > makeAABB( );
+	template< typename T, i32_t n >
+	AABB< T, n > makeAABB( const Point< T, n > &mini, const Point< T, n > &maxi );
 	template< typename T, i32_t n >
 	AABB< T, n > makeAABB( const Vector< T, n > &mini, const Vector< T, n > &maxi );
 	template< typename T, i32_t n >
@@ -144,6 +142,12 @@ namespace vul {
 		_max = maxi;
 	}
 	template< typename T, i32_t n >
+	AABB< T, n >::AABB( const Vector< T, n > &mini, const Vector< T, n > &maxi )
+	{
+		_min = mini.as_point( );
+		_max = maxi.as_point( );
+	}
+	template< typename T, i32_t n >
 	AABB< T, n >::AABB( T (& a)[ n * 2 ] )
 	{
 		_min = Point< T, n >( a );
@@ -169,12 +173,22 @@ namespace vul {
 		_max = Point< T, n >( T( 0.f ) );
 	}
 	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( const Vector< T, n > &mini, const Vector< T, n > &maxi )
+	AABB< T, n > makeAABB( const Point< T, n > &mini, const Point< T, n > &maxi )
 	{
 		AABB< T, n > aabb;
 
 		aabb._min = mini;
 		aabb._max = maxi;
+
+		return aabb;
+	}
+	template< typename T, i32_t n >
+	AABB< T, n > makeAABB( const Vector< T, n > &mini, const Vector< T, n > &maxi )
+	{
+		AABB< T, n > aabb;
+
+		aabb._min = mini.as_point( );
+		aabb._max = maxi.as_point( );
 
 		return aabb;
 	}
@@ -279,7 +293,7 @@ namespace vul {
 	}
 	
 	template< typename T, i32_t n >
-	Vector< T, n > center( const AABB< T, n > &aabb )
+	Point< T, n > center( const AABB< T, n > &aabb )
 	{
 		return ( aabb._max + aabb._min ) * static_cast< T >( 0.5f );
 	}
@@ -298,15 +312,7 @@ namespace vul {
 					<=								// smaller than or equal to
 					abs( extent( aabb ) ) );		// the size of the extent
 	}
-	template< typename T, i32_t n >
-	bool inside( const AABB< T, n > &aabb, const Vector< T, n > &vec )
-	{
-		return all(									// Are all coordinates'
-					abs( vec - center( aabb ) )		// distance to the center
-					<=								// smaller than or equal to
-					abs( extent( aabb ) ) );		// the size of the extent
-	}
-
+	
 	//--------------------------
 	// AOSOA SSE functions
 	// These are specializations for vectors of sse types (see vul_aosoa.hpp)

@@ -1,13 +1,30 @@
 /*
  * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
  *
- * @TODO: Description.
+ * A scalar linear math library containing Vectors, Matrices, Points, Quaternions, AABBs
+ * general affine transformations as well as fixed and half precision floating point types.
+ *
+ * The library contains both a C++11 version and a C++99-version, the primary difference
+ * being the way we construct our types. The C++11 style uses normal constructors:
+ *		Vector< f32_t, 3 > foo( a, b, c );
+ *		foo = Vector< f32_t, 3 >( a );
+ * while the C++99-version uses a function style:
+ *		Vector< f32_t, 3 > foo = makeVector< f32_t >( a, b, c );
+ *		foo = makeVector< f32_t, 3 >( a );
+ *
+ * For SIMD work on our vectors we use an AOSOA architecture; we pack 2-8 vectors into
+ * vectors of simd types, f.e. 4 Vector< f32_t, 3 >s into 1 Vector< __m128, 3 >, then operate
+ * on those.
+ *
+ * Library format inspired by http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/
+ * 
  * @TODO: Test C++11 version. Test other compilers!
- * @TODO: Todo list:
+ * @TODO: Planned features:
  *		-Write proper test funciton; exhaustive half-testing and proper other tests.
+ *		 See the comment in tests.cpp of the exact plan.
  *		-SIMD functions for more things
  *		-Linear solvers
- *		-64-bit Q32 & Q12 fixed types.
+ *		-64-bit fixed type
  *		-Faster matrix multiplication for large matrices.
  * 
  * ¹ If public domain is not legally valid in your country and or legal area,
@@ -28,7 +45,7 @@
 
 #include "vul_aabb.hpp"
 #include "vul_affine.hpp"
-#include "vul_aosoa.hpp"
+#include "vul_aosoa.hpp"		// This is the file where we pack scalar data into SIMD data.
 #include "vul_fixed.hpp"
 #include "vul_half.hpp"
 #include "vul_matrix.hpp"

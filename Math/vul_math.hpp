@@ -26,6 +26,10 @@
  *		-Linear solvers
  *		-64-bit fixed type
  *		-Faster matrix multiplication for large matrices.
+ *		-Specializations for 2-, 3- & 4-vectors with swizzles and
+ *		 .x-style access. Need to duplicate all general vector code per
+ *		 specialization though, so do this in separate files for cleanliness,
+ *		 and use opportunity to write faster functions for these versions.
  * 
  * ¹ If public domain is not legally valid in your country and or legal area,
  *   the MIT licence applies (see the LICENCE file)

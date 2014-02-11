@@ -47,11 +47,11 @@ namespace vul {
 		constexpr Vector< T, n >( );							// Empty constructor
 		explicit Vector< T, n >( T val ); 						// Initialize to single value
 		explicit Vector< T, n >( const Vector< T, n > &vec );	// Copy constructor
-		explicit Vector< T, n >( const T (& a)[ n ] ); 					// Generic array constructor
-		explicit Vector< T, n >( f32_t (& a)[ n ] ); 				// From float arrays, to interface with other libraries
-		explicit Vector< T, n >( i32_t (& a)[ n ] ); 				// From int arrays, to interface with other libraries
+		explicit Vector< T, n >( const T (& a)[ n ] ); 			// Generic array constructor
+		explicit Vector< T, n >( f32_t (& a)[ n ] ); 			// From float arrays, to interface with other libraries
+		explicit Vector< T, n >( i32_t (& a)[ n ] ); 			// From int arrays, to interface with other libraries
 		explicit Vector< T, n >( const Point< T, n > &p );		// Explicit conversion from a point
-		explicit Vector< T, n >( float val ); 						// Initialize to single value from a float
+		explicit Vector< T, n >( float val ); 					// Initialize to single value from a float
 #endif
 		// Operators
 		/**
@@ -112,7 +112,7 @@ namespace vul {
 	};
 	
 	/*
-	// Specializations for 2, 3, 4
+	// @TODO: Specializations for 2, 3, 4
 	template < typename T >
 	struct Vector< T, 2 > { 
 		union { 

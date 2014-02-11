@@ -1,11 +1,8 @@
 /*
  * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
  *
- * A vector math library for generic vectors. Format inspired by 
- * http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/
- * Specializations for 2, 3 & 4 vectors of all reasonable float, fixed
- * int and uint types (not 128bit) are made. Interfaces with the
- * matrices of vul_matrix.h
+ * This file describes generic vectors. Specializations for 2, 3 & 4 vectors of 
+ * all reasonable float, fixed, int and uint types (not 128bit) are made.
  *
  * The vectors are scalar.
  * 
@@ -104,6 +101,14 @@ namespace vul {
 		 * Cosntant indexing opertator.
 		 */
 		T const &operator[ ]( i32_t i ) const;
+		/**
+		 * Cast to point.
+		 */
+		Point< T, n > &as_point( );
+		/**
+		 * Cast to const point.
+		 */
+		const Point< T, n > &as_point( ) const;
 	};
 	
 	/*
@@ -389,9 +394,17 @@ namespace vul {
 
 	/**
 	 * Computes the norm of the vector.
+	 * @NOTE: Returns the value in the type of the vector, meaning for integer vectors, 
+	 * this will be an integer. See fnorm for a norm-function that always returns a float.
 	 */
 	template< typename T, i32_t n >
 	T norm( const Vector< T, n > &a );
+	/**
+	 * Computes the norm of the vector.
+	 * Returns a 32-bit float no matter what type the vector is.
+	 */
+	template< typename T, i32_t n >
+	f32_t fnorm( const Vector< T, n > &a );
 	/**
 	 * Returns a normalized version of the vector. This does not alter the vector itself.
 	 */
@@ -911,6 +924,17 @@ namespace vul {
 		assert( i < n );
 		return data[ i ];
 	}
+
+	template< typename T, i32_t n >
+	Point< T, n > &Vector< T, n >::as_point( )
+	{
+		return reinterpret_cast< Point< T, n > & >( data );
+	}
+	template< typename T, i32_t n >
+	const Point< T, n > &Vector< T, n >::as_point( ) const
+	{
+		return reinterpret_cast< const Point< T, n > & >( data );
+	}
 	
 
 	template< typename T, i32_t n >
@@ -1183,6 +1207,20 @@ namespace vul {
 		res = static_cast< T >( 0 );
 		for( i = 0; i < n; ++i ) {
 			res += a[ i ] * a[ i ];
+		}
+
+		return sqrt( res );
+	}
+
+	template< typename T, i32_t n >
+	f32_t fnorm( const Vector< T, n > &a )
+	{
+		f32_t res;
+		i32_t i;
+
+		res = static_cast< T >( 0 );
+		for( i = 0; i < n; ++i ) {
+			res += ( f32_t )( a[ i ] * a[ i ] );
 		}
 
 		return sqrt( res );

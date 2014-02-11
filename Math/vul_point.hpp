@@ -77,6 +77,14 @@ namespace vul {
 		 * Constant indexing operator.
 		 */
 		T const &operator[ ]( i32_t i ) const;
+		/**
+		 * Cast to a vector
+		 */
+		Vector< T, n > &as_vec( );
+		/**
+		 * Cast to const vector.
+		 */
+		const Vector< T, n > &as_vec( ) const;
 	};
 
 
@@ -423,7 +431,17 @@ namespace vul {
 		assert( i < n );
 		return data[ i ];
 	}
-	
+
+	template< typename T, i32_t n >
+	Vector< T, n > &Point< T, n >::as_vec( )
+	 {
+		 return reinterpret_cast< Vector< T, n > & >( data );
+	}
+	template< typename T, i32_t n >
+	const Vector< T, n > &Point< T, n >::as_vec( ) const
+	 {
+		 return reinterpret_cast< const Vector< T, n > & >( data );
+	}
 	// Operations
 	template< typename T, i32_t n >
 	Vector< bool, n > operator==( const Point< T, n > &a, const Point< T, n > &b )

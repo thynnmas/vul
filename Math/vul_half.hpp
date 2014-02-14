@@ -9,6 +9,8 @@
  * are used for single/half conversions.
  * Otherwise, a slower runtime calculation is done.
  * 
+ * @TODO: Implement table and SSE versions!
+ *
  * ¹ If public domain is not legally valid in your country and or legal area,
  *   the MIT licence applies (see the LICENCE file)
  *

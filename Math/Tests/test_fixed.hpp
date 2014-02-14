@@ -155,67 +155,67 @@ namespace vul_test {
 			rf = ( f32_t )f10_1 + ( f32_t )f10_2;
 			assert( abs( r10 ) > 1 << ( 32 - 10 )
 				 || abs( r10 ) < 1 / pow( 2, 10 )
-				 || r10 - rf < ( 1 / pow( 2, 10 ) + 1e-5 * abs( rf ) );
+				 || abs( r10 - rf ) < ( 1 / pow( 2, 10 ) + 1e-5 * abs( rf ) );
 			r16 = f16_1 + 16_2;
 			rf = ( f32_t )f16_1 + ( f32_t )f16_2;
 			assert( abs( r16 ) > 1 << ( 32 - 16 )
 				 || abs( r16 ) < 1 / pow( 2, 16 )
-				 || r16 - rf < ( 1 / pow( 2, 16 ) + 1e-5 * abs( rf ) );
+				 || abs( r16 - rf ) < ( 1 / pow( 2, 16 ) + 1e-5 * abs( rf ) );
 			r24 = f24_1 + f24_2;
 			rf = ( f32_t )f24_1 + ( f32_t )f24_2;
 			assert( abs( r24 ) > 1 << ( 32 - 24 ) 
 				 || abs( r24 ) < 1 / pow( 2, 24 )
-				 || r24 - rf < ( 1 / pow( 2, 24 ) + 1e-5 * abs( rf ) );
+				 || abs( r24 - rf ) < ( 1 / pow( 2, 24 ) + 1e-5 * abs( rf ) );
 
 			
 			r10 = f10_1 - 10_2;
 			rf = ( f32_t )f10_1 - ( f32_t )f10_2;
 			assert( abs( r10 ) > 1 << ( 32 - 10 )
 				 || abs( r10 ) < 1 / pow( 2, 10 )
-				 || r10 - rf < ( 1 / pow( 2, 10 ) + 1e-5 * abs( rf ) );
+				 || abs( r10 - rf ) < ( 1 / pow( 2, 10 ) + 1e-5 * abs( rf ) );
 			r16 = f16_1 - 16_2;
 			rf = ( f32_t )f16_1 - ( f32_t )f16_2;
 			assert( abs( r16 ) > 1 << ( 32 - 16 )
 				 || abs( r16 ) < 1 / pow( 2, 16 )
-				 || r16 - rf < ( 1 / pow( 2, 16 ) + 1e-5 * abs( rf ) );
+				 || abs( r16 - rf ) < ( 1 / pow( 2, 16 ) + 1e-5 * abs( rf ) );
 			r24 = f24_1 - f24_2;
 			rf = ( f32_t )f24_1 - ( f32_t )f24_2;
 			assert( abs( r24 ) > 1 << ( 32 - 24 ) 
 				 || abs( r24 ) < 1 / pow( 2, 24 )
-				 || r24 - rf < ( 1 / pow( 2, 24 ) + 1e-5 * abs( rf ) );
+				 || abs( r24 - rf ) < ( 1 / pow( 2, 24 ) + 1e-5 * abs( rf ) );
 			
 			r10 = f10_1 * 10_2;
 			rf = ( f32_t )f10_1 * ( f32_t )f10_2;
 			assert( abs( r10 ) > 1 << ( 32 - 10 )
 				 || abs( r10 ) < 1 / pow( 2, 10 )
-				 || r10 - rf < ( 1 / pow( 2, 10 ) + 1e-5 * abs( rf ) );
+				 || abs( r10 - rf ) < ( 1 / pow( 2, 10 ) + 1e-5 * abs( rf ) );
 			r16 = f16_1 * 16_2;
 			rf = ( f32_t )f16_1 * ( f32_t )f16_2;
 			assert( abs( r16 ) > 1 << ( 32 - 16 )
 				 || abs( r16 ) < 1 / pow( 2, 16 )
-				 || r16 - rf < ( 1 / pow( 2, 16 ) + 1e-5 * abs( rf ) );
+				 || abs( r16 - rf ) < ( 1 / pow( 2, 16 ) + 1e-5 * abs( rf ) );
 			r24 = f24_1 * f24_2;
 			rf = ( f32_t )f24_1 * ( f32_t )f24_2;
 			assert( abs( r24 ) > 1 << ( 32 - 24 ) 
 				 || abs( r24 ) < 1 / pow( 2, 24 )
-				 || r24 - rf < ( 1 / pow( 2, 24 ) + 1e-5 * abs( rf ) );
+				 || abs( r24 - rf ) < ( 1 / pow( 2, 24 ) + 1e-5 * abs( rf ) );
 
 			
 			r10 = f10_1 / 10_2;
 			rf = ( f32_t )f10_1 / ( f32_t )f10_2;
 			assert( abs( r10 ) > 1 << ( 32 - 10 )
 				 || abs( r10 ) < 1 / pow( 2, 10 )
-				 || r10 - rf < ( 1 / pow( 2, 10 ) + 1e-5 * abs( rf ) );
+				 || abs( r10 - rf ) < ( 1 / pow( 2, 10 ) + 1e-5 * abs( rf ) );
 			r16 = f16_1 / 16_2;
 			rf = ( f32_t )f16_1 / ( f32_t )f16_2;
 			assert( abs( r16 ) > 1 << ( 32 - 16 )
 				 || abs( r16 ) < 1 / pow( 2, 16 )
-				 || r16 - rf < ( 1 / pow( 2, 16 ) + 1e-5 * abs( rf ) );
+				 || abs( r16 - rf ) < ( 1 / pow( 2, 16 ) + 1e-5 * abs( rf ) );
 			r24 = f24_1 / f24_2;
 			rf = ( f32_t )f24_1 / ( f32_t )f24_2;
 			assert( abs( r24 ) > 1 << ( 32 - 24 ) 
 				 || abs( r24 ) < 1 / pow( 2, 24 )
-				 || r24 - rf < ( 1 / pow( 2, 24 ) + 1e-5 * abs( rf ) );
+				 || abs( r24 - rf ) < ( 1 / pow( 2, 24 ) + 1e-5 * abs( rf ) );
 
 			old10 = f10_1;
 			f10_1 += f10_2;
@@ -259,83 +259,83 @@ namespace vul_test {
 
 			old10 = f10_1;
 			f10_1 += ( f32_t )f10_2;
-			assert( old_10 + f10_2 - f10_1 < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
+			assert( abs( old_10 + f10_2 - f10_1 ) < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
 			old16 = f16_1;
 			f16_1 += ( f32_t )f16_2;
-			assert( old_16 + f16_2 - f16_1 < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
+			assert( abs( old_16 + f16_2 - f16_1 ) < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
 			old24 = f24_1;
 			f24_1 += ( f32_t )f24_2;
-			assert( old_24 + f24_2 - f24_1 < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
+			assert( abs( old_24 + f24_2 - f24_1 ) < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
 
 			old10 = f10_1;
 			f10_1 -= ( f32_t )f10_2;
-			assert( ( old_10 - f10_2 ) - f10_1 < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
+			assert( abs( ( old_10 - f10_2 ) - f10_1 ) < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
 			old16 = f16_1;
 			f16_1 -= ( f32_t )f16_2;
-			assert( ( old_16 - f16_2 ) - f16_1 < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
+			assert( abs( ( old_16 - f16_2 ) - f16_1 ) < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
 			old24 = f24_1;
 			f24_1 -= ( f32_t )f24_2;
-			assert( ( old_24 - f24_2 ) - f24_1 < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
+			assert( abs( ( old_24 - f24_2 ) - f24_1 ) < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
 
 			old10 = f10_1;
 			f10_1 *= ( f32_t )f10_2;
-			assert( old_10 * f10_2 - f10_1 < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
+			assert( abs( old_10 * f10_2 - f10_1 ) < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
 			old16 = f16_1;
 			f16_1 *= ( f32_t )f16_2;
-			assert( old_16 * f16_2 - f16_1 < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
+			assert( abs( old_16 * f16_2 - f16_1 ) < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
 			old24 = f24_1;
 			f24_1 *= ( f32_t )f24_2;
-			assert( old_24 * f24_2 - f24_1 < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
+			assert( abs( old_24 * f24_2 - f24_1 ) < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
 
 			old10 = f10_1;
 			f10_1 /= ( f32_t )f10_2;
-			assert( old_10 / f10_2 - f10_1 < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
+			assert( abs( old_10 / f10_2 - f10_1 ) < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
 			old16 = f16_1;
 			f16_1 /= ( f32_t )f16_2;
-			assert( old_16 / f16_2 - f16_1 < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
+			assert( abs( old_16 / f16_2 - f16_1 ) < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
 			old24 = f24_1;
 			f24_1 /= ( f32_t )f24_2;
-			assert( old_24 / f24_2 - f24_1 < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
+			assert( abs( old_24 / f24_2 - f24_1 ) < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
 
 			old10 = f10_1;
 			f10_1 += ( f64_t )f10_2;
-			assert( old_10 + f10_2 - f10_1 < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
+			assert( abs( old_10 + f10_2 - f10_1 ) < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
 			old16 = f16_1;
 			f16_1 += ( f64_t )f16_2;
-			assert( old_16 + f16_2 - f16_1 < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
+			assert( abs( old_16 + f16_2 - f16_1 ) < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
 			old24 = f24_1;
 			f24_1 += ( f64_t )f24_2;
-			assert( old_24 + f24_2 - f24_1 < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
+			assert( abs( old_24 + f24_2 - f24_1 ) < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
 
 			old10 = f10_1;
 			f10_1 -= ( f64_t )f10_2;
-			assert( ( old_10 - f10_2 ) - f10_1 < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
+			assert( abs( ( old_10 - f10_2 ) - f10_1 ) < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
 			old16 = f16_1;
 			f16_1 -= ( f64_t )f16_2;
-			assert( ( old_16 - f16_2 ) - f16_1 < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
+			assert( abs( ( old_16 - f16_2 ) - f16_1 ) < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
 			old24 = f24_1;
 			f24_1 -= ( f64_t )f24_2;
-			assert( ( old_24 - f24_2 ) - f24_1 < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
+			assert( abs( ( old_24 - f24_2 ) - f24_1 ) < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
 
 			old10 = f10_1;
 			f10_1 *= ( f64_t )f10_2;
-			assert( old_10 * f10_2 - f10_1 < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
+			assert( abs( old_10 * f10_2 - f10_1 ) < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
 			old16 = f16_1;
 			f16_1 *= ( f64_t )f16_2;
-			assert( old_16 * f16_2 - f16_1 < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
+			assert( abs( old_16 * f16_2 - f16_1 ) < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
 			old24 = f24_1;
 			f24_1 *= ( f64_t )f24_2;
-			assert( old_24 * f24_2 - f24_1 < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
+			assert( abs( old_24 * f24_2 - f24_1 ) < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
 
 			old10 = f10_1;
 			f10_1 /= ( f64_t )f10_2;
-			assert( old_10 / f10_2 - f10_1 < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
+			assert( abs( old_10 / f10_2 - f10_1 ) < ( 1 / pow( 2, 10 ) + 1e-5 * abs( f10_1 ) );
 			old16 = f16_1;
 			f16_1 /= ( f64_t )f16_2;
-			assert( old_16 / f16_2 - f16_1 < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
+			assert( abs( old_16 / f16_2 - f16_1 ) < ( 1 / pow( 2, 16 ) + 1e-5 * abs( f16_1 ) );
 			old24 = f24_1;
 			f24_1 /= ( f64_t )f24_2;
-			assert( old_24 / f24_2 - f24_1 < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
+			assert( abs( old_24 / f24_2 - f24_1 ) < ( 1 / pow( 2, 24 ) + 1e-5 * abs( f24_1 ) );
 		}
 		
 		assert( ++fi == fi + 1 );

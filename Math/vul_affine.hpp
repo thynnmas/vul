@@ -49,18 +49,38 @@ namespace vul {
 
 #ifdef VUL_CPLUSPLUS11
 		// Constructors
-		constexpr Affine< T, n >( );												// Empty constructor
-		explicit Affine< T, n >( const Affine< T, n > &a ); 						// Copy constructor
-		Affine< T, n >( const Matrix< T, n, n > &mat, const Vector< T, n > &vec ); 	// Construct from a matrix and a vector
+		/**
+		 * Create an empty affine transformation. No translation 
+		 * and an identity matrix are created.
+		 */
+		constexpr Affine< T, n >( );
+		/**
+		 * Create a copy of an affine transformation.
+		 */
+		explicit Affine< T, n >( const Affine< T, n > &a );
+		/**
+		 * Create an affine transformation from a rotation/scale matrix and a translation vector.
+		 */
+		Affine< T, n >( const Matrix< T, n, n > &mat, const Vector< T, n > &vec );
 #endif
 		Affine< T, n > &operator=( const Affine< T, n > &rhs );
 	};
 
 #ifndef VUL_CPLUSPLUS11
+	/**
+	 * Create an empty affine transformation. No translation 
+	 * and an identity matrix are created.
+	 */
 	template< typename T, i32_t n >
-	Affine< T, n > makeAffine( );							// Empty constructor
+	Affine< T, n > makeAffine( );
+	/**
+	 * Create a copy of an affine transformation.
+	 */
 	template< typename T, i32_t n >
-	Affine< T, n > makeAffine( const Affine< T, n > &a );	// Copy constructor
+	Affine< T, n > makeAffine( const Affine< T, n > &a );
+	/**
+	 * Create an affine transformation from a rotation/scale matrix and a translation vector.
+	 */
 	template< typename T, i32_t n >
 	Affine< T, n > makeAffine( const Matrix< T, n, n > &mat, const Vector< T, n > &vec );	// Constructor from Mat<n,n> & Vec<n>.
 #endif
@@ -94,7 +114,7 @@ namespace vul {
 #ifdef VUL_CPLUSPLUS11
 	Affine::Affine< T, n >( )
 	{
-		mat = Matrix< T, n, n >( );
+		mat = makeIdentity< T, n, n >( );
 		vec = Vector< T, n >( );
 	}
 
@@ -115,7 +135,7 @@ namespace vul {
 	{
 		Affine< T, n > a;
 
-		a.mat = makeMatrix< T, n, n >( );
+		a.mat = makeIdentity< T, n, n >( );
 		a.vec = makeVector< T, n >( );
 
 		return a;

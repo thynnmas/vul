@@ -56,10 +56,10 @@ namespace vul {
 	template< typename T, i32_t n >
 	AABB< T, n > translate( const AABB< T, n > &aabb, const Vector< T, n > &vec );
 	/**
-	 * Scale the AABB (uniformly).
+	 * Scale the AABB.
 	 */
 	template< typename T, i32_t n >
-	AABB< T, n > scale( const AABB< T, n > &aabb, T scalar );
+	AABB< T, n > scale( const AABB< T, n > &aabb, const Vector< T, n > &v );
 	/**
 	 * Perform an affine transformation on a single AABB.
 	 */
@@ -242,19 +242,16 @@ namespace vul {
 		return r;
 	}
 	template< typename T, i32_t n >
-	AABB< T, n > scale( const AABB< T, n > &aabb, T scalar )
+	AABB< T, n > scale( const AABB< T, n > &aabb, const Vector< T, n > &v )
 	{
-		AABB< T, n > r;
-		Vector< T, n > v;
+		AABB< T, n > r, tmp;
 
-#ifdef VUL_CPLUSPLUS11
-		v = Vector< T, n >( scalar );
-#else
-		v = makeVector< T, n >( scalar );
-#endif
+		tmp._min = r._min * v;
+		tmp._max = r._max * v;
 
-		r._min *= v;
-		r._max *= v;
+		// Handle negative scales
+		r._min = min( tmp._min, tmp._max );
+		r._max = max( tmp._min, tmp._max );
 
 		return r;
 	}

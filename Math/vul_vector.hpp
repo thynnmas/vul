@@ -431,7 +431,7 @@ namespace vul {
 	template< typename T, i32_t n >
 	Vector< T, n > max( const Vector< T, n > &a, const Vector< T, n > &b );
 	/** 
-	 * Componentwise std::abs( a )
+	 * Componentwise abs( a )
 	 */
 	template< typename T, i32_t n >
 	Vector< T, n > abs( const Vector< T, n > &a );
@@ -1248,7 +1248,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = std::min( a[ i ], b );
+			v[ i ] = a[ i ] < b ? a[ i ] : b;
 		}
 
 		return v;
@@ -1260,7 +1260,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = std::max( a[ i ], b );
+			v[ i ] = a[ i ] > b ? a[ i ] : b;
 		}
 
 		return v;
@@ -1272,7 +1272,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = std::min( a[ i ], b[ i ] );
+			v[ i ] = a[ i ] < b[ i ] ? a[ i ] : b[ i ];
 		}
 
 		return v;
@@ -1284,7 +1284,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = std::max( a[ i ], b[ i ] );
+			v[ i ] = a[ i ] > b[ i ] ? a[ i ] : b[ i ];
 		}
 
 		return v;
@@ -1296,7 +1296,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = std::abs( a[ i ] );
+			v[ i ] = a[ i ] >= 0 ? a[ i ] : -a[ i ];
 		}
 
 		return v;

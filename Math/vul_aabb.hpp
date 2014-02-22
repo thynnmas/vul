@@ -169,8 +169,12 @@ namespace vul {
 	template< typename T, i32_t n >
 	AABB< T, n > makeAABB( )
 	{
-		_min = Point< T, n >( T( 0.f ) );
-		_max = Point< T, n >( T( 0.f ) );
+		AABB< T, n > aabb;
+
+		aabb._min = makePoint< T, n >( T( 0.f ) );
+		aabb._max = makePoint< T, n >( T( 0.f ) );
+
+		return aabb;
 	}
 	template< typename T, i32_t n >
 	AABB< T, n > makeAABB( const Point< T, n > &mini, const Point< T, n > &maxi )
@@ -196,9 +200,14 @@ namespace vul {
 	AABB< T, n > makeAABB( T (& a)[ n * 2 ] )
 	{
 		AABB< T, n > aabb;
+		T p1[ n ], p2[ n ];
 
-		_min = Point< T, n >( a );
-		_max = Point< T, n >( &a[ n ] );
+		for( ui32_t i = 0; i < n; ++i ) {
+			p1[ i ] = a[ i ];
+			p2[ i ] = a[ n + i ];
+		}
+		aabb._min = makePoint< T, n >( p1 );
+		aabb._max = makePoint< T, n >( p2 );
 
 		return aabb;
 	}
@@ -206,9 +215,14 @@ namespace vul {
 	AABB< T, n > makeAABB( f32_t (& a)[ n * 2 ] )
 	{
 		AABB< T, n > aabb;
+		f32_t p1[ n ], p2[ n ];
 
-		_min = Point< T, n >( a );
-		_max = Point< T, n >( &a[ n ] );
+		for( ui32_t i = 0; i < n; ++i ) {
+			p1[ i ] = a[ i ];
+			p2[ i ] = a[ n + i ];
+		}
+		aabb._min = makePoint< T, n >( p1 );
+		aabb._max = makePoint< T, n >( p2 );
 
 		return aabb;
 	}
@@ -216,9 +230,15 @@ namespace vul {
 	AABB< T, n > makeAABB( i32_t (& a)[ n * 2 ] )
 	{
 		AABB< T, n > aabb;
+		
+		i32_t p1[ n ], p2[ n ];
 
-		_min = Point< T, n >( a );
-		_max = Point< T, n >( &a[ n ] );
+		for( ui32_t i = 0; i < n; ++i ) {
+			p1[ i ] = a[ i ];
+			p2[ i ] = a[ n + i ];
+		}
+		aabb._min = makePoint< T, n >( p1 );
+		aabb._max = makePoint< T, n >( p2 );
 
 		return aabb;
 	}
@@ -246,12 +266,12 @@ namespace vul {
 	{
 		AABB< T, n > r, tmp;
 
-		tmp._min = r._min * v;
-		tmp._max = r._max * v;
+		tmp._min = ( r._min.as_vec( ) * v ).as_point( );
+		tmp._max = ( r._max.as_vec( ) * v ).as_point( );
 
 		// Handle negative scales
-		r._min = min( tmp._min, tmp._max );
-		r._max = max( tmp._min, tmp._max );
+		r._min = min( tmp._min, tmp._max ).as_point( );
+		r._max = max( tmp._min, tmp._max ).as_point( );
 
 		return r;
 	}

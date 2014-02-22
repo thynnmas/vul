@@ -457,7 +457,7 @@ namespace vul {
 	{
 		fixed_32< Q > r;
 		
-		r.data = std::abs( r.data );
+		r.data = r.data >= 0 ? r.data : -r.data;
 
 		return r;
 	}
@@ -523,9 +523,9 @@ namespace std {
 	template< > struct hash< vul::fixed_32< Q > >
 	{
 		typedef vul::fixed_32< Q > argument_type;
-		typedef std::size_t result_type;
+		typedef size_t result_type;
 		
-		std::size_t operator( )( vul::fixed_32< Q > arg ) const
+		size_t operator( )( vul::fixed_32< Q > arg ) const
 		{
 			return hash< vul::fixed_32< Q > >( ) ( static_cast< unsigned int >( arg.data ) & -(arg.data != 0x80000000 ) );
 		}

@@ -131,11 +131,11 @@ namespace vul {
 	}
 #else
 	template< typename T, i32_t n >
-	Affine< T, n > *makeAffine( )
+	Affine< T, n > makeAffine( )
 	{
 		Affine< T, n > a;
 
-		a.mat = makeIdentity< T, n, n >( );
+		a.mat = makeIdentity< T, n >( );
 		a.vec = makeVector< T, n >( );
 
 		return a;
@@ -144,7 +144,7 @@ namespace vul {
 	template< typename T, i32_t n >
 	Affine< T, n > makeAffine( const Affine< T, n > &a )
 	{
-		Affine< T, n > *r;
+		Affine< T, n > r;
 
 		r.mat = a.mat;
 		r.vec = a.vec;

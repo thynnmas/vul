@@ -164,7 +164,7 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
-				tmp[ j ] = _mm_set_pD( in[ i * 2     ][ j ], 
+				tmp[ j ] = _mm_set_pd( in[ i * 2     ][ j ], 
 									   in[ i * 2 + 1 ][ j ] );
 			}
 			out[ i ] = makeVector< __m128d, n >( tmp );
@@ -181,14 +181,14 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
-				tmp[ j ] = _mm_set_ps( in[ i * 8     ][ j ], 
-									   in[ i * 8 + 1 ][ j ], 
-									   in[ i * 8 + 2 ][ j ], 
-									   in[ i * 8 + 3 ][ j ],
-									   in[ i * 8 + 4 ][ j ], 
-									   in[ i * 8 + 5 ][ j ], 
-									   in[ i * 8 + 6 ][ j ], 
-									   in[ i * 8 + 7 ][ j ] );
+				tmp[ j ] = _mm256_set_ps( in[ i * 8     ][ j ], 
+										  in[ i * 8 + 1 ][ j ], 
+										  in[ i * 8 + 2 ][ j ], 
+										  in[ i * 8 + 3 ][ j ],
+										  in[ i * 8 + 4 ][ j ], 
+										  in[ i * 8 + 5 ][ j ], 
+										  in[ i * 8 + 6 ][ j ], 
+										  in[ i * 8 + 7 ][ j ] );
 			}
 			out[ i ] = makeVector< __m256, n >( tmp );
 		}
@@ -204,10 +204,10 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
-				tmp[ j ] = _mm_set_ps( in[ i * 4     ][ j ], 
-									   in[ i * 4 + 1 ][ j ], 
-									   in[ i * 4 + 2 ][ j ], 
-									   in[ i * 4 + 3 ][ j ] );
+				tmp[ j ] = _mm256_set_pd( in[ i * 4     ][ j ], 
+										  in[ i * 4 + 1 ][ j ], 
+									   	  in[ i * 4 + 2 ][ j ], 
+									   	  in[ i * 4 + 3 ][ j ] );
 			}
 			out[ i ] = makeVector< __m256d, n >( tmp );
 		}
@@ -426,10 +426,10 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
-				out[ i * 2     ]._min[ j ] = in[ i ]._min[ j ].m128_f64[ 1 ];
-				out[ i * 2 + 1 ]._min[ j ] = in[ i ]._min[ j ].m128_f64[ 0 ];
-				out[ i * 2     ]._max[ j ] = in[ i ]._max[ j ].m128_f64[ 1 ];
-				out[ i * 2 + 1 ]._max[ j ] = in[ i ]._max[ j ].m128_f64[ 0 ];
+				out[ i * 2     ]._min[ j ] = in[ i ]._min[ j ].m128d_f64[ 1 ];
+				out[ i * 2 + 1 ]._min[ j ] = in[ i ]._min[ j ].m128d_f64[ 0 ];
+				out[ i * 2     ]._max[ j ] = in[ i ]._max[ j ].m128d_f64[ 1 ];
+				out[ i * 2 + 1 ]._max[ j ] = in[ i ]._max[ j ].m128d_f64[ 0 ];
 			}
 		}
 	}
@@ -472,14 +472,14 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
-				out[ i * 4     ]._min[ j ] = in[ i ]._min[ j ].m256_f64[ 3 ];
-				out[ i * 4 + 1 ]._min[ j ] = in[ i ]._min[ j ].m256_f64[ 2 ];
-				out[ i * 4 + 2 ]._min[ j ] = in[ i ]._min[ j ].m256_f64[ 1 ];
-				out[ i * 4 + 3 ]._min[ j ] = in[ i ]._min[ j ].m256_f64[ 0 ];
-				out[ i * 4     ]._max[ j ] = in[ i ]._max[ j ].m256_f64[ 3 ];
-				out[ i * 4 + 1 ]._max[ j ] = in[ i ]._max[ j ].m256_f64[ 2 ];
-				out[ i * 4 + 2 ]._max[ j ] = in[ i ]._max[ j ].m256_f64[ 1 ];
-				out[ i * 4 + 3 ]._max[ j ] = in[ i ]._max[ j ].m256_f64[ 0 ];
+				out[ i * 4     ]._min[ j ] = in[ i ]._min[ j ].m256d_f64[ 3 ];
+				out[ i * 4 + 1 ]._min[ j ] = in[ i ]._min[ j ].m256d_f64[ 2 ];
+				out[ i * 4 + 2 ]._min[ j ] = in[ i ]._min[ j ].m256d_f64[ 1 ];
+				out[ i * 4 + 3 ]._min[ j ] = in[ i ]._min[ j ].m256d_f64[ 0 ];
+				out[ i * 4     ]._max[ j ] = in[ i ]._max[ j ].m256d_f64[ 3 ];
+				out[ i * 4 + 1 ]._max[ j ] = in[ i ]._max[ j ].m256d_f64[ 2 ];
+				out[ i * 4 + 2 ]._max[ j ] = in[ i ]._max[ j ].m256d_f64[ 1 ];
+				out[ i * 4 + 3 ]._max[ j ] = in[ i ]._max[ j ].m256d_f64[ 0 ];
 			}
 		}
 	}

@@ -103,10 +103,19 @@ namespace vul_test {
 		AABB< fi32_t, 3 > arrF = makeAABB< fi32_t, 3 >( arr2 );
 		AABB< f32_t, 3 > arrI = makeAABB< f32_t, 3 >( arr3 );
 #endif
-		assert( empty._min[ 0 ] == empty._min[ 1 ] == empty._min[ 2 ] == empty._max[ 0 ] == empty._max[ 1 ] == empty._max[ 2 ] == 0.f );
+		assert( empty._min[ 0 ] == 0.f );
+		assert( empty._min[ 1 ] == 0.f );
+		assert( empty._min[ 2 ] == 0.f );
+		assert( empty._max[ 0 ] == 0.f );
+		assert( empty._max[ 1 ] == 0.f );
+		assert( empty._max[ 2 ] == 0.f );
 		
-		assert( pt._min[ 0 ] == pt._min[ 1 ] == pt._min[ 2 ] == -1.f );
-		assert( pt._max[ 0 ] == pt._max[ 1 ] == pt._max[ 2 ] ==  1.f );
+		assert( pt._min[ 0 ] == -1.f );
+		assert( pt._min[ 1 ] == -1.f );
+		assert( pt._min[ 2 ] == -1.f );
+		assert( pt._max[ 0 ] ==  1.f );
+		assert( pt._max[ 1 ] ==  1.f );
+		assert( pt._max[ 2 ] ==  1.f );
 
 		assert( arrT._min[ 0 ] == fi32_t( -1.f ) 
 			 && arrT._min[ 1 ] == fi32_t( -1.f ) 
@@ -122,8 +131,12 @@ namespace vul_test {
 			 && arrF._max[ 1 ] == fi32_t(  1.f )
 			 && arrF._max[ 2 ] == fi32_t(  1.f ) );
 		
-		assert( arrI._min[ 0 ] == arrI._min[ 1 ] == arrI._min[ 2 ] == -1 );
-		assert( arrI._max[ 0 ] == arrI._max[ 1 ] == arrI._max[ 2 ] ==  1 );
+		assert( arrI._min[ 0 ] == -1 );
+		assert( arrI._min[ 1 ] == -1 );
+		assert( arrI._min[ 2 ] == -1 );
+		assert( arrI._max[ 0 ] ==  1 );
+		assert( arrI._max[ 1 ] ==  1 );
+		assert( arrI._max[ 2 ] ==  1 );
 		
 		return true;
 	}
@@ -339,13 +352,13 @@ namespace vul_test {
 		AABB< f32_t, 2 > d2 = makeAABB< f32_t >( makeVector< f32_t, 2 >( -1.f ), makeVector< f32_t, 2 >( 1.f ) );
 		AABB< f32_t, 3 > d3 = makeAABB< f32_t >( makeVector< f32_t, 3 >( -1.f ), makeVector< f32_t, 3 >( 1.f ) );
 		// Rotate CW 45 degrees and move 1 unit towards negative x and positive y..
-		Affine< f32_t, 2 > a2 = makeAffine< f32_t, 2 >( makeMatrix22< f32_t >( cos( VUL_PI / 6 ), -sin( VUL_PI / 6 ),
-																			   sin( VUL_PI / 6 ),  cos( VUL_PI / 6 ) ), 
+		Affine< f32_t, 2 > a2 = makeAffine< f32_t, 2 >( makeMatrix22< f32_t >( cos( ( f32_t )VUL_PI / 6 ), -sin( ( f32_t )VUL_PI / 6 ),
+																			   sin( ( f32_t )VUL_PI / 6 ),  cos( ( f32_t )VUL_PI / 6 ) ), 
 														makeVector< f32_t >( -1.f, 1.f ) );
 		// Rotate CCW 45 degrees around Z, scale (2,-2,1), translate +1 in all directions.
 		Affine< f32_t, 3 > a3 = makeAffine3D< f32_t >( makeVector< f32_t, 3 >( 1.f ), 
 													   makeVector< f32_t >( 2.f, -2.f, 1.f ), 
-													   makeQuatFromAxisAngle< f32_t >( makeVector< f32_t >( 0.f, 0.f, 1.f ), -VUL_PI / 4 ) );
+													   makeQuatFromAxisAngle< f32_t >( makeVector< f32_t >( 0.f, 0.f, 1.f ), ( f32_t )-VUL_PI / 4.f ) );
 #endif
 		AABB< f32_t, 2 > r2;
 		AABB< f32_t, 3 > r3;
@@ -380,15 +393,15 @@ namespace vul_test {
 		f32_t mat[ 9 ], vec[ 3 ], aabb_min[ 3 ], aabb_max[ 3 ];
 		
 		// Rotate 45 deg around y
-		mat[ 0 ] = cos( VUL_PI / 6 );
+		mat[ 0 ] = cos( ( f32_t )VUL_PI / 6 );
 		mat[ 1 ] = 0;
-		mat[ 2 ] = sin( VUL_PI / 6 );
+		mat[ 2 ] = sin( ( f32_t )VUL_PI / 6 );
 		mat[ 3 ] = 0;
 		mat[ 4 ] = 1;
 		mat[ 5 ] = 0;
-		mat[ 6 ] = -sin( VUL_PI / 6 );
+		mat[ 6 ] = -sin( ( f32_t )VUL_PI / 6 );
 		mat[ 7 ] = 0;
-		mat[ 8 ] = cos( VUL_PI / 6 );
+		mat[ 8 ] = cos( ( f32_t )VUL_PI / 6 );
 		// Translate (1, 2, -4)
 		vec[ 0 ] = 1.f;
 		vec[ 1 ] = 2.f;

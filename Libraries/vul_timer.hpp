@@ -42,6 +42,9 @@
 	vul needs an operating system defined.
 #endif
 
+#define min( a, b ) ( a < b ? a : b )
+#define max( a, b ) ( a > b ? a : b )
+
 namespace vul {
 	
 	typedef unsigned long long ui64_t;
@@ -249,5 +252,8 @@ namespace vul {
 		return ( ui64_t )( ( double )( new_clock - this->zero ) / ( ( double )CLOCKS_PER_SEC / 1000000.0 ) );
 	}
 }
+
+#undef min
+#undef max
 
 #endif

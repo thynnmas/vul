@@ -21,7 +21,7 @@
 
 #include "../vul_math.hpp"
 
-#define VUL_TEST_RNG ( float )( ( float )rand( ) / ( float )RAND_MAX )
+#define VUL_TEST_RNG ( float )( ( float )rand( ) / ( float )FLT_MAX )
 
 using namespace vul;
 
@@ -150,8 +150,8 @@ namespace vul_test {
 		Point< f32_t, 8 > p8( 1.f );
 #else
 		Affine< f32_t, 2 > i2 = makeAffine< f32_t, 2 >( ), 
-						   mv2 = makeAffine< f32_t, 2 >( makeMatrix22< f32_t >( cos( VUL_PI / 4 ), -sin( VUL_PI / 4 ),
-																				sin( VUL_PI / 4 ),  cos( VUL_PI / 4 ) ),
+						   mv2 = makeAffine< f32_t, 2 >( makeMatrix22< f32_t >( cos( ( f32_t )VUL_PI / 4.f ), -sin( ( f32_t )VUL_PI / 4.f ),
+																				sin( ( f32_t )VUL_PI / 4.f ),  cos( ( f32_t )VUL_PI / 4.f ) ),
 														 makeVector< f32_t >( 0.f, 1.f ) );
 		Affine< f32_t, 3 > i3 = makeAffine< f32_t, 3 >( );
 		Affine< f32_t, 8 > i8 = makeAffine< f32_t, 8 >( );
@@ -235,5 +235,7 @@ namespace vul_test {
 		return true;
 	}
 };
+
+#undef VUL_TEST_RNG
 
 #endif

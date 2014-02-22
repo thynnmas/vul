@@ -23,7 +23,7 @@
 #include "glm.hpp"
 
 #define VUL_TEST_FUZZ_COUNT 10000
-#define VUL_TEST_RNG ( float )( ( float )rand( ) / ( float )RAND_MAX )
+#define VUL_TEST_RNG ( float )( ( float )rand( ) / ( float )FLT_MAX )
 
 using namespace vul;
 
@@ -67,7 +67,10 @@ namespace vul_test {
 		Matrix< i64_t, 4, 4> m44 = makeMatrix< i64_t, 4, 4 >( );
 		Matrix< f32_t, 6, 8> m68 = makeMatrix< f32_t, 6, 8 >( );
 #endif
-		assert( m22( 0, 0 ) == m22( 1, 0 ) == m22( 0, 1 ) == m22( 1, 1 ) == 0.f );
+		assert( m22( 0, 0 ) == 0.f );
+		assert( m22( 1, 0 ) ==  0.f );
+		assert( m22( 0, 1 ) ==  0.f );
+		assert( m22( 1, 1 ) == 0.f );
 		assert( m33( 0, 0 ) == fi32_t( 0.f ) );
 		assert( m33( 1, 0 ) == fi32_t( 0.f ) );
 		assert( m33( 2, 0 ) == fi32_t( 0.f ) );
@@ -77,17 +80,17 @@ namespace vul_test {
 		assert( m33( 0, 2 ) == fi32_t( 0.f ) );
 		assert( m33( 1, 2 ) == fi32_t( 0.f ) );
 		assert( m33( 2, 2 ) == fi32_t( 0.f ) );
-		assert( m44( 0, 0 ) == m44( 1, 0 ) == m44( 2, 0 ) == m44( 3, 0 ) == 
-				m44( 0, 1 ) == m44( 1, 1 ) == m44( 2, 1 ) == m44( 3, 1 ) == 
-				m44( 0, 2 ) == m44( 1, 2 ) == m44( 2, 2 ) == m44( 3, 2 ) ==
-				m44( 0, 3 ) == m44( 1, 3 ) == m44( 2, 3 ) == m44( 3, 3 ) == 0L );
-		assert( m68( 0, 0 ) == m68( 1, 0 ) == m68( 2, 0 ) == m44( 3, 0 ) == m44( 4, 0 ) == m44( 5, 0 ) == m44( 6, 0 ) == m44( 7, 0 ) ==
-				m68( 0, 1 ) == m68( 1, 1 ) == m68( 2, 1 ) == m68( 3, 1 ) == m44( 4, 1 ) == m44( 5, 1 ) == m44( 6, 1 ) == m44( 7, 1 ) ==
-				m68( 0, 2 ) == m68( 1, 2 ) == m68( 2, 2 ) == m68( 3, 2 ) == m44( 4, 2 ) == m44( 5, 2 ) == m44( 6, 2 ) == m44( 7, 2 ) ==
-				m68( 0, 3 ) == m68( 1, 3 ) == m68( 2, 3 ) == m68( 3, 3 ) == m44( 4, 3 ) == m44( 5, 3 ) == m44( 6, 3 ) == m44( 7, 3 ) ==
-				m68( 0, 4 ) == m68( 1, 4 ) == m68( 2, 4 ) == m68( 3, 4 ) == m44( 4, 4 ) == m44( 5, 4 ) == m44( 6, 4 ) == m44( 7, 4 ) ==
-				m68( 0, 5 ) == m68( 1, 5 ) == m68( 2, 5 ) == m68( 3, 5 ) == m44( 4, 5 ) == m44( 5, 5 ) == m44( 6, 5 ) == m44( 7, 5 ) == 0.f );
-		
+		for( ui32_t c = 0; c < 4; ++c ) {
+			for( ui32_t r = 0; r < 4; ++r ) {
+				assert( m44( c, r ) == 0L );
+			}
+		}
+		for( ui32_t c = 0; c < 6; ++c ) {
+			for( ui32_t r = 0; r < 8; ++r ) {
+				assert( m68( c, r ) == 0.f );
+			}
+		}
+
 		// Repeat for all, but m22 and m68 should be fine
 #ifdef VUL_CPLUSPLUS11
 		m22 = Matrix< f32_t, 2, 2 >( 2.f );
@@ -96,13 +99,15 @@ namespace vul_test {
 		m22 = makeMatrix< f32_t, 2, 2 >( 2.f );
 		m68 = makeMatrix< f32_t, 6, 8 >( -1.f );
 #endif
-		assert( m22( 0, 0 ) == m22( 1, 0 ) == m22( 0, 1 ) == m22( 1, 1 ) == 2.f );
-		assert( m68( 0, 0 ) == m68( 1, 0 ) == m68( 2, 0 ) == m44( 3, 0 ) == m44( 4, 0 ) == m44( 5, 0 ) == m44( 6, 0 ) == m44( 7, 0 ) ==
-				m68( 0, 1 ) == m68( 1, 1 ) == m68( 2, 1 ) == m68( 3, 1 ) == m44( 4, 1 ) == m44( 5, 1 ) == m44( 6, 1 ) == m44( 7, 1 ) ==
-				m68( 0, 2 ) == m68( 1, 2 ) == m68( 2, 2 ) == m68( 3, 2 ) == m44( 4, 2 ) == m44( 5, 2 ) == m44( 6, 2 ) == m44( 7, 2 ) ==
-				m68( 0, 3 ) == m68( 1, 3 ) == m68( 2, 3 ) == m68( 3, 3 ) == m44( 4, 3 ) == m44( 5, 3 ) == m44( 6, 3 ) == m44( 7, 3 ) ==
-				m68( 0, 4 ) == m68( 1, 4 ) == m68( 2, 4 ) == m68( 3, 4 ) == m44( 4, 4 ) == m44( 5, 4 ) == m44( 6, 4 ) == m44( 7, 4 ) ==
-				m68( 0, 5 ) == m68( 1, 5 ) == m68( 2, 5 ) == m68( 3, 5 ) == m44( 4, 5 ) == m44( 5, 5 ) == m44( 6, 5 ) == m44( 7, 5 ) == -1.f );
+		assert( m22( 0, 0 ) == 2.f );
+		assert( m22( 1, 0 ) == 2.f );
+		assert( m22( 0, 1 ) == 2.f );
+		assert( m22( 1, 1 ) == 2.f );
+		for( ui32_t c = 0; c < 6; ++c ) {
+			for( ui32_t r = 0; r < 8; ++r ) {
+				assert( m68( c, r ) == -1.f );
+			}
+		}
 
 #ifdef VUL_CPLUSPLUS11
 		m22 = Matrix< f32_t, 2, 2 >( Matrix< f32_t, 2, 2 >( ) );
@@ -111,58 +116,65 @@ namespace vul_test {
 		m22 = makeMatrix< f32_t, 2, 2 >( makeMatrix< f32_t, 2, 2 >( ) );
 		m68 = makeMatrix< f32_t, 6, 8 >( makeMatrix< f32_t, 6, 8 >( ) );
 #endif
-		assert( m22( 0, 0 ) == m22( 1, 0 ) == m22( 0, 1 ) == m22( 1, 1 ) == 0.f );
-		assert( m68( 0, 0 ) == m68( 1, 0 ) == m68( 2, 0 ) == m44( 3, 0 ) == m44( 4, 0 ) == m44( 5, 0 ) == m44( 6, 0 ) == m44( 7, 0 ) ==
-				m68( 0, 1 ) == m68( 1, 1 ) == m68( 2, 1 ) == m68( 3, 1 ) == m44( 4, 1 ) == m44( 5, 1 ) == m44( 6, 1 ) == m44( 7, 1 ) ==
-				m68( 0, 2 ) == m68( 1, 2 ) == m68( 2, 2 ) == m68( 3, 2 ) == m44( 4, 2 ) == m44( 5, 2 ) == m44( 6, 2 ) == m44( 7, 2 ) ==
-				m68( 0, 3 ) == m68( 1, 3 ) == m68( 2, 3 ) == m68( 3, 3 ) == m44( 4, 3 ) == m44( 5, 3 ) == m44( 6, 3 ) == m44( 7, 3 ) ==
-				m68( 0, 4 ) == m68( 1, 4 ) == m68( 2, 4 ) == m68( 3, 4 ) == m44( 4, 4 ) == m44( 5, 4 ) == m44( 6, 4 ) == m44( 7, 4 ) ==
-				m68( 0, 5 ) == m68( 1, 5 ) == m68( 2, 5 ) == m68( 3, 5 ) == m44( 4, 5 ) == m44( 5, 5 ) == m44( 6, 5 ) == m44( 7, 5 ) == 0.f );
+		
+		assert( m22( 0, 0 ) == 0.f );
+		assert( m22( 1, 0 ) == 0.f );
+		assert( m22( 0, 1 ) == 0.f );
+		assert( m22( 1, 1 ) == 0.f );
+		for( ui32_t c = 0; c < 6; ++c ) {
+			for( ui32_t r = 0; r < 8; ++r ) {
+				assert( m68( c, r ) == 0.f );
+			}
+		}
 
 		// For this we need to test a non-f32 or i32 type, so we only test the m33 (fi32_t)
-		fi32_t a33[ 9 ];
-		for( ui32_t i = 0; i < 9; ++i ) {
-			a33[ i ] = fi32_t( ( f32_t )rand( ) / ( f32_t )FLT_MAX );
+		fi32_t a33[ 3 ][ 3 ];
+		for( ui32_t c = 0; c < 3; ++c ) {
+			for( ui32_t r = 0; r < 3; ++r ) {
+				a33[ c ][ r ] = fi32_t( ( f32_t )rand( ) / ( f32_t )FLT_MAX );
+			}
 		}
 #ifdef VUL_CPLUSPLUS11
 		m33 = Matrix< fi32_t, 3, 3 >( a33 );
 #else
 		m33 = makeMatrix< fi32_t, 3, 3 >( a33 );
 #endif
-		assert( m33( 0, 0 ) == a33[ 0 ] );
-		assert( m33( 1, 0 ) == a33[ 1 ] );
-		assert( m33( 2, 0 ) == a33[ 2 ] );
-		assert( m33( 0, 1 ) == a33[ 3 ] );
-		assert( m33( 1, 1 ) == a33[ 4 ] );
-		assert( m33( 2, 1 ) == a33[ 5 ] );
-		assert( m33( 0, 2 ) == a33[ 6 ] );
-		assert( m33( 1, 2 ) == a33[ 7 ] );
-		assert( m33( 2, 2 ) == a33[ 8 ] );
 		
-		f32_t af[ 6 * 8 ];
-		for( ui32_t i = 0; i < 6 * 8; ++i ) {
-			af[ i ] = ( f32_t )rand( ) / ( f32_t )FLT_MAX;
-		}		
-#ifdef VUL_CPLUSPLUS11
-		m22 = Matrix< f32_t, 2, 2 >( af );
-		m68 = Matrix< f32_t, 6, 8 >( af );
-#else
-		m22 = makeMatrix< f32_t, 2, 2 >( af );
-		m68 = makeMatrix< f32_t, 6, 8 >( af );
-#endif
-		assert( m22( 0, 0 ) == af[ 0 ] );
-		assert( m22( 1, 0 ) == af[ 1 ] );
-		assert( m22( 0, 1 ) == af[ 2 ] );
-		assert( m22( 1, 1 ) == af[ 3 ] );
-		for( ui32_t c = 0; c < 8; ++c ) {
-			for( ui32_t r = 0; r < 6; ++r ) {
-				assert( m68( c, r ) == af[ c * 8 + r ] );
+		for( ui32_t c = 0; c < 3; ++c ) {
+			for( ui32_t r = 0; r < 3; ++r ) {
+				assert( m33( c, r ) == a33[ c ][ r ] );
 			}
 		}
 		
-		i64_t ai[ 4 * 4 ];
-		for( ui32_t i = 0; i < 6 * 8; ++i ) {
-			ai[ i ] = ( i64_t )rand( );
+		f32_t af[ 6 ][ 8 ];
+		for( ui32_t c = 0; c < 6; ++c ) {
+			for( ui32_t r = 0; r < 8; ++r ) {
+				af[ c ][ r ] = ( f32_t )rand( ) / ( f32_t )FLT_MAX;
+			}
+		}
+		f32_t af22[ 2 ][ 2 ] = { af[ 0 ][ 0 ], af[ 0 ][ 1 ], af[ 1 ][ 0 ], af[ 1 ][ 1 ] };
+#ifdef VUL_CPLUSPLUS11
+		m22 = Matrix< f32_t, 2, 2 >( af22 );
+		m68 = Matrix< f32_t, 6, 8 >( af );
+#else
+		m22 = makeMatrix< f32_t, 2, 2 >( af22 );
+		m68 = makeMatrix< f32_t, 6, 8 >( af );
+#endif
+		assert( m22( 0, 0 ) == af22[ 0 ][ 0 ] );
+		assert( m22( 1, 0 ) == af22[ 0 ][ 1 ] );
+		assert( m22( 0, 1 ) == af22[ 1 ][ 0 ] );
+		assert( m22( 1, 1 ) == af22[ 1 ][ 1 ] );
+		for( ui32_t c = 0; c < 8; ++c ) {
+			for( ui32_t r = 0; r < 6; ++r ) {
+				assert( m68( c, r ) == af[ c ][ r ] );
+			}
+		}
+		
+		i64_t ai[ 4 ][ 4 ];
+		for( ui32_t c = 0; c < 4; ++c ) {
+			for( ui32_t r = 0; r < 4; ++r ) {
+				ai[ c ][ r ] = ( i64_t )rand( );
+			}
 		}
 
 
@@ -173,7 +185,7 @@ namespace vul_test {
 #endif
 		for( ui32_t c = 0; c < 4; ++c ) {
 			for( ui32_t r = 0; r < 4; ++r ) {
-				assert( m44( c, r ) == ai[ c * 8 + r ] );
+				assert( m44( c, r ) == ai[ c ][ r ] );
 			}
 		}
 
@@ -409,9 +421,13 @@ namespace vul_test {
 
 		mtmp = m32;
 		mtmp -= m32;
-		assert( m32( 0, 0 ) == m32( 0, 1 ) == 
-				m32( 1, 0 ) == m32( 1, 1 ) == 
-				m32( 2, 0 ) == m32( 2, 1 ) == 0.f );
+		assert( m32( 0, 0 ) == 0.f );
+		assert( m32( 0, 1 ) == 0.f );
+		assert( m32( 1, 0 ) == 0.f );
+		assert( m32( 1, 1 ) == 0.f );
+		assert( m32( 2, 0 ) == 0.f );
+		assert( m32( 2, 1 ) == 0.f );
+
 		return true;
 	}
 	bool TestMatrix::ops( )
@@ -544,9 +560,12 @@ namespace vul_test {
 		assert( mr( 2, 1 ) == 10.f );
 
 		mr = m32 - m32;
-		assert( mr( 0, 0 ) == mr( 0, 1 ) == 
-				mr( 1, 0 ) == mr( 1, 1 ) == 
-				mr( 2, 0 ) == mr( 2, 1 ) == 0.f );
+		assert( mr( 0, 0 ) == 0.f );
+		assert( mr( 0, 1 ) == 0.f );
+		assert( mr( 1, 0 ) == 0.f );
+		assert( mr( 1, 1 ) == 0.f );
+		assert( mr( 2, 0 ) == 0.f );
+		assert( mr( 2, 1 ) == 0.f );
 		return true;	
 	}
 	bool TestMatrix::functions( )
@@ -579,11 +598,11 @@ namespace vul_test {
 		for( ui32_t c = 0; c < 3; ++c ) {
 			for( ui32_t r = 0; r < 3; ++r ) {
 				assert( m43( c, r ) == m33( c, r ) );
-				m33( c, r ) == VUL_TEST_RNG;
+				m33( c, r ) = VUL_TEST_RNG;
 			}
 		}
 		Vector< f32_t, 3 > col3 = column( m43, 3 );
-		void copy( &m43, m33 );
+		copy( &m43, m33 );
 		for( ui32_t c = 0; c < 3; ++c ) {
 			for( ui32_t r = 0; r < 3; ++r ) {
 				assert( m43( c, r ) == m33( c, r ) );
@@ -646,5 +665,8 @@ namespace vul_test {
 	}
 	*/
 };
+
+#undef VUL_TEST_RNG
+#undef VUL_TEST_FUZZ_COUNT
 
 #endif

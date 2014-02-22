@@ -25,7 +25,7 @@
 #include "../vul_math.hpp"
 
 #define VUL_TEST_FUZZ_COUNT 10000
-#define VUL_TEST_RNG ( float )( ( float )rand( ) / ( float )std::numeric_limits< half >::max( ) )
+#define VUL_TEST_RNG ( float )( ( float )rand( ) / 65504.f )
 
 using namespace vul;
 
@@ -100,9 +100,11 @@ namespace vul_test {
 	bool TestHalf::ops( )
 	{		
 		f32_t f = VUL_TEST_RNG;
-		half h = f, hm = -abs( f );
-		assert( abs( h ) == abs( f ) );
-		assert( abs( hm ) == abs( h ) );
+		half h, hm;
+		h = f;
+		hm = -abs( f );
+		assert( ( f32_t )abs( h ) == ( f32_t )abs( f ) );
+		assert( ( f32_t )abs( hm ) == ( f32_t )abs( h ) );
 		
 		for( ui32_t i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
 			half a, b, r;
@@ -112,16 +114,16 @@ namespace vul_test {
 
 			r = a + b;
 			f = ( f32_t )a + ( f32_t )b;
-			assert( abs( r - f ) < ( 1e-5 + 1e-5 * abs( r ) );
+			assert( ( f32_t )abs( ( f32_t )r - f ) < ( f32_t )( 1e-5 + 1e-5 * ( f32_t )abs( r ) ) );
 			r = a - b;
 			f = ( f32_t )a - ( f32_t )b;
-			assert( abs( r - f ) < ( 1e-5 + 1e-5 * abs( r ) );
+			assert( ( f32_t )abs( ( f32_t )r - f ) < ( f32_t )( 1e-5 + 1e-5 * ( f32_t )abs( r ) ) );
 			r = a * b;
 			f = ( f32_t )a * ( f32_t )b;
-			assert( abs( r - f ) < ( 1e-5 + 1e-5 * abs( r ) );
+			assert( ( f32_t )abs( ( f32_t )r - f ) < ( f32_t )( 1e-5 + 1e-5 * ( f32_t )abs( r ) ) );
 			r = a / b;
 			f = ( f32_t )a / ( f32_t )b;
-			assert( abs( r - f ) < ( 1e-5 + 1e-5 * abs( r ) );
+			assert( ( f32_t )abs( ( f32_t )r - f ) < ( f32_t )( 1e-5 + 1e-5 * ( f32_t )abs( r ) ) );
 			
 			r = a;
 			a += b;
@@ -163,8 +165,8 @@ namespace vul_test {
 			assert( r / ( fixed_32< 8 > )b == a );
 		}
 		
-		assert( ++h == f + 1 );
-		assert( --h == f );
+		assert( ( f32_t )( ++h ) == f + 1.f );
+		assert( ( f32_t )( --h ) == f );
 		assert( -h == half( -f ) );
 		assert( +h == half( +f ) );
 
@@ -184,12 +186,12 @@ namespace vul_test {
 
 		vul_single_to_half_array( halfs, floats, VUL_TEST_FUZZ_COUNT );
 		for( ui32_t i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
-			assert( abs( ( f32_t )halfs[ i ] - floats[ i ] ) < ( 1e-5 + 1e-5 * abs( r )
+			assert( ( f32_t )abs( ( f32_t )halfs[ i ] - floats[ i ] ) < ( f32_t )( 1e-5 + 1e-5 * ( f32_t )abs( halfs[ i ] ) ) );
 		}
 
 		vul_double_to_half_array( halfs, doubles, VUL_TEST_FUZZ_COUNT );
 		for( ui32_t i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
-			assert( abs( ( f64_t )halfs[ i ] - doubles[ i ] ) < ( 1e-5 + 1e-5 * abs( r )
+			assert( ( f32_t )abs( ( f64_t )halfs[ i ] - doubles[ i ] ) < ( f32_t )( 1e-5 + 1e-5 * ( f32_t )abs( halfs[ i ] ) ) );
 		}
 
 		// Exhaustive
@@ -201,14 +203,17 @@ namespace vul_test {
 		vul_half_to_single_array( floats, all_halfs, 1 << 16 );
 		vul_half_to_double_array( doubles, all_halfs, 1 << 16 );
 		
-		assert( abs( ( f32_t )halfs[ 0 ] - floats[ 0 ] ) < ( 1e-5 + 1e-5 * abs( r )
-		assert( abs( ( f64_t )halfs[ 0 ] - doubles[ 0 ] ) < ( 1e-5 + 1e-5 * abs( r )
 		for( ui32_t i = 1; i < 1 << 16; ++i ) {
-			assert( abs( halfs[ i ] - halfs[ i - 1 ] ) <= 1e-5 + 1e-5 * abs( halfs[ i ] ) );
-			assert( abs( ( f32_t )halfs[ i ] - floats[ i ] ) < ( 1e-5 + 1e-5 * abs( r )
-			assert( abs( ( f64_t )halfs[ i ] - doubles[ i ] ) < ( 1e-5 + 1e-5 * abs( r )
+			assert( ( f32_t )abs( halfs[ i ] - halfs[ i - 1 ] ) <= ( f32_t )( 1e-5 + 1e-5 * ( f32_t )abs( halfs[ i ] ) ) );
+			assert( ( f32_t )abs( ( f32_t )halfs[ 0 ] - floats[ 0 ] ) < ( f32_t )( 1e-5 + 1e-5 * ( f32_t )abs( halfs[ i ] ) ) );
+			assert( ( f32_t )abs( ( f64_t )halfs[ 0 ] - doubles[ 0 ] ) < ( f32_t )( 1e-5 + 1e-5 * ( f32_t )abs( halfs[ i ] ) ) );		
 		}
+
+		return true;
 	}
 };
+
+#undef VUL_TEST_RNG
+#undef VUL_TEST_FUZZ_COUNT
 
 #endif

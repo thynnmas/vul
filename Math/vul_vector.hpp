@@ -471,7 +471,7 @@ namespace vul {
 	{
 		i32_t i;
 		for( i = 0; i < n; ++i ) {
-			data[ i ] = static_cast< T >( 0 );
+			data[ i ] = static_cast< T >( 0.f );
 		}
 	}
 	
@@ -1044,7 +1044,7 @@ namespace vul {
 				return vec[ i ];
 			}
 		}
-		return static_cast< T >( 0 );
+		return static_cast< T >( 0.f );
 	}
 
 	template< typename T, i32_t n >
@@ -1204,7 +1204,7 @@ namespace vul {
 		T res;
 		i32_t i;
 
-		res = static_cast< T >( 0 );
+		res = static_cast< T >( 0.f );
 		for( i = 0; i < n; ++i ) {
 			res += a[ i ] * a[ i ];
 		}
@@ -1218,7 +1218,7 @@ namespace vul {
 		f32_t res;
 		i32_t i;
 
-		res = static_cast< T >( 0 );
+		res = static_cast< T >( 0.f );
 		for( i = 0; i < n; ++i ) {
 			res += ( f32_t )( a[ i ] * a[ i ] );
 		}

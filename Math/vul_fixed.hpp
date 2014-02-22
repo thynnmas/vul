@@ -163,12 +163,19 @@ namespace vul {
 	{
 		data = ( int )round( a * std::pow( 2.0, ( double )Q ) );
 	}
+
 	template< int Q >
 	template< int Q32 >
 	fixed_32< Q >::fixed_32( fixed_32< Q32 > a )
 	{
-		// Just shift ir Q-Q32.
-		data = a.data << ( Q - Q32 );
+#pragma warning ( disable: 4293 ) // We are aware, and branch accordingly
+		// Negative shifts are undefined, so branch
+		if( Q > Q32 ) {
+			data = a.data << ( Q - Q32 );
+		} else {
+			data = a.data << ( Q32 - Q );
+		}
+#pragma warning ( default: 4293 )
 	}
 	
 	template< int Q >
@@ -246,19 +253,19 @@ namespace vul {
 	template< int Q >
 	fixed_32< Q > &fixed_32< Q >::operator=( float rhs )
 	{
-		data = round( rhs * std::pow( 2, Q ) );
+		data = ( int )round( rhs * std::pow( 2.f,  Q ) );
 		return *this;
 	}
 	template< int Q >
 	fixed_32< Q > &fixed_32< Q >::operator+=( float rhs )
 	{
-		data += round( rhs * std::pow( 2, Q ) );
+		data += ( int )round( rhs * std::pow( 2.f,  Q ) );
 		return *this;
 	}
 	template< int Q >
 	fixed_32< Q > &fixed_32< Q >::operator-=( float rhs )
 	{
-		data -= round( rhs * std::pow( 2, Q ) );
+		data -= ( int )round( rhs * std::pow( 2.f,  Q ) );
 		return *this;
 	}
 	template< int Q >
@@ -268,10 +275,10 @@ namespace vul {
 		long long temp;
 
 		K = ( 2 << ( Q - 1 ) );
-		temp = ( long long )data * ( long long )round( rhs * std::pow( 2, Q ) );
+		temp = ( long long )data * ( long long )round( rhs * std::pow( 2.f,  Q ) );
 		temp += K;
 
-		data = temp >> Q;
+		data = ( int )( temp >> Q );
 		return *this;
 	}
 	template< int Q >
@@ -280,29 +287,29 @@ namespace vul {
 		long long temp;
 		int b;
 
-		b = round( rhs * std::pow( 2, Q ) );
+		b = ( int )round( rhs * std::pow( 2.f,  Q ) );
 		temp = ( long long )data << Q;
 		temp += b / 2;
-		data = temp / b;
+		data = ( int )( temp / b );
 		return *this;
 	}
 	
 	template< int Q >
 	fixed_32< Q > &fixed_32< Q >::operator=( double rhs )
 	{
-		data = round( rhs * std::pow( 2, Q ) );
+		data = ( int )round( rhs * std::pow( 2.f, Q ) );
 		return *this;
 	}
 	template< int Q >
 	fixed_32< Q > &fixed_32< Q >::operator+=( double rhs )
 	{
-		data += round( rhs * std::pow( 2, Q ) );
+		data += ( int )round( rhs * std::pow( 2.f, Q ) );
 		return *this;
 	}
 	template< int Q >
 	fixed_32< Q > &fixed_32< Q >::operator-=( double rhs )
 	{
-		data -= round( rhs * std::pow( 2, Q ) );
+		data -= ( int )round( rhs * std::pow( 2.f, Q ) );
 		return *this;
 	}
 	template< int Q >
@@ -312,10 +319,10 @@ namespace vul {
 		long long temp;
 
 		K = ( 2 << ( Q - 1 ) );
-		temp = ( long long )data * ( long long )round( rhs * std::pow( 2, Q ) );
+		temp = ( long long )data * ( long long )round( rhs * std::pow( 2.f,  Q ) );
 		temp += K;
 
-		data = temp >> Q;
+		data = ( int )( temp >> Q );
 		return *this;
 	}
 	template< int Q >
@@ -324,10 +331,10 @@ namespace vul {
 		long long temp;
 		int b;
 
-		b = round( rhs * std::pow( 2, Q ) );
+		b = ( int )round( rhs * std::pow( 2.f,  Q ) );
 		temp = ( long long )data << Q;
 		temp += b / 2;
-		data = temp / b;
+		data = ( int )( temp / b );
 		return *this;
 	}
 

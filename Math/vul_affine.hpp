@@ -210,9 +210,9 @@ namespace vul {
 		d[ 1 ][ 2 ] = a.mat( 1, 2 );
 		d[ 2 ][ 2 ] = a.mat( 2, 2 );
 		d[ 3 ][ 2 ] = a.vec[ 2 ];
-		d[ 0 ][ 3 ] = static_cast< T >( 0 );
-		d[ 1 ][ 3 ] = static_cast< T >( 0 );
-		d[ 2 ][ 3 ] = static_cast< T >( 0 );
+		d[ 0 ][ 3 ] = static_cast< T >( 0.f );
+		d[ 1 ][ 3 ] = static_cast< T >( 0.f );
+		d[ 2 ][ 3 ] = static_cast< T >( 0.f );
 		d[ 3 ][ 3 ] = static_cast< T >( 1 );
 
 #ifndef VUL_CPLUSPLUS11

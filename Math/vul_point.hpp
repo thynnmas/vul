@@ -201,7 +201,7 @@ namespace vul {
 	{
 		i32_t i;
 		for( i = 0; i < n; ++i ) {
-			data[ i ] = static_cast< T >( 0 );
+			data[ i ] = static_cast< T >( 0.f );
 		}
 	}
 	template< typename T, i32_t n >
@@ -260,7 +260,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			p.data[ i ] = static_cast< T >( 0 );
+			p.data[ i ] = static_cast< T >( 0.f );
 		}
 
 		return p;

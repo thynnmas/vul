@@ -51,7 +51,7 @@ namespace vul {
 		constexpr Matrix< T, cols, rows >( );							// Empty constructor
 		explicit Matrix< T, cols, rows >( T val );						// Initialize to a single value
 		explicit Matrix< T, cols, rows >( Matrix< T, cols, rows > m );	// Copy constructor
-		explicit Matrix< T, cols, rows >( T (& a)[ rows ][ cols ] ); 		// Generic array constructor
+		explicit Matrix< T, cols, rows >( T (& a)[ cols ][ rows ] ); 		// Generic array constructor
 		explicit Matrix< T, cols, rows >( f32_t (& a)[ rows * cols ] ); 		// From float array, to interface with other libraries
 		explicit Matrix< T, cols, rows >( i32_t (& a)[ rows * cols ] ); 		// From int array, to interface with other libraries
 		explicit Matrix< T, cols, rows >( std::initializer_list<T> list );	// From initializer list. Componentwise init is non-c++11 equivalent.
@@ -147,7 +147,7 @@ namespace vul {
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > makeMatrix( const Matrix< T, cols, rows > &m );	// Copy constructor
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > makeMatrix( T (& a)[ rows ][ cols ] ); 		// Generic array constructor
+	Matrix< T, cols, rows > makeMatrix( T (& a)[ cols ][ rows ] ); 		// Generic array constructor
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > makeMatrix( f32_t (& a)[ rows * cols ] );	// From float array, to interface with other libraries
 	template< typename T, i32_t cols, i32_t rows >
@@ -406,7 +406,7 @@ namespace vul {
 		i32_t i, j;
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				data[ i ][ j ] = static_cast< T >( 0 );
+				data[ i ][ j ] = static_cast< T >( 0.f );
 			}
 		}
 	}
@@ -431,7 +431,7 @@ namespace vul {
 		}
 	}
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows >::Matrix< T, cols, rows >( T (& a)[ rows ][ cols ] )
+	Matrix< T, cols, rows >::Matrix< T, cols, rows >( T (& a)[ cols ][ rows ] )
 	{
 		memcpy( data, a, sizeof( T ) * rows * cols );
 	}
@@ -474,7 +474,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m.data[ i ][ j ] = static_cast< T >( 0 );
+				m.data[ i ][ j ] = static_cast< T >( 0.f );
 			}
 		}
 
@@ -499,19 +499,19 @@ namespace vul {
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > makeMatrix( const Matrix< T, cols, rows > &m )
 	{
-		Matrix< T, cols, rows > m;
+		Matrix< T, cols, rows > r;
 		i32_t i, j;
 		
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m.data[ i ][ j ] = m( i, j );
+				r.data[ i ][ j ] = m( i, j );
 			}
 		}
 
-		return m;
+		return r;
 	}	
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > makeMatrix( T (& a)[ rows ][ cols ] )
+	Matrix< T, cols, rows > makeMatrix( T (& a)[ cols ][ rows ] )
 	{
 		Matrix< T, cols, rows > m;
 		i32_t i, j;
@@ -680,9 +680,9 @@ namespace vul {
 		i32_t i;
 
 #ifdef VUL_CPLUSPLUS11
-		m = Matrix< T, n, n >( static_cast< T >( 0 ) );
+		m = Matrix< T, n, n >( static_cast< T >( 0.f ) );
 #else
-		m = makeMatrix< T, n, n >( static_cast< T >( 0 ) );
+		m = makeMatrix< T, n, n >( static_cast< T >( 0.f ) );
 #endif
 		for( i = 0; i < n; ++i ) {
 			m( i, i ) = static_cast< T >( 1 );
@@ -693,7 +693,7 @@ namespace vul {
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > makeMatrixFromRows( const Vector< T, cols > r[ rows ] )
 	{
-		Matrix< T, n, n > m;
+		Matrix< T, cols, rows > m;
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
@@ -707,7 +707,7 @@ namespace vul {
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > makeMatrixFromColumns( const Vector< T, rows > c[ cols ] )
 	{
-		Matrix< T, n, n > m;
+		Matrix< T, cols, rows > m;
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
@@ -822,7 +822,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				data[ i ][ j ] += m( i, j );
+				data[ i ][ j ] += rhs( i, j );
 			}
 		}
 
@@ -835,7 +835,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				data[ i ][ j ] -= m( i, j );
+				data[ i ][ j ] -= rhs( i, j );
 			}
 		}
 
@@ -931,7 +931,7 @@ namespace vul {
 			}
 		}
 
-		return static_cast< T >( 0 );
+		return static_cast< T >( 0.f );
 	}
 
 	template< typename T, i32_t cols, i32_t rows >
@@ -1030,7 +1030,7 @@ namespace vul {
 
 		for( i = 0; i < rowa; ++i ) {
 			for( j = 0; j < colb; ++j ) {
-				sum = static_cast< T >( 0 );
+				sum = static_cast< T >( 0.f );
 				for( k = 0; k < shared; ++k ) {
 					sum += a( i, k ) * b( k, j );
 				}
@@ -1167,9 +1167,9 @@ namespace vul {
 		i32_t i, j;
 
 #ifdef VUL_CPLUSPLUS11
-		v = Vector< T, rows >( static_cast< T >( 0 ) );
+		v = Vector< T, rows >( static_cast< T >( 0.f ) );
 #else
-		v = makeVector< T, rows >( static_cast< T >( 0 ) );
+		v = makeVector< T, rows >( static_cast< T >( 0.f ) );
 #endif
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -1186,9 +1186,9 @@ namespace vul {
 		i32_t i, j;
 		
 #ifdef VUL_CPLUSPLUS11
-		v = Vector< T, rows >( static_cast< T >( 0 ) );
+		v = Vector< T, rows >( static_cast< T >( 0.f ) );
 #else
-		v = makeVector< T, rows >( static_cast< T >( 0 ) );
+		v = makeVector< T, rows >( static_cast< T >( 0.f ) );
 #endif
 		for( j = 0; j < rows; ++j ) {
 			for( i = 0; i < cols; ++i ) {
@@ -1205,9 +1205,9 @@ namespace vul {
 		i32_t i, j;
 
 #ifdef VUL_CPLUSPLUS11
-		v = Point< T, rows >( static_cast< T >( 0 ) );
+		v = Point< T, rows >( static_cast< T >( 0.f ) );
 #else
-		v = makePoint< T, rows >( static_cast< T >( 0 ) );
+		v = makePoint< T, rows >( static_cast< T >( 0.f ) );
 #endif
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -1224,9 +1224,9 @@ namespace vul {
 		i32_t i, j;
 		
 #ifdef VUL_CPLUSPLUS11
-		v = Point< T, rows >( static_cast< T >( 0 ) );
+		v = Point< T, rows >( static_cast< T >( 0.f ) );
 #else
-		v = makePoint< T, rows >( static_cast< T >( 0 ) );
+		v = makePoint< T, rows >( static_cast< T >( 0.f ) );
 #endif
 		for( j = 0; j < rows; ++j ) {
 			for( i = 0; i < cols; ++i ) {

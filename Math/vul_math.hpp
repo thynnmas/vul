@@ -30,6 +30,9 @@
  *		 .x-style access. Need to duplicate all general vector code per
  *		 specialization though, so do this in separate files for cleanliness,
  *		 and use opportunity to write faster functions for these versions.
+ *		 Possibly write full specializations instead for the normal types;
+ *		 consider which will give less code duplication.
+ *		-2x2, 3x3 & 4x4 matrix inversions as special cases for speed.
  * 
  * ¹ If public domain is not legally valid in your country and or legal area,
  *   the MIT licence applies (see the LICENCE file)

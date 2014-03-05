@@ -9,6 +9,9 @@
  *  -Quicksort ( Fastest for medium sized vectors [10^4 ,10^5] )
  *  -Thynnsort ( Fastest for large vectors [10^4, inf] )
  * @TODO: Make a stable version of vul_sort that doesn't use shell sort.
+ * @TODO: Bottom-up merge sort
+ * @TODO: Heap sort
+ * @TODO: Radix sort
  * 
  * ¹ If public domain is not legally valid in your country and or legal area,
  *   the MIT licence applies (see the LICENCE file)

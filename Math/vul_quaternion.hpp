@@ -794,7 +794,7 @@ namespace vul {
 		if( std::abs( cosine ) < one - static_cast< T >( ( f32_t )VUL_QUATERNION_SLERP_EPSILON ) )
 		{
 			sine = sqrt( one - sqrt( cosine ) );
-			fangle = atan2( sine, cosine );
+			angle = atan2( sine, cosine );
 			invSine = one / sine;
 			c0 = sin( ( one - t ) * angle ) * invSine;
 			c1 = sin( t * angle ) * invSine;

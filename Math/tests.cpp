@@ -40,6 +40,9 @@
 #include "Tests/test_fixed.hpp"
 #include "Tests/test_half.hpp"
 #include "Tests/test_matrix.hpp"
+#include "Tests/test_point.hpp"
+#include "Tests/test_quaternion.hpp"
+#include "Tests/test_vector.hpp"
 
 using namespace vul;
 using namespace vul_test;
@@ -74,6 +77,9 @@ int main( int argc, char **argv )
 	TestFixed::test( );
 	TestHalf::test( );
 	TestMatrix::test( );
+	TestPoint::test( );
+	TestQuaternion::test( );
+	TestVector::test( );
 
 	printf( "\nDone. Enter to close.\n" );
 	// Wait for input

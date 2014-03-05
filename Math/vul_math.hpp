@@ -16,9 +16,15 @@
  * vectors of simd types, f.e. 4 Vector< f32_t, 3 >s into 1 Vector< __m128, 3 >, then operate
  * on those.
  *
+ * Since templates need to be redefined for every compilation unit anyway, we only need a
+ * definition guard for functions with no varied template arguments, which is constrained
+ * to vul_aabb.hpp's functions. Still, define VUL_DEFINE in a _single_ c/cpp file to define
+ * these.
+ *
  * Library format inspired by http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/
  * 
  * @TODO: Test C++11 version. Test other compilers!
+ * @TODO: Run melton, lint & other static analysis tools.
  * @TODO: Planned features:
  *		-Write proper test funciton; exhaustive half-testing and proper other tests.
  *		 See the comment in tests.cpp of the exact plan.

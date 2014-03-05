@@ -231,12 +231,12 @@ namespace vul {
 	template< typename T >
 	T dot( const Quaternion< T > &a, const Quaternion< T > &b );
 	/**
-	 * Calculates the inverse of a quaternion.
+	 * Calculates the normalized inverse of a quaternion.
 	 */
 	template< typename T >
 	Quaternion< T > inverse( const Quaternion< T > &q );
 	/**
-	 * Calculates the normalized inverse of a quaternion.
+	 * Calculates the inverse of a normalized quaternion.
 	 */
 	template< typename T >
 	Quaternion< T > unitInverse( const Quaternion< T > &q );
@@ -718,9 +718,9 @@ namespace vul {
 	T norm( const Quaternion< T > &q )
 	{
 		return q[ 0 ] * q[ 0 ]
-				+ q[ 1 ] * q[ 1 ]
-				+ q[ 2 ] * q[ 2 ]
-				+ q[ 3 ] * q[ 3 ];
+			 + q[ 1 ] * q[ 1 ]
+			 + q[ 2 ] * q[ 2 ]
+			 + q[ 3 ] * q[ 3 ];
 	}
 	template< typename T >
 	Quaternion< T > normalize( const Quaternion< T > &q )
@@ -736,9 +736,9 @@ namespace vul {
 	T dot( const Quaternion< T > &a, const Quaternion< T > &b  )
 	{
 		return a[ 0 ] * b[ 0 ]
-				+ a[ 1 ] * b[ 1 ]
-				+ a[ 2 ] * b[ 2 ]
-				+ a[ 3 ] * b[ 3 ];
+			 + a[ 1 ] * b[ 1 ]
+			 + a[ 2 ] * b[ 2 ]
+			 + a[ 3 ] * b[ 3 ];
 	}
 	template< typename T >
 	Quaternion< T > inverse( const Quaternion< T > &q )
@@ -748,7 +748,7 @@ namespace vul {
 
 		len = norm( q );
 
-		// Inv erse is only valid for length != 0.
+		// Inverse is only valid for length != 0.
 		assert( len > static_cast< T >( 0.f ) );
 
 		invLen = static_cast< T >( 1.f ) / len;
@@ -782,7 +782,7 @@ namespace vul {
 		zero = static_cast< T >( 0.f );
 		one = static_cast< T >( 1.f );
 		
-		cosine = dot( b );
+		cosine = dot( a, b );
 		if( cosine < zero && useShortestPath )
 		{
 			cosine = -cosine;
@@ -791,7 +791,7 @@ namespace vul {
 			nb = b;
 		}
 
-		if( std::abs( cosine ) < one - static_cast< T >( VUL_QUATERNION_SLERP_EPSILON ) )
+		if( std::abs( cosine ) < one - static_cast< T >( ( f32_t )VUL_QUATERNION_SLERP_EPSILON ) )
 		{
 			sine = sqrt( one - sqrt( cosine ) );
 			fangle = atan2( sine, cosine );
@@ -815,7 +815,7 @@ namespace vul {
 		Quaternion< T > q;
 		T cosine;
 
-		cosine = dot( b );
+		cosine = dot( a, b );
 		if( cosine < static_cast< T >( 0.f ) && useShortestPath )
 		{
 			q = a + t * ( ( -b ) - a );

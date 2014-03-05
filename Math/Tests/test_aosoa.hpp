@@ -217,4 +217,6 @@ namespace vul_test {
 	}
 };
 
+#undef VUL_TEST_RNG
+
 #endif

@@ -226,7 +226,7 @@ namespace vul {
 	template< int Q >
 	half::operator fixed_32< Q >( ) const
 	{
-		return fixed32< Q >( ( float )*this );
+		return fixed_32< Q >( ( float )*this );
 	}
 
 	half& half::operator=( half rhs )
@@ -447,8 +447,6 @@ namespace vul {
 	{
 		float r;
 
-		float fa = (float)a;
-		float fb = (float)b;
 		r = ( float )a + ( float )b;
 
 		return half( r );
@@ -457,8 +455,6 @@ namespace vul {
 	{
 		float r;
 
-		float fa = (float)a;
-		float fb = (float)b;
 		r = ( float )a - ( float )b;
 
 		return half( r );

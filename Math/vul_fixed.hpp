@@ -200,9 +200,9 @@ namespace vul {
 #pragma warning ( disable: 4293 ) // We are aware, and branch accordingly
 		// Negative shifts are undefined, so branch
 		if( Q > Q32 ) {
-			r.data = a.data << ( Q - Q32 );
+			r.data = data << ( Q - Q32 );
 		} else {
-			r.data = a.data >> ( Q32 - Q );
+			r.data = data >> ( Q32 - Q );
 		}
 #pragma warning ( default: 4293 )
 

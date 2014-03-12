@@ -18,6 +18,10 @@
 #ifndef VUL_AABB_HPP
 #define VUL_AABB_HPP
 
+#include <mmintrin.h>
+#include <emmintrin.h>
+#include <xmmintrin.h>
+
 #include "vul_types.hpp"
 #include "vul_vector.hpp"
 #include "vul_matrix.hpp"

@@ -35,7 +35,11 @@
 
 // Choose one or neither of these
 //#define VUL_HALF_TABLE // @TODO: Actually calculate the table and include it!
-//#define VUL_HALF_SSE // @TODO: Fix this; doesn't work atm.
+//#define VUL_HALF_AVX // @TODO: Fix this; doesn't work atm.
+
+#ifdef VUL_HALF_AVX
+	#include <immintrin.h>
+#endif
 
 namespace vul {
 	
@@ -142,7 +146,7 @@ namespace vul {
 	{
 #if defined( VUL_HALF_TABLE )
 		error
-#elif defined( VUL_HALF_SSE )
+#elif defined( VUL_HALF_AVX )
 		data = _mm_cvtph_ps( a );
 #else
 		int i, te;
@@ -184,7 +188,7 @@ namespace vul {
 	{
 #if defined( VUL_HALF_TABLE )
 
-#elif defined( VUL_HALF_SSE )
+#elif defined( VUL_HALF_AVX )
 		return _cvtsh_ss( data );
 #else
 		int i;
@@ -523,7 +527,7 @@ namespace vul {
 	void vul_single_to_half_array( half *out, float *in, unsigned int count )
 	{
 		unsigned int i;
-#ifdef VUL_HALF_SSE
+#ifdef VUL_HALF_AVX
 		M128 veci;
 		M128i veco;
 		unsigned int of[ 4 ], j;
@@ -552,7 +556,7 @@ namespace vul {
 	void vul_half_to_single_array( float *out, half *in, unsigned int count )
 	{
 		unsigned int i;
-#ifdef VUL_HALF_SSE
+#ifdef VUL_HALF_AVX
 		M128i veci;
 		M128 veco;
 		unsigned int inf[ 4 ], j;
@@ -586,8 +590,8 @@ namespace vul {
 	{
 		unsigned int i;
 #ifdef VUL_HALF_SSE
-		M128 veci;
-		M128i veco;
+		__m128 veci;
+		__m128i veco;
 		unsigned int of[ 4 ], j;
 
 		for ( i = 0; i < ( count & 0xfffffffc ); i += 4 ) { // i < count - ( count % 4 )
@@ -614,9 +618,9 @@ namespace vul {
 	void vul_half_to_double_array( double *out, half *in, unsigned int count )
 	{
 		unsigned int i;
-#ifdef VUL_HALF_SSE
-		M128i veci;
-		M128 veco;
+#ifdef VUL_HALF_AVX
+		__m128i veci;
+		__m128 veco;
 		unsigned int inf[ 4 ], j;
 		float of[ 4 ];
 

@@ -20,7 +20,9 @@
 #include <cassert>
 
 #include "../vul_math.hpp"
-#include "glm.hpp"
+#ifdef VUL_TEST_REFERENCE
+	#include "glm.hpp"
+#endif
 
 #define VUL_TEST_FUZZ_COUNT 10000
 #define VUL_TEST_RNG ( float )( ( float )rand( ) / ( float )RAND_MAX )
@@ -480,6 +482,7 @@ namespace vul_test {
 		f32_t f32eps = 1e-5f;
 
 		// For matrix multiplication (and our vector specializations), we also compare to reference implementation.
+#ifdef VUL_TEST_REFERENCE
 		for( ui32_t i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
 			Matrix< f32_t, 4, 4 > m44a, m44b, m44r;
 			glm::mat4x4 gm44a, gm44b, gm44r;
@@ -520,6 +523,7 @@ namespace vul_test {
 				assert( abs( gv4r[ j ] - v4r[ j ] ) < f32eps );
 			}
 		}	
+#endif
 
 		// Componentwise arithmetics
 		mr = m32 - 1.f;

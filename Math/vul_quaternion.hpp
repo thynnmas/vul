@@ -28,11 +28,6 @@
 #include "vul_matrix.hpp"
 
 /**
- * Define this for the c++11 version
- */
-//#define VUL_CPLUSPLUS11
-
-/**
  * PI...
  */
 #define VUL_PI 3.1415926535897932384626433832795

@@ -23,11 +23,6 @@
 
 #include "vul_types.hpp"
 
-/**
- * Define this for the c++11 version
- */
-//#define VUL_CPLUSPLUS11
-
 namespace vul {
 	
 	template< typename T, i32_t n >

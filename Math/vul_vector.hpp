@@ -25,11 +25,6 @@
 #include "vul_point.hpp"
 #include <assert.h>
 
-/**
- * Define this for the c++11 version
- */
-//#define VUL_CPLUSPLUS11
-
 namespace vul {
 	
 	//----------------

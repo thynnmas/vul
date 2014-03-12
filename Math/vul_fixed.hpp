@@ -25,11 +25,6 @@
 #ifndef VUL_FIXED_HPP
 #define VUL_FIXED_HPP
 
-/**
- * Define this for the c++11 version
- */
-//#define VUL_CPLUSPLUS11
-
 #include <cmath>
 
 namespace vul {

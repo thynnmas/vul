@@ -24,6 +24,7 @@
  * Library format inspired by http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/
  * 
  * @TODO: Test C++11 version. Test other compilers!
+ * @TODO: The todos in vul_half.hpp
  * @TODO: Run melton, lint & other static analysis tools.
  * @TODO: Planned features:
  *		-Write proper test funciton; exhaustive half-testing and proper other tests.
@@ -53,6 +54,11 @@
  */
 #ifndef VUL_MATH_HPP
 #define VUL_MATH_HPP
+
+/**
+ * Define this for the c++11 version
+ */
+//#define VUL_CPLUSPLUS11
 
 #include "vul_types.hpp"
 

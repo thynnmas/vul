@@ -23,11 +23,6 @@
 #include "vul_matrix.hpp"
 #include "vul_affine.hpp"
 
-/**
- * Define this for the c++11 version
- */
-//#define VUL_CPLUSPLUS11
-
 namespace vul {
 	
 	//----------------
@@ -334,7 +329,7 @@ namespace vul {
 	// AOSOA SSE functions
 	// These are specializations for vectors of sse types (see vul_aosoa.hpp)
 	//
-	/* @TODO: These don't agree with transform(); test both and check which is right! */
+#ifdef VUL_DEFINE
 	void transform3D( AABB< __m128, 3 > *out, const AABB< __m128, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count )
 	{
 		ui32_t i, j, simdCount;
@@ -589,6 +584,7 @@ namespace vul {
 			bb->_max[ 2 ] = zNewMaxes;
 		}
 	}
+#endif
 }
 
 #endif

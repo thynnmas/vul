@@ -10,6 +10,8 @@
  * Otherwise, a slower runtime calculation is done.
  * 
  * @TODO: Implement table and SSE versions!
+ * @TODO: Convert directly to/from double and fixed formats.
+ * @TODO: Test if working in half format the whole way is faster (for ops)
  *
  * ¹ If public domain is not legally valid in your country and or legal area,
  *   the MIT licence applies (see the LICENCE file)
@@ -30,11 +32,6 @@
 #include <limits>
 #include <climits>
 #include <cmath>
-
-/**
- * Define this for the c++11 version
- */
-//#define VUL_CPLUSPLUS11
 
 // Choose one or neither of these
 //#define VUL_HALF_TABLE // @TODO: Actually calculate the table and include it!
@@ -181,7 +178,6 @@ namespace vul {
 	template< int Q >
 	half::half( fixed_32< Q > a )
 	{
-		// @TODO: I've been lazy here. Write a proper conversion from fixed_32 and test if faster!
 		*this = half( ( float )a );
 	}
 	half::operator float( ) const
@@ -225,13 +221,11 @@ namespace vul {
 	}
 	half::operator double( ) const
 	{
-		// @TODO: I've been lazy here. Write a proper conversion to double and test if it is faster!
 		return ( double )( ( float )*this );
 	}
 	template< int Q >
 	half::operator fixed_32< Q >( ) const
 	{
-		// @TODO: I've been lazy here. Write a proper conversion to fixed_32 and test if it is faster!
 		return fixed32< Q >( ( float )*this );
 	}
 
@@ -242,7 +236,6 @@ namespace vul {
 	}
 	half& half::operator+=( half rhs )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float a, b, r;
 
 		a = ( float )*this;
@@ -254,7 +247,6 @@ namespace vul {
 	}
 	half& half::operator-=( half rhs )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float a, b, r;
 
 		a = ( float )*this;
@@ -266,7 +258,6 @@ namespace vul {
 	}
 	half& half::operator*=( half rhs )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float a, b, r;
 
 		a = ( float )*this;
@@ -278,7 +269,6 @@ namespace vul {
 	}
 	half& half::operator/=( half rhs )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float a, b, r;
 
 		a = ( float )*this;
@@ -296,7 +286,6 @@ namespace vul {
 	}
 	half& half::operator+=( float rhs )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float a, r;
 
 		a = ( float )*this;
@@ -307,7 +296,6 @@ namespace vul {
 	}
 	half& half::operator-=( float rhs )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float a, r;
 
 		a = ( float )*this;
@@ -318,7 +306,6 @@ namespace vul {
 	}
 	half& half::operator*=( float rhs )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float a, r;
 
 		a = ( float )*this;
@@ -329,7 +316,6 @@ namespace vul {
 	}
 	half& half::operator/=( float rhs )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float a, r;
 
 		a = ( float )*this;
@@ -348,7 +334,6 @@ namespace vul {
 	template< int Q >
 	half& half::operator+=( fixed_32< Q > rhs )
 	{		
-		// @TODO: Test if working in half format the whole way is faster.
 		float a, b, r;
 
 		a = ( float )*this;
@@ -361,7 +346,6 @@ namespace vul {
 	template< int Q >
 	half& half::operator-=( fixed_32< Q > rhs )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float a, b, r;
 
 		a = ( float )*this;
@@ -374,7 +358,6 @@ namespace vul {
 	template< int Q >
 	half& half::operator*=( fixed_32< Q > rhs )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float a, b, r;
 
 		a = ( float )*this;
@@ -387,7 +370,6 @@ namespace vul {
 	template< int Q >
 	half& half::operator/=( fixed_32< Q > rhs )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float a, b, r;
 
 		a = ( float )*this;
@@ -400,7 +382,6 @@ namespace vul {
 
 	half& half::operator++( )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float f;
 
 		f = ( ( float )*this ) + 1.f;
@@ -410,7 +391,6 @@ namespace vul {
 	}
 	half& half::operator--( )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float f;
 
 		f = ( ( float )*this ) - 1.f;
@@ -420,7 +400,6 @@ namespace vul {
 	}
 	half half::operator++( int )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float f;
 
 		f = ( ( float )*this ) + 1.f;
@@ -430,7 +409,6 @@ namespace vul {
 	}
 	half half::operator--( int )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float f;
 
 		f = ( ( float )*this ) - 1.f;
@@ -467,7 +445,6 @@ namespace vul {
 
 	half operator+( half a, half b )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float r;
 
 		float fa = (float)a;
@@ -478,7 +455,6 @@ namespace vul {
 	}
 	half operator-( half a, half b )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float r;
 
 		float fa = (float)a;
@@ -489,7 +465,6 @@ namespace vul {
 	}
 	half operator*( half a, half b )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float r;
 
 		r = ( float )a * ( float )b;
@@ -498,7 +473,6 @@ namespace vul {
 	}
 	half operator/( half a, half b )
 	{
-		// @TODO: Test if working in half format the whole way is faster.
 		float r;
 
 		r = ( float )a / ( float )b;

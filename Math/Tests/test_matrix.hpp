@@ -431,7 +431,6 @@ namespace vul_test {
 	}
 	bool TestMatrix::ops( )
 	{
-		// @TODO: This
 		Matrix< f32_t, 3, 2 > m32, mr;
 		m32.data[ 0 ][ 0 ] = 1.f;
 		m32.data[ 0 ][ 1 ] = 2.f;

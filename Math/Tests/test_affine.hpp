@@ -162,8 +162,6 @@ namespace vul_test {
 		Vector< f32_t, 3 > v3 = makeVector< f32_t, 3 >( 1.f );
 		Vector< f32_t, 8 > v8 = makeVector< f32_t, 8 >( 1.f );
 		Point< f32_t, 2 > p2 = makePoint< f32_t, 2 >( 1.f );
-		Point< f32_t, 3 > p3 = makePoint< f32_t, 3 >( 1.f );
-		Point< f32_t, 8 > p8 = makePoint< f32_t, 8 >( 1.f );
 #endif
 		// Test identity transfomrations
 		v2 = i2 * v2;

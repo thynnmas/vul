@@ -66,10 +66,10 @@ namespace vul_test {
 #endif
 		}
 
-		pack( p32_4, v32, 16 );
-		pack( p32_8, v32, 16 );
-		pack( p64_2, v64, 16 );
-		pack( p64_4, v64, 16 );
+		pack< 9 >( p32_4, v32, 16 );
+		pack< 9 >( p32_8, v32, 16 );
+		pack< 9 >( p64_2, v64, 16 );
+		pack< 9 >( p64_4, v64, 16 );
 
 		for( ui32_t j = 0; j < 9; ++j ) {
 			for( ui32_t i = 0; i < 8; ++i ) {
@@ -99,14 +99,14 @@ namespace vul_test {
 			}
 		}
 
-		unpack( o32, p32_4, 16 );
-		unpack( o64, p64_4, 16 );
+		unpack< 9 >( o32, p32_4, 16 );
+		unpack< 9 >( o64, p64_4, 16 );
 		for( ui32_t i = 0; i < 16; ++i ) {
 			assert( all( o32[ i ] == v32[ i ] ) );
 			assert( all( o64[ i ] == v64[ i ] ) );
 		}
-		unpack( o32, p32_8, 16 );
-		unpack( o64, p64_2, 16 );
+		unpack< 9 >( o32, p32_8, 16 );
+		unpack< 9 >( o64, p64_2, 16 );
 		for( ui32_t i = 0; i < 16; ++i ) {
 			assert( all( o32[ i ] == v32[ i ] ) );
 			assert( all( o64[ i ] == v64[ i ] ) );
@@ -139,10 +139,10 @@ namespace vul_test {
 #endif
 		}
 
-		pack( p32_4, v32, 16 );
-		pack( p32_8, v32, 16 );
-		pack( p64_2, v64, 16 );
-		pack( p64_4, v64, 16 );
+		pack< 9 >( p32_4, v32, 16 );
+		pack< 9 >( p32_8, v32, 16 );
+		pack< 9 >( p64_2, v64, 16 );
+		pack< 9 >( p64_4, v64, 16 );
 
 		for( ui32_t j = 0; j < 9; ++j ) {
 			for( ui32_t i = 0; i < 8; ++i ) {
@@ -194,8 +194,8 @@ namespace vul_test {
 			}
 		}
 
-		unpack( o32, p32_4, 16 );
-		unpack( o64, p64_4, 16 );
+		unpack< 9 >( o32, p32_4, 16 );
+		unpack< 9 >( o64, p64_4, 16 );
 		for( ui32_t i = 0; i < 16; ++i ) {
 			assert( all( o32[ i ]._min == v32[ i ]._min ) );
 			assert( all( o32[ i ]._max == v32[ i ]._max ) );
@@ -203,8 +203,8 @@ namespace vul_test {
 			assert( all( o64[ i ]._min == v64[ i ]._min ) );
 			assert( all( o64[ i ]._max == v64[ i ]._max ) );
 		}
-		unpack( o32, p32_8, 16 );
-		unpack( o64, p64_2, 16 );
+		unpack< 9 >( o32, p32_8, 16 );
+		unpack< 9 >( o64, p64_2, 16 );
 		for( ui32_t i = 0; i < 16; ++i ) {
 			assert( all( o32[ i ]._min == v32[ i ]._min ) );
 			assert( all( o32[ i ]._max == v32[ i ]._max ) );

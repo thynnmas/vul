@@ -367,8 +367,6 @@ namespace vul_test {
 		
 		// The rotate means we now have corners at sqrt(2) distance.
 
-		f32_t tmp = ( f32_t )( 0.5f * (  1.f - sqrt( 3.f ) ) );
-		f32_t hmm = tmp - r2._min[ 1 ];
 		assert( r2._min[ 0 ] == -2.3660254f );
 		assert( r2._min[ 1 ] == -0.36602545f );
 		assert( r2._max[ 0 ] == 0.36602545f );
@@ -386,12 +384,12 @@ namespace vul_test {
 
 	bool TestAABB::transforms3D( )
 	{
-		AABB< __m128, 3 > m128[ 4 ], r128[ 4 ];
-		AABB< __m128d, 3 > m128d[ 2 ], r128d[ 2 ];
-		AABB< __m256, 3 > m256[ 8 ], r256[ 8 ];
-		AABB< __m256d, 3 > m256d[ 4 ], r256d[ 4 ];
-		AABB< f32_t, 3 > in32[ 8 ];
-		AABB< f64_t, 3 > in64[ 4 ];
+		AABB< __m128, 3u > m128[ 4 ], r128[ 4 ];
+		AABB< __m128d, 3u > m128d[ 2 ], r128d[ 2 ];
+		AABB< __m256, 3u > m256[ 8 ], r256[ 8 ];
+		AABB< __m256d, 3u > m256d[ 4 ], r256d[ 4 ];
+		AABB< f32_t, 3u > in32[ 8 ];
+		AABB< f64_t, 3u > in64[ 4 ];
 		f32_t mat[ 9 ], vec[ 3 ], aabb_min[ 3 ], aabb_max[ 3 ];
 		
 		// Rotate 45 deg around y
@@ -412,8 +410,8 @@ namespace vul_test {
 		aabb_min[ 0 ] = aabb_min[ 1 ] = aabb_min[ 2 ] = -1.f;
 		aabb_max[ 0 ] = aabb_max[ 1 ] = aabb_max[ 2 ] = 1.f;
 		// At this point, we have asserted that the normal transform works, so use that as a reference
-		AABB< f32_t, 3 > ref32_in, ref32_out;
-		AABB< f64_t, 3 > ref64_in, ref64_out;
+		AABB< f32_t, 3u > ref32_in, ref32_out;
+		AABB< f64_t, 3u > ref64_in, ref64_out;
 		
 #ifdef VUL_CPLUSPLUS11
 		ref32_in._min = Point< f32_t, 3 >( aabb_min );
@@ -421,41 +419,41 @@ namespace vul_test {
 		ref64_in._min = Point< f64_t, 3 >( aabb_min );
 		ref64_in._max = Point< f64_t, 3 >( aabb_max );
 		
-		Affine< f64_t, 3 > a64 = Affine< f64_t, 3 >( Matrix< f64_t, 3, 3 >( mat ), Vector< f64_t, 3 >( vec ) );
-		Affine< f32_t, 3 > a32 = Affine< f32_t, 3 >( Matrix< f32_t, 3, 3 >( mat ), Vector< f32_t, 3 >( vec ) );
+		Affine< f64_t, 3u > a64 = Affine< f64_t, 3u >( Matrix< f64_t, 3u, 3u >( mat ), Vector< f64_t, 3u >( vec ) );
+		Affine< f32_t, 3u > a32 = Affine< f32_t, 3u >( Matrix< f32_t, 3u, 3u >( mat ), Vector< f32_t, 3u >( vec ) );
 
-		in32[ 0 ] = AABB< f32_t, 3 >( Point< f32_t, 3 >( aabb_min ), Point< f32_t, 3 >( aabb_max ) );
-		in64[ 0 ] = AABB< f64_t, 3 >( Point< f64_t, 3 >( aabb_min ), Point< f64_t, 3 >( aabb_max ) );
+		in32[ 0 ] = AABB< f32_t, 3u >( Point< f32_t, 3u >( aabb_min ), Point< f32_t, 3u >( aabb_max ) );
+		in64[ 0 ] = AABB< f64_t, 3u >( Point< f64_t, 3u >( aabb_min ), Point< f64_t, 3u >( aabb_max ) );
 #else
-		ref32_in._min = makePoint< f32_t, 3 >( aabb_min );
-		ref32_in._max = makePoint< f32_t, 3 >( aabb_max );
-		ref64_in._min = makePoint< f64_t, 3 >( aabb_min );
-		ref64_in._max = makePoint< f64_t, 3 >( aabb_max );
+		ref32_in._min = makePoint< f32_t, 3u >( aabb_min );
+		ref32_in._max = makePoint< f32_t, 3u >( aabb_max );
+		ref64_in._min = makePoint< f64_t, 3u >( aabb_min );
+		ref64_in._max = makePoint< f64_t, 3u >( aabb_max );
 		
-		Affine< f64_t, 3 > a64 = makeAffine< f64_t, 3 >( makeMatrix< f64_t, 3, 3 >( mat ), makeVector< f64_t, 3 >( vec ) );
-		Affine< f32_t, 3 > a32 = makeAffine< f32_t, 3 >( makeMatrix< f32_t, 3, 3 >( mat ), makeVector< f32_t, 3 >( vec ) );
+		Affine< f64_t, 3u > a64 = makeAffine< f64_t, 3u >( makeMatrix< f64_t, 3u, 3u >( mat ), makeVector< f64_t, 3u >( vec ) );
+		Affine< f32_t, 3u > a32 = makeAffine< f32_t, 3u >( makeMatrix< f32_t, 3u, 3u >( mat ), makeVector< f32_t, 3u >( vec ) );
 
-		in32[ 0 ] = makeAABB< f32_t, 3 >( makePoint< f32_t, 3 >( aabb_min ), makePoint< f32_t, 3 >( aabb_max ) );
-		in64[ 0 ] = makeAABB< f64_t, 3 >( makePoint< f64_t, 3 >( aabb_min ), makePoint< f64_t, 3 >( aabb_max ) );
+		in32[ 0 ] = makeAABB< f32_t, 3u >( makePoint< f32_t, 3u >( aabb_min ), makePoint< f32_t, 3u >( aabb_max ) );
+		in64[ 0 ] = makeAABB< f64_t, 3u >( makePoint< f64_t, 3u >( aabb_min ), makePoint< f64_t, 3u >( aabb_max ) );
 #endif
 		// Transform the reference
 		ref32_out = transform( ref32_in, a32 );
 		ref64_out = transform( ref64_in, a64 );
 		
 		// Pack, transform.
-		pack( &m128[ 0 ], &in32[ 0 ], 1 );
-		pack( &m128d[ 0 ], &in64[ 0 ], 1 );
-		pack( &m256[ 0 ], &in32[ 0 ], 1 );
-		pack( &m256d[ 0 ], &in64[ 0 ], 1 );
+		pack< 3 >( &m128[ 0 ], &in32[ 0 ], 1u );
+		pack< 3 >( &m128d[ 0 ], &in64[ 0 ], 1u );
+		pack< 3 >( &m256[ 0 ], &in32[ 0 ], 1u );
+		pack< 3 >( &m256d[ 0 ], &in64[ 0 ], 1u );
 
-		transform3D( &r128[ 0 ], &m128[ 0 ], a32, 1 );
-		transform3D( &r128d[ 0 ], &m128d[ 0 ], a64, 1 );
-		transform3D( &r256[ 0 ], &m256[ 0 ], a32, 1 );
-		transform3D( &r256d[ 0 ], &m256d[ 0 ], a64, 1 );
+		transform3D( &r128[ 0 ], &m128[ 0 ], a32, 1u );
+		transform3D( &r128d[ 0 ], &m128d[ 0 ], a64, 1u );
+		transform3D( &r256[ 0 ], &m256[ 0 ], a32, 1u );
+		transform3D( &r256d[ 0 ], &m256d[ 0 ], a64, 1u );
 		
 		//unpack the vectorized ones and compare to reference
-		unpack( &in32[ 0 ], &r128[ 0 ], 1 );
-		unpack( &in64[ 0 ], &r128d[ 0 ], 1 );
+		unpack< 3 >( &in32[ 0 ], &r128[ 0 ], 1u );
+		unpack< 3 >( &in64[ 0 ], &r128d[ 0 ], 1u );
 
 		f32_t f32eps = 1e-5f;
 		f64_t f64eps = 1e-8;
@@ -471,8 +469,8 @@ namespace vul_test {
 		assert( all( in64[ 0 ]._max - ref64_out._max < makeVector< f64_t, 3 >( f64eps ) ) );
 #endif
 
-		unpack( &in32[ 0 ], &r256[ 0 ], 1 );
-		unpack( &in64[ 0 ], &r256d[ 0 ], 1 );
+		unpack< 3 >( &in32[ 0 ], &r256[ 0 ], 1u );
+		unpack< 3 >( &in64[ 0 ], &r256d[ 0 ], 1u );
 		
 #ifdef VUL_CPLUSPLUS11
 		assert( all( in32[ 0 ]._min - ref32_out._min < Vector< f32_t, 3 >( f32eps ) ) );

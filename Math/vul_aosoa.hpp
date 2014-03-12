@@ -20,6 +20,8 @@
 #define VUL_AOSOA_HPP
 
 #include <immintrin.h>
+#include <smmintrin.h>
+#include <xmmintrin.h>
 
 #include "vul_types.hpp"
 #include "vul_vector.hpp"

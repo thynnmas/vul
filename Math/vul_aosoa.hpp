@@ -223,10 +223,19 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
+#ifdef __GNUC__
+				f32_t arr[ 4 ];
+				_mm_store_ps( arr, in[ i ][ j ] );
+				out[ i * 4     ][ j ] = arr[ 3 ];
+				out[ i * 4 + 1 ][ j ] = arr[ 2 ];
+				out[ i * 4 + 2 ][ j ] = arr[ 1 ];
+				out[ i * 4 + 3 ][ j ] = arr[ 0 ];
+#else
 				out[ i * 4     ][ j ] = in[ i ][ j ].m128_f32[ 3 ];
 				out[ i * 4 + 1 ][ j ] = in[ i ][ j ].m128_f32[ 2 ];
 				out[ i * 4 + 2 ][ j ] = in[ i ][ j ].m128_f32[ 1 ];
 				out[ i * 4 + 3 ][ j ] = in[ i ][ j ].m128_f32[ 0 ];
+#endif
 			}
 		}
 	}
@@ -240,8 +249,15 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
+#ifdef __GNUC__
+				f64_t arr[ 2 ];
+				_mm_store_pd( arr, in[ i ][ j ] );
+				out[ i * 2     ][ j ] = arr[ 1 ];
+				out[ i * 2 + 1 ][ j ] = arr[ 0 ];
+#else
 				out[ i * 2     ][ j ] = in[ i ][ j ].m128d_f64[ 1 ];
 				out[ i * 2 + 1 ][ j ] = in[ i ][ j ].m128d_f64[ 0 ];
+#endif
 			}
 		}
 	}
@@ -255,6 +271,18 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
+#ifdef __GNUC__
+				f32_t arr[ 8 ];
+				_mm256_store_ps( arr, in[ i ][ j ] );
+				out[ i * 8     ][ j ] = arr[ 7 ];
+				out[ i * 8 + 1 ][ j ] = arr[ 6 ];
+				out[ i * 8 + 2 ][ j ] = arr[ 5 ];
+				out[ i * 8 + 3 ][ j ] = arr[ 4 ];
+				out[ i * 8 + 4 ][ j ] = arr[ 3 ];
+				out[ i * 8 + 5 ][ j ] = arr[ 2 ];
+				out[ i * 8 + 6 ][ j ] = arr[ 1 ];
+				out[ i * 8 + 7 ][ j ] = arr[ 0 ];
+#else
 				out[ i * 8     ][ j ] = in[ i ][ j ].m256_f32[ 7 ];
 				out[ i * 8 + 1 ][ j ] = in[ i ][ j ].m256_f32[ 6 ];
 				out[ i * 8 + 2 ][ j ] = in[ i ][ j ].m256_f32[ 5 ];
@@ -263,6 +291,7 @@ namespace vul {
 				out[ i * 8 + 5 ][ j ] = in[ i ][ j ].m256_f32[ 2 ];
 				out[ i * 8 + 6 ][ j ] = in[ i ][ j ].m256_f32[ 1 ];
 				out[ i * 8 + 7 ][ j ] = in[ i ][ j ].m256_f32[ 0 ];
+#endif
 			}
 		}
 	}
@@ -276,10 +305,19 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
+#ifdef __GNUC__
+				f64_t arr[ 4 ];
+				_mm256_store_pd( arr, in[ i ][ j ] );
+				out[ i * 4     ][ j ] = arr[ 3 ];
+				out[ i * 4 + 1 ][ j ] = arr[ 2 ];
+				out[ i * 4 + 2 ][ j ] = arr[ 1 ];
+				out[ i * 4 + 3 ][ j ] = arr[ 0 ];
+#else
 				out[ i * 4     ][ j ] = in[ i ][ j ].m256d_f64[ 3 ];
 				out[ i * 4 + 1 ][ j ] = in[ i ][ j ].m256d_f64[ 2 ];
 				out[ i * 4 + 2 ][ j ] = in[ i ][ j ].m256d_f64[ 1 ];
 				out[ i * 4 + 3 ][ j ] = in[ i ][ j ].m256d_f64[ 0 ];
+#endif
 			}
 		}
 	}
@@ -288,8 +326,13 @@ namespace vul {
 	{
 		ui32_t simdCount, i, j;
 		__m128 mini[ n ], maxi[ n ];
+#ifdef __GNUC__
 		Point< __m128, n > vmin __attribute__((aligned(16)));
 		Point< __m128, n > vmax __attribute__((aligned(16)));
+#else
+		Point< __m128, n > _CRT_ALIGN(16) vmin;
+		Point< __m128, n > _CRT_ALIGN(16) vmax;
+#endif
 		
 		simdCount = ( count + 3 ) / 4;
 		for( i = 0; i < simdCount; ++i )
@@ -315,8 +358,13 @@ namespace vul {
 	{
 		ui32_t simdCount, i, j;
 		__m128d mini[ n ], maxi[ n ];
-		 Point< __m128d, n > vmin __attribute__((aligned(16)));
-		 Point< __m128d, n > vmax __attribute__((aligned(16)));
+#ifdef __GNUC__
+		Point< __m128d, n > vmin __attribute__((aligned(16)));
+		Point< __m128d, n > vmax __attribute__((aligned(16)));
+#else
+		Point< __m128d, n > _CRT_ALIGN(16) vmin;
+		Point< __m128d, n > _CRT_ALIGN(16) vmax;
+#endif
 		
 		simdCount = ( count + 1 ) / 2;
 		for( i = 0; i < simdCount; ++i )
@@ -338,8 +386,13 @@ namespace vul {
 	{
 		ui32_t simdCount, i, j;
 		__m256 mini[ n ], maxi[ n ];
-		 Point< __m256, n > vmin __attribute__((aligned(32)));
-		 Point< __m256, n > vmax __attribute__((aligned(32)));
+#ifdef __GNUC__
+		Point< __m256, n > vmin __attribute__((aligned(32)));
+		Point< __m256, n > vmax __attribute__((aligned(32)));
+#else
+		Point< __m256, n > _CRT_ALIGN(32) vmin;
+		Point< __m256, n > _CRT_ALIGN(32) vmax;
+#endif
 		
 		simdCount = ( count + 7 ) / 8;
 		for( i = 0; i < simdCount; ++i )
@@ -373,8 +426,13 @@ namespace vul {
 	{
 		ui32_t simdCount, i, j;
 		__m256d mini[ n ], maxi[ n ];
-		 Point< __m256d, n > vmin __attribute__((aligned(32)));
-		 Point< __m256d, n > vmax __attribute__((aligned(32)));
+#ifdef __GNUC__
+		Point< __m256d, n > vmin __attribute__((aligned(32)));
+		Point< __m256d, n > vmax __attribute__((aligned(32)));
+#else
+		Point< __m256d, n > _CRT_ALIGN(32) vmin;
+		Point< __m256d, n > _CRT_ALIGN(32) vmax;
+#endif
 		
 		simdCount = ( count + 3 ) / 4;
 		for( i = 0; i < simdCount; ++i )
@@ -405,6 +463,19 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
+#ifdef __GNUC__
+				f32_t arr[ 4 ];
+				_mm_store_ps( arr, in[ i ]._min[ j ] );
+				out[ i * 4     ]._min[ j ] = arr[ 3 ];
+				out[ i * 4 + 1 ]._min[ j ] = arr[ 2 ];
+				out[ i * 4 + 2 ]._min[ j ] = arr[ 1 ];
+				out[ i * 4 + 3 ]._min[ j ] = arr[ 0 ];
+				_mm_store_ps( arr, in[ i ]._max[ j ] );
+				out[ i * 4     ]._max[ j ] = arr[ 3 ];
+				out[ i * 4 + 1 ]._max[ j ] = arr[ 2 ];
+				out[ i * 4 + 2 ]._max[ j ] = arr[ 1 ];
+				out[ i * 4 + 3 ]._max[ j ] = arr[ 0 ];
+#else
 				out[ i * 4     ]._min[ j ] = in[ i ]._min[ j ].m128_f32[ 3 ];
 				out[ i * 4 + 1 ]._min[ j ] = in[ i ]._min[ j ].m128_f32[ 2 ];
 				out[ i * 4 + 2 ]._min[ j ] = in[ i ]._min[ j ].m128_f32[ 1 ];
@@ -413,6 +484,7 @@ namespace vul {
 				out[ i * 4 + 1 ]._max[ j ] = in[ i ]._max[ j ].m128_f32[ 2 ];
 				out[ i * 4 + 2 ]._max[ j ] = in[ i ]._max[ j ].m128_f32[ 1 ];
 				out[ i * 4 + 3 ]._max[ j ] = in[ i ]._max[ j ].m128_f32[ 0 ];
+#endif
 			}
 		}
 	}
@@ -426,10 +498,20 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
+#ifdef __GNUC__
+				f64_t arr[ 2 ];
+				_mm_store_pd( arr, in[ i ]._min[ j ] );
+				out[ i * 2     ]._min[ j ] = arr[ 1 ];
+				out[ i * 2 + 1 ]._min[ j ] = arr[ 0 ];
+				_mm_store_pd( arr, in[ i ]._max[ j ] );
+				out[ i * 2     ]._max[ j ] = arr[ 1 ];
+				out[ i * 2 + 1 ]._max[ j ] = arr[ 0 ];
+#else
 				out[ i * 2     ]._min[ j ] = in[ i ]._min[ j ].m128d_f64[ 1 ];
 				out[ i * 2 + 1 ]._min[ j ] = in[ i ]._min[ j ].m128d_f64[ 0 ];
 				out[ i * 2     ]._max[ j ] = in[ i ]._max[ j ].m128d_f64[ 1 ];
 				out[ i * 2 + 1 ]._max[ j ] = in[ i ]._max[ j ].m128d_f64[ 0 ];
+#endif
 			}
 		}
 	}
@@ -443,6 +525,27 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
+#ifdef __GNUC__
+				f32_t arr[ 8 ];
+				_mm256_store_ps( arr, in[ i ]._min[ j ] );
+				out[ i * 8     ]._min[ j ] = arr[ 7 ];
+				out[ i * 8 + 1 ]._min[ j ] = arr[ 6 ];
+				out[ i * 8 + 2 ]._min[ j ] = arr[ 5 ];
+				out[ i * 8 + 3 ]._min[ j ] = arr[ 4 ];
+				out[ i * 8 + 4 ]._min[ j ] = arr[ 3 ];
+				out[ i * 8 + 5 ]._min[ j ] = arr[ 2 ];
+				out[ i * 8 + 6 ]._min[ j ] = arr[ 1 ];
+				out[ i * 8 + 7 ]._min[ j ] = arr[ 0 ];
+				_mm256_store_ps( arr, in[ i ]._max[ j ] );
+				out[ i * 8     ]._max[ j ] = arr[ 7 ];
+				out[ i * 8 + 1 ]._max[ j ] = arr[ 6 ];
+				out[ i * 8 + 2 ]._max[ j ] = arr[ 5 ];
+				out[ i * 8 + 3 ]._max[ j ] = arr[ 4 ];
+				out[ i * 8 + 4 ]._max[ j ] = arr[ 3 ];
+				out[ i * 8 + 5 ]._max[ j ] = arr[ 2 ];
+				out[ i * 8 + 6 ]._max[ j ] = arr[ 1 ];
+				out[ i * 8 + 7 ]._max[ j ] = arr[ 0 ];
+#else
 				out[ i * 8     ]._min[ j ] = in[ i ]._min[ j ].m256_f32[ 7 ];
 				out[ i * 8 + 1 ]._min[ j ] = in[ i ]._min[ j ].m256_f32[ 6 ];
 				out[ i * 8 + 2 ]._min[ j ] = in[ i ]._min[ j ].m256_f32[ 5 ];
@@ -459,6 +562,7 @@ namespace vul {
 				out[ i * 8 + 5 ]._max[ j ] = in[ i ]._max[ j ].m256_f32[ 2 ];
 				out[ i * 8 + 6 ]._max[ j ] = in[ i ]._max[ j ].m256_f32[ 1 ];
 				out[ i * 8 + 7 ]._max[ j ] = in[ i ]._max[ j ].m256_f32[ 0 ];
+#endif
 			}
 		}
 	}
@@ -472,6 +576,19 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
+#ifdef __GNUC__
+				f64_t arr[ 4 ];
+				_mm256_store_pd( arr, in[ i ]._min[ j ] );
+				out[ i * 4     ]._min[ j ] = arr[ 3 ];
+				out[ i * 4 + 1 ]._min[ j ] = arr[ 2 ];
+				out[ i * 4 + 2 ]._min[ j ] = arr[ 1 ];
+				out[ i * 4 + 3 ]._min[ j ] = arr[ 0 ];
+				_mm256_store_pd( arr, in[ i ]._max[ j ] );
+				out[ i * 4     ]._max[ j ] = arr[ 3 ];
+				out[ i * 4 + 1 ]._max[ j ] = arr[ 2 ];
+				out[ i * 4 + 2 ]._max[ j ] = arr[ 1 ];
+				out[ i * 4 + 3 ]._max[ j ] = arr[ 0 ];
+#else
 				out[ i * 4     ]._min[ j ] = in[ i ]._min[ j ].m256d_f64[ 3 ];
 				out[ i * 4 + 1 ]._min[ j ] = in[ i ]._min[ j ].m256d_f64[ 2 ];
 				out[ i * 4 + 2 ]._min[ j ] = in[ i ]._min[ j ].m256d_f64[ 1 ];
@@ -480,6 +597,7 @@ namespace vul {
 				out[ i * 4 + 1 ]._max[ j ] = in[ i ]._max[ j ].m256d_f64[ 2 ];
 				out[ i * 4 + 2 ]._max[ j ] = in[ i ]._max[ j ].m256d_f64[ 1 ];
 				out[ i * 4 + 3 ]._max[ j ] = in[ i ]._max[ j ].m256d_f64[ 0 ];
+#endif
 			}
 		}
 	}

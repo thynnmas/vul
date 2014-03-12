@@ -73,21 +73,58 @@ namespace vul_test {
 
 		for( ui32_t j = 0; j < 9; ++j ) {
 			for( ui32_t i = 0; i < 8; ++i ) {
+#ifdef __GNUC__
+				f64_t arr[ 2 ];
+				_mm_store_pd( arr, p64_2[ i ][ j ] );
+				assert( arr[ 1 ] == v64[ i * 2     ][ j ] );
+				assert( arr[ 0 ] == v64[ i * 2 + 1 ][ j ] );
+#else
 				assert( p64_2[ i ][ j ].m128d_f64[ 1 ] == v64[ i * 2     ][ j ] );
 				assert( p64_2[ i ][ j ].m128d_f64[ 0 ] == v64[ i * 2 + 1 ][ j ] );
+#endif
 			}
 			for( ui32_t i = 0; i < 4; ++i ) {
+#ifdef __GNUC__
+				f32_t arr[ 4 ];
+				_mm_store_ps( arr, p32_4[ i ][ j ] );
+				assert( arr[ 3 ] == v32[ i * 4     ][ j ] );
+				assert( arr[ 2 ] == v32[ i * 4 + 1 ][ j ] );
+				assert( arr[ 1 ] == v32[ i * 4 + 2 ][ j ] );
+				assert( arr[ 0 ] == v32[ i * 4 + 3 ][ j ] );
+#else
 				assert( p32_4[ i ][ j ].m128_f32[ 3 ] == v32[ i * 4     ][ j ] );
 				assert( p32_4[ i ][ j ].m128_f32[ 2 ] == v32[ i * 4 + 1 ][ j ] );
 				assert( p32_4[ i ][ j ].m128_f32[ 1 ] == v32[ i * 4 + 2 ][ j ] );
 				assert( p32_4[ i ][ j ].m128_f32[ 0 ] == v32[ i * 4 + 3 ][ j ] );
-
+#endif
+				
+#ifdef __GNUC__
+				f64_t arr[ 4 ];
+				_mm256_store_pd( arr, p64_4[ i ][ j ] );
+				assert( arr[ 3 ] == v64[ i * 4     ][ j ] );
+				assert( arr[ 2 ] == v64[ i * 4 + 1 ][ j ] );
+				assert( arr[ 1 ] == v64[ i * 4 + 2 ][ j ] );
+				assert( arr[ 0 ] == v64[ i * 4 + 3 ][ j ] );
+#else
 				assert( p64_4[ i ][ j ].m256d_f64[ 3 ] == v64[ i * 4     ][ j ] );
 				assert( p64_4[ i ][ j ].m256d_f64[ 2 ] == v64[ i * 4 + 1 ][ j ] );
 				assert( p64_4[ i ][ j ].m256d_f64[ 1 ] == v64[ i * 4 + 2 ][ j ] );
 				assert( p64_4[ i ][ j ].m256d_f64[ 0 ] == v64[ i * 4 + 3 ][ j ] );
+#endif
 			}
 			for( ui32_t i = 0; i < 2; ++i ) {
+#ifdef __GNUC__
+				f32_t arr[ 8 ];
+				_mm256_store_ps( arr, p32_8[ i ][ j ] );
+				assert( arr[ 7 ] == v64[ i * 8     ][ j ] );
+				assert( arr[ 6 ] == v64[ i * 8 + 1 ][ j ] );
+				assert( arr[ 5 ] == v64[ i * 8 + 2 ][ j ] );
+				assert( arr[ 4 ] == v64[ i * 8 + 3 ][ j ] );
+				assert( arr[ 3 ] == v64[ i * 8 + 4 ][ j ] );
+				assert( arr[ 2 ] == v64[ i * 8 + 5 ][ j ] );
+				assert( arr[ 1 ] == v64[ i * 8 + 6 ][ j ] );
+				assert( arr[ 0 ] == v64[ i * 8 + 7 ][ j ] );
+#else
 				assert( p32_8[ i ][ j ].m256_f32[ 7 ] == v32[ i * 8     ][ j ] );
 				assert( p32_8[ i ][ j ].m256_f32[ 6 ] == v32[ i * 8 + 1 ][ j ] );
 				assert( p32_8[ i ][ j ].m256_f32[ 5 ] == v32[ i * 8 + 2 ][ j ] );
@@ -96,6 +133,7 @@ namespace vul_test {
 				assert( p32_8[ i ][ j ].m256_f32[ 2 ] == v32[ i * 8 + 5 ][ j ] );
 				assert( p32_8[ i ][ j ].m256_f32[ 1 ] == v32[ i * 8 + 6 ][ j ] );
 				assert( p32_8[ i ][ j ].m256_f32[ 0 ] == v32[ i * 8 + 7 ][ j ] );
+#endif
 			}
 		}
 
@@ -146,13 +184,38 @@ namespace vul_test {
 
 		for( ui32_t j = 0; j < 9; ++j ) {
 			for( ui32_t i = 0; i < 8; ++i ) {
+#ifdef __GNUC__
+				f64_t arr[ 2 ];
+				_mm_store_pd( arr, p64_2[ i ]._min[ j ] );
+				assert( arr[ 1 ] == v64[ i * 2     ]._min[ j ] );
+				assert( arr[ 0 ] == v64[ i * 2 + 1 ]._min[ j ] );
+
+				_mm_store_pd( arr, p64_2[ i ]._max[ j ] );
+				assert( arr[ 1 ] == v64[ i * 2     ]._max[ j ] );
+				assert( arr[ 0 ] == v64[ i * 2 + 1 ]._max[ j ] );
+#else
 				assert( p64_2[ i ]._min[ j ].m128d_f64[ 1 ] == v64[ i * 2     ]._min[ j ] );
 				assert( p64_2[ i ]._min[ j ].m128d_f64[ 0 ] == v64[ i * 2 + 1 ]._min[ j ] );
 
 				assert( p64_2[ i ]._max[ j ].m128d_f64[ 1 ] == v64[ i * 2     ]._max[ j ] );
 				assert( p64_2[ i ]._max[ j ].m128d_f64[ 0 ] == v64[ i * 2 + 1 ]._max[ j ] );
+#endif
 			}
 			for( ui32_t i = 0; i < 4; ++i ) {
+#ifdef __GNUC__
+				f32_t arr[ 4 ];
+				_mm_store_ps( arr, p32_4[ i ]._min[ j ] );
+				assert( arr[ 3 ] == v32[ i * 4     ]._min[ j ] );
+				assert( arr[ 2 ] == v32[ i * 4 + 1 ]._min[ j ] );
+				assert( arr[ 1 ] == v32[ i * 4 + 2 ]._min[ j ] );
+				assert( arr[ 0 ] == v32[ i * 4 + 3 ]._min[ j ] );
+
+				_mm_store_ps( arr, p32_4[ i ]._max[ j ] );
+				assert( arr[ 3 ] == v32[ i * 4     ]._max[ j ] );
+				assert( arr[ 2 ] == v32[ i * 4 + 1 ]._max[ j ] );
+				assert( arr[ 1 ] == v32[ i * 4 + 2 ]._max[ j ] );
+				assert( arr[ 0 ] == v32[ i * 4 + 3 ]._max[ j ] );
+#else
 				assert( p32_4[ i ]._min[ j ].m128_f32[ 3 ] == v32[ i * 4     ]._min[ j ] );
 				assert( p32_4[ i ]._min[ j ].m128_f32[ 2 ] == v32[ i * 4 + 1 ]._min[ j ] );
 				assert( p32_4[ i ]._min[ j ].m128_f32[ 1 ] == v32[ i * 4 + 2 ]._min[ j ] );
@@ -162,7 +225,22 @@ namespace vul_test {
 				assert( p32_4[ i ]._max[ j ].m128_f32[ 2 ] == v32[ i * 4 + 1 ]._max[ j ] );
 				assert( p32_4[ i ]._max[ j ].m128_f32[ 1 ] == v32[ i * 4 + 2 ]._max[ j ] );
 				assert( p32_4[ i ]._max[ j ].m128_f32[ 0 ] == v32[ i * 4 + 3 ]._max[ j ] );
-				
+#endif
+
+#ifdef __GNUC__
+				f64_t arr2[ 4 ];
+				_mm256_store_pd( arr2, p64_4[ i ]._min[ j ] );
+				assert( arr2[ 3 ] == v64[ i * 4     ]._min[ j ] );
+				assert( arr2[ 2 ] == v64[ i * 4 + 1 ]._min[ j ] );
+				assert( arr2[ 1 ] == v64[ i * 4 + 2 ]._min[ j ] );
+				assert( arr2[ 0 ] == v64[ i * 4 + 3 ]._min[ j ] );
+
+				_mm256_store_pd( arr2, p64_4[ i ]._max[ j ] );
+				assert( arr2[ 3 ] == v64[ i * 4     ]._max[ j ] );
+				assert( arr2[ 2 ] == v64[ i * 4 + 1 ]._max[ j ] );
+				assert( arr2[ 1 ] == v64[ i * 4 + 2 ]._max[ j ] );
+				assert( arr2[ 0 ] == v64[ i * 4 + 3 ]._max[ j ] );
+#else
 				assert( p64_4[ i ]._min[ j ].m256d_f64[ 3 ] == v64[ i * 4     ]._min[ j ] );
 				assert( p64_4[ i ]._min[ j ].m256d_f64[ 2 ] == v64[ i * 4 + 1 ]._min[ j ] );
 				assert( p64_4[ i ]._min[ j ].m256d_f64[ 1 ] == v64[ i * 4 + 2 ]._min[ j ] );
@@ -172,8 +250,31 @@ namespace vul_test {
 				assert( p64_4[ i ]._max[ j ].m256d_f64[ 2 ] == v64[ i * 4 + 1 ]._max[ j ] );
 				assert( p64_4[ i ]._max[ j ].m256d_f64[ 1 ] == v64[ i * 4 + 2 ]._max[ j ] );
 				assert( p64_4[ i ]._max[ j ].m256d_f64[ 0 ] == v64[ i * 4 + 3 ]._max[ j ] );
+#endif
 			}
 			for( ui32_t i = 0; i < 2; ++i ) {
+#ifdef __GNUC__
+				f32_t arr[ 8 ];
+				_mm256_store_ps( arr, p32_8[ i ]._min[ j ] );
+				assert( arr[ 7 ] == v32[ i * 8     ]._min[ j ] );
+				assert( arr[ 6 ] == v32[ i * 8 + 1 ]._min[ j ] );
+				assert( arr[ 5 ] == v32[ i * 8 + 2 ]._min[ j ] );
+				assert( arr[ 4 ] == v32[ i * 8 + 3 ]._min[ j ] );
+				assert( arr[ 3 ] == v32[ i * 8 + 4 ]._min[ j ] );
+				assert( arr[ 2 ] == v32[ i * 8 + 5 ]._min[ j ] );
+				assert( arr[ 1 ] == v32[ i * 8 + 6 ]._min[ j ] );
+				assert( arr[ 0 ] == v32[ i * 8 + 7 ]._min[ j ] );
+
+				_mm256_store_ps( arr, p32_8[ i ]._max[ j ] );
+				assert( arr[ 7 ] == v32[ i * 8     ]._max[ j ] );
+				assert( arr[ 6 ] == v32[ i * 8 + 1 ]._max[ j ] );
+				assert( arr[ 5 ] == v32[ i * 8 + 2 ]._max[ j ] );
+				assert( arr[ 4 ] == v32[ i * 8 + 3 ]._max[ j ] );
+				assert( arr[ 3 ] == v32[ i * 8 + 4 ]._max[ j ] );
+				assert( arr[ 2 ] == v32[ i * 8 + 5 ]._max[ j ] );
+				assert( arr[ 1 ] == v32[ i * 8 + 6 ]._max[ j ] );
+				assert( arr[ 0 ] == v32[ i * 8 + 7 ]._max[ j ] );
+#else
 				assert( p32_8[ i ]._min[ j ].m256_f32[ 7 ] == v32[ i * 8     ]._min[ j ] );
 				assert( p32_8[ i ]._min[ j ].m256_f32[ 6 ] == v32[ i * 8 + 1 ]._min[ j ] );
 				assert( p32_8[ i ]._min[ j ].m256_f32[ 5 ] == v32[ i * 8 + 2 ]._min[ j ] );
@@ -191,6 +292,7 @@ namespace vul_test {
 				assert( p32_8[ i ]._max[ j ].m256_f32[ 2 ] == v32[ i * 8 + 5 ]._max[ j ] );
 				assert( p32_8[ i ]._max[ j ].m256_f32[ 1 ] == v32[ i * 8 + 6 ]._max[ j ] );
 				assert( p32_8[ i ]._max[ j ].m256_f32[ 0 ] == v32[ i * 8 + 7 ]._max[ j ] );
+#endif
 			}
 		}
 

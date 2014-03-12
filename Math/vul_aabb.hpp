@@ -18,9 +18,8 @@
 #ifndef VUL_AABB_HPP
 #define VUL_AABB_HPP
 
-#include <mmintrin.h>
-#include <emmintrin.h>
-#include <xmmintrin.h>
+#include <immintrin.h>
+#include <float.h>
 
 #include "vul_types.hpp"
 #include "vul_vector.hpp"
@@ -106,13 +105,13 @@ namespace vul {
 	/**
 	 * Apply a 3D affine transform to multiple SSE packed AABBs with 3D-vectors.
 	 * Each AABB here contains 2 AABBs, where the vector data has the format __m128d[ 3 ]:
-	 * __m128d[ 0 ] = xxxx, __m128d[ 1 ] = yyyy, __m128d[ 2 ] = zzzz
+	 * __m128d[ 0 ] = xx, __m128d[ 1 ] = yy, __m128d[ 2 ] = zz
 	 */
 	void transform3D( AABB< __m128d, 3 > *out, const AABB< __m128d, 3 > *in, const Affine< f64_t, 3 > &trans, ui32_t count );
 	/**
 	 * Apply a 3D affine transform to multiple SSE packed AABBs with 3D-vectors.
 	 * Each AABB here contains 8 AABBs, where the vector data has the format __m256[ 3 ]:
-	 * __m256[ 0 ] = xxxx, __m256[ 1 ] = yyyy, __m256[ 2 ] = zzzz
+	 * __m256[ 0 ] = xxxxxxxx, __m256[ 1 ] = yyyyyyyy, __m256[ 2 ] = zzzzzzzz
 	 */
 	void transform3D( AABB< __m256, 3 > *out, const AABB< __m256, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count );
 	/**

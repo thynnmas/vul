@@ -19,9 +19,7 @@
 #ifndef VUL_AOSOA_HPP
 #define VUL_AOSOA_HPP
 
-#include <mmintrin.h>
-#include <emmintrin.h>
-#include <xmmintrin.h>
+#include <immintrin.h>
 
 #include "vul_types.hpp"
 #include "vul_vector.hpp"
@@ -288,8 +286,8 @@ namespace vul {
 	{
 		ui32_t simdCount, i, j;
 		__m128 mini[ n ], maxi[ n ];
-		Point< __m128, n > _CRT_ALIGN(16) vmin;
-		Point< __m128, n > _CRT_ALIGN(16) vmax;
+		Point< __m128, n > vmin __attribute__((aligned(16)));
+		Point< __m128, n > vmax __attribute__((aligned(16)));
 		
 		simdCount = ( count + 3 ) / 4;
 		for( i = 0; i < simdCount; ++i )
@@ -315,8 +313,8 @@ namespace vul {
 	{
 		ui32_t simdCount, i, j;
 		__m128d mini[ n ], maxi[ n ];
-		 Point< __m128d, n > _CRT_ALIGN(16) vmin;
-		 Point< __m128d, n > _CRT_ALIGN(16) vmax;
+		 Point< __m128d, n > vmin __attribute__((aligned(16)));
+		 Point< __m128d, n > vmax __attribute__((aligned(16)));
 		
 		simdCount = ( count + 1 ) / 2;
 		for( i = 0; i < simdCount; ++i )
@@ -338,8 +336,8 @@ namespace vul {
 	{
 		ui32_t simdCount, i, j;
 		__m256 mini[ n ], maxi[ n ];
-		 Point< __m256, n > _CRT_ALIGN(32) vmin;
-		 Point< __m256, n > _CRT_ALIGN(32) vmax;
+		 Point< __m256, n > vmin __attribute__((aligned(32)));
+		 Point< __m256, n > vmax __attribute__((aligned(32)));
 		
 		simdCount = ( count + 7 ) / 8;
 		for( i = 0; i < simdCount; ++i )
@@ -373,8 +371,8 @@ namespace vul {
 	{
 		ui32_t simdCount, i, j;
 		__m256d mini[ n ], maxi[ n ];
-		 Point< __m256d, n > _CRT_ALIGN(32) vmin;
-		 Point< __m256d, n > _CRT_ALIGN(32) vmax;
+		 Point< __m256d, n > vmin __attribute__((aligned(32)));
+		 Point< __m256d, n > vmax __attribute__((aligned(32)));
 		
 		simdCount = ( count + 3 ) / 4;
 		for( i = 0; i < simdCount; ++i )

@@ -308,8 +308,8 @@ namespace vul {
 	/**
 	 * Matrix multiplication. This is NOT componentwise, but proper matrix mul.
 	 */
-	template< typename T, i32_t rowa, i32_t shared, i32_t colb >
-	Matrix< T, rowa, colb > operator*( const Matrix< T, shared, rowa > &a, const Matrix< T, colb, shared > &b );
+	template< typename T, i32_t cola, i32_t shared, i32_t rowb >
+	Matrix< T, cola, rowb > operator*( const Matrix< T, cola, shared > &a, const Matrix< T, shared, rowb > &b );
 	
 	/** 
 	 * Right-side multiplication of a matrix and a column vector.
@@ -518,7 +518,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m.data[ i ][ j ] = a[ j ][ i ];
+				m.data[ i ][ j ] = a[ i ][ j ];
 			}
 		}
 
@@ -560,8 +560,8 @@ namespace vul {
 		Matrix< T, 2, 2 > m;
 
 		m( 0, 0 ) = xx;
-		m( 0, 1 ) = yx;
-		m( 1, 0 ) = xy;
+		m( 0, 1 ) = xy;
+		m( 1, 0 ) = yx;
 		m( 1, 1 ) = yy;
 
 		return m;
@@ -574,13 +574,13 @@ namespace vul {
 		Matrix< T, 3, 3 > m;
 
 		m( 0, 0 ) = xx;
-		m( 0, 1 ) = yx;
-		m( 0, 2 ) = zx;
-		m( 1, 0 ) = xy;
+		m( 0, 1 ) = xy;
+		m( 0, 2 ) = xz;
+		m( 1, 0 ) = yx;
 		m( 1, 1 ) = yy;
-		m( 1, 2 ) = zy;
-		m( 2, 0 ) = xz;
-		m( 2, 1 ) = yz;
+		m( 1, 2 ) = yz;
+		m( 2, 0 ) = zx;
+		m( 2, 1 ) = zy;
 		m( 2, 2 ) = zz;
 
 		return m;
@@ -594,20 +594,20 @@ namespace vul {
 		Matrix< T, 4, 4 > m;
 
 		m( 0, 0 ) = xx;
-		m( 0, 1 ) = yx;
-		m( 0, 2 ) = zx;
-		m( 0, 3 ) = wx;
-		m( 1, 0 ) = xy;
+		m( 0, 1 ) = xy;
+		m( 0, 2 ) = xz;
+		m( 0, 3 ) = xw;
+		m( 1, 0 ) = yx;
 		m( 1, 1 ) = yy;
-		m( 1, 2 ) = zy;
-		m( 1, 3 ) = wx;
-		m( 2, 0 ) = xz;
-		m( 2, 1 ) = yz;
+		m( 1, 2 ) = yz;
+		m( 1, 3 ) = yw;
+		m( 2, 0 ) = zx;
+		m( 2, 1 ) = zy;
 		m( 2, 2 ) = zz;
-		m( 2, 3 ) = wz;
-		m( 3, 0 ) = xw;
-		m( 3, 1 ) = yw;
-		m( 3, 2 ) = zw;
+		m( 2, 3 ) = zw;
+		m( 3, 0 ) = wx;
+		m( 3, 1 ) = wy;
+		m( 3, 2 ) = wz;
 		m( 3, 3 ) = ww;
 
 		return m;
@@ -724,10 +724,10 @@ namespace vul {
 		Matrix< T, coln, rown > m;
 		i32_t i, j;
 
-		assert( colo > coln && rowo > rown );
+		assert( colo >= coln && rowo >= rown );
 
-		for( i = 0; i < colo; ++i ) {
-			for( j = 0; j < coln; ++j ) {
+		for( i = 0; i < coln; ++i ) {
+			for( j = 0; j < rown; ++j ) {
 				m( i, j ) = mat( i, j );
 			}
 		}
@@ -866,7 +866,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = a( i, j ) == b( i, j );
 			}
 		}
@@ -880,7 +880,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = a( i, j ) != b( i, j );
 			}
 		}
@@ -894,7 +894,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				if ( !mat( i, j ) ) {
 					return false;
 				}
@@ -909,7 +909,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				if ( mat( i, j ) ) {
 					return true;
 				}
@@ -922,9 +922,9 @@ namespace vul {
 	T select( const Matrix< T, cols, rows > &mat )
 	{
 		i32_t i, j;
-
-		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+		
+		for( j = 0; j < rows; ++j ) {
+			for( i = 0; i < cols; ++i ) {
 				if ( mat( i, j ) ) {
 					return mat( i, j );
 				}
@@ -941,7 +941,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = mat( i, j ) + scalar;
 			}
 		}
@@ -955,7 +955,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = mat( i, j ) - scalar;
 			}
 		}
@@ -969,7 +969,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = mat( i, j ) * scalar;
 			}
 		}
@@ -983,7 +983,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = mat( i, j ) / scalar;
 			}
 		}
@@ -998,7 +998,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = a( i, j ) + b( i, j );
 			}
 		}
@@ -1012,7 +1012,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = a( i, j ) - b( i, j );
 			}
 		}
@@ -1021,15 +1021,15 @@ namespace vul {
 	}
 	
 	
-	template< typename T, i32_t rowa, i32_t shared, i32_t colb >
-	Matrix< T, rowa, colb > operator*( const Matrix< T, shared, rowa > &a, const Matrix< T, colb, shared > &b )
+	template< typename T, i32_t cola, i32_t shared, i32_t rowb >
+	Matrix< T, cola, rowb > operator*( const Matrix< T, cola, shared > &a, const Matrix< T, shared, rowb > &b )
 	{
-		Matrix< T, rowa, colb > m;
+		Matrix< T, cola, rowb > m;
 		i32_t i, j, k;
 		T sum;
 
-		for( i = 0; i < rowa; ++i ) {
-			for( j = 0; j < colb; ++j ) {
+		for( i = 0; i < cola; ++i ) {
+			for( j = 0; j < rowb; ++j ) {
 				sum = static_cast< T >( 0.f );
 				for( k = 0; k < shared; ++k ) {
 					sum += a( i, k ) * b( k, j );
@@ -1048,7 +1048,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = a( i, j ) < b ? a( i, j ) : b;
 			}
 		}
@@ -1062,7 +1062,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = a( i, j ) > b ? a( i, j ) : b;
 			}
 		}
@@ -1076,7 +1076,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = a( i, j ) >= 0 ? a( i, j ) : -a( i, j );
 			}
 		}
@@ -1090,7 +1090,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = a( i, j ) < mini ? mini
 							 : a( i, j ) > maxi ? maxi
 							 : a( i, j );
@@ -1106,7 +1106,7 @@ namespace vul {
 		i32_t i, j;
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = a( i, j ) < static_cast< T >( 0.f ) ? static_cast< T >( 0.f )
 							 : a( i, j ) > static_cast< T >( 1.f ) ? static_cast< T >( 1.f )
 							 : a( i, j );
@@ -1124,7 +1124,7 @@ namespace vul {
 
 		t1 = static_cast< T >( 1.f ) - t;
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				m( i, j ) = ( mini( i, j ) * t ) + ( maxi( i, j ) * t1 );
 			}
 		}
@@ -1138,7 +1138,7 @@ namespace vul {
 		T mini = std::numeric_limits< T >::max( );
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				mini = a( i, j ) < mini ? a( i, j ) :  mini;
 			}
 		}
@@ -1152,7 +1152,7 @@ namespace vul {
 		T maxi = std::numeric_limits< T >::lowest( );
 
 		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < cols; ++j ) {
+			for( j = 0; j < rows; ++j ) {
 				maxi = a( i, j ) > maxi ? a( i, j ) :  maxi;
 			}
 		}
@@ -1171,8 +1171,8 @@ namespace vul {
 #else
 		v = makeVector< T, rows >( static_cast< T >( 0.f ) );
 #endif
-		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < rows; ++j ) {
+		for( j = 0; j < rows; ++j ) {
+			for( i = 0; i < cols; ++i ) {
 				v[ j ] += mat( i, j ) * vec[ i ];
 			}
 		}
@@ -1186,55 +1186,55 @@ namespace vul {
 		i32_t i, j;
 		
 #ifdef VUL_CPLUSPLUS11
-		v = Vector< T, rows >( static_cast< T >( 0.f ) );
+		v = Vector< T, cols >( static_cast< T >( 0.f ) );
 #else
-		v = makeVector< T, rows >( static_cast< T >( 0.f ) );
-#endif
-		for( j = 0; j < rows; ++j ) {
-			for( i = 0; i < cols; ++i ) {
-				v[ i ] += mat( i, j ) * vec[ j ];
-			}
-		}
-
-		return v;
-	}
-	template< typename T, i32_t cols, i32_t rows >
-	Point< T, rows > operator*( const Matrix< T, cols, rows >& mat, const Point< T, cols > &vec )
-	{
-		Point< T, rows > v;
-		i32_t i, j;
-
-#ifdef VUL_CPLUSPLUS11
-		v = Point< T, rows >( static_cast< T >( 0.f ) );
-#else
-		v = makePoint< T, rows >( static_cast< T >( 0.f ) );
+		v = makeVector< T, cols >( static_cast< T >( 0.f ) );
 #endif
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				v[ j ] += mat( i, j ) * vec[ i ];
+				v[ i ] += mat( i, j ) * vec[ j ];
 			}
 		}
 
 		return v;
 	}
 	template< typename T, i32_t cols, i32_t rows >
-	Point< T, cols > operator*( const Point< T, rows > &vec , const Matrix< T, cols, rows > &mat)
+	Point< T, rows > operator*( const Matrix< T, cols, rows >& mat, const Point< T, cols > &pt )
 	{
-		Point< T, cols > v;
+		Point< T, rows > p;
 		i32_t i, j;
-		
+
 #ifdef VUL_CPLUSPLUS11
-		v = Point< T, rows >( static_cast< T >( 0.f ) );
+		p = Point< T, rows >( static_cast< T >( 0.f ) );
 #else
-		v = makePoint< T, rows >( static_cast< T >( 0.f ) );
+		p = makePoint< T, rows >( static_cast< T >( 0.f ) );
 #endif
-		for( j = 0; j < rows; ++j ) {
-			for( i = 0; i < cols; ++i ) {
-				v[ i ] += mat( i, j ) * vec[ j ];
+		for( i = 0; i < cols; ++i ) {
+			for( j = 0; j < rows; ++j ) {
+				p[ j ] += mat( i, j ) * pt[ i ];
 			}
 		}
 
-		return v;
+		return p;
+	}
+	template< typename T, i32_t cols, i32_t rows >
+	Point< T, cols > operator*( const Point< T, rows > &pt , const Matrix< T, cols, rows > &mat)
+	{
+		Point< T, cols > p;
+		i32_t i, j;
+		
+#ifdef VUL_CPLUSPLUS11
+		p = Point< T, cols >( static_cast< T >( 0.f ) );
+#else
+		p = makePoint< T, cols >( static_cast< T >( 0.f ) );
+#endif
+		for( j = 0; j < rows; ++j ) {
+			for( i = 0; i < cols; ++i ) {
+				p[ i ] += mat( i, j ) * pt[ j ];
+			}
+		}
+
+		return p;
 	}
 	
 	// Functions

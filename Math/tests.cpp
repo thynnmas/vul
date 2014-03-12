@@ -49,28 +49,6 @@ using namespace vul_test;
 
 int main( int argc, char **argv )
 {
-	/*
-	printf( "\nTesting half precision format\n" );
-	test_half( );
-	printf( "\nTesting fixed point formats\n" );
-	test_fixed( );
-	printf( "\nTesting vectors\n" );
-	test_vector( );
-	printf( "\nTesting points\n" );
-	test_point( );
-	printf( "\nTesting matrices\n" );
-	test_matrix( );
-	printf( "\nTesting affine transformations\n" );
-	test_affine( );
-	printf( "\nTesting AABBs\n" );
-	test_aabb( );
-	// @TODO: Test quaternions
-	printf( "\nTesting quaternions\n" );
-	test_quats( );
-
-	printf( "\nBenchmarking AABB transforms\n" );
-	bench_aabbs( );
-	*/
 	TestAABB::test( );
 	TestAffine::test( );
 	TestAOSOA::test( );
@@ -81,7 +59,7 @@ int main( int argc, char **argv )
 	TestQuaternion::test( );
 	TestVector::test( );
 
-	printf( "\nDone. Enter to close.\n" );
+	printf( "\nDone, no errors. Enter to close.\n" );
 	// Wait for input
 	char buffer[ 1024 ];
 	gets_s( buffer, 1024 );

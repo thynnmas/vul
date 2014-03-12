@@ -112,10 +112,10 @@ namespace vul_test {
 		v3 = makeVector< f32_t, 3 >( a3 );
 		v9 = makeVector< i64_t, 9 >( a9 );
 #endif
-		assert( v2c[ 0 ] == a2[ 0 ] ); assert( v2c[ 1 ] == a2[ 1 ] );
-		assert( v3c[ 0 ] == a3[ 0 ] ); assert( v3c[ 1 ] == a3[ 1 ] ); assert( v3c[ 2 ] == a3[ 2 ] );
+		assert( v2[ 0 ] == a2[ 0 ] ); assert( v2[ 1 ] == a2[ 1 ] );
+		assert( v3[ 0 ] == a3[ 0 ] ); assert( v3[ 1 ] == a3[ 1 ] ); assert( v3[ 2 ] == a3[ 2 ] );
 		for( ui32_t i = 0; i < 9; ++i ) {
-			assert( v9c[ i ] == a9[ i ] );
+			assert( v9[ i ] == a9[ i ] );
 		}
 
 		i32_t ai[ 3 ] = { -9, 5, 17 };
@@ -130,9 +130,9 @@ namespace vul_test {
 		v3 = makeVector< f32_t, 3 >( ai );
 		v9 = makeVector< i64_t, 9 >( af );
 #endif
-		assert( v3c[ 0 ] == -9.f ); assert( v3c[ 1 ] == 5.f ); assert( v3c[ 2 ] == 17.f );
+		assert( v3[ 0 ] == -9.f ); assert( v3[ 1 ] == 5.f ); assert( v3[ 2 ] == 17.f );
 		for( ui32_t i = 0; i < 9; ++i ) {
-			assert( v9c[ i ] == ( i64_t )af[ i ] );
+			assert( v9[ i ] == ( i64_t )af[ i ] );
 		}
 
 #ifdef VUL_CPLUSPLUS11
@@ -170,7 +170,7 @@ namespace vul_test {
 		assert( v4f[ 0 ] == -1.f ); assert( v4f[ 1 ] == 2.f ); assert( v4f[ 2 ] == -1.f ); assert( v4f[ 3 ] == 2.f );
 
 		v4f = makeVector< f32_t >( v3f, 0.17f );
-		assert( v4f[ 0 ] == -1.f ); assert( v4f[ 1 ] == 2.f ); assert( v4f[ 2 ] == 0.5 );  assert( v4f[ 3 ] == 0.17 );
+		assert( v4f[ 0 ] == -1.f ); assert( v4f[ 1 ] == 2.f ); assert( v4f[ 2 ] == 0.5f );  assert( v4f[ 3 ] == 0.17f );
 
 		v3f = makeVector< f32_t >( v2f, 0.5f );
 		assert( v3f[ 0 ] == -1.f ); assert( v3f[ 1 ] == 2.f ); assert( v3f[ 2 ] == 0.5f );
@@ -246,9 +246,9 @@ namespace vul_test {
 		b2 = v2a != v2b;
 		assert(  b2[ 0 ] ); assert( !b2[ 1 ] );		
 		
-		b4 = v4a == v4a;
+		b4 = v4a != v4a;
 		assert( !b4[ 0 ] ); assert( !b4[ 1 ] ); assert( !b4[ 2 ] ); assert( !b4[ 3 ] );
-		b4 = v4a == v4b;
+		b4 = v4a != v4b;
 		assert(  b4[ 0 ] ); assert(  b4[ 1 ] ); assert(  b4[ 2 ] ); assert(  b4[ 3 ] );
 				
 		b2 = v2a < v2a;
@@ -299,6 +299,7 @@ namespace vul_test {
 		Vector< f64_t, 9 > v9, vr9;
 		Point< f64_t, 9 > p9;
 		f64_t a9[ 9 ];
+		f64_t f64eps = 1e-8;
 
 		for( ui32_t i = 0; i < 9; ++i ) {
 			a9[ i ] = ( f64_t )VUL_TEST_RNG;
@@ -308,55 +309,58 @@ namespace vul_test {
 
 		vr9 = v9;
 		for( ui32_t i = 0; i < 9; ++i ) {
-			assert( vr9[ i ] == v9[ i ] );
+			assert( abs( vr9[ i ] - v9[ i ] ) < f64eps );
 		}
 
 		vr9 += 1.0;
 		for( ui32_t i = 0; i < 9; ++i ) {
-			assert( vr9[ i ] == v9[ i ] + 1.0 );
+			assert( abs( vr9[ i ] - ( v9[ i ] + 1.0 ) ) < f64eps );
 		}
 		
+		vr9 = v9;
 		vr9 -= 7.0;
 		for( ui32_t i = 0; i < 9; ++i ) {
-			assert( vr9[ i ] == v9[ i ] - 7.0 );
+			assert( abs( vr9[ i ] - ( v9[ i ] - 7.0 ) ) < f64eps );
 		}
 
 		vr9 = v9;
 		vr9 *= 1.5;
 		for( ui32_t i = 0; i < 9; ++i ) {
-			assert( vr9[ i ] == v9[ i ] * 1.5 );
+			assert( abs( vr9[ i ] - v9[ i ] * 1.5 ) < f64eps );
 		}
 		
 		vr9 = v9;
 		vr9 /= 2.2;
 		for( ui32_t i = 0; i < 9; ++i ) {
-			assert( vr9[ i ] == v9[ i ] / 2.2 );
-		}
-
-		vr9 += v9;
-		for( ui32_t i = 0; i < 9; ++i ) {
-			assert( vr9[ i ] == v9[ i ] + v9[ i ] );
+			assert( abs( vr9[ i ] - v9[ i ] / 2.2 ) < f64eps );
 		}
 		
+		vr9 = v9;
+		vr9 += v9;
+		for( ui32_t i = 0; i < 9; ++i ) {
+			assert( abs( vr9[ i ] - ( v9[ i ] + v9[ i ] ) ) < f64eps );
+		}
+		
+		vr9 = v9;
 		vr9 -= v9;
 		for( ui32_t i = 0; i < 9; ++i ) {
-			assert( vr9[ i ] == v9[ i ] - v9[ i ] );
+			assert( abs( vr9[ i ] - ( v9[ i ] - v9[ i ] ) ) < f64eps );
 		}
 
 		vr9 = v9;
 		vr9 *= v9;
 		for( ui32_t i = 0; i < 9; ++i ) {
-			assert( vr9[ i ] == v9[ i ] * v9[ i ] );
+			assert( abs( vr9[ i ] - v9[ i ] * v9[ i ] ) < f64eps );
 		}
 		
 		vr9 = v9;
 		vr9 /= v9;
 		for( ui32_t i = 0; i < 9; ++i ) {
-			assert( vr9[ i ] == v9[ i ] / v9[ i ] );
+			assert( abs( vr9[ i ] - v9[ i ] / v9[ i ] ) < f64eps );
 		}
 		
 		for( ui32_t i = 0; i < 9; ++i ) {
-			assert( v9[ i ] == a9[ i ] );
+			assert( abs( v9[ i ] - a9[ i ] ) < f64eps );
 		}
 
 		if( v9[ 7 ] == 1.7 ) {
@@ -380,6 +384,7 @@ namespace vul_test {
 	bool TestVector::ops( )
 	{
 		Vector< f32_t, 19 > va, vb, vr;
+		f32_t f32eps = 1e-5f;
 
 		for( ui32_t i = 0; i < 19; ++i ) {
 			va[ i ] = VUL_TEST_RNG;
@@ -388,41 +393,41 @@ namespace vul_test {
 
 		vr = va + vb;
 		for( ui32_t i = 0; i < 19; ++i ) {
-			assert( vr[ i ] == va[ i ] + vb[ i ] );
+			assert( abs( vr[ i ] - ( va[ i ] + vb[ i ] ) ) < f32eps );
 		}
 		vr = va - vb;
 		for( ui32_t i = 0; i < 19; ++i ) {
-			assert( vr[ i ] == va[ i ] - vb[ i ] );
+			assert( abs( vr[ i ] - ( va[ i ] - vb[ i ] ) ) < f32eps );
 		}
 		vr = va * vb;
 		for( ui32_t i = 0; i < 19; ++i ) {
-			assert( vr[ i ] == va[ i ] * vb[ i ] );
+			assert( abs( vr[ i ] - va[ i ] * vb[ i ] ) < f32eps );
 		}
 		vr = va / vb;
 		for( ui32_t i = 0; i < 19; ++i ) {
-			assert( vr[ i ] == va[ i ] / vb[ i ] );
+			assert( abs( vr[ i ] - va[ i ] / vb[ i ] ) < f32eps );
 		}
 		
 		vr = va + 1.f;
 		for( ui32_t i = 0; i < 19; ++i ) {
-			assert( vr[ i ] == va[ i ] + 1.f );
+			assert( abs( vr[ i ] - ( va[ i ] + 1.f ) ) < f32eps );
 		}
 		vr = va - 2.5f;
 		for( ui32_t i = 0; i < 19; ++i ) {
-			assert( vr[ i ] == va[ i ] -2.5f );
+			assert( abs( vr[ i ] - ( va[ i ] -2.5f ) ) < f32eps );
 		}
 		vr = va * 7.12f;
 		for( ui32_t i = 0; i < 19; ++i ) {
-			assert( vr[ i ] == va[ i ] * 7.12f );
+			assert( abs( vr[ i ] - va[ i ] * 7.12f ) < f32eps );
 		}
 		vr = va / 2.3f;
 		for( ui32_t i = 0; i < 19; ++i ) {
-			assert( vr[ i ] == va[ i ] / 2.3f );
+			assert( abs( vr[ i ] - va[ i ] / 2.3f ) < f32eps );
 		}
 
 		vr = -va;
 		for( ui32_t i = 0; i < 19; ++i ) {
-			assert( vr[ i ] == -va[ i ] );
+			assert( abs( vr[ i ] + va[ i ] ) < f32eps );
 		}
 
 		return true;
@@ -432,6 +437,7 @@ namespace vul_test {
 	{	
 		Vector< i64_t, 2 > v2r;
 		Vector< f32_t, 9 > v9r;
+		f32_t f32eps = 1e-5f;
 		f32_t a9a[ 9 ] = { -1.5f, -1.f, -0.75f, -0.5f, 0.f, 0.25f, 0.6f, 1.f, 2.f };
 		f32_t a9b[ 9 ] = { -1.7f, -1.2f, 0.75f, 0.6f, 0.1f, 0.f, -0.2f, 6.f, 4.f };
 #ifdef VUL_CPLUSPLUS11
@@ -460,12 +466,12 @@ namespace vul_test {
 #else
 		Vector< f32_t, 3 > v3r = cross( makeVector< f32_t >( 1.f, 0.f, 0.f ), makeVector< f32_t >( 0.f, 0.f, 1.f ) );
 #endif
-		assert( v3r[ 0 ] == 0.f ); assert( v3r[ 0 ] == 1.f ); assert( v3r[ 0 ] == 0.f );
+		assert( v3r[ 0 ] == 0.f ); assert( v3r[ 1 ] == -1.f ); assert( v3r[ 2 ] == 0.f );
 		
 #ifdef VUL_CPLUSPLUS11
-		assert( cross( normalize( Vector< f32_t >( 1.f, 1.f ) ), normalize( Vector< f32_t >( 1.f, -1.f ) ) == -1.f ) );
+		assert( abs( cross( normalize( Vector< f32_t >( 1.f, 1.f ) ), normalize( Vector< f32_t >( 1.f, -1.f ) ) ) + 1.f ) < f32eps );
 #else
-		assert( cross( normalize( makeVector< f32_t >( 1.f, 1.f ) ), normalize( makeVector< f32_t >( 1.f, -1.f ) ) == -1.f ) );
+		assert( abs( cross( normalize( makeVector< f32_t >( 1.f, 1.f ) ), normalize( makeVector< f32_t >( 1.f, -1.f ) ) ) + 1.f ) < f32eps );
 #endif
 
 		f32_t dt = 0.f;
@@ -475,21 +481,23 @@ namespace vul_test {
 		assert( dt == dot( v9a, v9b ) );
 		
 #ifdef VUL_CPLUSPLUS11
-		assert( norm( Vector< f32_t, 2 >( 1.f, 1.f ) ) == sqrt( 2.f ) );
-		assert( norm( Vector< i32_t, 2 >( 1, 1 ) ) == 1 );
-		assert( fnorm( Vector< i32_t, 2 >( 1, 1 ) ) == sqrt( 2.f ) );
+		assert( norm( Vector< f32_t >( 1.f, 1.f ) ) == sqrt( 2.f ) );
+		assert( norm( Vector< i32_t >( 1, 1 ) ) == 1 );
+		assert( fnorm( Vector< i32_t >( 1, 1 ) ) == sqrt( 2.f ) );
 #else
-		assert( norm( makeVector< f32_t, 2 >( 1.f, 1.f ) ) == sqrt( 2.f ) );
-		assert( norm( makeVector< i32_t, 2 >( 1, 1 ) ) == 1 );
-		assert( fnorm( makeVector< i32_t, 2 >( 1, 1 ) ) == sqrt( 2.f ) );
+		assert( norm( makeVector< f32_t >( 1.f, 1.f ) ) == sqrt( 2.f ) );
+		assert( norm( makeVector< i32_t >( 1, 1 ) ) == 1 );
+		assert( fnorm( makeVector< i32_t >( 1, 1 ) ) == sqrt( 2.f ) );
 #endif
 
 #ifdef VUL_CPLUSPLUS11
-		v3r = normalize( Vector< f32_t, 3 >( 1.f, 1.f, 1.f ) );
+		v3r = normalize( Vector< f32_t >( 1.f, 1.f, 1.f ) );
 #else
-		v3r = normalize( makeVector< f32_t, 3 >( 1.f, 1.f, 1.f ) );
+		v3r = normalize( makeVector< f32_t >( 1.f, 1.f, 1.f ) );
 #endif
-		assert( v3r[ 0 ] == sqrt( 3.f ) ); assert( v3r[ 1 ] == sqrt( 3.f ) ); assert( v3r[ 2 ] == sqrt( 3.f ) );
+		assert( abs( v3r[ 0 ] - 1.f / sqrt( 3.f ) ) < f32eps );
+		assert( abs( v3r[ 1 ] - 1.f / sqrt( 3.f ) ) < f32eps );
+		assert( abs( v3r[ 2 ] - 1.f / sqrt( 3.f ) ) < f32eps );
 		
 		v2r = min( v2a, ( i64_t )1L );
 		assert( v2r[ 0 ] == 1L ); assert( v2r[ 1 ] == -1L );
@@ -508,19 +516,17 @@ namespace vul_test {
 		assert( v9r[ 6 ] ==  -0.2f ); assert( v9r[ 7 ] ==  1.f );  assert( v9r[ 8 ] ==  2.f );
 				
 		v2r = max( v2a, ( i64_t )1L );
-		assert( v2r[ 0 ] == 3L ); assert( v2r[ 1 ] ==  6L );
+		assert( v2r[ 0 ] == 3L ); assert( v2r[ 1 ] == 1L );
 		v2r = max( v2a, ( i64_t )7L );
 		assert( v2r[ 0 ] == 7L ); assert( v2r[ 1 ] == 7L );
 		v9r = max( v9a, 0.f );
-		assert( v9r[ 0 ] == 0.5f ); assert( v9r[ 1 ] == 0.f ); assert( v9r[ 2 ] == 0.f );
-		assert( v9r[ 3 ] == 0.5f ); assert( v9r[ 4 ] == 0.f ); assert( v9r[ 5 ] == 0.25f );
+		assert( v9r[ 0 ] == 0.f );  assert( v9r[ 1 ] == 0.f ); assert( v9r[ 2 ] == 0.f );
+		assert( v9r[ 3 ] == 0.f );  assert( v9r[ 4 ] == 0.f ); assert( v9r[ 5 ] == 0.25f );
 		assert( v9r[ 6 ] == 0.6f ); assert( v9r[ 7 ] == 1.f ); assert( v9r[ 8 ] == 2.f );
 
 		v2r = max( v2a, v2b );
 		v9r = max( v9a, v9b );
 		assert( v2r[ 0 ] == 3L ); assert( v2r[ 1 ] == 6L );
-		f32_t a9a[ 9 ] = { -1.5f, -1.f, -0.75f, -0.5f, 0.f, 0.25f, 0.6f, 1.f, 2.f };
-		f32_t a9b[ 9 ] = { -1.7f, -1.2f, 0.75f, 0.6f, 0.1f, 0.f, -0.2f, 6.f, 4.f };
 		assert( v9r[ 0 ] == -1.5f ); assert( v9r[ 1 ] == -1.f );  assert( v9r[ 2 ] == 0.75f );
 		assert( v9r[ 3 ] ==  0.6f ); assert( v9r[ 4 ] ==  0.1f ); assert( v9r[ 5 ] == 0.25f );
 		assert( v9r[ 6 ] ==  0.6f ); assert( v9r[ 7 ] ==  6.f );  assert( v9r[ 8 ] == 4.f );
@@ -538,15 +544,14 @@ namespace vul_test {
 		assert( v9r[ 6 ] ==  0.6f ); assert( v9r[ 7 ] ==  0.75f ); assert( v9r[ 8 ] ==  0.75f );
 		
 		v9r = saturate( v9b );
-		f32_t a9b[ 9 ] = { -1.7f, -1.2f, 0.75f, 0.6f, 0.1f, 0.f, -0.2f, 6.f, 4.f };
-		assert( v9r[ 0 ] == -1.f );  assert( v9r[ 1 ] == -1.f );  assert( v9r[ 2 ] == 0.75f );
-		assert( v9r[ 3 ] ==  0.6f ); assert( v9r[ 4 ] ==  0.1f ); assert( v9r[ 5 ] == 0.f );
-		assert( v9r[ 6 ] == -0.2f ); assert( v9r[ 7 ] ==  1.f );  assert( v9r[ 8 ] == 1.f );
+		assert( v9r[ 0 ] == 0.f );  assert( v9r[ 1 ] ==  0.f );  assert( v9r[ 2 ] == 0.75f );
+		assert( v9r[ 3 ] == 0.6f ); assert( v9r[ 4 ] ==  0.1f ); assert( v9r[ 5 ] == 0.f );
+		assert( v9r[ 6 ] == 0.f );  assert( v9r[ 7 ] ==  1.f );  assert( v9r[ 8 ] == 1.f );
 
 		v9r = lerp( v9a, v9b, 0.5f );
-		assert( v9r[ 0 ] == -1.6f );  assert( v9r[ 1 ] == -1.1f );  assert( v9r[ 2 ] == 0.f );
-		assert( v9r[ 3 ] ==  0.05f ); assert( v9r[ 4 ] ==  0.05f ); assert( v9r[ 5 ] == 0.125f );
-		assert( v9r[ 6 ] ==  0.2f );  assert( v9r[ 7 ] ==  3.5f );  assert( v9r[ 8 ] == 3.f );
+		assert( abs( v9r[ 0 ] + 1.6f ) < f32eps );  assert( abs( v9r[ 1 ] + 1.1f ) < f32eps );  assert( abs( v9r[ 2 ] - 0.f ) < f32eps );
+		assert( abs( v9r[ 3 ] - 0.05f ) < f32eps ); assert( abs( v9r[ 4 ] - 0.05f ) < f32eps ); assert( abs( v9r[ 5 ] - 0.125f ) < f32eps );
+		assert( abs( v9r[ 6 ] - 0.2f ) < f32eps );  assert( abs( v9r[ 7 ] - 3.5f ) < f32eps );  assert( abs( v9r[ 8 ] - 3.f ) < f32eps );
 		
 		assert( minComponent( v2a ) == -1L );
 		assert( minComponent( v2b ) ==  2L );

@@ -21,7 +21,7 @@
 
 #include "../vul_math.hpp"
 
-#define VUL_TEST_RNG ( float )( ( float )rand( ) / ( float )FLT_MAX )
+#define VUL_TEST_RNG ( float )( ( float )rand( ) / ( float )RAND_MAX )
 
 using namespace vul;
 
@@ -86,31 +86,31 @@ namespace vul_test {
 														 makeVector< f32_t, 8 >( vec ) );
 #endif
 
-		assert( i2.mat( 0, 0 ) == a2.mat( 0, 0 ) == 1.f );
-		assert( i2.mat( 1, 1 ) == a2.mat( 1, 1 ) == 1.f );
-		assert( i2.mat( 0, 1 ) == a2.mat( 0, 1 ) == 0.f );
-		assert( i2.mat( 1, 0 ) == a2.mat( 1, 0 ) == 0.f );
-		assert( i2.vec[ 0 ] == a2.vec[ 0 ] == 0.f );
-		assert( i2.vec[ 1 ] == a2.vec[ 1 ] == 0.f );
+		assert( i2.mat( 0, 0 ) == 1.f ); assert( a2.mat( 0, 0 ) == 1.f );
+		assert( i2.mat( 1, 1 ) == 1.f ); assert( a2.mat( 1, 1 ) == 1.f );
+		assert( i2.mat( 0, 1 ) == 0.f ); assert( a2.mat( 0, 1 ) == 0.f );
+		assert( i2.mat( 1, 0 ) == 0.f ); assert( a2.mat( 1, 0 ) == 0.f );
+		assert( i2.vec[ 0 ] == 0.f ); assert( a2.vec[ 0 ] == 0.f );
+		assert( i2.vec[ 1 ] == 0.f ); assert( a2.vec[ 1 ] == 0.f );
 		assert( mv2.mat( 0, 0 ) == mat[ 0 ] );
 		assert( mv2.mat( 0, 1 ) == mat[ 1 ] );
 		assert( mv2.mat( 1, 0 ) == mat[ 2 ] );
 		assert( mv2.mat( 1, 1 ) == mat[ 3 ] );
 		assert( mv2.vec[ 0 ] == vec[ 0 ] );
-		assert( mv2.vec[ 1 ] == vec[ 2 ] );
+		assert( mv2.vec[ 1 ] == vec[ 1 ] );
 		
-		assert( i3.mat( 0, 0 ) == a3.mat( 0, 0 ) == 1.f );
-		assert( i3.mat( 1, 1 ) == a3.mat( 1, 1 ) == 1.f );
-		assert( i3.mat( 2, 2 ) == a3.mat( 2, 2 ) == 1.f );
-		assert( i3.mat( 0, 1 ) == a3.mat( 0, 1 ) == 0.f );
-		assert( i3.mat( 0, 2 ) == a3.mat( 0, 2 ) == 0.f );
-		assert( i3.mat( 1, 0 ) == a3.mat( 1, 0 ) == 0.f );
-		assert( i3.mat( 1, 2 ) == a3.mat( 1, 2 ) == 0.f );
-		assert( i3.mat( 2, 0 ) == a3.mat( 2, 0 ) == 0.f );
-		assert( i3.mat( 2, 1 ) == a3.mat( 2, 1 ) == 0.f );
-		assert( i3.vec[ 0 ] == a3.vec[ 0 ] == 0.f );
-		assert( i3.vec[ 1 ] == a3.vec[ 1 ] == 0.f );
-		assert( i3.vec[ 2 ] == a3.vec[ 2 ] == 0.f );
+		assert( i3.mat( 0, 0 ) == 1.f ); assert( a3.mat( 0, 0 ) == 1.f );
+		assert( i3.mat( 1, 1 ) == 1.f ); assert( a3.mat( 1, 1 ) == 1.f );
+		assert( i3.mat( 2, 2 ) == 1.f ); assert( a3.mat( 2, 2 ) == 1.f );
+		assert( i3.mat( 0, 1 ) == 0.f ); assert( a3.mat( 0, 1 ) == 0.f );
+		assert( i3.mat( 0, 2 ) == 0.f ); assert( a3.mat( 0, 2 ) == 0.f );
+		assert( i3.mat( 1, 0 ) == 0.f ); assert( a3.mat( 1, 0 ) == 0.f );
+		assert( i3.mat( 1, 2 ) == 0.f ); assert( a3.mat( 1, 2 ) == 0.f );
+		assert( i3.mat( 2, 0 ) == 0.f ); assert( a3.mat( 2, 0 ) == 0.f );
+		assert( i3.mat( 2, 1 ) == 0.f ); assert( a3.mat( 2, 1 ) == 0.f );
+		assert( i3.vec[ 0 ] == 0.f ); assert( a3.vec[ 0 ] == 0.f );
+		assert( i3.vec[ 1 ] == 0.f ); assert( a3.vec[ 1 ] == 0.f );
+		assert( i3.vec[ 2 ] == 0.f ); assert( a3.vec[ 2 ] == 0.f );
 		for( ui32_t i = 0; i < 3; ++i ) {
 			for( ui32_t j = 0; j < 3; ++j ) {
 				assert( mv3.mat( i, j ) == mat[ i * 3 + j ] );
@@ -121,13 +121,16 @@ namespace vul_test {
 		for( ui32_t i = 0; i < 8; ++i ) {
 			for( ui32_t j = 0; j < 8; ++j ) {
 				if( i == j ) {
-					assert( i8.mat( i, j ) == a8.mat( i, j ) == 1.f );
+					assert( i8.mat( i, j ) == 1.f );
+					assert( a8.mat( i, j ) == 1.f );
 				} else {
-					assert( i8.mat( i, j ) == a8.mat( i, j ) == 0.f );
+					assert( i8.mat( i, j ) == 0.f ); 
+					assert( a8.mat( i, j ) == 0.f );
 				}
 				assert( mv8.mat( i, j ) == mat[ i * 8 + j ] );
 			}
-			assert( i8.vec[ i ] == a8.vec[ i ] == 0.f );
+			assert( i8.vec[ i ] == 0.f ); 
+			assert( a8.vec[ i ] == 0.f );
 		}
 
 		return true;
@@ -150,8 +153,8 @@ namespace vul_test {
 		Point< f32_t, 8 > p8( 1.f );
 #else
 		Affine< f32_t, 2 > i2 = makeAffine< f32_t, 2 >( ), 
-						   mv2 = makeAffine< f32_t, 2 >( makeMatrix22< f32_t >( cos( ( f32_t )VUL_PI / 4.f ), -sin( ( f32_t )VUL_PI / 4.f ),
-																				sin( ( f32_t )VUL_PI / 4.f ),  cos( ( f32_t )VUL_PI / 4.f ) ),
+						   mv2 = makeAffine< f32_t, 2 >( makeMatrix22< f32_t >(  cos( ( f32_t )VUL_PI / 4.f ), sin( ( f32_t )VUL_PI / 4.f ),
+																				-sin( ( f32_t )VUL_PI / 4.f ), cos( ( f32_t )VUL_PI / 4.f ) ),
 														 makeVector< f32_t >( 0.f, 1.f ) );
 		Affine< f32_t, 3 > i3 = makeAffine< f32_t, 3 >( );
 		Affine< f32_t, 8 > i8 = makeAffine< f32_t, 8 >( );
@@ -216,7 +219,7 @@ namespace vul_test {
 				assert( rmv( i, j ) == mat[ i * 3 + j ] );
 			}
 		}
-		assert( ri( 3, 3 ) == 0.f );
+		assert( ri( 3, 3 ) == 1.f );
 		assert( ri( 0, 3 ) == 0.f );
 		assert( ri( 1, 3 ) == 0.f );
 		assert( ri( 2, 3 ) == 0.f );
@@ -224,7 +227,7 @@ namespace vul_test {
 		assert( ri( 3, 1 ) == 0.f );
 		assert( ri( 3, 2 ) == 0.f );
 		
-		assert( rmv( 3, 3 ) == 0.f );
+		assert( rmv( 3, 3 ) == 1.f );
 		assert( rmv( 0, 3 ) == 0.f );
 		assert( rmv( 1, 3 ) == 0.f );
 		assert( rmv( 2, 3 ) == 0.f );

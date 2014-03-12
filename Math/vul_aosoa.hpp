@@ -223,10 +223,10 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
-				out[ i * 4     ][ j ] = in[ i ][ j ].m128_f32[ 0 ];
-				out[ i * 4 + 1 ][ j ] = in[ i ][ j ].m128_f32[ 1 ];
-				out[ i * 4 + 2 ][ j ] = in[ i ][ j ].m128_f32[ 2 ];
-				out[ i * 4 + 3 ][ j ] = in[ i ][ j ].m128_f32[ 3 ];
+				out[ i * 4     ][ j ] = in[ i ][ j ].m128_f32[ 3 ];
+				out[ i * 4 + 1 ][ j ] = in[ i ][ j ].m128_f32[ 2 ];
+				out[ i * 4 + 2 ][ j ] = in[ i ][ j ].m128_f32[ 1 ];
+				out[ i * 4 + 3 ][ j ] = in[ i ][ j ].m128_f32[ 0 ];
 			}
 		}
 	}
@@ -240,8 +240,8 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
-				out[ i * 2     ][ j ] = in[ i ][ j ].m128d_f64[ 0 ];
-				out[ i * 2 + 1 ][ j ] = in[ i ][ j ].m128d_f64[ 1 ];
+				out[ i * 2     ][ j ] = in[ i ][ j ].m128d_f64[ 1 ];
+				out[ i * 2 + 1 ][ j ] = in[ i ][ j ].m128d_f64[ 0 ];
 			}
 		}
 	}
@@ -255,14 +255,14 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
-				out[ i * 8     ][ j ] = in[ i ][ j ].m256_f32[ 0 ];
-				out[ i * 8 + 1 ][ j ] = in[ i ][ j ].m256_f32[ 1 ];
-				out[ i * 8 + 2 ][ j ] = in[ i ][ j ].m256_f32[ 2 ];
-				out[ i * 8 + 3 ][ j ] = in[ i ][ j ].m256_f32[ 3 ];
-				out[ i * 8 + 4 ][ j ] = in[ i ][ j ].m256_f32[ 4 ];
-				out[ i * 8 + 5 ][ j ] = in[ i ][ j ].m256_f32[ 5 ];
-				out[ i * 8 + 6 ][ j ] = in[ i ][ j ].m256_f32[ 6 ];
-				out[ i * 8 + 7 ][ j ] = in[ i ][ j ].m256_f32[ 7 ];
+				out[ i * 8     ][ j ] = in[ i ][ j ].m256_f32[ 7 ];
+				out[ i * 8 + 1 ][ j ] = in[ i ][ j ].m256_f32[ 6 ];
+				out[ i * 8 + 2 ][ j ] = in[ i ][ j ].m256_f32[ 5 ];
+				out[ i * 8 + 3 ][ j ] = in[ i ][ j ].m256_f32[ 4 ];
+				out[ i * 8 + 4 ][ j ] = in[ i ][ j ].m256_f32[ 3 ];
+				out[ i * 8 + 5 ][ j ] = in[ i ][ j ].m256_f32[ 2 ];
+				out[ i * 8 + 6 ][ j ] = in[ i ][ j ].m256_f32[ 1 ];
+				out[ i * 8 + 7 ][ j ] = in[ i ][ j ].m256_f32[ 0 ];
 			}
 		}
 	}
@@ -276,10 +276,10 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
-				out[ i * 4     ][ j ] = in[ i ][ j ].m256d_f64[ 0 ];
-				out[ i * 4 + 1 ][ j ] = in[ i ][ j ].m256d_f64[ 1 ];
-				out[ i * 4 + 2 ][ j ] = in[ i ][ j ].m256d_f64[ 2 ];
-				out[ i * 4 + 3 ][ j ] = in[ i ][ j ].m256d_f64[ 3 ];
+				out[ i * 4     ][ j ] = in[ i ][ j ].m256d_f64[ 3 ];
+				out[ i * 4 + 1 ][ j ] = in[ i ][ j ].m256d_f64[ 2 ];
+				out[ i * 4 + 2 ][ j ] = in[ i ][ j ].m256d_f64[ 1 ];
+				out[ i * 4 + 3 ][ j ] = in[ i ][ j ].m256d_f64[ 0 ];
 			}
 		}
 	}
@@ -287,9 +287,9 @@ namespace vul {
 	void pack( AABB< __m128, n > *out, const AABB< f32_t, n > *in, ui32_t count )
 	{
 		ui32_t simdCount, i, j;
-		 __m128 mini[ n ], maxi[ n ];
-		 Point< __m128, n > _CRT_ALIGN(16) vmin;
-		 Point< __m128, n > _CRT_ALIGN(16) vmax;
+		__m128 mini[ n ], maxi[ n ];
+		Point< __m128, n > _CRT_ALIGN(16) vmin;
+		Point< __m128, n > _CRT_ALIGN(16) vmax;
 		
 		simdCount = ( count + 3 ) / 4;
 		for( i = 0; i < simdCount; ++i )

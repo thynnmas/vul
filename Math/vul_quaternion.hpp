@@ -522,11 +522,10 @@ namespace vul {
 	template< typename T >
 	Quaternion< T > &Quaternion< T >::operator*=( const Quaternion< T > &rhs )
 	{
-		const T x, y, z, w;
-		x = data[ 0 ];
-		y = data[ 1 ];
-		z = data[ 2 ];
-		w = data[ 3 ];
+		const T x = data[ 0 ],
+				y = data[ 1 ],
+				z = data[ 2 ],
+				w = data[ 3 ];
 
 		data[ 0 ] = w * rhs[ 0 ] + rhs[ 3 ] * x + y * rhs[ 2 ] - z * rhs[ 1 ];
 		data[ 1 ] = w * rhs[ 1 ] + rhs[ 3 ] * y + z * rhs[ 0 ] - x * rhs[ 2 ];
@@ -639,7 +638,7 @@ namespace vul {
 		// Maintain angle
 		r[ 3 ] = q[ 3 ];
 
-		return q;
+		return r;
 	}
 	template< typename T >
 	Vector< bool, 4 > operator==( const Quaternion< T > &a, const Quaternion< T > &b )
@@ -708,27 +707,35 @@ namespace vul {
 	{
 		T cosine, angle;
 
-		cosine = dot( b );
-		angle = acos( cosine );
+		cosine = dot( a, b );
+		if( cosine <= -1.f ) {
+			angle = ( f32_t )VUL_PI;
+		} else {
+			if( cosine >= 1.f ) {
+				angle = 0.f;
+			} else {
+				angle = acos( cosine );
+			}
+		}
 
-		return ( std::abs( angle ) >= tolerance
-				 || ( std::abs( angle - static_cast< T >( VULP_PI ) ) < tolerance ) );
+		return ( std::abs( angle ) <= tolerance
+				 || ( std::abs( angle - static_cast< T >( VUL_PI ) ) <= tolerance ) );
 	}
 	template< typename T >
 	T norm( const Quaternion< T > &q )
 	{
-		return q[ 0 ] * q[ 0 ]
-			 + q[ 1 ] * q[ 1 ]
-			 + q[ 2 ] * q[ 2 ]
-			 + q[ 3 ] * q[ 3 ];
+		T res = q[ 0 ] * q[ 0 ]
+			  + q[ 1 ] * q[ 1 ]
+			  + q[ 2 ] * q[ 2 ]
+			  + q[ 3 ] * q[ 3 ];
+		return static_cast< T >( sqrt( ( f32_t )res ) );
 	}
 	template< typename T >
 	Quaternion< T > normalize( const Quaternion< T > &q )
 	{
-		T len, fac;
+		T fac;
 
-		len = norm( q );
-		fac = static_cast< T >( 1.f ) / sqrt( len );
+		fac = static_cast< T >( 1.f ) / norm( q );
 		
 		return q * fac;		
 	}
@@ -761,14 +768,14 @@ namespace vul {
 	template< typename T >
 	Quaternion< T > unitInverse( const Quaternion< T > &q )
 	{
-		Quaternion< T > q;
+		Quaternion< T > r;
 		
-		q[ 0 ] = -q[ 0 ]; // Invert axis
-		q[ 1 ] = -q[ 1 ]; 
-		q[ 2 ] = -q[ 2 ];
-		q[ 3 ] =  q[ 3 ]; // Keep w
+		r[ 0 ] = -q[ 0 ]; // Invert axis
+		r[ 1 ] = -q[ 1 ]; 
+		r[ 2 ] = -q[ 2 ];
+		r[ 3 ] =  q[ 3 ]; // Keep w
 
-		return q;
+		return r;
 	}
 	
 	template< typename T >
@@ -798,13 +805,13 @@ namespace vul {
 			invSine = one / sine;
 			c0 = sin( ( one - t ) * angle ) * invSine;
 			c1 = sin( t * angle ) * invSine;
-			q = c0 * a + c1 * nb;
+			q = a * c0 + nb * c1;
 			return normalize( q );
 		} else {
 			// Either a and b are very close, and we can lerp, 
 			// or a and b are almost inverses and we have infinite directions.
 			// We sadly have no way of fixing the second case, so just lerp.
-			q = ( one - t ) * a + t * nb;
+			q = a * ( one - t ) + nb * t;
 			return normalize( q );
 		}
 	}
@@ -818,9 +825,9 @@ namespace vul {
 		cosine = dot( a, b );
 		if( cosine < static_cast< T >( 0.f ) && useShortestPath )
 		{
-			q = a + t * ( ( -b ) - a );
+			q = a + ( ( -b ) - a ) * t;
 		} else {
-			q = a + t * ( b - a );
+			q = a + ( b - a ) * t;
 		}
 		return normalize( q );
 	}
@@ -834,9 +841,9 @@ namespace vul {
 
 		st = static_cast< T >( 2.f ) * t * ( static_cast< T >( 1.f ) - t );
 		qa = slerp( a, d, t, useShortestPath );
-		qd = slerp( b, c, t );
+		qd = slerp( b, c, t, false );
 
-		return slerp( qa, qd, st );
+		return slerp( qa, qd, st, false );
 	}
 
 }

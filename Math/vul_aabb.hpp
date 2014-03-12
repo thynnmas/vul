@@ -256,8 +256,8 @@ namespace vul {
 	{
 		AABB< T, n > r;
 
-		r._min += vec;
-		r._max += vec;
+		r._min = aabb._min + vec;
+		r._max = aabb._max + vec;
 
 		return r;
 	}
@@ -266,8 +266,8 @@ namespace vul {
 	{
 		AABB< T, n > r, tmp;
 
-		tmp._min = ( r._min.as_vec( ) * v ).as_point( );
-		tmp._max = ( r._max.as_vec( ) * v ).as_point( );
+		tmp._min = ( aabb._min.as_vec( ) * v ).as_point( );
+		tmp._max = ( aabb._max.as_vec( ) * v ).as_point( );
 
 		// Handle negative scales
 		r._min = min( tmp._min, tmp._max ).as_point( );
@@ -283,11 +283,11 @@ namespace vul {
 		unsigned int i, j;
 
 #ifdef VUL_CPLUSPLUS11
-		newmin = Vector< T, n >( std::numeric_limits< T >::max( ) );
-		newmax = Vector< T, n >( std::numeric_limits< T >::lowest( ) );
+		newmin = Vector< T, n >(  std::numeric_limits< T >::max( ) );
+		newmax = Vector< T, n >( -std::numeric_limits< T >::max( ) );
 #else
-		newmin = makeVector< T, n >( std::numeric_limits< T >::max( ) );
-		newmax = makeVector< T, n >( std::numeric_limits< T >::lowest( ) );
+		newmin = makeVector< T, n >(  std::numeric_limits< T >::max( ) );
+		newmax = makeVector< T, n >( -std::numeric_limits< T >::max( ) );
 #endif
 		for( i = 0; i < ( ui32_t )pow( 2.f, n ); ++i )
 		{

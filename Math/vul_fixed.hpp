@@ -173,7 +173,7 @@ namespace vul {
 		if( Q > Q32 ) {
 			data = a.data << ( Q - Q32 );
 		} else {
-			data = a.data << ( Q32 - Q );
+			data = a.data >> ( Q32 - Q );
 		}
 #pragma warning ( default: 4293 )
 	}
@@ -202,8 +202,14 @@ namespace vul {
 	{
 		fixed_32< Q32 > r;
 
-		// Just shift ir Q32-Q.
-		r.data = a.data << ( Q32 - Q );
+#pragma warning ( disable: 4293 ) // We are aware, and branch accordingly
+		// Negative shifts are undefined, so branch
+		if( Q > Q32 ) {
+			r.data = a.data << ( Q - Q32 );
+		} else {
+			r.data = a.data >> ( Q32 - Q );
+		}
+#pragma warning ( default: 4293 )
 
 		return r;
 	}
@@ -230,23 +236,23 @@ namespace vul {
 	fixed_32< Q > &fixed_32< Q >::operator*=( fixed_32< Q > rhs )
 	{
 		int K;
-		long temp;
+		long long temp;
 
 		K = ( 2 << ( Q - 1 ) );
 		temp = ( long long )data * ( long long )rhs.data;
 		temp += K;
 
-		data = temp >> Q;
+		data = ( int )( temp >> Q );
 		return *this;
 	}	
 	template< int Q >
 	fixed_32< Q > &fixed_32< Q >::operator/=( fixed_32< Q > rhs )
 	{
-		long temp;
+		long long temp;
 
 		temp = ( long long )data << Q;
 		temp += rhs.data / 2;
-		data = temp / rhs.data;
+		data = ( int )( temp / rhs.data );
 		return *this;
 	}	
 

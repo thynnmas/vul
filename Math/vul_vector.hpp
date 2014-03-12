@@ -1209,7 +1209,7 @@ namespace vul {
 			res += a[ i ] * a[ i ];
 		}
 
-		return sqrt( res );
+		return static_cast< T >( sqrt( ( f32_t )res ) );
 	}
 
 	template< typename T, i32_t n >

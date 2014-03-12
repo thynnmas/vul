@@ -23,7 +23,7 @@
 #include "glm.hpp"
 
 #define VUL_TEST_FUZZ_COUNT 10000
-#define VUL_TEST_RNG ( float )( ( float )rand( ) / ( float )FLT_MAX )
+#define VUL_TEST_RNG ( float )( ( float )rand( ) / ( float )RAND_MAX )
 
 using namespace vul;
 
@@ -131,7 +131,7 @@ namespace vul_test {
 		fi32_t a33[ 3 ][ 3 ];
 		for( ui32_t c = 0; c < 3; ++c ) {
 			for( ui32_t r = 0; r < 3; ++r ) {
-				a33[ c ][ r ] = fi32_t( ( f32_t )rand( ) / ( f32_t )FLT_MAX );
+				a33[ c ][ r ] = fi32_t( VUL_TEST_RNG );
 			}
 		}
 #ifdef VUL_CPLUSPLUS11
@@ -149,7 +149,7 @@ namespace vul_test {
 		f32_t af[ 6 ][ 8 ];
 		for( ui32_t c = 0; c < 6; ++c ) {
 			for( ui32_t r = 0; r < 8; ++r ) {
-				af[ c ][ r ] = ( f32_t )rand( ) / ( f32_t )FLT_MAX;
+				af[ c ][ r ] = VUL_TEST_RNG;
 			}
 		}
 		f32_t af22[ 2 ][ 2 ] = { af[ 0 ][ 0 ], af[ 0 ][ 1 ], af[ 1 ][ 0 ], af[ 1 ][ 1 ] };
@@ -161,11 +161,11 @@ namespace vul_test {
 		m68 = makeMatrix< f32_t, 6, 8 >( af );
 #endif
 		assert( m22( 0, 0 ) == af22[ 0 ][ 0 ] );
-		assert( m22( 1, 0 ) == af22[ 0 ][ 1 ] );
-		assert( m22( 0, 1 ) == af22[ 1 ][ 0 ] );
+		assert( m22( 1, 0 ) == af22[ 1 ][ 0 ] );
+		assert( m22( 0, 1 ) == af22[ 0 ][ 1 ] );
 		assert( m22( 1, 1 ) == af22[ 1 ][ 1 ] );
-		for( ui32_t c = 0; c < 8; ++c ) {
-			for( ui32_t r = 0; r < 6; ++r ) {
+		for( ui32_t c = 0; c < 6; ++c ) {
+			for( ui32_t r = 0; r < 8; ++r ) {
 				assert( m68( c, r ) == af[ c ][ r ] );
 			}
 		}
@@ -213,7 +213,8 @@ namespace vul_test {
 		}
 
 
-		m22 = makeMatrix22< f32_t >( 1.f, -2.f, 4.f, 3.f );
+		m22 = makeMatrix22< f32_t >( 1.f, -2.f, 
+								     4.f,  3.f );
 		assert( m22( 0, 0 ) == 1.f );
 		assert( m22( 0, 1 ) == -2.f );
 		assert( m22( 1, 0 ) == 4.f );
@@ -257,8 +258,8 @@ namespace vul_test {
 			}
 		}
 		m68 = makeMatrixFromColumns< f32_t, 6, 8 >( cols );
-		for( ui32_t i = 0; i < 8; ++i ) {
-			for( ui32_t j = 0; j < 6; ++j ) {
+		for( ui32_t i = 0; i < 6; ++i ) {
+			for( ui32_t j = 0; j < 8; ++j ) {
 				assert( m68( i, j ) == cols[ i ][ j ] );
 			}
 		}
@@ -292,16 +293,16 @@ namespace vul_test {
 		assert( mf33( 1, 0 ) == v32[ 0 ] );
 		assert( mf33( 1, 1 ) == v32[ 1 ] );
 		assert( mf33( 1, 2 ) == v32[ 2 ] );
-		assert( mf33( 1, 0 ) == v33[ 0 ] );
-		assert( mf33( 1, 1 ) == v33[ 1 ] );
-		assert( mf33( 1, 2 ) == v33[ 2 ] );
+		assert( mf33( 2, 0 ) == v33[ 0 ] );
+		assert( mf33( 2, 1 ) == v33[ 1 ] );
+		assert( mf33( 2, 2 ) == v33[ 2 ] );
 
 		Matrix< f32_t, 4, 4 > mf44 = makeMatrix44FromColumns( v41, v42, v43, v44 );
 		for( ui32_t i = 0; i < 4; ++i ) {
-			assert( m44( 0, i ) == v41[ i ] );
-			assert( m44( 1, i ) == v42[ i ] );
-			assert( m44( 2, i ) == v43[ i ] );
-			assert( m44( 3, i ) == v44[ i ] );	
+			assert( mf44( 0, i ) == v41[ i ] );
+			assert( mf44( 1, i ) == v42[ i ] );
+			assert( mf44( 2, i ) == v43[ i ] );
+			assert( mf44( 3, i ) == v44[ i ] );	
 		}
 		return true;
 	}
@@ -344,8 +345,6 @@ namespace vul_test {
 	}
 	bool TestMatrix::member_ops( )
 	{
-		// @TODO: This
-
 		// Eveything will fail if this fails, pretty much
 		Matrix< f32_t, 3, 2 > m32, mtmp;
 		m32.data[ 0 ][ 0 ] = 1.f;
@@ -354,7 +353,7 @@ namespace vul_test {
 		m32.data[ 1 ][ 0 ] = 3.f;
 		m32.data[ 1 ][ 1 ] = 4.f;
 
-		m32.data[ 2 ][ 9 ] = 5.f;
+		m32.data[ 2 ][ 0 ] = 5.f;
 		m32.data[ 2 ][ 1 ] = 6.f;
 
 		assert( m32( 0, 0 ) == 1.f );
@@ -376,57 +375,57 @@ namespace vul_test {
 		// Componentwise arithmetics
 		mtmp = m32;
 		mtmp -= 1.f;
-		assert( m32( 0, 0 ) == 6.f );
-		assert( m32( 0, 1 ) == 13.f );
-		assert( m32( 1, 0 ) == -5.f );
-		assert( m32( 1, 1 ) == 3.f );
-		assert( m32( 2, 0 ) == 4.f );
-		assert( m32( 2, 1 ) == 5.f );
+		assert( mtmp( 0, 0 ) == 6.f );
+		assert( mtmp( 0, 1 ) == 13.f );
+		assert( mtmp( 1, 0 ) == -5.f );
+		assert( mtmp( 1, 1 ) == 3.f );
+		assert( mtmp( 2, 0 ) == 4.f );
+		assert( mtmp( 2, 1 ) == 5.f );
 
 		mtmp = m32;
 		mtmp += 1.f;
-		assert( m32( 0, 0 ) == 8.f );
-		assert( m32( 0, 1 ) == 15.f );
-		assert( m32( 1, 0 ) == -3.f );
-		assert( m32( 1, 1 ) == 5.f );
-		assert( m32( 2, 0 ) == 6.f );
-		assert( m32( 2, 1 ) == 7.f );
+		assert( mtmp( 0, 0 ) == 8.f );
+		assert( mtmp( 0, 1 ) == 15.f );
+		assert( mtmp( 1, 0 ) == -3.f );
+		assert( mtmp( 1, 1 ) == 5.f );
+		assert( mtmp( 2, 0 ) == 6.f );
+		assert( mtmp( 2, 1 ) == 7.f );
 		
 		mtmp = m32;
 		mtmp *= 2.f;
-		assert( m32( 0, 0 ) == 14.f );
-		assert( m32( 0, 1 ) == 28.f );
-		assert( m32( 1, 0 ) == -8.f );
-		assert( m32( 1, 1 ) == 6.f );
-		assert( m32( 2, 0 ) == 8.f );
-		assert( m32( 2, 1 ) == 10.f );
+		assert( mtmp( 0, 0 ) == 14.f );
+		assert( mtmp( 0, 1 ) == 28.f );
+		assert( mtmp( 1, 0 ) == -8.f );
+		assert( mtmp( 1, 1 ) == 8.f );
+		assert( mtmp( 2, 0 ) == 10.f );
+		assert( mtmp( 2, 1 ) == 12.f );
 		
 		mtmp = m32;
 		mtmp /= 4.f;
-		assert( m32( 0, 0 ) == 7.f / 4.f );
-		assert( m32( 0, 1 ) == 14.f / 4.f );
-		assert( m32( 1, 0 ) == -4.f / 4.f );
-		assert( m32( 1, 1 ) == 4.f / 4.f );
-		assert( m32( 2, 0 ) == 5.f / 4.f );
-		assert( m32( 2, 1 ) == 6.f / 4.f );
+		assert( mtmp( 0, 0 ) == 7.f / 4.f );
+		assert( mtmp( 0, 1 ) == 14.f / 4.f );
+		assert( mtmp( 1, 0 ) == -4.f / 4.f );
+		assert( mtmp( 1, 1 ) == 4.f / 4.f );
+		assert( mtmp( 2, 0 ) == 5.f / 4.f );
+		assert( mtmp( 2, 1 ) == 6.f / 4.f );
 		
 		mtmp = m32;
 		mtmp += m32;
-		assert( m32( 0, 0 ) == 14.f );
-		assert( m32( 0, 1 ) == 28.f );
-		assert( m32( 1, 0 ) == -8.f );
-		assert( m32( 1, 1 ) == 6.f );
-		assert( m32( 2, 0 ) == 8.f );
-		assert( m32( 2, 1 ) == 10.f );
+		assert( mtmp( 0, 0 ) == 14.f );
+		assert( mtmp( 0, 1 ) == 28.f );
+		assert( mtmp( 1, 0 ) == -8.f );
+		assert( mtmp( 1, 1 ) == 8.f );
+		assert( mtmp( 2, 0 ) == 10.f );
+		assert( mtmp( 2, 1 ) == 12.f );
 
 		mtmp = m32;
 		mtmp -= m32;
-		assert( m32( 0, 0 ) == 0.f );
-		assert( m32( 0, 1 ) == 0.f );
-		assert( m32( 1, 0 ) == 0.f );
-		assert( m32( 1, 1 ) == 0.f );
-		assert( m32( 2, 0 ) == 0.f );
-		assert( m32( 2, 1 ) == 0.f );
+		assert( mtmp( 0, 0 ) == 0.f );
+		assert( mtmp( 0, 1 ) == 0.f );
+		assert( mtmp( 1, 0 ) == 0.f );
+		assert( mtmp( 1, 1 ) == 0.f );
+		assert( mtmp( 2, 0 ) == 0.f );
+		assert( mtmp( 2, 1 ) == 0.f );
 
 		return true;
 	}
@@ -451,24 +450,24 @@ namespace vul_test {
 
 		Matrix< f32_t, 2, 2 > m22;
 		
-		m22 = m32 * m23;
+		m22 = m23 * m32;
 		assert( m22( 0, 0 ) == -3.25f );
 		assert( m22( 0, 1 ) == -3.5f );
-		assert( m22( 1, 0 ) ==  28.5f );
-		assert( m22( 1, 1 ) ==  33.f );
+		assert( m22( 1, 0 ) ==  31.5f );
+		assert( m22( 1, 1 ) ==  37.f );
 		
-		m22.data[ 0 ][ 0 ] = cos( ( f32_t )VUL_PI / 2.f ); m22.data[ 1 ][ 0 ] = -sin( ( f32_t )VUL_PI / 2.f );
-		m22.data[ 0 ][ 1 ] = sin( ( f32_t )VUL_PI / 2.f ); m22.data[ 1 ][ 1 ] =  cos( ( f32_t )VUL_PI / 2.f );
+		m22( 0, 0 ) = 0.f; m22( 1, 0 ) = -1.f;
+		m22( 0, 1 ) = 1.f; m22( 1, 1 ) =  0.f;
 		Vector< f32_t, 2 > v2, vr;
 		v2.data[ 0 ] = 1.f;
-		v2.data[ 0 ] = 0.f;
+		v2.data[ 1 ] = 0.f;
 		vr = m22 * v2;
-		assert( v2[ 0 ] == 0.f );
-		assert( v2[ 1 ] == 1.f );
+		assert( vr[ 0 ] == 0.f );
+		assert( vr[ 1 ] == 1.f );
 
 		vr = v2 * m22;
-		assert( v2[ 0 ] == 0.f );
-		assert( v2[ 1 ] == -1.f );
+		assert( vr[ 0 ] == 0.f );
+		assert( vr[ 1 ] == -1.f );
 
 		Point< f32_t, 2 > pr;
 
@@ -479,7 +478,7 @@ namespace vul_test {
 		pr = v2.as_point( ) * m22;
 		assert( pr[ 0 ] == 0.f );
 		assert( pr[ 1 ] == -1.f );
-		
+		f32_t f32eps = 1e-5f;
 
 		// For matrix multiplication (and our vector specializations), we also compare to reference implementation.
 		for( ui32_t i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
@@ -490,74 +489,79 @@ namespace vul_test {
 				for( ui32_t r = 0; r < 4; ++r ) {
 					f32_t a = VUL_TEST_RNG;
 					f32_t b = VUL_TEST_RNG;
-					gm44a[ c ][ r ] = a;
-					gm44b[ c ][ r ] = b;
 					m44a( c, r ) = a;
 					m44b( c, r ) = b;
+					gm44a[ r ][ c ] = a;
+					gm44b[ r ][ c ] = b;
 				}
 			}
 			m44r = m44a * m44b;
 			gm44r = gm44a * gm44b;
 			for( ui32_t c = 0; c < 4; ++c ) {
 				for( ui32_t r = 0; r < 4; ++r ) {
-					assert( m44r( c, r ) == gm44r[ c ][ r ] );
+					assert( abs( m44r( c, r ) - gm44r[ r ][ c ] ) < f32eps );
 				}
 			}
 
 			Vector< f32_t, 4 > v4, v4r;
 			glm::vec4 gv4, gv4r;
-			gv4r = gm44a * gv4 ;
-			v4r = m44a * v4;
-			for( ui32_t j = 0; j < 4; ++j ) {
-				assert( gv4r[ j ] == v4r[ j ] );
+			for( ui32_t r = 0; r < 4; ++r ) {
+				f32_t a = VUL_TEST_RNG;
+				gv4[ r ] = a;
+				v4[ r ] = a;
 			}
 			gv4r = gv4 * gm44a;
+			v4r = m44a * v4;
+			for( ui32_t j = 0; j < 4; ++j ) {
+				assert( abs( gv4r[ j ] - v4r[ j ] ) < f32eps );
+			}
+			gv4r = gm44a * gv4;
 			v4r = v4 * m44a;
 			for( ui32_t j = 0; j < 4; ++j ) {
-				assert( gv4r[ j ] == v4r[ j ] );
+				assert( abs( gv4r[ j ] - v4r[ j ] ) < f32eps );
 			}
 		}	
 
 		// Componentwise arithmetics
 		mr = m32 - 1.f;
-		assert( mr( 0, 0 ) == 6.f );
-		assert( mr( 0, 1 ) == 13.f );
-		assert( mr( 1, 0 ) == -5.f );
+		assert( mr( 0, 0 ) == 0.f );
+		assert( mr( 0, 1 ) == 1.f );
+		assert( mr( 1, 0 ) == 2.f );
 		assert( mr( 1, 1 ) == 3.f );
 		assert( mr( 2, 0 ) == 4.f );
 		assert( mr( 2, 1 ) == 5.f );
 
 		mr = m32 + 1.f;
-		assert( mr( 0, 0 ) == 8.f );
-		assert( mr( 0, 1 ) == 15.f );
-		assert( mr( 1, 0 ) == -3.f );
+		assert( mr( 0, 0 ) == 2.f );
+		assert( mr( 0, 1 ) == 3.f );
+		assert( mr( 1, 0 ) == 4.f );
 		assert( mr( 1, 1 ) == 5.f );
 		assert( mr( 2, 0 ) == 6.f );
 		assert( mr( 2, 1 ) == 7.f );
 		
 		mr = m32 * 2.f;
-		assert( mr( 0, 0 ) == 14.f );
-		assert( mr( 0, 1 ) == 28.f );
-		assert( mr( 1, 0 ) == -8.f );
-		assert( mr( 1, 1 ) == 6.f );
-		assert( mr( 2, 0 ) == 8.f );
-		assert( mr( 2, 1 ) == 10.f );
+		assert( mr( 0, 0 ) == 2.f );
+		assert( mr( 0, 1 ) == 4.f );
+		assert( mr( 1, 0 ) == 6.f );
+		assert( mr( 1, 1 ) == 8.f );
+		assert( mr( 2, 0 ) == 10.f );
+		assert( mr( 2, 1 ) == 12.f );
 		
 		mr = m32 / 4.f;
-		assert( mr( 0, 0 ) == 7.f / 4.f );
-		assert( mr( 0, 1 ) == 14.f / 4.f );
-		assert( mr( 1, 0 ) == -4.f / 4.f );
+		assert( mr( 0, 0 ) == 1.f / 4.f );
+		assert( mr( 0, 1 ) == 2.f / 4.f );
+		assert( mr( 1, 0 ) == 3.f / 4.f );
 		assert( mr( 1, 1 ) == 4.f / 4.f );
 		assert( mr( 2, 0 ) == 5.f / 4.f );
 		assert( mr( 2, 1 ) == 6.f / 4.f );
 		
 		mr = m32 + m32;
-		assert( mr( 0, 0 ) == 14.f );
-		assert( mr( 0, 1 ) == 28.f );
-		assert( mr( 1, 0 ) == -8.f );
-		assert( mr( 1, 1 ) == 6.f );
-		assert( mr( 2, 0 ) == 8.f );
-		assert( mr( 2, 1 ) == 10.f );
+		assert( mr( 0, 0 ) == 2.f );
+		assert( mr( 0, 1 ) == 4.f );
+		assert( mr( 1, 0 ) == 6.f );
+		assert( mr( 1, 1 ) == 8.f );
+		assert( mr( 2, 0 ) == 10.f );
+		assert( mr( 2, 1 ) == 12.f );
 
 		mr = m32 - m32;
 		assert( mr( 0, 0 ) == 0.f );
@@ -612,8 +616,8 @@ namespace vul_test {
 		assert( m43( 3, 1 ) == col3[ 1 ] );
 		assert( m43( 3, 2 ) == col3[ 2 ] );
 		
-		Matrix< f32_t, 2, 2 > m22 = makeMatrix22< f32_t >( 7.f, -8.f,
-														   4.f, 2.f ),
+		Matrix< f32_t, 2, 2 > m22 = makeMatrix22< f32_t >(  7.f, 4.f,
+														   -8.f, 2.f ),
 						      m22r;
 		
 		m22r = max( m22, 0.f );
@@ -645,15 +649,22 @@ namespace vul_test {
 		
 		assert( determinant( m22 ) == 46.f );
 
-		m33 = makeMatrix33< f32_t >( -1.f,  3.f, -3.f,
-									  0.f, -6.f,  5.f,
-									 -5.f, -3.f,  1.f );
+		m33 = makeMatrix33< f32_t >( -1.f,  0.f, -5.f,
+									  3.f, -6.f, -3.f,
+									 -3.f,  5.f,  1.f );
 		assert( determinant( m33 ) == 6.f );
 
 		Matrix< f32_t, 3, 3 > m33i = inverse( m33 );
-		assert( m33i( 0, 0 ) == 1.5f );		  assert( m33i( 1, 0 ) == 1.f );		assert( m33i( 2, 0 ) == -0.5f );
-		assert( m33i( 0, 1 ) == -25.f / 6.f );assert( m33i( 1, 1 ) == -16.f / 6.f); assert( m33i( 2, 1 ) == 5.f / 6.f );
-		assert( m33i( 0, 2 ) == -30.f / 6.f );assert( m33i( 1, 2 ) == -3.f );		assert( m33i( 2, 2 ) == 1.f );
+		f32_t f32eps = 1e-5f;
+		assert( abs( m33i( 0, 0 ) - 1.5f ) < f32eps );
+		assert( abs( m33i( 1, 0 ) - 1.f ) < f32eps );
+		assert( abs( m33i( 2, 0 ) - ( -0.5f ) ) < f32eps );
+		assert( abs( m33i( 0, 1 ) - ( -25.f / 6.f ) ) < f32eps ); 
+		assert( abs( m33i( 1, 1 ) - (-16.f / 6.f ) ) < f32eps ); 
+		assert( abs( m33i( 2, 1 ) - ( 5.f / 6.f ) ) < f32eps );
+		assert( abs( m33i( 0, 2 ) - ( -30.f / 6.f ) ) < f32eps );
+		assert( abs( m33i( 1, 2 ) - ( -3.f ) ) < f32eps );
+		assert( abs( m33i( 2, 2 ) - 1.f ) < f32eps );
 		
 		return true;
 	}

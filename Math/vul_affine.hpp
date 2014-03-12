@@ -213,7 +213,7 @@ namespace vul {
 		d[ 0 ][ 3 ] = static_cast< T >( 0.f );
 		d[ 1 ][ 3 ] = static_cast< T >( 0.f );
 		d[ 2 ][ 3 ] = static_cast< T >( 0.f );
-		d[ 3 ][ 3 ] = static_cast< T >( 1 );
+		d[ 3 ][ 3 ] = static_cast< T >( 1.f );
 
 #ifndef VUL_CPLUSPLUS11
 		m = makeMatrix( d );

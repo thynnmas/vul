@@ -217,14 +217,14 @@ namespace vul_test {
 		d3 = scale( d3, v3 );
 		d8 = scale( d8, v8 );
 
-		assert( d2._min[ 0 ] == 0.f );
-		assert( d2._min[ 1 ] == 2.f );
-		assert( d2._max[ 0 ] == -1.f );
-		assert( d2._max[ 1 ] == 4.f );
+		assert( d2._min[ 0 ] == -1.f );
+		assert( d2._min[ 1 ] ==  2.f );
+		assert( d2._max[ 0 ] ==  0.f );
+		assert( d2._max[ 1 ] ==  4.f );
 
 		for( ui32_t i = 0; i < 3; ++i ) {
-			assert( d3._min[ i ] == 0.f );
-			assert( d3._max[ i ] == -1.f );
+			assert( d3._min[ i ] == -1.f );
+			assert( d3._max[ i ] ==  0.f );
 		}
 		
 		for( ui32_t i = 0; i < 8; ++i ) {
@@ -279,15 +279,15 @@ namespace vul_test {
 		Point< f32_t, 3 > p3 = center( d3 );
 		Point< f32_t, 8 > p8 = center( d8 );
 
-		assert( p2[ 0 ] == 1.f );
-		assert( p2[ 1 ] == 1.f );
+		assert( p2[ 0 ] == 0.5f );
+		assert( p2[ 1 ] == 1.5f );
 
 		for( ui32_t i = 0; i < 3; ++i ) {
-			assert( p3[ i ] == 1.f );
+			assert( p3[ i ] == 0.5f );
 		}
 		
 		for( ui32_t i = 0; i < 8; ++i ) {
-			assert( p8[ i ] == 2.f );
+			assert( p8[ i ] == 0.f );
 		}
 
 		return true;
@@ -367,17 +367,19 @@ namespace vul_test {
 		
 		// The rotate means we now have corners at sqrt(2) distance.
 
-		assert( r2._min[ 0 ] == -sqrt( 2.f ) - 1.f );
-		assert( r2._min[ 1 ] == -sqrt( 2.f ) + 1.f );
-		assert( r2._max[ 0 ] == sqrt( 2.f ) - 1.f );
-		assert( r2._max[ 1 ] == sqrt( 2.f ) + 1.f );
+		f32_t tmp = ( f32_t )( 0.5f * (  1.f - sqrt( 3.f ) ) );
+		f32_t hmm = tmp - r2._min[ 1 ];
+		assert( r2._min[ 0 ] == -2.3660254f );
+		assert( r2._min[ 1 ] == -0.36602545f );
+		assert( r2._max[ 0 ] == 0.36602545f );
+		assert( r2._max[ 1 ] == 2.3660254f );
 				
-		assert( r3._min[ 0 ] == -sqrt( 2.f ) * 2.f + 1.f );
-		assert( r3._min[ 1 ] == sqrt( 2.f ) * -2.f + 1.f );
-		assert( r3._min[ 2 ] == -sqrt( 2.f ) * 1.f + 1.f );
-		assert( r3._min[ 0 ] == sqrt( 2.f ) * 2.f + 1.f );
-		assert( r3._min[ 1 ] == -sqrt( 2.f ) * -2.f + 1.f );
-		assert( r3._min[ 2 ] == sqrt( 2.f ) * 1.f + 1.f );
+		assert( r3._min[ 0 ] == -1.8284273f );
+		assert( r3._min[ 1 ] == -1.8284273f );
+		assert( r3._min[ 2 ] ==  0.f );
+		assert( r3._max[ 0 ] ==  3.8284273f );
+		assert( r3._max[ 1 ] ==  3.8284273f );
+		assert( r3._max[ 2 ] ==  2.f );
 
 		return true;
 	}
@@ -452,21 +454,37 @@ namespace vul_test {
 		transform3D( &r256d[ 0 ], &m256d[ 0 ], a64, 1 );
 		
 		//unpack the vectorized ones and compare to reference
-		unpack( &in32[ 0 ], &m128[ 0 ], 1 );
-		unpack( &in64[ 0 ], &m128d[ 0 ], 1 );
+		unpack( &in32[ 0 ], &r128[ 0 ], 1 );
+		unpack( &in64[ 0 ], &r128d[ 0 ], 1 );
 
-		assert( all( in32[ 0 ]._min == ref32_out._min ) );
-		assert( all( in32[ 0 ]._max == ref32_out._max ) );
-		assert( all( in64[ 0 ]._min == ref64_out._min ) );
-		assert( all( in64[ 0 ]._max == ref64_out._max ) );
+		f32_t f32eps = 1e-5f;
+		f64_t f64eps = 1e-8;
+#ifdef VUL_CPLUSPLUS11
+		assert( all( in32[ 0 ]._min - ref32_out._min < Vector< f32_t, 3 >( f32eps ) ) );
+		assert( all( in32[ 0 ]._max - ref32_out._max < Vector< f32_t, 3 >( f32eps ) ) );
+		assert( all( in64[ 0 ]._min - ref64_out._min < Vector< f64_t, 3 >( f64eps ) ) );
+		assert( all( in64[ 0 ]._max - ref64_out._max < Vector< f64_t, 3 >( f64eps ) ) );
+#else
+		assert( all( in32[ 0 ]._min - ref32_out._min < makeVector< f32_t, 3 >( f32eps ) ) );
+		assert( all( in32[ 0 ]._max - ref32_out._max < makeVector< f32_t, 3 >( f32eps ) ) );
+		assert( all( in64[ 0 ]._min - ref64_out._min < makeVector< f64_t, 3 >( f64eps ) ) );
+		assert( all( in64[ 0 ]._max - ref64_out._max < makeVector< f64_t, 3 >( f64eps ) ) );
+#endif
 
-		unpack( &in32[ 0 ], &m256[ 0 ], 1 );
-		unpack( &in64[ 0 ], &m256d[ 0 ], 1 );
-
-		assert( all( in32[ 0 ]._min == ref32_out._min ) );
-		assert( all( in32[ 0 ]._max == ref32_out._max ) );
-		assert( all( in64[ 0 ]._min == ref64_out._min ) );
-		assert( all( in64[ 0 ]._max == ref64_out._max ) );
+		unpack( &in32[ 0 ], &r256[ 0 ], 1 );
+		unpack( &in64[ 0 ], &r256d[ 0 ], 1 );
+		
+#ifdef VUL_CPLUSPLUS11
+		assert( all( in32[ 0 ]._min - ref32_out._min < Vector< f32_t, 3 >( f32eps ) ) );
+		assert( all( in32[ 0 ]._max - ref32_out._max < Vector< f32_t, 3 >( f32eps ) ) );
+		assert( all( in64[ 0 ]._min - ref64_out._min < Vector< f64_t, 3 >( f64eps ) ) );
+		assert( all( in64[ 0 ]._max - ref64_out._max < Vector< f64_t, 3 >( f64eps ) ) );
+#else
+		assert( all( in32[ 0 ]._min - ref32_out._min < makeVector< f32_t, 3 >( f32eps ) ) );
+		assert( all( in32[ 0 ]._max - ref32_out._max < makeVector< f32_t, 3 >( f32eps ) ) );
+		assert( all( in64[ 0 ]._min - ref64_out._min < makeVector< f64_t, 3 >( f64eps ) ) );
+		assert( all( in64[ 0 ]._max - ref64_out._max < makeVector< f64_t, 3 >( f64eps ) ) );
+#endif
 
 		return true;
 	}

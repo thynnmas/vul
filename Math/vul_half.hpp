@@ -151,21 +151,25 @@ namespace vul {
 		int i, te;
 		unsigned int f, e;
 		f = *( ( unsigned int* )&a );
-		i = ( f >> 16 ) & 0x8000;									// Always copy sign bit
-		e = ( ( ( f & 0x7f800000 ) - 0x38000000 ) >> 13 ) & 0x7c00;	// Subtract exponent bias ( ( 127 - 15 ) << 23), shift and mask
+		i = ( f >> 16 ) & 0x8000u;									// Always copy sign bit
+		if( ( f & 0x7f800000u ) == 0 ) {							// Zero is a special case
+			data = i; // Signed
+			return;
+		}
+		e = ( ( ( f & 0x7f800000u ) - 0x38000000u ) >> 13 ) & 0x7c00u;	// Subtract exponent bias ( ( 127 - 15 ) << 23), shift and mask
 		
 		te = ( e >> 10 ) - 15;
 		if ( te < -24 ) {			// Exponent is smaller than -24, can't be represented in a half, so we set it to zero
 			data = i;				// Just copy sign bit.
 		} else if ( te < -14 ) {	// Exponent is smaller than -14, so small they need to be represented as denormals
-			data = i | ( 0x0400 >> ( -te - 14 ) )			// Copy sign, shift exponent 
-				     | ( ( f >> ( -te - 1 ) ) & 0x03ff );	// and shift, mask and copy mantissa.
+			data = i | ( 0x0400u >> ( -te - 14 ) )			// Copy sign, shift exponent 
+				     | ( ( f >> ( -te - 1 ) ) & 0x03ffu );	// and shift, mask and copy mantissa.
 		} else if ( te <= 15 ) {	// Exponent is smaller than 16, normal number
-			data = i | e | ( ( f >> 13 ) & 0x03ff );		// Copy sign bit and exponent, shift, mask and copy mantissa.
+			data = i | e | ( ( f >> 13 ) & 0x03ffu );		// Copy sign bit and exponent, shift, mask and copy mantissa.
 		} else if ( te < 128 ) {	// Exponent is smaller than 128, large number is mapped to infinity
-			data = i | 0x7c00;		// Sign bit is copied, and the exponent is set to max ( 31 ). Mantissa is empty
+			data = i | 0x7c00u;		// Sign bit is copied, and the exponent is set to max ( 31 ). Mantissa is empty
 		} else {					// Exponent is 128, Infinity or NaN stays Infinity or NaN
-			data = i | 0x7c00 | ( ( f >> 13 ) & 0x03ff );	// Sign bit is copied, exponent set to max ( 31 ) and mantissa shifted, masked and copied
+			data = i | 0x7c00u | ( ( f >> 13 ) & 0x03ffu );	// Sign bit is copied, exponent set to max ( 31 ) and mantissa shifted, masked and copied
 		}
 #endif
 	}
@@ -458,7 +462,7 @@ namespace vul {
 	}
 	bool operator<( half a, half b )
 	{
-		return a.data > b.data;
+		return a.data < b.data;
 	}
 
 	half operator+( half a, half b )

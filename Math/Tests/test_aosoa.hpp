@@ -99,12 +99,12 @@ namespace vul_test {
 #endif
 				
 #ifdef __GNUC__
-				f64_t arr[ 4 ];
-				_mm256_store_pd( arr, p64_4[ i ][ j ] );
-				assert( arr[ 3 ] == v64[ i * 4     ][ j ] );
-				assert( arr[ 2 ] == v64[ i * 4 + 1 ][ j ] );
-				assert( arr[ 1 ] == v64[ i * 4 + 2 ][ j ] );
-				assert( arr[ 0 ] == v64[ i * 4 + 3 ][ j ] );
+				f64_t arr2[ 4 ];
+				_mm256_store_pd( arr2, p64_4[ i ][ j ] );
+				assert( arr2[ 3 ] == v64[ i * 4     ][ j ] );
+				assert( arr2[ 2 ] == v64[ i * 4 + 1 ][ j ] );
+				assert( arr2[ 1 ] == v64[ i * 4 + 2 ][ j ] );
+				assert( arr2[ 0 ] == v64[ i * 4 + 3 ][ j ] );
 #else
 				assert( p64_4[ i ][ j ].m256d_f64[ 3 ] == v64[ i * 4     ][ j ] );
 				assert( p64_4[ i ][ j ].m256d_f64[ 2 ] == v64[ i * 4 + 1 ][ j ] );

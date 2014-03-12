@@ -113,7 +113,7 @@ namespace vul_test {
 		while( abs( f ) >= 1 << ( 32 - 16 ) ) {
 			f = VUL_TEST_RNG;
 		}
-		fixed_32< 16 > fi( f ), fim( -( abs( f ) ) );
+		fixed_32< 16 > fi( f ), fim( -( ( f32_t )abs( f ) ) );
 		assert( abs( ( f32_t )abs( ( f32_t )fi ) - ( f32_t )abs( f ) ) < f32eps);
 		assert( abs( ( f32_t )abs( ( f32_t )fim ) - ( f32_t )abs( ( f32_t )fi ) ) < f32eps );
 		

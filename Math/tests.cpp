@@ -62,7 +62,11 @@ int main( int argc, char **argv )
 	printf( "\nDone, no errors. Enter to close.\n" );
 	// Wait for input
 	char buffer[ 1024 ];
+#ifdef __GNUC__
+	gets( buffer );
+#else
 	gets_s( buffer, 1024 );
+#endif
 
 	return 0;
 }

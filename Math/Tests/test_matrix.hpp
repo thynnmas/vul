@@ -154,7 +154,7 @@ namespace vul_test {
 				af[ c ][ r ] = VUL_TEST_RNG;
 			}
 		}
-		f32_t af22[ 2 ][ 2 ] = { af[ 0 ][ 0 ], af[ 0 ][ 1 ], af[ 1 ][ 0 ], af[ 1 ][ 1 ] };
+		f32_t af22[ 2 ][ 2 ] = { { af[ 0 ][ 0 ], af[ 0 ][ 1 ] }, { af[ 1 ][ 0 ], af[ 1 ][ 1 ] } };
 #ifdef VUL_CPLUSPLUS11
 		m22 = Matrix< f32_t, 2, 2 >( af22 );
 		m68 = Matrix< f32_t, 6, 8 >( af );
@@ -479,7 +479,6 @@ namespace vul_test {
 		pr = v2.as_point( ) * m22;
 		assert( pr[ 0 ] == 0.f );
 		assert( pr[ 1 ] == -1.f );
-		f32_t f32eps = 1e-5f;
 
 		// For matrix multiplication (and our vector specializations), we also compare to reference implementation.
 #ifdef VUL_TEST_REFERENCE

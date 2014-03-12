@@ -291,7 +291,6 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
-				ui32_t t = ( i & ( 1 << j ) );
 				corner[ j ] = ( ( i & ( 1 << j ) ) != 0 ) ? aabb._max[ j ] : aabb._min[ j ];
 			}
 			corner = ( a * corner ) + a.vec;

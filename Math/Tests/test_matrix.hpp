@@ -483,6 +483,7 @@ namespace vul_test {
 
 		// For matrix multiplication (and our vector specializations), we also compare to reference implementation.
 #ifdef VUL_TEST_REFERENCE
+		f32_t f32eps = 1e-5f;
 		for( ui32_t i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
 			Matrix< f32_t, 4, 4 > m44a, m44b, m44r;
 			glm::mat4x4 gm44a, gm44b, gm44r;

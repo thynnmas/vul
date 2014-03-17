@@ -5,8 +5,9 @@
  * general affine transformations as well as fixed and half precision floating point types.
  *
  * The library contains both a C++11 version and a C++99-version, the primary difference
- * being the way we construct our types. The C++11 style uses normal constructors:
- *		Vector< f32_t, 3 > foo( a, b, c );
+ * being the way we construct our types. The C++11 style uses normal constructors
+ * and initializer lists:
+ *		Vector< f32_t, 3 > foo( a ), bar{ b, c, d };
  *		foo = Vector< f32_t, 3 >( a );
  * while the C++99-version uses a function style:
  *		Vector< f32_t, 3 > foo = makeVector< f32_t >( a, b, c );
@@ -18,8 +19,7 @@
  *
  * Since templates need to be redefined for every compilation unit anyway, we only need a
  * definition guard for functions with no varied template arguments, which is constrained
- * to vul_aabb.hpp's functions. Still, define VUL_DEFINE in a _single_ c/cpp file to define
- * these.
+ * to vul_aabb.hpp's functions. Define VUL_DEFINE in a _single_ c/cpp file to define these.
  *
  * Library format inspired by http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/
  * 
@@ -27,8 +27,6 @@
  * @TODO: The todos in vul_half.hpp
  * @TODO: Run melton, lint & other static analysis tools.
  * @TODO: Planned features:
- *		-Write proper test funciton; exhaustive half-testing and proper other tests.
- *		 See the comment in tests.cpp of the exact plan.
  *		-SIMD functions for more things
  *		-Linear solvers
  *		-64-bit fixed type
@@ -41,7 +39,7 @@
  *		 consider which will give less code duplication.
  *		-2x2, 3x3 & 4x4 matrix inversions as special cases for speed.
  * 
- * ¹ If public domain is not legally valid in your country and or legal area,
+ * ¹ If public domain is not legally valid in your legal area,
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR

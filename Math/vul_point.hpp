@@ -195,7 +195,7 @@ namespace vul {
 	template< typename T, i32_t n >
 	Point< T, n >::Point( )
 	{
-		memset( data, 0, sizeof( data ) * sizeof( T ) );
+		memset( data, 0, sizeof( data ) );
 	}
 	template< typename T, i32_t n >
 	Point< T, n >::Point( T val )
@@ -244,9 +244,8 @@ namespace vul {
 	Point< T, n > makePoint( )
 	{
 		Point< T, n > p;
-		i32_t i;
 
-		memset( p.data, 0, sizeof( p.data ) * sizeof( T ) );
+		memset( p.data, 0, sizeof( p.data ) );
 
 		return p;
 	}

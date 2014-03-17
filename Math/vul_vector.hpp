@@ -465,7 +465,7 @@ namespace vul {
 	template< typename T, i32_t n >
 	Vector< T, n >::Vector( )
 	{
-		memset( data, 0, sizeof( data ) * sizeof( T ) );
+		memset( data, 0, sizeof( data ) );
 	}
 	
 	template< typename T, i32_t n >
@@ -515,9 +515,8 @@ namespace vul {
 	Vector< T, n > makeVector( T val )
 	{
 		Vector< T, n > v;
-		i32_t i;
 
-		memset( v.data, 0, sizeof( .vdata ), sizeof( T ) );
+		memset( v.data, 0, sizeof( v.data ) );
 
 		return v;
 	}

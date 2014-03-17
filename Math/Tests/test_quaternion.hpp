@@ -196,7 +196,7 @@ namespace vul_test {
 		assert( all( v == Vector< f32_t, 4 >{ 0.f, 4.f, 0.f, 1.f } ) );
 #else
 		Vector< f32_t, 4 > v = q.as_vec4( );
-		assert( all( v == makeVector< f32_t, 4 >( 0.f, 4.f, 0.f, 1.f ) ) );
+		assert( all( v == makeVector< f32_t >( 0.f, 4.f, 0.f, 1.f ) ) );
 #endif
 
 		assert( q[ 0 ] == 0.f );

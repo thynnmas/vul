@@ -63,15 +63,8 @@ int main( int argc, char **argv )
 	TestQuaternion::test( );
 	TestVector::test( );
 
-	printf( "\nDone, no errors. Enter to close.\n" );
-	// Wait for input
-	char buffer[ 1024 ];
-#ifdef __GNUC__
-	gets( buffer );
-#else
-	gets_s( buffer, 1024 );
-#endif
-
+	printf( "Done, no errors.\n" );
+	
 	return 0;
 }
 

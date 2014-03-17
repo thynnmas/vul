@@ -167,7 +167,7 @@ namespace vul_test {
 		AABB< f32_t, 8 > d8( Vector< f32_t, 8 >( 0.f ), Vector< f32_t, 8 >( 1.f ) );
 		Vector< f32_t, 2 > v2{ 1.f, 2.f };
 		Vector< f32_t, 3 > v3( 1.f );
-		Vector< f32_t, 8 > v8( 1.f );
+		Vector< f32_t, 8 > v8( -1.f );
 #else
 		AABB< f32_t, 2 > d2 = makeAABB< f32_t >( makeVector< f32_t >( 0.f, 1.f ), makeVector< f32_t >( 1.f, 2.f ) );
 		AABB< f32_t, 3 > d3 = makeAABB< f32_t >( makeVector< f32_t, 3 >( 0.f ), makeVector< f32_t, 3 >( 1.f ) );
@@ -348,8 +348,9 @@ namespace vul_test {
 	{
 		// We test 2D and 3D case
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >{ 0.f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } );
-		AABB< f32_t, 3 > d3( Vector< f32_t, 3 >( 0.f ), Vector< f32_t, 3 >( 1.f ) );
+		
+		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >( -1.f ), Vector< f32_t, 2 >( 1.f ) );
+		AABB< f32_t, 3 > d3( Vector< f32_t, 3 >( -1.f ), Vector< f32_t, 3 >( 1.f ) );
 		Affine< f32_t, 2 > a2( Matrix< f32_t, 2, 2 >{ cos( ( f32_t )VUL_PI / 6 ), -sin( ( f32_t )VUL_PI / 6 ),
 													  sin( ( f32_t )VUL_PI / 6 ),  cos( ( f32_t )VUL_PI / 6 ) },
 							   Vector< f32_t, 2 >{ -1.f, 1.f } );

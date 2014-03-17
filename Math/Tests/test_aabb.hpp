@@ -376,17 +376,18 @@ namespace vul_test {
 		
 		// The rotate means we now have corners at sqrt(2) distance.
 
-		assert( r2._min[ 0 ] == -2.3660254f );
-		assert( r2._min[ 1 ] == -0.36602545f );
-		assert( r2._max[ 0 ] == 0.36602545f );
-		assert( r2._max[ 1 ] == 2.3660254f );
+		f32_t f32eps = 1e-5f;
+		assert( r2._min[ 0 ] + 2.3660254f < f32eps );
+		assert( r2._min[ 1 ] + 0.36602545f < f32eps );
+		assert( r2._max[ 0 ] - 0.36602545f < f32eps );
+		assert( r2._max[ 1 ] - 2.3660254f < f32eps );
 				
-		assert( r3._min[ 0 ] == -1.8284273f );
-		assert( r3._min[ 1 ] == -1.8284273f );
-		assert( r3._min[ 2 ] ==  0.f );
-		assert( r3._max[ 0 ] ==  3.8284273f );
-		assert( r3._max[ 1 ] ==  3.8284273f );
-		assert( r3._max[ 2 ] ==  2.f );
+		assert( r3._min[ 0 ] + 1.8284273f < f32eps );
+		assert( r3._min[ 1 ] + 1.8284273f < f32eps );
+		assert( r3._min[ 2 ] - 0.f < f32eps );
+		assert( r3._max[ 0 ] - 3.8284273f < f32eps );
+		assert( r3._max[ 1 ] - 3.8284273f < f32eps );
+		assert( r3._max[ 2 ] - 2.f < f32eps );
 
 		return true;
 	}
@@ -473,8 +474,10 @@ namespace vul_test {
 #endif
 		
 		//unpack the vectorized ones and compare to reference
+#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX )
 		f32_t f32eps = 1e-5f;
 		f64_t f64eps = 1e-8;
+#endif
 #ifdef VUL_AOSOA_SSE
 		unpack< 3 >( &in32[ 0 ], &r128[ 0 ], 1u );
 		unpack< 3 >( &in64[ 0 ], &r128d[ 0 ], 1u );

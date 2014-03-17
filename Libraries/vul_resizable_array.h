@@ -5,7 +5,7 @@
  * based on Tom Forsyth's ArbitraryList found here: https://home.comcast.net/~tom_forsyth/blog.wiki.html
  * This version is not templated (so pure C). Sorting of this list is available in vul_sort.h
  * 
- * ¹ If public domain is not legally valid in your country and or legal area,
+ * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR

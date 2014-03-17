@@ -7,7 +7,7 @@
  * -vul_rng_xorhash: Thomas Wang's XorHash as reported by Bob Jenkins here: http://burtleburtle.net/bob/hash/integer.html
  *					 is used to initialize. We use an alternate XorShift to advance the state.
  *
- * ¹ If public domain is not legally valid in your country and or legal area,
+ * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  */
 #ifndef VUL_RNGS_H

@@ -5,7 +5,7 @@
  * -vul_halton_par: Halton series of 2 given numbers. Distributes values 
  *					uniformely in the range [0, 1]
  * 
- * ¹ If public domain is not legally valid in your country and or legal area,
+ * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  */
 #ifndef VUL_DISTRIBUTIONS_HPP

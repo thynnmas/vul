@@ -3,7 +3,7 @@
  *
  * An AABB struct that works in unlimited dimensions.
  * 
- * ¹ If public domain is not legally valid in your country and or legal area,
+ * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR

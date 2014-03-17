@@ -5,7 +5,7 @@
  * to write SOA simd code just like scalar code with Vector< __m128, n >-style.
  * Depending on VUL_AOSOA_FLOAT_WIDTH we use 32 or 64 bit floats
  * 
- * ¹ If public domain is not legally valid in your country and or legal area,
+ * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR

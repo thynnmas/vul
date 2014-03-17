@@ -96,6 +96,7 @@ namespace vul {
 	template< typename T, i32_t n >
 	AABB< T, n > makeAABB( i32_t (& a)[ 2 ][ n ] );
 
+#ifdef VUL_AOSOA_SSE
 	/**
 	 * Apply a 3D affine transform to multiple SSE packed AABBs with 3D-vectors.
 	 * Each AABB here contains 4 AABBs, where the vector data has the format __m128[ 3 ]:
@@ -108,6 +109,8 @@ namespace vul {
 	 * __m128d[ 0 ] = xx, __m128d[ 1 ] = yy, __m128d[ 2 ] = zz
 	 */
 	void transform3D( AABB< __m128d, 3 > *out, const AABB< __m128d, 3 > *in, const Affine< f64_t, 3 > &trans, ui32_t count );
+#endif
+#ifdef VUL_AOSOA_AVX
 	/**
 	 * Apply a 3D affine transform to multiple SSE packed AABBs with 3D-vectors.
 	 * Each AABB here contains 8 AABBs, where the vector data has the format __m256[ 3 ]:
@@ -120,7 +123,7 @@ namespace vul {
 	 * __m256d[ 0 ] = xxxx, __m256d[ 1 ] = yyyy, __m256d[ 2 ] = zzzz
 	 */
 	void transform3D( AABB< __m256d, 3 > *out, const AABB< __m256d, 3 > *in, const Affine< f64_t, 3 > &trans, ui32_t count );
-	
+#endif
 
 	//----------------
 	// Definition
@@ -324,6 +327,7 @@ namespace vul {
 	// These are specializations for vectors of sse types (see vul_aosoa.hpp)
 	//
 #ifdef VUL_DEFINE
+#ifdef VUL_AOSOA_SSE
 	void transform3D( AABB< __m128, 3 > *out, const AABB< __m128, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count )
 	{
 		ui32_t i, j, simdCount;
@@ -451,6 +455,8 @@ namespace vul {
 			bb->_max[ 2 ] = zNewMaxes;
 		}
 	}
+#endif // VUL_AOSOA_SSE
+#ifdef VUL_AOSOA_AVX
 	void transform3D( AABB< __m256, 3 > *out, const AABB< __m256, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count )
 	{
 		ui32_t i, j, simdCount;
@@ -578,7 +584,8 @@ namespace vul {
 			bb->_max[ 2 ] = zNewMaxes;
 		}
 	}
-#endif
+#endif // VUL_AOSOA_AVX
+#endif // VUL_DEFINE
 }
 
 #endif

@@ -1124,7 +1124,7 @@ namespace vul {
 	T maxComponent( const Matrix< T, cols, rows > &a )
 	{
 		i32_t i, j;
-		T maxi = std::numeric_limits< T >::lowest( );
+		T maxi = -std::numeric_limits< T >::max( );
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {

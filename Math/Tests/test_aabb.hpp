@@ -51,7 +51,9 @@ namespace vul_test {
 		assert( extents( ) );
 		assert( insides( ) );
 		assert( transforms( ) );
+#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX )
 		assert( transforms3D( ) );
+#endif
 
 		return true;
 	}
@@ -390,10 +392,14 @@ namespace vul_test {
 
 	bool TestAABB::transforms3D( )
 	{
+#ifdef VUL_AOSOA_SSE
 		AABB< __m128, 3 > m128[ 4 ], r128[ 4 ];
 		AABB< __m128d, 3 > m128d[ 2 ], r128d[ 2 ];
+#endif
+#ifdef VUL_AOSOA_AVX
 		AABB< __m256, 3 > m256[ 8 ], r256[ 8 ];
 		AABB< __m256d, 3 > m256d[ 4 ], r256d[ 4 ];
+#endif
 		AABB< f32_t, 3 > in32[ 8 ];
 		AABB< f64_t, 3 > in64[ 4 ];
 		f32_t mat[ 9 ], vec[ 3 ], aabb_min[ 3 ], aabb_max[ 3 ];
@@ -447,22 +453,31 @@ namespace vul_test {
 		ref64_out = transform( ref64_in, a64 );
 		
 		// Pack, transform.
+#ifdef VUL_AOSOA_SSE
 		pack< 3 >( &m128[ 0 ], &in32[ 0 ], 1u );
 		pack< 3 >( &m128d[ 0 ], &in64[ 0 ], 1u );
+#endif
+#ifdef VUL_AOSOA_AVX
 		pack< 3 >( &m256[ 0 ], &in32[ 0 ], 1u );
 		pack< 3 >( &m256d[ 0 ], &in64[ 0 ], 1u );
-
+#endif
+		
+#ifdef VUL_AOSOA_SSE
 		transform3D( &r128[ 0 ], &m128[ 0 ], a32, 1u );
 		transform3D( &r128d[ 0 ], &m128d[ 0 ], a64, 1u );
+#endif
+#ifdef VUL_AOSOA_AVX
 		transform3D( &r256[ 0 ], &m256[ 0 ], a32, 1u );
 		transform3D( &r256d[ 0 ], &m256d[ 0 ], a64, 1u );
+#endif
 		
 		//unpack the vectorized ones and compare to reference
+		f32_t f32eps = 1e-5f;
+		f64_t f64eps = 1e-8;
+#ifdef VUL_AOSOA_SSE
 		unpack< 3 >( &in32[ 0 ], &r128[ 0 ], 1u );
 		unpack< 3 >( &in64[ 0 ], &r128d[ 0 ], 1u );
 
-		f32_t f32eps = 1e-5f;
-		f64_t f64eps = 1e-8;
 #ifdef VUL_CPLUSPLUS11
 		assert( all( in32[ 0 ]._min - ref32_out._min < Vector< f32_t, 3 >( f32eps ) ) );
 		assert( all( in32[ 0 ]._max - ref32_out._max < Vector< f32_t, 3 >( f32eps ) ) );
@@ -474,7 +489,9 @@ namespace vul_test {
 		assert( all( in64[ 0 ]._min - ref64_out._min < makeVector< f64_t, 3 >( f64eps ) ) );
 		assert( all( in64[ 0 ]._max - ref64_out._max < makeVector< f64_t, 3 >( f64eps ) ) );
 #endif
-
+#endif // VUL_AOSOA_SSE
+		
+#ifdef VUL_AOSOA_AVX
 		unpack< 3 >( &in32[ 0 ], &r256[ 0 ], 1u );
 		unpack< 3 >( &in64[ 0 ], &r256d[ 0 ], 1u );
 		
@@ -489,6 +506,7 @@ namespace vul_test {
 		assert( all( in64[ 0 ]._min - ref64_out._min < makeVector< f64_t, 3 >( f64eps ) ) );
 		assert( all( in64[ 0 ]._max - ref64_out._max < makeVector< f64_t, 3 >( f64eps ) ) );
 #endif
+#endif // VUL_AOSOA_AVX
 
 		return true;
 	}

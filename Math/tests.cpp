@@ -36,7 +36,9 @@
 
 #include "Tests/test_aabb.hpp"
 #include "Tests/test_affine.hpp"
-#include "Tests/test_aosoa.hpp"
+#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX )
+	#include "Tests/test_aosoa.hpp"
+#endif
 #include "Tests/test_fixed.hpp"
 #include "Tests/test_half.hpp"
 #include "Tests/test_matrix.hpp"
@@ -51,7 +53,9 @@ int main( int argc, char **argv )
 {
 	TestAABB::test( );
 	TestAffine::test( );
+#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX )
 	TestAOSOA::test( );
+#endif
 	TestFixed::test( );
 	TestHalf::test( );
 	TestMatrix::test( );

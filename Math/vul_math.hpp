@@ -15,7 +15,8 @@
  *
  * For SIMD work on our vectors we use an AOSOA architecture; we pack 2-8 vectors into
  * vectors of simd types, f.e. 4 Vector< f32_t, 3 >s into 1 Vector< __m128, 3 >, then operate
- * on those.
+ * on those. Both 128-bit (SSE) and 256-bit (AVX) vectors are supported, behind
+ * guards VUL_AOSOA_SSE and VUL_AOSOA_AVX respectively.
  *
  * Since templates need to be redefined for every compilation unit anyway, we only need a
  * definition guard for functions with no varied template arguments, which is constrained
@@ -62,7 +63,9 @@
 
 #include "vul_aabb.hpp"
 #include "vul_affine.hpp"
-#include "vul_aosoa.hpp"		// This is the file where we pack scalar data into SIMD data.
+#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX )
+	#include "vul_aosoa.hpp"		// This is the file where we pack scalar data into SIMD data.
+#endif
 #include "vul_fixed.hpp"
 #include "vul_half.hpp"
 #include "vul_matrix.hpp"

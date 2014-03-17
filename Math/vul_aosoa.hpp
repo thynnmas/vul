@@ -19,9 +19,13 @@
 #ifndef VUL_AOSOA_HPP
 #define VUL_AOSOA_HPP
 
-#include <immintrin.h>
-#include <smmintrin.h>
-#include <xmmintrin.h>
+#ifdef VUL_AOSOA_AVX
+	#include <immintrin.h>
+#endif
+#ifdef VUL_AOSOA_SSE
+	#include <smmintrin.h>
+	#include <xmmintrin.h>
+#endif
 
 #include "vul_types.hpp"
 #include "vul_vector.hpp"
@@ -32,6 +36,7 @@ namespace vul {
 	//----------------
 	// Declarations
 	//	
+#ifdef VUL_AOSOA_SSE
 	/**
 	 * Pack an array of Vector< f32_t, n > into an array of Vector< __m128, n >
 	 * Expects in to be of size count + count % 4, and out to be of size (count + 3 ) / 4.
@@ -44,6 +49,8 @@ namespace vul {
 	 */
 	template< ui32_t n >
 	void pack( Vector< __m128d, n > *out, const Vector< f64_t, n > *in, ui32_t count );
+#endif
+#ifdef VUL_AOSOA_AVX
 	/**
 	 * Pack an array of Vector< f32_t, n > into an array of Vector< __m256, n >
 	 * Expects in to be of size count + count % 8, and out to be of size (count + 7 ) / 8.
@@ -56,7 +63,9 @@ namespace vul {
 	 */
 	template< ui32_t n >
 	void pack( Vector< __m256d, n > *out, const Vector< f64_t, n > *in, ui32_t count );
+#endif
 	
+#ifdef VUL_AOSOA_SSE
 	/**
 	 * Unpacks an array of Vector< __m128, n > into an array of Vector< f32_t, n >
 	 * Expects out to be of size count + count % 4, and in to be of size (count + 3 ) / 4.
@@ -69,6 +78,8 @@ namespace vul {
 	 */
 	template< ui32_t n >
 	void unpack( Vector< f64_t, n > *out, const Vector< __m128d, n > *in, ui32_t count );
+#endif
+#ifdef VUL_AOSOA_AVX
 	/**
 	 * Pack an array of Vector< __m256, n > into an array of Vector< f32_t, n >
 	 * Expects out to be of size count + count % 8, and in to be of size (count + 7 ) / 8.
@@ -81,7 +92,9 @@ namespace vul {
 	 */
 	template< ui32_t n >
 	void unpack( Vector< f64_t, n > *out, const Vector< __m256d, n > *in, ui32_t count );
+#endif
 	
+#ifdef VUL_AOSOA_SSE
 	/**
 	 * Pack an array of AABB< f32_t, n > into an array of AABB< __m128, n >
 	 * Expects in to be of size count + count % 4, and out to be of size (count + 3 ) / 4.
@@ -94,6 +107,8 @@ namespace vul {
 	 */
 	template< ui32_t n >
 	void pack( AABB< __m128d, n > *out, const AABB< f64_t, n > *in, ui32_t count );
+#endif
+#ifdef VUL_AOSOA_AVX
 	/**
 	 * Pack an array of AABB< f32_t, n > into an array of AABB< __m256, n >
 	 * Expects in to be of size count + count % 8, and out to be of size (count + 7 ) / 8.
@@ -106,7 +121,9 @@ namespace vul {
 	 */
 	template< ui32_t n >
 	void pack( AABB< __m256d, n > *out, const AABB< f64_t, n > *in, ui32_t count );
+#endif
 	
+#ifdef VUL_AOSOA_SSE
 	/**
 	 * Unpacks an array of AABB< __m128, n > into an array of AABB< f32_t, n >
 	 * Expects out to be of size count + count % 4, and in to be of size (count + 3 ) / 4.
@@ -119,6 +136,8 @@ namespace vul {
 	 */
 	template< ui32_t n >
 	void unpack( AABB< f64_t, n > *out, const AABB< __m128d, n > *in, ui32_t count );
+#endif
+#ifdef VUL_AOSOA_AVX
 	/**
 	 * Pack an array of AABB< __m256, n > into an array of AABB< f32_t, n >
 	 * Expects out to be of size count + count % 8, and in to be of size (count + 7 ) / 8.
@@ -131,11 +150,13 @@ namespace vul {
 	 */
 	template< ui32_t n >
 	void unpack( AABB< f64_t, n > *out, const AABB< __m256d, n > *in, ui32_t count );
+#endif
 	
 	
 	//-------------------
 	// Definitions
 	//	
+#ifdef VUL_AOSOA_SSE
 	template< ui32_t n >
 	void pack( Vector< __m128, n > *out, const Vector< f32_t, n > *in, ui32_t count )
 	{
@@ -180,6 +201,8 @@ namespace vul {
 #endif
 		}
 	}
+#endif
+#ifdef VUL_AOSOA_AVX
 	template< ui32_t n >
 	void pack( Vector< __m256, n > *out, const Vector< f32_t, n > *in, ui32_t count )
 	{
@@ -230,7 +253,9 @@ namespace vul {
 #endif
 		}
 	}
+#endif
 	
+#ifdef VUL_AOSOA_SSE
 	template< ui32_t n >
 	void unpack( Vector< f32_t, n > *out, const Vector< __m128, n > *in, ui32_t count )
 	{
@@ -279,6 +304,8 @@ namespace vul {
 			}
 		}
 	}
+#endif
+#ifdef VUL_AOSOA_AVX
 	template< ui32_t n >
 	void unpack( Vector< f32_t, n > *out, const Vector< __m256, n > *in, ui32_t count )
 	{		
@@ -339,6 +366,9 @@ namespace vul {
 			}
 		}
 	}
+#endif
+
+#ifdef VUL_AOSOA_SSE
 	template< ui32_t n >
 	void pack( AABB< __m128, n > *out, const AABB< f32_t, n > *in, ui32_t count )
 	{
@@ -411,6 +441,8 @@ namespace vul {
 #endif
 		}
 	}
+#endif
+#ifdef VUL_AOSOA_AVX
 	template< ui32_t n >
 	void pack( AABB< __m256, n > *out, const AABB< f32_t, n > *in, ui32_t count )
 	{
@@ -495,6 +527,9 @@ namespace vul {
 #endif
 		}
 	}
+#endif
+	
+#ifdef VUL_AOSOA_SSE
 	template< ui32_t n >
 	void unpack( AABB< f32_t, n > *out, const AABB< __m128, n > *in, ui32_t count )
 	{
@@ -557,6 +592,8 @@ namespace vul {
 			}
 		}
 	}
+#endif
+#ifdef VUL_AOSOA_AVX
 	template< ui32_t n >
 	void unpack( AABB< f32_t, n > *out, const AABB< __m256, n > *in, ui32_t count )
 	{
@@ -643,6 +680,7 @@ namespace vul {
 			}
 		}
 	}
+#endif
 }
 
 #endif

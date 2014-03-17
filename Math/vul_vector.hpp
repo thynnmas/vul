@@ -515,8 +515,11 @@ namespace vul {
 	Vector< T, n > makeVector( T val )
 	{
 		Vector< T, n > v;
+		i32_t i;
 
-		memset( v.data, 0, sizeof( v.data ) );
+		for( i = 0; i < n; ++i ) {
+			v[ i ] = val;
+		}
 
 		return v;
 	}
@@ -538,11 +541,8 @@ namespace vul {
 	Vector< T, n > makeVector( )
 	{
 		Vector< T, n > v;
-		i32_t i;
 
-		for( i = 0; i < n; ++i ) {
-			v[ i ] = T( 0.0f );
-		}
+		memset( v.data, 0, sizeof( v.data ) );
 
 		return v;
 	}

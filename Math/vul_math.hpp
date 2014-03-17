@@ -20,7 +20,9 @@
  *
  * Since templates need to be redefined for every compilation unit anyway, we only need a
  * definition guard for functions with no varied template arguments, which is constrained
- * to vul_aabb.hpp's functions. Define VUL_DEFINE in a _single_ c/cpp file to define these.
+ * to vul_aabb.hpp's transform3D functions and the extensions to numeric_limits found in
+ * vul_fixed.hpp and vul_half.hpp. Define VUL_DEFINE in a _single_ c/cpp file to define 
+ * these functions in that file.
  *
  * Library format inspired by http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/
  * 

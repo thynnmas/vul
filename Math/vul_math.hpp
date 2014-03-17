@@ -56,6 +56,11 @@
 #ifndef VUL_MATH_HPP
 #define VUL_MATH_HPP
 
+#ifndef NOMINMAX
+	#define NOMINMAX
+	#define VUL_UNDEF_NOMINMAX
+#endif
+
 /**
  * Define this for the c++11 version
  */
@@ -74,5 +79,9 @@
 #include "vul_point.hpp"
 #include "vul_quaternion.hpp"
 #include "vul_vector.hpp"
+
+#ifdef VUL_UNDEF_NOMINMAX
+	#undef NOMINMAX
+#endif
 
 #endif

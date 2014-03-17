@@ -25,8 +25,6 @@
 
 #ifdef VUL_TEST
 
-#define NOMINMAX
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>

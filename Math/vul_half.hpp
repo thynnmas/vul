@@ -111,11 +111,10 @@ namespace vul {
 
 #ifdef VUL_CPLUSPLUS11
 	half constexpr operator+( half a );
-	half operator-( half a );
 #else
 	half operator+( half a );
-	half operator-( half a );
 #endif
+	half operator-( half a );
 
 	half abs( half a );
 
@@ -484,22 +483,12 @@ namespace vul {
 	{
 		return half( a );
 	}
-	half operator-( half a )
-	{
-		half r;
-		unsigned int sign;
-		
-		sign = a.data & 0x80000000;
-		r.data = ( a.data & 0x7fffffff )		// Copy exponent and mantissa
-				 | ( ( ~sign ) & 0x80000000 );	// Negate sign
-
-		return r;
-	}
 #else
 	half operator+( half a )
 	{
 		return half( a );
 	}
+#endif
 	half operator-( half a )
 	{
 		half r;
@@ -511,7 +500,6 @@ namespace vul {
 
 		return r;
 	}
-#endif
 	
 	half abs( half a )
 	{

@@ -48,11 +48,11 @@ namespace vul {
 		 * Create an empty affine transformation. No translation 
 		 * and an identity matrix are created.
 		 */
-		constexpr Affine< T, n >( );
+		explicit Affine< T, n >( );
 		/**
 		 * Create a copy of an affine transformation.
 		 */
-		explicit Affine< T, n >( const Affine< T, n > &a );
+		Affine< T, n >( const Affine< T, n > &a );
 		/**
 		 * Create an affine transformation from a rotation/scale matrix and a translation vector.
 		 */
@@ -107,19 +107,22 @@ namespace vul {
 	//
 
 #ifdef VUL_CPLUSPLUS11
-	Affine::Affine< T, n >( )
+	template< typename T, i32_t n >
+	Affine< T, n >::Affine( )
 	{
-		mat = makeIdentity< T, n, n >( );
+		mat = makeIdentity< T, n >( );
 		vec = Vector< T, n >( );
 	}
 
-	Affine::Affine< T, n >( const Affine< T, n > &a )
+	template< typename T, i32_t n >
+	Affine< T, n >::Affine( const Affine< T, n > &a )
 	{
 		mat = a.mat;
 		vec = a.vec;
 	}
 
-	Affine::Affine< T, n >( const Matrix< T, n, n > &mat, const Vector< T, n > &vec )
+	template< typename T, i32_t n >
+	Affine< T, n >::Affine( const Matrix< T, n, n > &mat, const Vector< T, n > &vec )
 	{
 		this->mat = mat;
 		this->vec = vec;
@@ -210,10 +213,10 @@ namespace vul {
 		d[ 2 ][ 3 ] = static_cast< T >( 0.f );
 		d[ 3 ][ 3 ] = static_cast< T >( 1.f );
 
-#ifndef VUL_CPLUSPLUS11
-		m = makeMatrix( d );
+#ifdef VUL_CPLUSPLUS11
+		m = Matrix< T, 4, 4 >( d );
 #else
-		m = new Matrix< T, n >( d );
+		m = makeMatrix< T, 4, 4 >( d );
 #endif
 		return m;
 	}

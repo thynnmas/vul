@@ -111,7 +111,7 @@ namespace vul {
 
 #ifdef VUL_CPLUSPLUS11
 	half constexpr operator+( half a );
-	half constexpr operator-( half a );
+	half operator-( half a );
 #else
 	half operator+( half a );
 	half operator-( half a );
@@ -132,9 +132,8 @@ namespace vul {
 #ifdef VUL_DEFINE
 	
 #ifdef VUL_CPLUSPLUS11
-	constexpr half::half( )
+	constexpr half::half( ) : data( 0 )
 	{
-		data = 0;
 	}
 #else
 	half::half( )
@@ -485,7 +484,7 @@ namespace vul {
 	{
 		return half( a );
 	}
-	half constexpr operator-( half a )
+	half operator-( half a )
 	{
 		half r;
 		unsigned int sign;
@@ -681,15 +680,15 @@ namespace std {
 		static constexpr int min_exponent10 = -4;
 		static constexpr int max_exponent = 15;
 		static constexpr int max_exponent10 = 4;
-		static constexpr vul::half min( ) noexcept				{ vul::half h; h.data = 0x0400; return h; }
-		static constexpr vul::half lowest( ) noexcept			{ vul::half h; h.data = 0xfbff; return h; }
-		static constexpr vul::half max( ) noexcept				{ vul::half h; h.data = 0x7bff; return h; }
-		static constexpr vul::half epsilon( ) noexcept			{ vul::half h; h.data = 0x1400; return h; }
-		static constexpr vul::half round_error( ) noexcept		{ vul::half h; h.data = 0x3800; return h; };
-		static constexpr vul::half infinity( ) noexcept			{ vul::half h; h.data = 0x7c00; return h; };
-		static constexpr vul::half quiet_NaN( ) noexcept		{ vul::half h; h.data = 0x7fff; return h; };
-		static constexpr vul::half signaling_NaN( ) noexcept	{ vul::half h; h.data = 0x7dff; return h; };
-		static constexpr vul::half denorm_min( ) noexcept		{ vul::half h; h.data = 0x0001; return h; };
+		static vul::half min( ) noexcept			{ vul::half h; h.data = 0x0400; return h; }
+		static vul::half lowest( ) noexcept			{ vul::half h; h.data = 0xfbff; return h; }
+		static vul::half max( ) noexcept			{ vul::half h; h.data = 0x7bff; return h; }
+		static vul::half epsilon( ) noexcept		{ vul::half h; h.data = 0x1400; return h; }
+		static vul::half round_error( ) noexcept	{ vul::half h; h.data = 0x3800; return h; };
+		static vul::half infinity( ) noexcept		{ vul::half h; h.data = 0x7c00; return h; };
+		static vul::half quiet_NaN( ) noexcept		{ vul::half h; h.data = 0x7fff; return h; };
+		static vul::half signaling_NaN( ) noexcept	{ vul::half h; h.data = 0x7dff; return h; };
+		static vul::half denorm_min( ) noexcept		{ vul::half h; h.data = 0x0001; return h; };
 #else
 		static const bool is_signed = true;
 		static const bool is_exact = false;
@@ -726,9 +725,9 @@ namespace std {
 		typedef vul::half argument_type;
 		typedef size_t result_type;
 		
-		size_t operator( )( vul::half arg ) const
+		std::size_t operator( )( vul::half arg ) const
 		{
-			return hash< vul::half >( ) ( static_cast< unsigned int >( arg.data ) & -(arg.data != 0x8000 ) );
+			return hash< unsigned short >( ) ( static_cast< unsigned int >( arg.data ) & -(arg.data != 0x8000 ) );
 		}
 	};
 #endif

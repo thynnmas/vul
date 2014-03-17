@@ -55,12 +55,14 @@ namespace vul {
 #endif
 		};
 #ifdef VUL_CPLUSPLUS11
-		constexpr Quaternion< T >( );
+		explicit Quaternion< T >( );
 		explicit Quaternion< T >( T x, T y, T z, T w ); 
 		explicit Quaternion< T >( Vector< T, 3 > xyz, T w );
-		explicit Quaternion< T >( const T (& a)[ n ] );
-		explicit Quaternion< T >( f32_t (& a)[ n ] );
-		explicit Quaternion< T >( i32_t (& a)[ n ] );
+		explicit Quaternion< T >( const T (& a)[ 4 ] );
+		explicit Quaternion< T >( f32_t (& a)[ 4 ] );
+		explicit Quaternion< T >( i32_t (& a)[ 4 ] );
+		explicit Quaternion< T >( std::initializer_list<T> list );
+		Quaternion< T >( const Quaternion< T > &rhs );
 #else
 		Vector< T, 3 > & xyz( ) { return reinterpret_cast< Vector< T, 3 > & >( data ); }
 		const Vector< T, 3 > & xyz( ) const { return reinterpret_cast< const Vector< T, 3 > & >( data ); }
@@ -68,14 +70,18 @@ namespace vul {
 		const Vector< T, 4 > & as_vec4( ) const { return reinterpret_cast< const Vector< T, 4 > & >( data ); }
 #endif
 		// Operators
+		/** 
+		 * Assignment.
+		 * */
+		Quaternion< T > &operator=( const Quaternion< T > &rhs );
 		/**
 		 * Compnentwise addition.
 		 */
-		Quaternion< T > &operator+=( const Quaternion &rhs );
+		Quaternion< T > &operator+=( const Quaternion< T > &rhs );
 		/**
 		 * Compnentwise subtraction.
 		 */
-		Quaternion< T > &operator-=( const Quaternion &rhs );
+		Quaternion< T > &operator-=( const Quaternion< T > &rhs );
 
 		/**
 		 * Compnentwise mutliplication.
@@ -85,7 +91,7 @@ namespace vul {
 		 * Quaternion multiplication.
 		 * @Note: This is not generally commutative.
 		 */
-		Quaternion< T > &operator*=( const Quaternion &rhs );
+		Quaternion< T > &operator*=( const Quaternion< T > &rhs );
 
 		/**
 		 * Indexing operator.
@@ -264,14 +270,14 @@ namespace vul {
 
 #ifdef VUL_CPLUSPLUS11	
 	template< typename T >
-	constexpr Quaternion< T >::Quaternion< T >( )
+	Quaternion< T >::Quaternion( )
 	{
 		data[ 0 ] = data[ 1 ] = data[ 2 ] = static_cast< T >( 0.f );
 		data[ 3 ] = static_cast< T >( 1.f );
 	}
 	
 	template< typename T >
-	Quaternion< T >::Quaternion< T >( T x, T y, T z, T w )
+	Quaternion< T >::Quaternion( T x, T y, T z, T w )
 	{
 		data[ 0 ] = x;
 		data[ 1 ] = y;
@@ -280,7 +286,7 @@ namespace vul {
 	}
 	
 	template< typename T >
-	Quaternion< T >::Quaternion< T >( Vector< T, 3 > xyz, T w )
+	Quaternion< T >::Quaternion( Vector< T, 3 > xyz, T w )
 	{
 		data[ 0 ] = xyz[ 0 ];
 		data[ 1 ] = xyz[ 1 ];
@@ -289,13 +295,13 @@ namespace vul {
 	}
 	
 	template< typename T >
-	Quaternion< T >::Quaternion< T >( const T (& a)[ n ] )
+	Quaternion< T >::Quaternion( const T (& a)[ 4 ] )
 	{
 		memcpy( data, a, sizeof( T ) * 4 );
 	}
 	
 	template< typename T >
-	Quaternion< T >::Quaternion< T >( f32_t (& a)[ n ] )
+	Quaternion< T >::Quaternion( f32_t (& a)[ 4 ] )
 	{
 		data[ 0 ] = static_cast< T >( a[ 0 ] );
 		data[ 1 ] = static_cast< T >( a[ 1 ] );
@@ -304,12 +310,30 @@ namespace vul {
 	}
 	
 	template< typename T >
-	Quaternion< T >::Quaternion< T >( i32_t (& a)[ n ] )
+	Quaternion< T >::Quaternion( i32_t (& a)[ 4 ] )
 	{
 		data[ 0 ] = static_cast< T >( a[ 0 ] );
 		data[ 1 ] = static_cast< T >( a[ 1 ] );
 		data[ 2 ] = static_cast< T >( a[ 2 ] );
 		data[ 3 ] = static_cast< T >( a[ 3 ] );
+	}
+	template< typename T >
+	Quaternion< T >::Quaternion( std::initializer_list< T > list )
+	{
+		i32_t i;
+		typename std::initializer_list< T >::iterator it;
+
+		for( it = list.begin( ), i = 0; it != list.end( ) && i < 4; ++it, ++i ) {
+			data[ i ] = *it;
+		}
+	}
+	template< typename T >
+	Quaternion< T >::Quaternion( const Quaternion< T > &rhs )
+	{
+		data[ 0 ] = rhs[ 0 ];
+		data[ 1 ] = rhs[ 1 ];
+		data[ 2 ] = rhs[ 2 ];
+		data[ 3 ] = rhs[ 3 ];
 	}
 #else
 	template< typename T >
@@ -482,6 +506,15 @@ namespace vul {
 
 
 	// Quaternion operators	
+	template< typename T >
+	Quaternion< T > &Quaternion< T >::operator=( const Quaternion< T > &rhs )
+	{
+		data[ 0 ] = rhs[ 0 ];
+		data[ 1 ] = rhs[ 1 ];
+		data[ 2 ] = rhs[ 2 ];
+		data[ 3 ] = rhs[ 3 ];
+		return *this;
+	}
 	template< typename T >
 	Quaternion< T > &Quaternion< T >::operator+=( const Quaternion< T > &rhs )
 	{
@@ -666,9 +699,8 @@ namespace vul {
 	{
 		Matrix< T, 3, 3 > m;
 		T x2, y2, z2, xy, xz, xw, yz, yw, zw;
-		T zero, one, two;
+		T one, two;
 
-		zero = static_cast< T >( 0.f );
 		one = static_cast< T >( 1.f );
 		two = static_cast< T >( 2.f );
 		x2 = q[ 0 ] * q[ 0 ];

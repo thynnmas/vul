@@ -51,26 +51,23 @@ namespace vul_test {
 
 	bool TestQuaternion::make( )
 	{
-		Quaternion< f32_t > qf;
-		Quaternion< i64_t > qi;
-
 		f32_t f32eps = 1e-5f;
 
-#ifdef VUL_CPlUSPLUS11
-		qf = Quaternion< f32_t >( );
-		qi = Quaternion< i64_t >( );
+#ifdef VUL_CPLUSPLUS11
+		Quaternion< f32_t > qf;
+		Quaternion< i64_t > qi;
 #else
-		qf = makeQuat< f32_t >( );
-		qi = makeQuat< i64_t >( );
+		Quaternion< f32_t > qf = makeQuat< f32_t >( );
+		Quaternion< i64_t > qi = makeQuat< i64_t >( );
 #endif
 		assert( qf[ 0 ] == 0.f ); assert( qf[ 1 ] == 0.f ); assert( qf[ 2 ] == 0.f );
 		assert( qf[ 3 ] == 1.f );
 		assert( qi[ 0 ] == 0.f ); assert( qi[ 1 ] == 0.f ); assert( qi[ 2 ] == 0.f );
 		assert( qi[ 3 ] == 1.f );
 
-#ifdef VUL_CPlUSPLUS11
-		qf = Quaternion< f32_t >( 1.f, 0.5f, -0.2f, 1.7f );
-		qi = Quaternion< i64_t >( 1L, 0L, -2L, 7L );
+#ifdef VUL_CPLUSPLUS11
+		qf = Quaternion< f32_t >{ 1.f, 0.5f, -0.2f, 1.7f };
+		qi = Quaternion< i64_t >{ 1L, 0L, -2L, 7L };
 #else
 		qf = makeQuat< f32_t >( 1.f, 0.5f, -0.2f, 1.7f );
 		qi = makeQuat< i64_t >( 1L, 0L, -2L, 7L );
@@ -78,9 +75,9 @@ namespace vul_test {
 		assert( qf[ 0 ] == 1.f ); assert( qf[ 1 ] == 0.5f ); assert( qf[ 2 ] == -0.2f ); assert( qf[ 3 ] == 1.7f );
 		assert( qi[ 0 ] == 1L );  assert( qi[ 1 ] == 0L );   assert( qi[ 2 ] == -2L );   assert( qi[ 3 ] == 7L );
 
-#ifdef VUL_CPlUSPLUS11
-		qf = Quaternion< f32_t >( Vector< f32_t >( 1.f, 0.5f, -0.2f ), 1.7f );
-		qi = Quaternion< i64_t >( Vector< i64_t >( 1L, 0L, -2L ), 7L );
+#ifdef VUL_CPLUSPLUS11
+		qf = Quaternion< f32_t >( Vector< f32_t, 3 >{ 1.f, 0.5f, -0.2f }, 1.7f );
+		qi = Quaternion< i64_t >( Vector< i64_t, 3 >{ 1L, 0L, -2L }, 7L );
 #else
 		qf = makeQuat< f32_t >( makeVector< f32_t >( 1.f, 0.5f, -0.2f ), 1.7f );
 		qi = makeQuat< i64_t >( makeVector< i64_t >( 1L, 0L, -2L ), 7L );
@@ -91,7 +88,7 @@ namespace vul_test {
 		f32_t af[ 4 ] = { 1.f, 0.5f, -0.2f, 1.7f };
 		i32_t ai[ 4 ] = { 1, 0, -2, 7 };
 		i64_t al[ 4 ] = { 1L, 0L, -2L, 7L };
-#ifdef VUL_CPlUSPLUS11
+#ifdef VUL_CPLUSPLUS11
 		qf = Quaternion< f32_t >( af );
 		qi = Quaternion< i64_t >( al );
 #else
@@ -113,10 +110,10 @@ namespace vul_test {
 		
 		f32_t el = 1.f / sqrt( 3.f );
 #ifdef VUL_CPLUSPLUS11
-		qf = makeQuatFromAxisAngle( Vector< f32_t >( el, el, el ),
+		qf = makeQuatFromAxisAngle( Vector< f32_t, 3 >( el ),
 								    ( f32_t )VUL_PI / 4.f);
 #else
-		qf = makeQuatFromAxisAngle( makeVector< f32_t >( el, el, el ),
+		qf = makeQuatFromAxisAngle( makeVector< f32_t, 3 >( el ),
 								    ( f32_t )VUL_PI / 4.f);
 #endif
 		assert( abs( qf.x - el * sin( ( f32_t )VUL_PI / 8.f ) ) < f32eps );
@@ -126,12 +123,12 @@ namespace vul_test {
 
 		Vector< f32_t, 3 > v3c[ 3 ], v3r[ 3 ];
 #ifdef VUL_CPLUSPLUS11
-		v3c[ 0 ] = Vector< f32_t >( -1.f/sqrt( 6.f ),  1.f/sqrt( 2.f ), 1.f/sqrt( 3.f ) );
-		v3c[ 1 ] = Vector< f32_t >( -1.f/sqrt( 6.f ), -1.f/sqrt( 2.f ), 1.f/sqrt( 3.f ) );
-		v3c[ 2 ] = Vector< f32_t >(  2.f/sqrt( 6.f ),				 0, 1.f/sqrt( 3.f ) );
-		v3r[ 0 ] = Vector< f32_t >( -1.f/sqrt( 6.f ), -1.f/sqrt( 6.f ), 2.f/sqrt( 6.f ) );
-		v3r[ 1 ] = Vector< f32_t >(  1.f/sqrt( 2.f ), -1.f/sqrt( 2.f ), 0 );
-		v3r[ 2 ] = Vector< f32_t >(  1.f/sqrt( 3.f ),  1.f/sqrt( 3.f ), 1.f/sqrt( 3.f ) );
+		v3c[ 0 ] = Vector< f32_t, 3 >{ -1.f/sqrt( 6.f ),  1.f/sqrt( 2.f ), 1.f/sqrt( 3.f ) };
+		v3c[ 1 ] = Vector< f32_t, 3 >{ -1.f/sqrt( 6.f ), -1.f/sqrt( 2.f ), 1.f/sqrt( 3.f ) };
+		v3c[ 2 ] = Vector< f32_t, 3 >{  2.f/sqrt( 6.f ),				0, 1.f/sqrt( 3.f ) };
+		v3r[ 0 ] = Vector< f32_t, 3 >{ -1.f/sqrt( 6.f ), -1.f/sqrt( 6.f ), 2.f/sqrt( 6.f ) };
+		v3r[ 1 ] = Vector< f32_t, 3 >{  1.f/sqrt( 2.f ), -1.f/sqrt( 2.f ), 0 };
+		v3r[ 2 ] = Vector< f32_t, 3 >{  1.f/sqrt( 3.f ),  1.f/sqrt( 3.f ), 1.f/sqrt( 3.f ) };
 #else
 		v3c[ 0 ] = makeVector< f32_t >( -1.f/sqrt( 6.f ),  1.f/sqrt( 2.f ), 1.f/sqrt( 3.f ) );
 		v3c[ 1 ] = makeVector< f32_t >( -1.f/sqrt( 6.f ), -1.f/sqrt( 2.f ), 1.f/sqrt( 3.f ) );
@@ -173,22 +170,33 @@ namespace vul_test {
 		f32_t f32eps = 1e-5f;
 
 		Quaternion< f32_t > q = makeIdentity< f32_t >( );
+#ifdef VUL_CPLUSPLUS11
+		assert( q.xyz[ 0 ] == 0.f );
+		assert( q.xyz[ 1 ] == 0.f );
+		assert( q.xyz[ 2 ] == 0.f );
+#else
 		assert( q.xyz( )[ 0 ] == 0.f );
 		assert( q.xyz( )[ 1 ] == 0.f );
 		assert( q.xyz( )[ 2 ] == 0.f );
+#endif
 		
 		assert( q.x == 0.f );
 		assert( q.y == 0.f );
 		assert( q.z == 0.f );
 
+#ifdef VUL_CPLUSPLUS11
+		q.xyz[ 1 ] = 4.f;
+#else
 		q.xyz( )[ 1 ] = 4.f;
+#endif
 		assert( q.y = 4.f );
 		
-		Vector< f32_t, 4 > v = q.as_vec4( );
 #ifdef VUL_CPLUSPLUS11
-		assert( all( v == Vector< f32_t >( 0.f, 4.f, 0.f, 1.f ) ) );
+		Vector< f32_t, 4 > v = q.as_vec4;
+		assert( all( v == Vector< f32_t, 4 >{ 0.f, 4.f, 0.f, 1.f } ) );
 #else
-		assert( all( v == makeVector< f32_t >( 0.f, 4.f, 0.f, 1.f ) ) );
+		Vector< f32_t, 4 > v = q.as_vec4( );
+		assert( all( v == makeVector< f32_t, 4 >( 0.f, 4.f, 0.f, 1.f ) ) );
 #endif
 
 		assert( q[ 0 ] == 0.f );
@@ -200,7 +208,7 @@ namespace vul_test {
 		assert( q[ 2 ] == 0.3f );
 
 #ifdef VUL_CPLUSPLUS11
-		q += Quat< f32_t >( 0.2f, -1.f, 1.3f, 0.f );
+		q += Quaternion< f32_t >{ 0.2f, -1.f, 1.3f, 0.f };
 #else
 		q += makeQuat< f32_t >( 0.2f, -1.f, 1.3f, 0.f );
 #endif
@@ -210,7 +218,7 @@ namespace vul_test {
 		assert( abs( q[ 3 ] - 1.f ) < f32eps );
 		
 #ifdef VUL_CPLUSPLUS11
-		q -= Quat< f32_t >( 0.1f, 1.f, -0.3f, 0.4f );
+		q -= Quaternion< f32_t >{ 0.1f, 1.f, -0.3f, 0.4f };
 #else
 		q -= makeQuat< f32_t >( 0.1f, 1.f, -0.3f, 0.4f );
 #endif
@@ -227,8 +235,8 @@ namespace vul_test {
 
 		Quaternion< f32_t > a, b;
 #ifdef VUL_CPLUSPLUS11
-		a = Quat< f32_t >( 2.f, 3.f, 2.f, 3.f );
-		b = Quat< f32_t >( 3.f, 2.f, 3.f, 2.f );
+		a = Quaternion< f32_t >{ 2.f, 3.f, 2.f, 3.f };
+		b = Quaternion< f32_t >{ 3.f, 2.f, 3.f, 2.f };
 #else
 		a = makeQuat< f32_t >( 2.f, 3.f, 2.f, 3.f );
 		b = makeQuat< f32_t >( 3.f, 2.f, 3.f, 2.f );
@@ -251,8 +259,8 @@ namespace vul_test {
 	{
 		Quaternion< f32_t > a, b, c;
 #ifdef VUL_CPLUSPLUS11
-		a = normalize( Quat< f32_t >( VUL_TEST_RNG, VUL_TEST_RNG, VUL_TEST_RNG, VUL_TEST_RNG * ( f32_t )VUL_PI ) );
-		c = normalize( Quat< f32_t >( -a.x, -a.y, -a.z, a.w + 0.1f ) ); // We guarantee c != a 
+		a = normalize( Quaternion< f32_t >{ VUL_TEST_RNG, VUL_TEST_RNG, VUL_TEST_RNG, VUL_TEST_RNG * ( f32_t )VUL_PI } );
+		c = normalize( Quaternion< f32_t >{ -a.x, -a.y, -a.z, a.w + 0.1f } ); // We guarantee c != a 
 #else
 		a = normalize( makeQuat< f32_t >( VUL_TEST_RNG, VUL_TEST_RNG, VUL_TEST_RNG, VUL_TEST_RNG * ( f32_t )VUL_PI ) );
 		c = normalize( makeQuat< f32_t >( -a.x, -a.y, -a.z, a.w + 0.1f ) ); // We guarantee c != a 
@@ -279,8 +287,8 @@ namespace vul_test {
 		f32_t f32eps = 1e-5f;
 
 #ifdef VUL_CPLUSPLUS11
-		a = Quat< f32_t >( 0.f, 4.f, 0.f, 1.f );
-		b = Quat< f32_t >( 0.2f, -1.f, 1.3f, 0.f );
+		a = Quaternion< f32_t >{ 0.f, 4.f, 0.f, 1.f };
+		b = Quaternion< f32_t >{ 0.2f, -1.f, 1.3f, 0.f };
 #else
 		a = makeQuat< f32_t >( 0.f, 4.f, 0.f, 1.f );
 		b = makeQuat< f32_t >( 0.2f, -1.f, 1.3f, 0.f );
@@ -304,8 +312,8 @@ namespace vul_test {
 		assert( r[ 3 ] ==  0.f );
 
 #ifdef VUL_CPLUSPLUS11
-		a = Quat< f32_t >( 2.f, 3.f, 2.f, 3.f );
-		b = Quat< f32_t >( 3.f, 2.f, 3.f, 2.f );
+		a = Quaternion< f32_t >{ 2.f, 3.f, 2.f, 3.f };
+		b = Quaternion< f32_t >{ 3.f, 2.f, 3.f, 2.f };
 #else
 		a = makeQuat< f32_t >( 2.f, 3.f, 2.f, 3.f );
 		b = makeQuat< f32_t >( 3.f, 2.f, 3.f, 2.f );
@@ -323,8 +331,8 @@ namespace vul_test {
 		assert( r[ 3 ] ==  2.f );
 
 #ifdef VUL_CPLUSPLUS11
-		a = makeQuatFromAxisAngle( Vector< f32_t >( 0.f, 1.f, 0.f ), ( f32_t )VUL_PI / 4.f );
-		Vector< f32_t, 3 > rv, v( 1.f, 0.f, 0.f );
+		a = makeQuatFromAxisAngle( Vector< f32_t, 3 >{ 0.f, 1.f, 0.f }, ( f32_t )VUL_PI / 4.f );
+		Vector< f32_t, 3 > rv, v{ 1.f, 0.f, 0.f };
 #else
 		a = makeQuatFromAxisAngle( makeVector< f32_t >( 0.f, 1.f, 0.f ), ( f32_t )VUL_PI / 4.f );
 		Vector< f32_t, 3 > rv, v = makeVector< f32_t >( 1.f, 0.f, 0.f );
@@ -344,8 +352,8 @@ namespace vul_test {
 		Vector< f32_t, 3 > v3[ 3 ];
 		f32_t f32eps = 1e-5f;
 #ifdef VUL_CPLUSPLUS11
-		v3[ 0 ] = normalize( Vector< f32_t >( 1.f, 0.f, 0.f ) ); // Normalized vector in 3D space
-		v3[ 1 ] = normalize( Vector< f32_t >( 0.f, 1.f, 0.f ) ); // Perpendicular vector
+		v3[ 0 ] = normalize( Vector< f32_t, 3 >{ 1.f, 0.f, 0.f } ); // Normalized vector in 3D space
+		v3[ 1 ] = normalize( Vector< f32_t, 3 >{ 0.f, 1.f, 0.f } ); // Perpendicular vector
 #else
 		v3[ 0 ] = normalize( makeVector< f32_t >( 1.f, 0.f, 0.f ) ); // Normalized vector in 3D space
 		v3[ 1 ] = normalize( makeVector< f32_t >( 0.f, 1.f, 0.f ) ); // Perpendicular vector
@@ -357,10 +365,14 @@ namespace vul_test {
 		Quaternion< f32_t > q2 = makeQuatFromMatrix( r33 );
 		assert( equals( q, q2, 1e-3f ) );
 
+#ifdef VUL_CPLUSPLUS11
+		assert( norm( q ) == norm( q.as_vec4 ) );
+#else
 		assert( norm( q ) == norm( q.as_vec4( ) ) );
+#endif
 
 #ifdef VUL_CPLUSPLUS11
-		q = Quaternion< f32_t >( 2.4f, 4.2f, 0.8f, 1.2f );
+		q = Quaternion< f32_t >{ 2.4f, 4.2f, 0.8f, 1.2f };
 #else
 		q = makeQuat< f32_t >( 2.4f, 4.2f, 0.8f, 1.2f );
 #endif
@@ -371,7 +383,11 @@ namespace vul_test {
 		assert( abs( r[ 2 ] - q[ 2 ] / qn ) < f32eps );
 		assert( abs( r[ 3 ] - q[ 3 ] / qn ) < f32eps );
 
+#ifdef VUL_CPLUSPLUS11
+		assert( abs( dot( q, q ) - dot( q.as_vec4, q.as_vec4 ) ) < f32eps );
+#else
 		assert( abs( dot( q, q ) - dot( q.as_vec4( ), q.as_vec4( ) ) ) < f32eps );
+#endif
 
 		r = inverse( q );
 		assert( abs( r[ 0 ] - -q[ 0 ] / qn ) < f32eps );
@@ -387,8 +403,8 @@ namespace vul_test {
 		assert( abs( r[ 3 ] - q[ 3 ] ) < f32eps );
 
 #ifdef VUL_CPLUSPLUS11
-		Quaternion< f32_t > a(  0.0f, 1.0f, -0.5f, 0.0f ),
-						    b( -0.6f, 0.2f,  0.5f, 1.5f * ( f32_t )VUL_PI );
+		Quaternion< f32_t > a{  0.0f, 1.0f, -0.5f, 0.0f },
+						    b{ -0.6f, 0.2f,  0.5f, 1.5f * ( f32_t )VUL_PI };
 #else
 		Quaternion< f32_t > a = makeQuat< f32_t >(  0.0f, 1.0f, -0.5f, 0.0f ),
 						    b = makeQuat< f32_t >( -0.6f, 0.2f,  0.5f, 1.5f * ( f32_t )VUL_PI );
@@ -401,21 +417,21 @@ namespace vul_test {
 		assert( equals( r, q, 1e-3f ) );
 		r = nlerp( a, b, 0.6f, false );
 #ifdef VUL_CPLUSPLUS11
-		q = normalize( Quaternion< f32_t >( -0.36f, 0.52f, 0.1f, 0.9f * ( f32_t )VUL_PI ) );
+		q = normalize( Quaternion< f32_t >{ -0.36f, 0.52f, 0.1f, 0.9f * ( f32_t )VUL_PI } );
 #else
 		q = normalize( makeQuat< f32_t >( -0.36f, 0.52f, 0.1f, 0.9f * ( f32_t )VUL_PI ) );
 #endif
 		assert( equals( r, q, 1e-3f ) );
 		r = nlerp( a, b, 0.6f, true );
 #ifdef VUL_CPLUSPLUS11
-		q = normalize( Quaternion< f32_t >( 0.36f, 0.28f, -0.5f, 0.9f * ( f32_t )VUL_PI ) );
+		q = normalize( Quaternion< f32_t >{ 0.36f, 0.28f, -0.5f, 0.9f * ( f32_t )VUL_PI } );
 #else
 		q = normalize( makeQuat< f32_t >( 0.36f, 0.28f, -0.5f, 0.9f * ( f32_t )VUL_PI ) );
 #endif
 		assert( equals( r, q, 1e-3f ) );
 
 #ifdef VUL_CPLUSPLUS11
-		a = Quaternion< f32_t >( 0.f, 0.f, 1.f / sqrt( 2.f ), 1.f / sqrt( 2.f ) );
+		a = Quaternion< f32_t >{ 0.f, 0.f, 1.f / sqrt( 2.f ), 1.f / sqrt( 2.f ) };
 #else
 		a = makeQuat< f32_t >( 0.f, 0.f, 1.f / sqrt( 2.f ), 1.f / sqrt( 2.f ) );
 #endif

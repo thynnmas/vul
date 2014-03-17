@@ -106,7 +106,7 @@ namespace vul_test {
 #ifdef VUL_CPLUSPLUS11
 		v2 = Vector< fi32_t, 2 >( a2 );
 		v3 = Vector< f32_t, 3 >( a3 );
-		v9 = Vector< i64_t, 9 >( a4 );
+		v9 = Vector< i64_t, 9 >( a9 );
 #else
 		v2 = makeVector< fi32_t, 2 >( a2 );
 		v3 = makeVector< f32_t, 3 >( a3 );
@@ -123,20 +123,17 @@ namespace vul_test {
 		for( ui32_t i = 0; i < 9; ++i ) {
 			af[ i ] = VUL_TEST_RNG;
 		}
-#ifdef VUL_CPLUSPLUS11
-		v3 = Vector< f32_t, 3 >( ai );
-		v9 = Vector< i64_t, 9 >( af );
-#else
+
 		v3 = makeVector< f32_t, 3 >( ai );
 		v9 = makeVector< i64_t, 9 >( af );
-#endif
+
 		assert( v3[ 0 ] == -9.f ); assert( v3[ 1 ] == 5.f ); assert( v3[ 2 ] == 17.f );
 		for( ui32_t i = 0; i < 9; ++i ) {
 			assert( v9[ i ] == ( i64_t )af[ i ] );
 		}
 
 #ifdef VUL_CPLUSPLUS11
-		Point< fi32_t, 2 > p2( { VUL_TEST_RNG, VUL_TEST_RNG } );
+		Point< fi32_t, 2 > p2{ fi32_t( VUL_TEST_RNG ), fi32_t( VUL_TEST_RNG ) };
 		p2 = Point< fi32_t, 2 >( v2 );
 #else
 		fi32_t afi2[ 2 ] = { fi32_t( VUL_TEST_RNG ), fi32_t( VUL_TEST_RNG ) };
@@ -146,10 +143,10 @@ namespace vul_test {
 		assert( v2[ 0 ] == p2[ 0 ] ); assert( v2[ 1 ] == p2[ 1 ] );
 		
 #ifdef VUL_CPLUSPLUS11
-		v2 = Vector< fi32_t, 2 >( 7.f );
+		v2 = Vector< fi32_t, 2 >( fi32_t( 7.f ) );
 		v9 = Vector< i64_t, 9 >( -3.f );
 #else
-		v2 = makeVector< fi32_t, 2 >( 7.f );
+		v2 = makeVector< fi32_t, 2 >( fi32_t( 7.f ) );
 		v9 = makeVector< i64_t, 9 >( -3.f );
 #endif
 		assert( v2[ 0 ] == fi32_t( 7.f ) ); assert( v2[ 1 ] == fi32_t( 7.f ) );
@@ -193,17 +190,17 @@ namespace vul_test {
 		Vector< bool, 4 > b4;
 
 #ifdef VUL_CPLUSPLUS11
-		assert( all( Vector< i32_t >( 1, 2 ) );
-		assert( !all( Vector< i32_t >( 1, 0 ) );
-		assert( any( Vector< i32_t >( 1, 2 ) );
-		assert( any( Vector< i32_t >( 1, 0 ) );
-		assert( !any( Vector< i32_t >( 0, 0 ) );
+		assert( all( Vector< i32_t, 2 >{ 1, 2 } ) );
+		assert( !all( Vector< i32_t, 2 >{ 1, 0 } ) );
+		assert( any( Vector< i32_t, 2 >{ 1, 2 } ) );
+		assert( any( Vector< i32_t, 2 >{ 1, 0 } ) );
+		assert( !any( Vector< i32_t, 2 >{ 0, 0 } ) );
 
-		assert( all( Vector< bool >( true, true ) );
-		assert( !all( Vector< bool >( true, false ) );
-		assert( any( Vector< bool >( true, true ) );
-		assert( any( Vector< bool >( true, false ) );
-		assert( !any( Vector< bool >( false, false ) );
+		assert( all( Vector< bool, 2 >{ true, true } ) );
+		assert( !all( Vector< bool, 2 >{ true, false } ) );
+		assert( any( Vector< bool, 2 >{ true, true } ) );
+		assert( any( Vector< bool, 2 >{ true, false } ) );
+		assert( !any( Vector< bool, 2 >{ false, false } ) );
 #else
 		assert( all( makeVector< i32_t >( 1, 2 ) ) );
 		assert( !all( makeVector< i32_t >( 1, 0 ) ) );
@@ -219,11 +216,11 @@ namespace vul_test {
 #endif
 		
 #ifdef VUL_CPLUSPLUS11
-		Vector< fi32_t, 2 > v2a( { ( fi32_t )1.f,  ( fi32_t )-1.f } ),
-						    v2b( { ( fi32_t )-1.f, ( fi32_t )-1.f } );
-		Vector< f32_t, 4 > v4a( -1.f, 2.f, 3.f, 0.5f ), 
-						   v4b( -2.f, 4.f, 6.f, 1.f );
-		Vector< i32_t, 4 > v4i( -2,   4,   6,   1 );
+		Vector< fi32_t, 2 > v2a{ ( fi32_t )1.f,  ( fi32_t )-1.f },
+						    v2b{ ( fi32_t )-1.f, ( fi32_t )-1.f };
+		Vector< f32_t, 4 > v4a{ -1.f, 2.f, 3.f, 0.5f }, 
+						   v4b{ -2.f, 4.f, 6.f, 1.f };
+		Vector< i32_t, 4 > v4i{ -2,   4,   6,   1 };
 #else
 		Vector< fi32_t, 2 > v2a = makeVector< fi32_t >( ( fi32_t )1.f,  ( fi32_t )-1.f ),
 						    v2b = makeVector< fi32_t >( ( fi32_t )-1.f, ( fi32_t )-1.f );
@@ -441,11 +438,11 @@ namespace vul_test {
 		f32_t a9a[ 9 ] = { -1.5f, -1.f, -0.75f, -0.5f, 0.f, 0.25f, 0.6f, 1.f, 2.f };
 		f32_t a9b[ 9 ] = { -1.7f, -1.2f, 0.75f, 0.6f, 0.1f, 0.f, -0.2f, 6.f, 4.f };
 #ifdef VUL_CPLUSPLUS11
-		Vector< i64_t, 2 > v2a( 3L, -1L ),
-						  v2b( 2L, 6L );
+		Vector< i64_t, 2 > v2a{ 3L, -1L },
+						   v2b{ 2L, 6L };
 		Vector< f32_t, 9 > v9a( a9a ),
 						  v9b( a9b );
-		Vector< i32_t, 4 > v4( 0, 0, 2, 4 );
+		Vector< i32_t, 4 > v4{ 0, 0, 2, 4 };
 #else
 		Vector< i64_t, 2 > v2a = makeVector< i64_t >( 3L, -1L ),
 						  v2b = makeVector< i64_t >( 2L, 6L );
@@ -462,14 +459,14 @@ namespace vul_test {
 		assert( select( v4 ) == 2 );
 
 #ifdef VUL_CPLUSPLUS11
-		Vector< f32_t, 3 > v3r = cross( Vector< f32_t >( 1.f, 0.f, 0.f ), Vector< f32_t >( 0.f, 0.f, 1.f ) );
+		Vector< f32_t, 3 > v3r = cross( Vector< f32_t, 3 >{ 1.f, 0.f, 0.f }, Vector< f32_t, 3 >{ 0.f, 0.f, 1.f } );
 #else
 		Vector< f32_t, 3 > v3r = cross( makeVector< f32_t >( 1.f, 0.f, 0.f ), makeVector< f32_t >( 0.f, 0.f, 1.f ) );
 #endif
 		assert( v3r[ 0 ] == 0.f ); assert( v3r[ 1 ] == -1.f ); assert( v3r[ 2 ] == 0.f );
 		
 #ifdef VUL_CPLUSPLUS11
-		assert( abs( cross( normalize( Vector< f32_t >( 1.f, 1.f ) ), normalize( Vector< f32_t >( 1.f, -1.f ) ) ) + 1.f ) < f32eps );
+		assert( abs( cross( normalize( Vector< f32_t, 2 >{ 1.f, 1.f } ), normalize( Vector< f32_t, 2 >{ 1.f, -1.f } ) ) + 1.f ) < f32eps );
 #else
 		assert( abs( cross( normalize( makeVector< f32_t >( 1.f, 1.f ) ), normalize( makeVector< f32_t >( 1.f, -1.f ) ) ) + 1.f ) < f32eps );
 #endif
@@ -481,9 +478,9 @@ namespace vul_test {
 		assert( dt == dot( v9a, v9b ) );
 		
 #ifdef VUL_CPLUSPLUS11
-		assert( norm( Vector< f32_t >( 1.f, 1.f ) ) == sqrt( 2.f ) );
-		assert( norm( Vector< i32_t >( 1, 1 ) ) == 1 );
-		assert( fnorm( Vector< i32_t >( 1, 1 ) ) == sqrt( 2.f ) );
+		assert( norm( Vector< f32_t, 2 >{ 1.f, 1.f } ) == sqrt( 2.f ) );
+		assert( norm( Vector< i32_t, 2 >{ 1, 1 } ) == 1 );
+		assert( fnorm( Vector< i32_t, 2 >{ 1, 1 } ) == sqrt( 2.f ) );
 #else
 		assert( norm( makeVector< f32_t >( 1.f, 1.f ) ) == sqrt( 2.f ) );
 		assert( norm( makeVector< i32_t >( 1, 1 ) ) == 1 );
@@ -491,7 +488,7 @@ namespace vul_test {
 #endif
 
 #ifdef VUL_CPLUSPLUS11
-		v3r = normalize( Vector< f32_t >( 1.f, 1.f, 1.f ) );
+		v3r = normalize( Vector< f32_t, 3 >{ 1.f, 1.f, 1.f } );
 #else
 		v3r = normalize( makeVector< f32_t >( 1.f, 1.f, 1.f ) );
 #endif

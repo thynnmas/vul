@@ -38,12 +38,12 @@ namespace vul {
 		Point< T, n > _max;
 
 #ifdef VUL_CPLUSPLUS11
-		constexpr AABB< T, n >( );
+		explicit AABB< T, n >( );
 		explicit AABB< T, n >( const Vector< T, n > &mini, const Vector< T, n > &maxi );
 		explicit AABB< T, n >( const Point< T, n > &mini, const Point< T, n > &maxi );
-		explicit AABB< T, n >( T (& a)[ n ] );
-		explicit AABB< T, n >( f32_t[ n ] a );
-		explicit AABB< T, n >( i32_t[ n ] a );
+		explicit AABB< T, n >( T (& a)[ 2 ][ n ] );
+		explicit AABB< T, n >( std::initializer_list<T> list );
+		AABB< T, n >( const AABB< T, n > &rhs );
 #endif
 		AABB< T, n > &operator=( const AABB< T, n > &rhs );
 	};
@@ -89,12 +89,12 @@ namespace vul {
 	template< typename T, i32_t n >
 	AABB< T, n > makeAABB( const Vector< T, n > &mini, const Vector< T, n > &maxi );
 	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( T (& a)[ n * 2 ] );
-	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( f32_t (& a)[ n * 2 ] );
-	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( i32_t (& a)[ n * 2 ] );
+	AABB< T, n > makeAABB( T (& a)[ 2 ][ n ] );
 #endif
+	template< typename T, i32_t n >
+	AABB< T, n > makeAABB( f32_t (& a)[ 2 ][ n ] );
+	template< typename T, i32_t n >
+	AABB< T, n > makeAABB( i32_t (& a)[ 2 ][ n ] );
 
 	/**
 	 * Apply a 3D affine transform to multiple SSE packed AABBs with 3D-vectors.
@@ -130,8 +130,8 @@ namespace vul {
 	template< typename T, i32_t n >
 	AABB< T, n >::AABB( )
 	{
-		_min = Point< T, n >( T( 0.f ) );
-		_max = Point< T, n >( T( 0.f ) );
+		_min = Point< T, n >( );
+		_max = Point< T, n >( );
 	}
 	template< typename T, i32_t n >
 	AABB< T, n >::AABB( const Point< T, n > &mini, const Point< T, n > &maxi )
@@ -146,22 +146,29 @@ namespace vul {
 		_max = maxi.as_point( );
 	}
 	template< typename T, i32_t n >
-	AABB< T, n >::AABB( T (& a)[ n * 2 ] )
+	AABB< T, n >::AABB( T (& a)[ 2 ][ n ] )
 	{
-		_min = Point< T, n >( a );
-		_max = Point< T, n >( &a[ n ] );
+		_min = Point< T, n >( a[ 0 ] );
+		_max = Point< T, n >( a[ 1 ] );
 	}
 	template< typename T, i32_t n >
-	AABB< T, n >::AABB( f32_t[ n * 2 ] a )
+	AABB< T, n >::AABB( std::initializer_list< T > list )
 	{
-		_min = Point< T, n >( a );
-		_max = Point< T, n >( &a[ n ] );
+		i32_t i;
+		typename std::initializer_list< T >::iterator it;
+
+		for( it = list.begin( ), i = 0; it != list.end( ) && i < n; ++it, ++i ) {
+			_min.data[ i ] = *it;
+		}
+		for( i = 0; it != list.end( ) && i < n; ++it, ++i ) {
+			_max.data[ i ] = *it;
+		}
 	}
 	template< typename T, i32_t n >
-	AABB< T, n >::AABB( i32_t[ n * 2 ] a )
-	{
-		_min = Point< T, n >( a );
-		_max = Point< T, n >( &a[ n ] );
+	AABB< T, n >::AABB( const AABB< T, n > &rhs )
+	{		
+		_min = rhs._min;
+		_max = rhs._max;
 	}
 #else
 	template< typename T, i32_t n >
@@ -195,52 +202,37 @@ namespace vul {
 		return aabb;
 	}
 	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( T (& a)[ n * 2 ] )
-	{
-		AABB< T, n > aabb;
-		T p1[ n ], p2[ n ];
-
-		for( ui32_t i = 0; i < n; ++i ) {
-			p1[ i ] = a[ i ];
-			p2[ i ] = a[ n + i ];
-		}
-		aabb._min = makePoint< T, n >( p1 );
-		aabb._max = makePoint< T, n >( p2 );
-
-		return aabb;
-	}
-	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( f32_t (& a)[ n * 2 ] )
-	{
-		AABB< T, n > aabb;
-		f32_t p1[ n ], p2[ n ];
-
-		for( ui32_t i = 0; i < n; ++i ) {
-			p1[ i ] = a[ i ];
-			p2[ i ] = a[ n + i ];
-		}
-		aabb._min = makePoint< T, n >( p1 );
-		aabb._max = makePoint< T, n >( p2 );
-
-		return aabb;
-	}
-	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( i32_t (& a)[ n * 2 ] )
+	AABB< T, n > makeAABB( T (& a)[ 2 ][ n ] )
 	{
 		AABB< T, n > aabb;
 		
-		i32_t p1[ n ], p2[ n ];
-
-		for( ui32_t i = 0; i < n; ++i ) {
-			p1[ i ] = a[ i ];
-			p2[ i ] = a[ n + i ];
-		}
-		aabb._min = makePoint< T, n >( p1 );
-		aabb._max = makePoint< T, n >( p2 );
+		aabb._min = makePoint< T, n >( a[ 0 ] );
+		aabb._max = makePoint< T, n >( a[ 1 ] );
 
 		return aabb;
 	}
 #endif
+	template< typename T, i32_t n >
+	AABB< T, n > makeAABB( f32_t (& a)[ 2 ][ n ] )
+	{
+		AABB< T, n > aabb;
+		
+		aabb._min = makePoint< T, n >( a[ 0 ] );
+		aabb._max = makePoint< T, n >( a[ 1 ] );
+
+		return aabb;
+	}
+	template< typename T, i32_t n >
+	AABB< T, n > makeAABB( i32_t (& a)[ 2 ][ n ] )
+	{
+		AABB< T, n > aabb;
+		
+		aabb._min = makePoint< T, n >( a[ 0 ] );
+		aabb._max = makePoint< T, n >( a[ 1 ] );
+
+		return aabb;
+	}
+	
 	template< typename T, i32_t n >
 	AABB< T, n > &AABB< T, n >::operator=( const AABB< T, n > &rhs )
 	{

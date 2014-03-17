@@ -132,9 +132,8 @@ namespace vul {
 	
 #ifdef VUL_CPLUSPLUS11
 	template< int Q >
-	constexpr fixed_32< Q >::fixed_32( )
+	constexpr fixed_32< Q >::fixed_32( ) : data( 0 )
 	{
-		data = 0;
 	}
 #else
 	template< int Q >
@@ -482,7 +481,7 @@ namespace std {
 	{
 	public:
 #ifdef VUL_CPLUSPLUS11
-		static bool is_signed = true;
+		static constexpr bool is_signed = true;
 		static constexpr bool is_exact = false;
 		static constexpr bool is_modulo = false;
 		static constexpr bool is_iec559 = true;
@@ -528,7 +527,8 @@ namespace std {
 	};
 	
 #ifdef VUL_CPLUSPLUS11
-	template< > struct hash< vul::fixed_32< Q > >
+	template< int Q > 
+	struct hash< vul::fixed_32< Q > >
 	{
 		typedef vul::fixed_32< Q > argument_type;
 		typedef size_t result_type;

@@ -59,7 +59,7 @@ namespace vul_test {
 							   ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG };
 #ifdef VUL_CPLUSPLUS11
 			v32[ i ] = Vector< f32_t, 9 >( vec );
-			v64[ i ] = Vector< f64_t, 9 >( vec );
+			v64[ i ] = makeVector< f64_t, 9 >( vec );
 #else
 			v32[ i ] = makeVector< f32_t, 9 >( vec );
 			v64[ i ] = makeVector< f64_t, 9 >( vec );
@@ -170,7 +170,7 @@ namespace vul_test {
 								( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG };
 #ifdef VUL_CPLUSPLUS11
 			v32[ i ] = AABB< f32_t, 9 >( Vector< f32_t, 9 >( mini ), Vector< f32_t, 9 >( maxi ) );
-			v64[ i ] = AABB< f64_t, 9 >( Vector< f64_t, 9 >( mini ), Vector< f64_t, 9 >( maxi ) );
+			v64[ i ] = AABB< f64_t, 9 >( makeVector< f64_t, 9 >( mini ), makeVector< f64_t, 9 >( maxi ) );
 #else
 			v32[ i ] = makeAABB< f32_t, 9 >( makeVector< f32_t, 9 >( mini ), makeVector< f32_t, 9 >( maxi ) );
 			v64[ i ] = makeAABB< f64_t, 9 >( makeVector< f64_t, 9 >( mini ), makeVector< f64_t, 9 >( maxi ) );

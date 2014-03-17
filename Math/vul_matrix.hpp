@@ -43,13 +43,11 @@ namespace vul {
 
 #ifdef VUL_CPLUSPLUS11
 		// Constructor
-		constexpr Matrix< T, cols, rows >( );							// Empty constructor
-		explicit Matrix< T, cols, rows >( T val );						// Initialize to a single value
-		explicit Matrix< T, cols, rows >( Matrix< T, cols, rows > m );	// Copy constructor
-		explicit Matrix< T, cols, rows >( T (& a)[ cols ][ rows ] ); 		// Generic array constructor
-		explicit Matrix< T, cols, rows >( f32_t (& a)[ rows * cols ] ); 		// From float array, to interface with other libraries
-		explicit Matrix< T, cols, rows >( i32_t (& a)[ rows * cols ] ); 		// From int array, to interface with other libraries
-		explicit Matrix< T, cols, rows >( std::initializer_list<T> list );	// From initializer list. Componentwise init is non-c++11 equivalent.
+		explicit Matrix< T, cols, rows >( );									// Empty constructor
+		explicit Matrix< T, cols, rows >( T val );								// Initialize to a single value
+		Matrix< T, cols, rows >( const Matrix< T, cols, rows > &m );			// Copy constructor
+		explicit Matrix< T, cols, rows >( T (& a)[ cols ][ rows ] ); 			// Generic array constructor
+		explicit Matrix< T, cols, rows >( std::initializer_list<T> list );		// From initializer list. Componentwise init is non-c++11 equivalent.
 #endif	
 		// Operators
 		/**
@@ -143,11 +141,11 @@ namespace vul {
 	Matrix< T, cols, rows > makeMatrix( const Matrix< T, cols, rows > &m );	// Copy constructor
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > makeMatrix( T (& a)[ cols ][ rows ] ); 		// Generic array constructor
+#endif		
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > makeMatrix( f32_t (& a)[ rows * cols ] );	// From float array, to interface with other libraries
 	template< typename T, i32_t cols, i32_t rows >
 	Matrix< T, cols, rows > makeMatrix( i32_t (& a)[ rows * cols ] ); 	// From int array, to interface with other libraries
-#endif		
 	
 	template< typename T >
 	Matrix< T, 2, 2 > makeMatrix22( T xx, T xy, T yx, T yy );	// Componentwise
@@ -396,7 +394,7 @@ namespace vul {
 #ifdef VUL_CPLUSPLUS11
 	// Constructor
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows >::Matrix< T, cols, rows >( )
+	Matrix< T, cols, rows >::Matrix( )
 	{
 		i32_t i, j;
 		for( i = 0; i < cols; ++i ) {
@@ -406,7 +404,7 @@ namespace vul {
 		}
 	}
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows >::Matrix< T, cols, rows >( T val )
+	Matrix< T, cols, rows >::Matrix( T val )
 	{
 		i32_t i, j;
 		for( i = 0; i < cols; ++i ) {
@@ -416,7 +414,7 @@ namespace vul {
 		}
 	}
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows >::Matrix< T, cols, rows >( Matrix< T, cols, rows > m )
+	Matrix< T, cols, rows >::Matrix( const Matrix< T, cols, rows > &m )
 	{
 		i32_t i, j;
 		for( i = 0; i < cols; ++i ) {
@@ -426,37 +424,17 @@ namespace vul {
 		}
 	}
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows >::Matrix< T, cols, rows >( T (& a)[ cols ][ rows ] )
+	Matrix< T, cols, rows >::Matrix( T (& a)[ cols ][ rows ] )
 	{
 		memcpy( data, a, sizeof( T ) * rows * cols );
 	}
 	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows >::Matrix< T, cols, rows >( f32_t (& a)[ rows * cols ] )
-	{
-		i32_t i, j;
-		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < rows; ++j ) {
-				data[ j ][ i ] = static_cast< T >( a[ i * cols + j ] );
-			}
-		}
-	}
-	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows >::Matrix< T, cols, rows >( i32_t (& a)[ rows * cols ] )
-	{
-		i32_t i, j;
-		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < rows; ++j ) {
-				data[ i ][ j ] = static_cast< T >( a[ i * cols + j ] );
-			}
-		}
-	}
-	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows >::Matrix< T, cols, rows >( std::initializer_list< T > list )
+	Matrix< T, cols, rows >::Matrix( std::initializer_list< T > list )
 	{
 		i32_t i;
-		std::initilizer_list< T >::iterator it;
+		typename std::initializer_list< T >::iterator it;
 
-		for( it = list.begin( ); it != list.end( ) && i < cols * rows; ++it, ++i ) {
+		for( it = list.begin( ), i = 0; it != list.end( ) && i < cols * rows; ++it, ++i ) {
 			data[ i / rows ][ i % rows ] = *it;
 		}
 	}
@@ -519,34 +497,7 @@ namespace vul {
 
 		return m;
 	}	
-	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > makeMatrix( f32_t (& a)[ rows * cols ] )
-	{
-		Matrix< T, cols, rows > m;
-		i32_t i, j;
-
-		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < rows; ++j ) {
-				m.data[ i ][ j ] = static_cast< T >( a[ i * cols + j ] );
-			}
-		}
-		
-		return m;
-	}	
-	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > makeMatrix( i32_t (& a)[ rows * cols ] )
-	{
-		Matrix< T, cols, rows > m;
-		i32_t i, j;
-
-		for( i = 0; i < cols; ++i ) {
-			for( j = 0; j < rows; ++j ) {
-				m.data[ i ][ j ] = static_cast< T >( a[ i * cols + j ] );
-			}
-		}
-		
-		return m;
-	}
+#endif
 
 	template< typename T >
 	Matrix< T, 2, 2 > makeMatrix22( T xx, T xy,
@@ -607,7 +558,36 @@ namespace vul {
 
 		return m;
 	}
-#endif	
+
+	template< typename T, i32_t cols, i32_t rows >
+	Matrix< T, cols, rows > makeMatrix( f32_t (& a)[ rows * cols ] )
+	{
+		Matrix< T, cols, rows > m;
+		i32_t i, j;
+
+		for( i = 0; i < cols; ++i ) {
+			for( j = 0; j < rows; ++j ) {
+				m.data[ i ][ j ] = static_cast< T >( a[ i * cols + j ] );
+			}
+		}
+		
+		return m;
+	}	
+	template< typename T, i32_t cols, i32_t rows >
+	Matrix< T, cols, rows > makeMatrix( i32_t (& a)[ rows * cols ] )
+	{
+		Matrix< T, cols, rows > m;
+		i32_t i, j;
+
+		for( i = 0; i < cols; ++i ) {
+			for( j = 0; j < rows; ++j ) {
+				m.data[ i ][ j ] = static_cast< T >( a[ i * cols + j ] );
+			}
+		}
+		
+		return m;
+	}
+	
 	template< typename T >
 	Matrix< T, 2, 2 > makeMatrix22FromColumns( const Vector< T, 2 > &c1,
 											   const Vector< T, 2 > &c2 )

@@ -106,7 +106,7 @@ namespace vul_test {
 #ifdef VUL_CPLUSPLUS11
 		p2 = Point< fi32_t, 2 >( a2 );
 		p3 = Point< f32_t, 3 >( a3 );
-		p9 = Point< i64_t, 9 >( a4 );
+		p9 = Point< i64_t, 9 >( a9 );
 #else
 		p2 = makePoint< fi32_t, 2 >( a2 );
 		p3 = makePoint< f32_t, 3 >( a3 );
@@ -123,13 +123,10 @@ namespace vul_test {
 		for( ui32_t i = 0; i < 9; ++i ) {
 			af[ i ] = VUL_TEST_RNG;
 		}
-#ifdef VUL_CPLUSPLUS11
-		p3 = Point< f32_t, 3 >( ai );
-		p9 = Point< i64_t, 9 >( af );
-#else
+
 		p3 = makePoint< f32_t, 3 >( ai );
 		p9 = makePoint< i64_t, 9 >( af );
-#endif
+
 		assert( p3[ 0 ] == -9.f ); assert( p3[ 1 ] == 5.f ); assert( p3[ 2 ] == 17.f );
 		for( ui32_t i = 0; i < 9; ++i ) {
 			assert( p9[ i ] == ( i64_t )af[ i ] );
@@ -162,11 +159,11 @@ namespace vul_test {
 		Vector< bool, 2 > b2;
 		Vector< bool, 4 > b4;
 #ifdef VUL_CPLUSPLUS11
-		Point< fi32_t, 2 > p2a( { ( fi32_t )1.f,  ( fi32_t )-1.f } ),
-						   p2b( { ( fi32_t )-1.f, ( fi32_t )-1.f } );
-		Point< f32_t, 4 > p4a( -1.f, 2.f, 3.f, 0.5f ), 
-						  p4b( -2.f, 4.f, 6.f, 1.f );
-		Point< i32_t, 4 > p4i( -2,   4,   6,   1 );
+		Point< fi32_t, 2 > p2a{ ( fi32_t )1.f,  ( fi32_t )-1.f },
+						   p2b{ ( fi32_t )-1.f, ( fi32_t )-1.f };
+		Point< f32_t, 4 > p4a{ -1.f, 2.f, 3.f, 0.5f }, 
+						  p4b{ -2.f, 4.f, 6.f, 1.f };
+		Point< i32_t, 4 > p4i{ -2,   4,   6,   1 };
 #else
 		Point< fi32_t, 2 > p2a = makePoint< fi32_t >( ( fi32_t )1.f,  ( fi32_t )-1.f ),
 						   p2b = makePoint< fi32_t >( ( fi32_t )-1.f, ( fi32_t )-1.f );
@@ -284,8 +281,8 @@ namespace vul_test {
 		f32_t a9a[ 9 ] = { -1.5f, -1.f, -0.75f, -0.5f, 0.f, 0.25f, 0.6f, 1.f, 2.f };
 		f32_t a9b[ 9 ] = { -1.7f, -1.2f, 0.75f, 0.6f, 0.1f, 0.f, -0.2f, 6.f, 4.f };
 #ifdef VUL_CPLUSPLUS11
-		Point< i64_t, 2 > p2a( 3L, -1L ),
-						  p2b( 2L, 6L );
+		Point< i64_t, 2 > p2a{ 3L, -1L },
+						  p2b{ 2L, 6L };
 		Point< f32_t, 9 > p9a( a9a ),
 						  p9b( a9b );
 #else

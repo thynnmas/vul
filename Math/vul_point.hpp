@@ -23,6 +23,8 @@
 
 #include "vul_types.hpp"
 
+#include <cstring> // For memset
+
 namespace vul {
 	
 	template< typename T, i32_t n >
@@ -38,13 +40,12 @@ namespace vul {
 
 #ifdef VUL_CPLUSPLUS11
 		// Constructors
-		constexpr Point< T, n >( );								// Empty constructor
+		explicit Point< T, n >( );								// Empty constructor. Memsets entirety of data to 0.
 		explicit Point< T, n >( T val ); 						// Initialize to single value
-		explicit Point< T, n >( const Point< T, n > &p ); 		// Copy constructor
+		Point< T, n >( const Point< T, n > &p ); 				// Copy constructor
 		explicit Point< T, n >( T (& a)[ n ] ); 				// Generic array constructor
-		explicit Point< T, n >( f32_t (& a)[ n ] ); 				// From float arrays, to interface with other libraries
-		explicit Point< T, n >( i32_t (& a)[ n ] ); 				// From int arrays, to interface with other libraries
 		explicit Point< T, n >( const Vector< T, n > &vec );	// Explicit conversion from a vector
+		explicit Point< T, n >( std::initializer_list<T> list );// From initializer list. Componentwise init is non-c++11 equivalent.
 #endif
 		/**
 		 * Copy assignment operator.
@@ -86,7 +87,7 @@ namespace vul {
 #ifndef VUL_CPLUSPLUS11
 	// Constructors
 	template< typename T, i32_t n >
-	Point< T, n > makePoint( );								// Empty constructor
+	Point< T, n > makePoint( );								// Empty constructor. Memsets entirety of data to 0.
 	template< typename T, i32_t n >
 	Point< T, n > makePoint( T val ); 						// Initialize to single value
 	template< typename T, i32_t n >
@@ -94,12 +95,12 @@ namespace vul {
 	template< typename T, i32_t n >
 	Point< T, n > makePoint( T (& a)[ n ] ); 						// Generic array constructor
 	template< typename T, i32_t n >
+	Point< T, n > makePoint( const Vector< T, n > &vec );	// Explicit conversion from a vector
+#endif
+	template< typename T, i32_t n >
 	Point< T, n > makePoint( f32_t (& a)[ n ] ); 					// From float arrays, to interface with other libraries
 	template< typename T, i32_t n >
 	Point< T, n > makePoint( i32_t (& a)[ n ] ); 					// From int arrays, to interface with other libraries
-	template< typename T, i32_t n >
-	Point< T, n > makePoint( const Vector< T, n > &vec );	// Explicit conversion from a vector
-#endif
 
 	// Specializations
 	template< typename T >
@@ -192,15 +193,12 @@ namespace vul {
 
 #ifdef VUL_CPLUSPLUS11
 	template< typename T, i32_t n >
-	Point< T, n >::Point< T, n >( )
+	Point< T, n >::Point( )
 	{
-		i32_t i;
-		for( i = 0; i < n; ++i ) {
-			data[ i ] = static_cast< T >( 0.f );
-		}
+		memset( data, 0, sizeof( data ) * sizeof( T ) );
 	}
 	template< typename T, i32_t n >
-	Point< T, n >::Point< T, n >( T val )
+	Point< T, n >::Point( T val )
 	{
 		i32_t i;
 		for( i = 0; i < n; ++i ) {
@@ -208,7 +206,7 @@ namespace vul {
 		}
 	}
 	template< typename T, i32_t n >
-	Point< T, n >::Point< T, n >( const Point< T, n > &p )
+	Point< T, n >::Point( const Point< T, n > &p )
 	{
 		i32_t i;
 		for( i = 0; i < n; ++i ) {
@@ -216,7 +214,7 @@ namespace vul {
 		}
 	}
 	template< typename T, i32_t n >
-	Point< T, n >::Point< T, n >( T (& a)[ n ] )
+	Point< T, n >::Point( T (& a)[ n ] )
 	{
 		i32_t i;
 		for( i = 0; i < n; ++i ) {
@@ -224,27 +222,21 @@ namespace vul {
 		}
 	}
 	template< typename T, i32_t n >
-	Point< T, n >::Point< T, n >( f32_t (& a)[ n ] )
-	{
-		i32_t i;
-		for( i = 0; i < n; ++i ) {
-			data[ i ] = static_cast< T >( a[ i ] );
-		}
-	}
-	template< typename T, i32_t n >
-	Point< T, n >::Point< T, n >( i32_t (& a)[ n ] )
-	{
-		i32_t i;
-		for( i = 0; i < n; ++i ) {
-			data[ i ] = static_cast< T >( a[ i ] );
-		}
-	}
-	template< typename T, i32_t n >
-	Point< T, n >::Point< T, n >( const Vector< T, n > &vec )
+	Point< T, n >::Point( const Vector< T, n > &vec )
 	{
 		i32_t i;
 		for( i = 0; i < n; ++i ) {
 			data[ i ] = vec[ i ];
+		}
+	}
+	template< typename T, i32_t n >
+	Point< T, n >::Point( std::initializer_list< T > list )
+	{
+		i32_t i;
+		typename std::initializer_list< T >::iterator it;
+
+		for( it = list.begin( ), i = 0; it != list.end( ) && i < n; ++it, ++i ) {
+			data[ i ] = *it;
 		}
 	}
 #else
@@ -254,9 +246,7 @@ namespace vul {
 		Point< T, n > p;
 		i32_t i;
 
-		for( i = 0; i < n; ++i ) {
-			p.data[ i ] = static_cast< T >( 0.f );
-		}
+		memset( p.data, 0, sizeof( p.data ) * sizeof( T ) );
 
 		return p;
 	}
@@ -297,6 +287,20 @@ namespace vul {
 		return p;
 	}
 	template< typename T, i32_t n >
+	Point< T, n > makePoint( const Vector< T, n > &vec )
+	{
+		Point< T, n > p;
+		i32_t i;
+
+		for( i = 0; i < n; ++i ) {
+			p.data[ i ] = vec[ i ];
+		}
+
+		return p;
+	}
+#endif
+	
+	template< typename T, i32_t n >
 	Point< T, n > makePoint( f32_t (& a)[ n ] )
 	{
 		Point< T, n > p;
@@ -320,20 +324,6 @@ namespace vul {
 
 		return p;
 	}
-	template< typename T, i32_t n >
-	Point< T, n > makePoint( const Vector< T, n > &vec )
-	{
-		Point< T, n > p;
-		i32_t i;
-
-		for( i = 0; i < n; ++i ) {
-			p.data[ i ] = vec[ i ];
-		}
-
-		return p;
-	}
-#endif
-	
 	template< typename T >
 	Point< T, 2 > makePoint( T x, T y )
 	{

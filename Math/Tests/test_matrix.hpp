@@ -59,10 +59,10 @@ namespace vul_test {
 	bool TestMatrix::make( )
 	{		
 #ifdef VUL_CPLUSPLUS11
-		Matrix< f32_t, 2, 2> m22( );
-		Matrix< fi32_t, 3, 3> m33( );
-		Matrix< i64_t, 4, 4> m44( );
-		Matrix< f32_t, 6, 8> m68( );
+		Matrix< f32_t, 2, 2> m22;
+		Matrix< fi32_t, 3, 3> m33;
+		Matrix< i64_t, 4, 4> m44;
+		Matrix< f32_t, 6, 8> m68;
 #else
 		Matrix< f32_t, 2, 2> m22 = makeMatrix< f32_t, 2, 2 >( );
 		Matrix< fi32_t, 3, 3> m33 = makeMatrix< fi32_t, 3, 3 >( );
@@ -193,7 +193,7 @@ namespace vul_test {
 
 		// Only available in C++11
 #ifdef VUL_CPLUSPLUS11
-		Matrix< f32_t, 2, 2 > c11m22 = { 1.f, -2.f, 4.f, 3.f };
+		Matrix< f32_t, 2, 2 > c11m22{ 1.f, -2.f, 4.f, 3.f };
 		assert( c11m22( 0, 0 ) == 1.f );
 		assert( c11m22( 1, 0 ) == -2.f );
 		assert( c11m22( 0, 1 ) == 4.f );
@@ -267,9 +267,10 @@ namespace vul_test {
 		}
 
 #ifdef VUL_CPLUSPLUS11
-		Vector< f32_t, 2 > v21( 0, 1 ), v22( 2, 3 );
-		Vector< f32_t, 3 > v31( 0, 1, 2 ), v32( 3, 4, 5 ), v34( 6, 7, 8s );
-		Vector< f32_t, 4 > v41( 0, 1, 2, 3 ), v42( 4, 5, 6, 7 ), v43( 8, 9, 10, 11 ), v44( 12, 13, 14, 15 );
+		Vector< f32_t, 2 > v21{ 0.f, 1.f }, v22{ 2.f, 3.f };
+		Vector< f32_t, 3 > v31{ 0.f, 1.f, 2.f }, v32{ 3.f, 4.f, 5.f }, v33{ 6.f, 7.f, 8.f };
+		Vector< f32_t, 4 > v41{ 0.f, 1.f, 2.f, 3.f }, v42{ 4.f, 5.f, 6.f, 7.f }, 
+						   v43{ 8.f, 9.f, 10.f, 11.f }, v44{ 12.f, 13.f, 14.f, 15.f };
 #else
 		Vector< f32_t, 2 > v21 = makeVector< f32_t >( 0, 1 ), 
 						   v22 = makeVector< f32_t >( 2, 3 );
@@ -336,8 +337,8 @@ namespace vul_test {
 		assert( !any( ma == mb ) );
 
 #ifdef VUL_CPLUSPLUS11
-		Matrix< f32_t, 2, 2 > ms(  0.f, 2.f,
-								  -2.f, 1.f );
+		Matrix< f32_t, 2, 2 > ms{  0.f, 2.f,
+								  -2.f, 1.f };
 #else
 		Matrix< f32_t, 2, 2 > ms = makeMatrix22< f32_t >(  0.f, 2.f,
 														  -2.f, 1.f );
@@ -577,7 +578,7 @@ namespace vul_test {
 	bool TestMatrix::functions( )
 	{
 #ifdef VUL_CPLUSPLUS11
-		Matrix< f32_t, 4, 3 > m43( );
+		Matrix< f32_t, 4, 3 > m43;
 #else
 		Matrix< f32_t, 4, 3 > m43 = makeMatrix< f32_t, 4, 3 >( );
 #endif

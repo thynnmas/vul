@@ -131,6 +131,8 @@ namespace vul {
 	 */
 	template< ui32_t n >
 	void unpack( AABB< f64_t, n > *out, const AABB< __m256d, n > *in, ui32_t count );
+	
+	
 	//-------------------
 	// Definitions
 	//	
@@ -150,7 +152,11 @@ namespace vul {
 									   in[ i * 4 + 2 ][ j ], 
 									   in[ i * 4 + 3 ][ j ] );
 			}
+#ifdef VUL_CPLUSPLUS11
+			out[ i ] = Vector< __m128, n >( tmp );
+#else
 			out[ i ] = makeVector< __m128, n >( tmp );
+#endif
 		}
 	}
 	template< ui32_t n >
@@ -167,7 +173,11 @@ namespace vul {
 				tmp[ j ] = _mm_set_pd( in[ i * 2     ][ j ], 
 									   in[ i * 2 + 1 ][ j ] );
 			}
+#ifdef VUL_CPLUSPLUS11
+			out[ i ] = Vector< __m128d, n >( tmp );
+#else
 			out[ i ] = makeVector< __m128d, n >( tmp );
+#endif
 		}
 	}
 	template< ui32_t n >
@@ -190,7 +200,11 @@ namespace vul {
 										  in[ i * 8 + 6 ][ j ], 
 										  in[ i * 8 + 7 ][ j ] );
 			}
+#ifdef VUL_CPLUSPLUS11
+			out[ i ] = Vector< __m256, n >( tmp );
+#else
 			out[ i ] = makeVector< __m256, n >( tmp );
+#endif
 		}
 	}
 	template< ui32_t n >
@@ -209,7 +223,11 @@ namespace vul {
 									   	  in[ i * 4 + 2 ][ j ], 
 									   	  in[ i * 4 + 3 ][ j ] );
 			}
+#ifdef VUL_CPLUSPLUS11
+			out[ i ] = Vector< __m256d, n >( tmp );
+#else
 			out[ i ] = makeVector< __m256d, n >( tmp );
+#endif
 		}
 	}
 	
@@ -348,9 +366,15 @@ namespace vul {
 									    in[ i * 4 + 2 ]._max[ j ], 
 									    in[ i * 4 + 3 ]._max[ j ] );
 			}
+#ifdef VUL_CPLUSPLUS11
+			vmin = Point< __m128, n >( mini );
+			vmax = Point< __m128, n >( maxi );
+			out[ i ] = AABB< __m128, n >( vmin, vmax );
+#else
 			vmin = makePoint< __m128, n >( mini );
 			vmax = makePoint< __m128, n >( maxi );
 			out[ i ] = makeAABB< __m128, n >( vmin, vmax );
+#endif
 		}
 	}
 	template< ui32_t n >
@@ -376,9 +400,15 @@ namespace vul {
 				maxi[ j ] = _mm_set_pd( in[ i * 2     ]._max[ j ], 
 									    in[ i * 2 + 1 ]._max[ j ] );
 			}
+#ifdef VUL_CPLUSPLUS11
+			vmin = Point< __m128d, n >( mini );
+			vmax = Point< __m128d, n >( maxi );
+			out[ i ] = AABB< __m128d, n >( vmin, vmax );
+#else
 			vmin = makePoint< __m128d, n >( mini );
 			vmax = makePoint< __m128d, n >( maxi );
 			out[ i ] = makeAABB< __m128d, n >( vmin, vmax );
+#endif
 		}
 	}
 	template< ui32_t n >
@@ -416,9 +446,15 @@ namespace vul {
 									       in[ i * 8 + 6 ]._max[ j ], 
 									       in[ i * 8 + 7 ]._max[ j ] );
 			}
+#ifdef VUL_CPLUSPLUS11
+			vmin = Point< __m256, n >( mini );
+			vmax = Point< __m256, n >( maxi );
+			out[ i ] = AABB< __m256, n >( vmin, vmax );
+#else
 			vmin = makePoint< __m256, n >( mini );
 			vmax = makePoint< __m256, n >( maxi );
 			out[ i ] = makeAABB< __m256, n >( vmin, vmax );
+#endif
 		}
 	}
 	template< ui32_t n >
@@ -448,9 +484,15 @@ namespace vul {
 									       in[ i * 4 + 2 ]._max[ j ], 
 									       in[ i * 4 + 3 ]._max[ j ] );
 			}
+#ifdef VUL_CPLUSPLUS11
+			vmin = Point< __m256d, n >( mini );
+			vmax = Point< __m256d, n >( maxi );
+			out[ i ] = AABB< __m256d, n >( vmin, vmax );
+#else
 			vmin = makePoint< __m256d, n >( mini );
 			vmax = makePoint< __m256d, n >( maxi );
 			out[ i ] = makeAABB< __m256d, n >( vmin, vmax );
+#endif
 		}
 	}
 	template< ui32_t n >

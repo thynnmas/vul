@@ -59,9 +59,9 @@ namespace vul_test {
 	{
 		// Test different dimensions
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 3 > d3f32( Vector< f32_t >( -1.f, -2.f, -3.f ), Vector< f32_t >( 1.f, 2.f, 3.f ) );
-		AABB< i16_t, 2 > d2i16( Vector< i16_t >( 10, -5 ), Vector< i16_t >( 11, -4 ) );
-		AABB< fi32_t, 6 > d6fi32( Vector< fi32_t, 6 >( 7.f ), Vector< fi32_t, 6 >( 8.f ) );
+		AABB< f32_t, 3 > d3f32( Vector< f32_t, 3 >{ -1.f, -2.f, -3.f }, Vector< f32_t, 3 >{ 1.f, 2.f, 3.f } );
+		AABB< i16_t, 2 > d2i16( Vector< i16_t, 2 >{ 10, -5}, Vector< i16_t, 2 >{ 11, -4 } );
+		AABB< fi32_t, 6 > d6fi32( Vector< fi32_t, 6 >( ( fi32_t )7.f ), Vector< fi32_t, 6 >( ( fi32_t )8.f ) );
 #else
 		AABB< f32_t, 3 > d3f32 = makeAABB< f32_t, 3 >( makeVector< f32_t >( -1.f, -2.f, -3.f ), makeVector< f32_t >( 1.f, 2.f, 3.f ) );
 		AABB< i16_t, 2 > d2i16 = makeAABB< i16_t, 2 >( makeVector< i16_t >( 10, -5 ), makeVector< i16_t >( 11, -4 ) );
@@ -85,17 +85,17 @@ namespace vul_test {
 		}
 
 		// Test different constructors
-		fi32_t arr[ 6 ] = { fi32_t( -1.f ), fi32_t( -1.f ), fi32_t( -1.f ),
-							fi32_t( 1.f ), fi32_t( 1.f ), fi32_t( 1.f ) };
-		f32_t arr2[ 6 ] = { -1.f, -1.f, -1.f, 1.f, 1.f, 1.f };
-		i32_t arr3[ 6 ] = { -1, -1, -1, 1, 1, 1 };
+		fi32_t arr[ 2 ][ 3 ] = { { fi32_t( -1.f ), fi32_t( -1.f ), fi32_t( -1.f ) },
+							     { fi32_t( 1.f ), fi32_t( 1.f ), fi32_t( 1.f ) } };
+		f32_t arr2[ 2 ][ 3 ] = { { -1.f, -1.f, -1.f }, { 1.f, 1.f, 1.f } };
+		i32_t arr3[ 2 ][ 3 ] = { { -1, -1, -1 }, { 1, 1, 1 } };
 		
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 3 > empty( );
-		AABB< f32_t, 3 > pt( makePoint< f32_t, 3 >( -1.f ), makePoint< f32_t, 3 >( 1.f ) );
+		AABB< f32_t, 3 > empty;
+		AABB< f32_t, 3 > pt( Point< f32_t, 3 >( -1.f ), Point< f32_t, 3 >( 1.f ) );
 		AABB< fi32_t, 3 > arrT( arr );
-		AABB< fi32_t, 3 > arrF( arr2 );
-		AABB< f32_t, 3 > arrI( arr3 );
+		AABB< fi32_t, 3 > arrF = makeAABB< fi32_t, 3 >( arr2 );
+		AABB< f32_t, 3 > arrI = makeAABB< f32_t, 3 >( arr3 );
 #else
 		AABB< f32_t, 3 > empty = makeAABB< f32_t, 3 >( );
 		AABB< f32_t, 3 > pt = makeAABB< f32_t, 3 >( makePoint< f32_t, 3 >( -1.f ), makePoint< f32_t, 3 >( 1.f ) );
@@ -144,7 +144,7 @@ namespace vul_test {
 	{
 #ifdef VUL_CPLUSPLUS11
 		AABB< f32_t, 6 > a( Vector< f32_t, 6 >( 7.f ), Vector< f32_t, 6 >( 8.f ) );
-		a = AABB< f32_t >( makeVector< f32_t, 6 >( 5.f ), makeVector< f32_t, 6 >( 9.f ) );
+		a = AABB< f32_t, 6 >( Vector< f32_t, 6 >( 5.f ), Vector< f32_t, 6 >( 9.f ) );
 #else
 		AABB< f32_t, 6 > a = makeAABB< f32_t >( makeVector< f32_t, 6 >( 7.f ), makeVector< f32_t, 6 >( 8.f ) );
 		a = makeAABB< f32_t >( makeVector< f32_t, 6 >( 5.f ), makeVector< f32_t, 6 >( 9.f ) );
@@ -160,10 +160,10 @@ namespace vul_test {
 	{
 		// Test 2D, 3D, 8D vs known cases.
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 2 > d2( Vector< f32_t >( 0.f, 1.f ), Vector< f32_t >( 1.f, 2.f ) );
+		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >{ 0.f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } );
 		AABB< f32_t, 3 > d3( Vector< f32_t, 3 >( 0.f ), Vector< f32_t, 3 >( 1.f ) );
 		AABB< f32_t, 8 > d8( Vector< f32_t, 8 >( 0.f ), Vector< f32_t, 8 >( 1.f ) );
-		Vector< f32_t, 2 > v2( 1.f, 2.f );
+		Vector< f32_t, 2 > v2{ 1.f, 2.f };
 		Vector< f32_t, 3 > v3( 1.f );
 		Vector< f32_t, 8 > v8( 1.f );
 #else
@@ -199,10 +199,10 @@ namespace vul_test {
 	{
 		// Test 2D, 3D, 8D vs known cases.
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 2 > d2( Vector< f32_t >( 0.f, 1.f ), Vector< f32_t >( 1.f, 2.f ) );
+		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >{ 0.f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } );
 		AABB< f32_t, 3 > d3( Vector< f32_t, 3 >( 0.f ), Vector< f32_t, 3 >( 1.f ) );
 		AABB< f32_t, 8 > d8( Vector< f32_t, 8 >( -1.f ), Vector< f32_t, 8 >( 1.f ) );
-		Vector< f32_t, 2 > v2( -1.f, 2.f );
+		Vector< f32_t, 2 > v2{ -1.f, 2.f };
 		Vector< f32_t, 3 > v3( -1.f );
 		Vector< f32_t, 8 > v8( 2.f );
 #else
@@ -238,7 +238,7 @@ namespace vul_test {
 	{
 		// Test 2D, 3D, 8D vs known cases.
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 2 > d2( Vector< f32_t >( 0.f, 1.f ), Vector< f32_t >( 1.f, 2.f ) );
+		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >{ 0.f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } );
 		AABB< f32_t, 3 > d3( Vector< f32_t, 3 >( 0.f ), Vector< f32_t, 3 >( 1.f ) );
 		AABB< f32_t, 8 > d8( Vector< f32_t, 8 >( -1.f ), Vector< f32_t, 8 >( 1.f ) );
 #else
@@ -267,7 +267,7 @@ namespace vul_test {
 	{
 		// Test 2D, 3D, 8D vs known cases.
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 2 > d2( Vector< f32_t >( 0.f, 1.f ), Vector< f32_t >( 1.f, 2.f ) );
+		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >{ 0.f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } );
 		AABB< f32_t, 3 > d3( Vector< f32_t, 3 >( 0.f ), Vector< f32_t, 3 >( 1.f ) );
 		AABB< f32_t, 8 > d8( Vector< f32_t, 8 >( -1.f ), Vector< f32_t, 8 >( 1.f ) );
 #else
@@ -296,7 +296,7 @@ namespace vul_test {
 	{
 		// Test 2D, 3D, 8D vs known cases.
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 2 > d2( Vector< f32_t >( 0.f, 1.f ), Vector< f32_t >( 1.f, 2.f ) );
+		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >{ 0.f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } );
 		AABB< f32_t, 3 > d3( Vector< f32_t, 3 >( 0.f ), Vector< f32_t, 3 >( 1.f ) );
 		AABB< f32_t, 8 > d8( Vector< f32_t, 8 >( -1.f ), Vector< f32_t, 8 >( 0.f ) );
 #else
@@ -333,7 +333,11 @@ namespace vul_test {
 		}
 
 		// Finally, test that edges are inside. One case is enough here
+#ifdef VUL_CPLUSPLUS11
+		p3 = Point< f32_t, 3 >( 0.f );
+#else
 		p3 = makePoint< f32_t, 3 >( 0.f );
+#endif
 		assert( inside( d3, p3 ) );
 
 		return true;
@@ -342,12 +346,14 @@ namespace vul_test {
 	{
 		// We test 2D and 3D case
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 2 > d2( Vector< f32_t >( 0.f, 1.f ), Vector< f32_t >( 1.f, 2.f ) );
+		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >{ 0.f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } );
 		AABB< f32_t, 3 > d3( Vector< f32_t, 3 >( 0.f ), Vector< f32_t, 3 >( 1.f ) );
-		Affine< f32_t, 2 > a2( Matrix< f32_t, 2, 2 >( rotate ), Vector< f32_t, 2 >( translate ) );
-		Affine< f32_t, 3 > a3 = makeAffine3D( Vector< f32_t, 3 >( translate ),
-											  Vector< f32_t, 3 >( scale ),
-											  Quaternion< f32_t >( rotate ) );
+		Affine< f32_t, 2 > a2( Matrix< f32_t, 2, 2 >{ cos( ( f32_t )VUL_PI / 6 ), -sin( ( f32_t )VUL_PI / 6 ),
+													  sin( ( f32_t )VUL_PI / 6 ),  cos( ( f32_t )VUL_PI / 6 ) },
+							   Vector< f32_t, 2 >{ -1.f, 1.f } );
+		Affine< f32_t, 3 > a3 = makeAffine3D( Vector< f32_t, 3 >( 1.f ),
+											  Vector< f32_t, 3 >{ 2.f, -2.f, 1.f },
+											  makeQuatFromAxisAngle< f32_t >( Vector< f32_t, 3 >{ 0.f, 0.f, 1.f }, ( f32_t )-VUL_PI / 4.f ) );
 #else
 		AABB< f32_t, 2 > d2 = makeAABB< f32_t >( makeVector< f32_t, 2 >( -1.f ), makeVector< f32_t, 2 >( 1.f ) );
 		AABB< f32_t, 3 > d3 = makeAABB< f32_t >( makeVector< f32_t, 3 >( -1.f ), makeVector< f32_t, 3 >( 1.f ) );
@@ -362,8 +368,8 @@ namespace vul_test {
 #endif
 		AABB< f32_t, 2 > r2;
 		AABB< f32_t, 3 > r3;
-		r2 = transform( d2, a2 );
-		r3 = transform( d3, a3 );
+		r2 = transform< f32_t, 2 >( d2, a2 );
+		r3 = transform< f32_t, 3 >( d3, a3 );
 		
 		// The rotate means we now have corners at sqrt(2) distance.
 
@@ -384,12 +390,12 @@ namespace vul_test {
 
 	bool TestAABB::transforms3D( )
 	{
-		AABB< __m128, 3u > m128[ 4 ], r128[ 4 ];
-		AABB< __m128d, 3u > m128d[ 2 ], r128d[ 2 ];
-		AABB< __m256, 3u > m256[ 8 ], r256[ 8 ];
-		AABB< __m256d, 3u > m256d[ 4 ], r256d[ 4 ];
-		AABB< f32_t, 3u > in32[ 8 ];
-		AABB< f64_t, 3u > in64[ 4 ];
+		AABB< __m128, 3 > m128[ 4 ], r128[ 4 ];
+		AABB< __m128d, 3 > m128d[ 2 ], r128d[ 2 ];
+		AABB< __m256, 3 > m256[ 8 ], r256[ 8 ];
+		AABB< __m256d, 3 > m256d[ 4 ], r256d[ 4 ];
+		AABB< f32_t, 3 > in32[ 8 ];
+		AABB< f64_t, 3 > in64[ 4 ];
 		f32_t mat[ 9 ], vec[ 3 ], aabb_min[ 3 ], aabb_max[ 3 ];
 		
 		// Rotate 45 deg around y
@@ -410,31 +416,31 @@ namespace vul_test {
 		aabb_min[ 0 ] = aabb_min[ 1 ] = aabb_min[ 2 ] = -1.f;
 		aabb_max[ 0 ] = aabb_max[ 1 ] = aabb_max[ 2 ] = 1.f;
 		// At this point, we have asserted that the normal transform works, so use that as a reference
-		AABB< f32_t, 3u > ref32_in, ref32_out;
-		AABB< f64_t, 3u > ref64_in, ref64_out;
+		AABB< f32_t, 3 > ref32_in, ref32_out;
+		AABB< f64_t, 3 > ref64_in, ref64_out;
 		
 #ifdef VUL_CPLUSPLUS11
 		ref32_in._min = Point< f32_t, 3 >( aabb_min );
 		ref32_in._max = Point< f32_t, 3 >( aabb_max );
-		ref64_in._min = Point< f64_t, 3 >( aabb_min );
-		ref64_in._max = Point< f64_t, 3 >( aabb_max );
+		ref64_in._min = makePoint< f64_t, 3 >( aabb_min );
+		ref64_in._max = makePoint< f64_t, 3 >( aabb_max );
 		
-		Affine< f64_t, 3u > a64 = Affine< f64_t, 3u >( Matrix< f64_t, 3u, 3u >( mat ), Vector< f64_t, 3u >( vec ) );
-		Affine< f32_t, 3u > a32 = Affine< f32_t, 3u >( Matrix< f32_t, 3u, 3u >( mat ), Vector< f32_t, 3u >( vec ) );
+		Affine< f64_t, 3 > a64 = Affine< f64_t, 3 >( makeMatrix< f64_t, 3, 3 >( mat ), makeVector< f64_t, 3 >( vec ) );
+		Affine< f32_t, 3 > a32 = Affine< f32_t, 3 >( makeMatrix< f32_t, 3, 3 >( mat ), makeVector< f32_t, 3 >( vec ) );
 
-		in32[ 0 ] = AABB< f32_t, 3u >( Point< f32_t, 3u >( aabb_min ), Point< f32_t, 3u >( aabb_max ) );
-		in64[ 0 ] = AABB< f64_t, 3u >( Point< f64_t, 3u >( aabb_min ), Point< f64_t, 3u >( aabb_max ) );
+		in32[ 0 ] = AABB< f32_t, 3 >( Point< f32_t, 3 >( aabb_min ), Point< f32_t, 3 >( aabb_max ) );
+		in64[ 0 ] = AABB< f64_t, 3 >( makePoint< f64_t, 3 >( aabb_min ), makePoint< f64_t, 3 >( aabb_max ) );
 #else
-		ref32_in._min = makePoint< f32_t, 3u >( aabb_min );
-		ref32_in._max = makePoint< f32_t, 3u >( aabb_max );
-		ref64_in._min = makePoint< f64_t, 3u >( aabb_min );
-		ref64_in._max = makePoint< f64_t, 3u >( aabb_max );
+		ref32_in._min = makePoint< f32_t, 3 >( aabb_min );
+		ref32_in._max = makePoint< f32_t, 3 >( aabb_max );
+		ref64_in._min = makePoint< f64_t, 3 >( aabb_min );
+		ref64_in._max = makePoint< f64_t, 3 >( aabb_max );
 		
-		Affine< f64_t, 3u > a64 = makeAffine< f64_t, 3u >( makeMatrix< f64_t, 3u, 3u >( mat ), makeVector< f64_t, 3u >( vec ) );
-		Affine< f32_t, 3u > a32 = makeAffine< f32_t, 3u >( makeMatrix< f32_t, 3u, 3u >( mat ), makeVector< f32_t, 3u >( vec ) );
+		Affine< f64_t, 3 > a64 = makeAffine< f64_t, 3 >( makeMatrix< f64_t, 3, 3 >( mat ), makeVector< f64_t, 3 >( vec ) );
+		Affine< f32_t, 3 > a32 = makeAffine< f32_t, 3 >( makeMatrix< f32_t, 3, 3 >( mat ), makeVector< f32_t, 3 >( vec ) );
 
-		in32[ 0 ] = makeAABB< f32_t, 3u >( makePoint< f32_t, 3u >( aabb_min ), makePoint< f32_t, 3u >( aabb_max ) );
-		in64[ 0 ] = makeAABB< f64_t, 3u >( makePoint< f64_t, 3u >( aabb_min ), makePoint< f64_t, 3u >( aabb_max ) );
+		in32[ 0 ] = makeAABB< f32_t, 3 >( makePoint< f32_t, 3 >( aabb_min ), makePoint< f32_t, 3 >( aabb_max ) );
+		in64[ 0 ] = makeAABB< f64_t, 3 >( makePoint< f64_t, 3 >( aabb_min ), makePoint< f64_t, 3 >( aabb_max ) );
 #endif
 		// Transform the reference
 		ref32_out = transform( ref32_in, a32 );

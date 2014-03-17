@@ -23,7 +23,9 @@
 
 #include "vul_types.hpp"
 #include "vul_point.hpp"
+
 #include <assert.h>
+#include <cstring> // For memset
 
 namespace vul {
 	
@@ -39,14 +41,13 @@ namespace vul {
 
 #ifdef VUL_CPLUSPLUS11
 		// Constructors
-		constexpr Vector< T, n >( );							// Empty constructor
+		explicit Vector< T, n >( );								// Empty constructor. Memsets entirety of data to 0.
 		explicit Vector< T, n >( T val ); 						// Initialize to single value
-		explicit Vector< T, n >( const Vector< T, n > &vec );	// Copy constructor
+		Vector< T, n >( const Vector< T, n > &vec );			// Copy constructor
 		explicit Vector< T, n >( const T (& a)[ n ] ); 			// Generic array constructor
-		explicit Vector< T, n >( f32_t (& a)[ n ] ); 			// From float arrays, to interface with other libraries
-		explicit Vector< T, n >( i32_t (& a)[ n ] ); 			// From int arrays, to interface with other libraries
 		explicit Vector< T, n >( const Point< T, n > &p );		// Explicit conversion from a point
-		explicit Vector< T, n >( float val ); 					// Initialize to single value from a float
+		explicit Vector< T, n >( std::initializer_list<T> list );// From initializer list. Componentwise init is non-c++11 equivalent.
+		
 #endif
 		// Operators
 		/**
@@ -207,7 +208,7 @@ namespace vul {
 	typedef Vector< ui64_t, 3 > ui64_3t;
 	typedef Vector< ui64_t, 4 > ui64_4t;
 
-	// Member functions if not C++11, since we otherwise couldn't have vectors in structs
+	// Member functions if not C++11, since we otherwise couldn't have vectors in unions
 #ifndef VUL_CPLUSPLUS11
 	template< typename T, i32_t n >
 	Vector< T, n > makeVector( T val );
@@ -223,9 +224,7 @@ namespace vul {
 
 	template< typename T, i32_t n >
 	Vector< T, n > makeVector( const Point< T, n > &p );
-
-	template< typename T, i32_t n >
-	Vector< T, n > makeVector( float val );
+#endif
 
 	// Specialization variations
 	template< typename T >
@@ -250,11 +249,13 @@ namespace vul {
 
 	// Anything from float and int arrays; to interface with other libraries
 	template< typename T, i32_t n >
+	Vector< T, n > makeVector( float val );
+	
+	template< typename T, i32_t n >
 	Vector< T, n > makeVector( f32_t (& a)[ n ] );
 
 	template< typename T, i32_t n >
 	Vector< T, n > makeVector( i32_t (& a)[ n ] );
-#endif
 	/**
 	 * Truncates a vector of size m > n into a vector of size n.
 	 * Copies the n first elements, discards all others.
@@ -462,16 +463,13 @@ namespace vul {
 		
 #ifdef VUL_CPLUSPLUS11
 	template< typename T, i32_t n >
-	Vector< T, n >::Vector< T, n >( )
+	Vector< T, n >::Vector( )
 	{
-		i32_t i;
-		for( i = 0; i < n; ++i ) {
-			data[ i ] = static_cast< T >( 0.f );
-		}
+		memset( data, 0, sizeof( data ) * sizeof( T ) );
 	}
 	
 	template< typename T, i32_t n >
-	Vector< T, n >( T val )
+	Vector< T, n >::Vector( T val )
 	{
 		i32_t i;
 		for( i = 0; i < n; ++i ) {
@@ -480,7 +478,7 @@ namespace vul {
 	}
 
 	template< typename T, i32_t n >
-	Vector< T, n >::Vector< T, n >( const Vector< T, n > &vec )
+	Vector< T, n >::Vector( const Vector< T, n > &vec )
 	{
 		i32_t i;
 		for( i = 0; i < n; ++i ) {
@@ -489,114 +487,29 @@ namespace vul {
 	}
 
 	template< typename T, i32_t n >
-	Vector< T, n >::Vector< T, n >( const T (& a)[ n ] )
+	Vector< T, n >::Vector( const T (& a)[ n ] )
 	{
 		memcpy( data, a, sizeof( T ) * n );
 	}
-	
+		
 	template< typename T, i32_t n >
-	Vector< T, n >::Vector< T, n >( f32_t (& a)[ n ] )
-	{
-		i32_t i;
-		for( i = 0; i < n; ++i ) {
-			data[ i ] = static_cast< T >( a[ i ] );
-		}		
-	}
-	
-	template< typename T, i32_t n >
-	Vector< T, n >::Vector< T, n >( i32_t (& a)[ n ] )
-	{
-		i32_t i;
-		for( i = 0; i < n; ++i ) {
-			data[ i ] = static_cast< T >( a[ i ] );
-		}		
-	}
-	
-	template< typename T, i32_t n >
-	Vector< T, n >::Vector< T, n >( const Point< T, n > &p )
+	Vector< T, n >::Vector( const Point< T, n > &p )
 	{
 		i32_t i;
 		for( i = 0; i < n; ++i ) {
 			data[ i ] = p[ i ];
 		}		
 	}
-	
 	template< typename T, i32_t n >
-	Vector< T, n >( float val )
+	Vector< T, n >::Vector( std::initializer_list< T > list )
 	{
 		i32_t i;
-		for( i = 0; i < n; ++i ) {
-			data[ i ] = T( val );
+		typename std::initializer_list< T >::iterator it;
+
+		for( it = list.begin( ), i = 0; it != list.end( ) && i < n; ++it, ++i ) {
+			data[ i ] = *it;
 		}
 	}
-
-	// Specialization variations
-	template < typename T >
-	Vector< T, 2 >::Vector( T x, T y ) 
-	{
-		data[ 0 ] = x; 
-		data[ 1 ] = y;
-	}
-	template < typename T >
-	Vector< T, 2 >::Vector( float x, float y )
-	{
-		data[ 0 ] = T( x );
-		data[ 1 ] = T( y );
-	}
-	template < typename T >
-	Vector< T, 3 >::Vector( T x, T y, T z ) 
-	{
-		data[ 0 ] = x; 
-		data[ 1 ] = y; 
-		data[ 2 ] = z; 
-	}
-	template < typename T >
-	Vector< T, 3 >::Vector( Vector< T, 2 > xy, T z ) 
-	{ 
-		data[ 0 ] = xy[ 0 ];
-		data[ 1 ] = xy[ 1 ];
-		data[ 2 ] = z; 
-	}
-	template < typename T >
-	Vector< T, 3 >::Vector( float x, float y, float z )
-	{
-		data[ 0 ] = T( x );
-		data[ 1 ] = T( y );
-		data[ 2 ] = T( z ); 
-	}
-	template < typename T >
-	Vector< T, 4 >::Vector( T x, T y, T z, T w )
-	{ 
-		data[ 0 ] = x;
-		data[ 1 ] = y;
-		data[ 2 ] = z; 
-		data[ 3 ] = w; 
-	}
-	template < typename T >
-	Vector< T, 4 >::Vector( Vector< T, 2 > xy, Vector< T, 2 > zw )
-	{
-		data[ 0 ] = xy[ 0 ]; 
-		data[ 1 ] = xy[ 1 ]; 
-		data[ 2 ] = zw[ 0 ]; 
-		data[ 3 ] = zw[ 1 ];
-	}
-	template < typename T >
-	Vector< T, 4 >::Vector( Vector< T, 3 > xyz, T w )
-	{
-		data[ 0 ] = xyz[ 0 ]; 
-		data[ 1 ] = xyz[ 1 ];
-		data[ 2 ] = xyz[ 2 ];
-		data[ 3 ] = w;
-	}
-	template < typename T >
-	Vector< T, 4 >::Vector( float x, float y, float z, float w )
-	{
-		data[ 0 ] = T( x );
-		data[ 1 ] = T( y );
-		data[ 2 ] = T( z ); 
-		data[ 3 ] = T( w );
-	}
-	
 #else
 	template < typename T, i32_t n >
 	Vector< T, n > makeVector( T val )
@@ -604,9 +517,7 @@ namespace vul {
 		Vector< T, n > v;
 		i32_t i;
 
-		for( i = 0; i < n; ++i ) {
-			v[ i ] = val;
-		}
+		memset( v.data, 0, sizeof( .vdata ), sizeof( T ) );
 
 		return v;
 	}
@@ -660,19 +571,7 @@ namespace vul {
 		}
 		return v;
 	}
-
-	template < typename T, i32_t n >
-	Vector< T, n > makeVector( float val )
-	{
-		Vector< T, n > v;
-		i32_t i;
-
-		for( i = 0; i < n; ++i ) {
-			v[ i ] = T( val );
-		}
-
-		return v;
-	}
+#endif
 
 	// Specialization variations
 	template< typename T >
@@ -760,6 +659,19 @@ namespace vul {
 	}
 	
 	// Anything from float and int arrays; to interface with other libraries
+	template < typename T, i32_t n >
+	Vector< T, n > makeVector( float val )
+	{
+		Vector< T, n > v;
+		i32_t i;
+
+		for( i = 0; i < n; ++i ) {
+			v[ i ] = T( val );
+		}
+
+		return v;
+	}
+	
 	template< typename T, i32_t n >
 	Vector< T, n > makeVector( f32_t (& a)[ n ] )
 	{
@@ -783,7 +695,7 @@ namespace vul {
 		}
 		return v;
 	}
-#endif
+	
 	template< typename T, i32_t n, i32_t m >
 	Vector< T, n > truncate( const Vector< T, m > &vec )
 	{

@@ -68,9 +68,15 @@ namespace vul_test {
 			subvec3[ c ] = vec[ c ];
 		}
 #ifdef VUL_CPLUSPLUS11
-		Affine< f32_t, 2 > i2( ), a2( i2 ), mv2( Matrix< f32_t, 2, 2 >( submat2 ), Vector< f32_t, 2 >( subvec2 ) );
-		Affine< f32_t, 3 > i3( ), a3( i3 ), mv3( Matrix< f32_t, 3, 3 >( submat3 ), Vector< f32_t, 3 >( subvec3 ) );
-		Affine< f32_t, 8 > i8( ), a8( i8 ), mv8( Matrix< f32_t, 8, 8 >( mat ), Vector< f32_t, 8 >( vec ) );
+		Affine< f32_t, 2 > i2, 
+						   a2( i2 ), 
+						   mv2( makeMatrix< f32_t, 2, 2 >( submat2 ), makeVector< f32_t, 2 >( subvec2 ) );
+		Affine< f32_t, 3 > i3, 
+						   a3( i3 ), 
+						   mv3( makeMatrix< f32_t, 3, 3 >( submat3 ), makeVector< f32_t, 3 >( subvec3 ) );
+		Affine< f32_t, 8 > i8, 
+						   a8( i8 ), 
+						   mv8( makeMatrix< f32_t, 8, 8 >( mat ), makeVector< f32_t, 8 >( vec ) );
 #else
 		Affine< f32_t, 2 > i2 = makeAffine< f32_t, 2 >( ), 
 						   a2  = makeAffine< f32_t, 2 >( i2 ), 
@@ -140,11 +146,12 @@ namespace vul_test {
 		// We actually get proper testing of the functionality of this in TestAABB::transforms()
 		// so what we test here is that Point and Vector functionality is different, as it should be.
 #ifdef VUL_CPLUSPLUS11
-		Affine< f32_t, 2 > i2( ), mv2( makeMatrix22< f32_t >( cos( VUL_PI / 4 ), -sin( VUL_PI / 4 ),
-															  sin( VUL_PI / 4 ),  cos( VUL_PI / 4 ) ),
-									   Vector< f32_t, 2 >( vec ) );
-		Affine< f32_t, 3 > i3( );
-		Affine< f32_t, 8 > i8( );
+		Affine< f32_t, 2 > i2,
+						   mv2( makeMatrix22< f32_t >( cos( VUL_PI / 4 ), -sin( VUL_PI / 4 ),
+													   sin( VUL_PI / 4 ),  cos( VUL_PI / 4 ) ),
+													   Vector< f32_t, 2 >{ 0.f, 1.f } );
+		Affine< f32_t, 3 > i3;
+		Affine< f32_t, 8 > i8;
 		Vector< f32_t, 2 > v2( 1.f );
 		Vector< f32_t, 3 > v3( 1.f );
 		Vector< f32_t, 8 > v8( 1.f );
@@ -198,7 +205,8 @@ namespace vul_test {
 			vec[ i ] = VUL_TEST_RNG;
 		}
 #ifdef VUL_CPLUSPLUS11
-		Affine< f32_t, 3 > i3( ), mv3( Matrix< f32_t, 3, 3 >( mat ), Vector< f32_t, 3 >( vec ) );
+		Affine< f32_t, 3 > i3,
+						   mv3( makeMatrix< f32_t, 3, 3 >( mat ), makeVector< f32_t, 3 >( vec ) );
 #else
 		Affine< f32_t, 3 > i3 = makeAffine< f32_t, 3 >( ), 
 						   mv3 = makeAffine< f32_t, 3 >( makeMatrix< f32_t, 3, 3 >( mat ),

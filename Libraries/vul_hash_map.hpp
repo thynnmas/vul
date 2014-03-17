@@ -46,14 +46,12 @@ namespace vul {
 	/**
 	 * Define the hash function type
 	 */
-	template< typename K >
-	typedef ui32_t ( *hash_function )( const K &data, ui32_t len );
+#define HASH_FUNCTION( K, identifier ) ui32_t ( *identifier )( const K &data, ui32_t len )
 	/**
 	 * Define the comparator function. While it takes hash_map_t_element_t 
 	 * arguments, only keys should be compared.
 	 */
-	template< typename K, typename V >
-	typedef int ( *compare_function )( const hash_map_t_element_t< K, V > &a, const hash_map_t_element_t< K, V > &b );
+#define COMPARE_FUNCTION( K, V, identifier ) int ( *identifier )( const hash_map_t_element_t< K, V > &a, const hash_map_t_element_t< K, V > &b )
 
 	/**
 	 * Define the elements; the key-value pairs that make up the
@@ -67,7 +65,7 @@ namespace vul {
 	};
 
 	template< typename K, typename V >
-	hash_map_t_element_t::hash_map_t_element_t( const K &key, const V &value )
+	hash_map_t_element_t< K, V>::hash_map_t_element_t( const K &key, const V &value )
 	{
 		this->key = key;
 		this->value = value;
@@ -87,21 +85,21 @@ namespace vul {
 		/**
 		 * The head of each bucket. Uses the linked list implementation in vul_linked_list.hpp
 		 */
-		list_element_t< hash_map_t_element_t< K, V > > *buckets[ ];
+		list_element_t< hash_map_t_element_t< K, V > > **buckets;
 		/** 
 		 * The hash function.
 		 */
-		hash_function< K > hash;
+		HASH_FUNCTION( K, hash );
 		/** 
 		 * The comparison function
 		 */
-		compare_function< K > comparator;
+		COMPARE_FUNCTION( K, V, comparator );
 
 	public:
 		/** 
 		 * Creates a new hash map.
 		 */
-		hash_map_t( ui32_t bucket_count, hash_function hash, compare_function comparison_func );
+		hash_map_t( ui32_t bucket_count, HASH_FUNCTION( K, hash ), COMPARE_FUNCTION( K, V, comparison_func ) );
 		/**
 		 * Deletes a hash map.
 		 */
@@ -130,7 +128,7 @@ namespace vul {
 	};
 
 	template< typename K, typename V >
-	hash_map_t< K, V >::hash_map_t( ui32_t bucket_count, hash_function hash, compare_function comparison_func )
+	hash_map_t< K, V >::hash_map_t( ui32_t bucket_count, HASH_FUNCTION( K, hash ), COMPARE_FUNCTION( K, V, comparison_func ) )
 	{
 		this->bucket_count = bucket_count;
 		this->hash = hash;
@@ -159,7 +157,7 @@ namespace vul {
 	}
 	
 	template< typename K, typename V >
-	const hash_map_t_element_t &hash_map_t< K, V >::insert( const K &key, const V &value )
+	const hash_map_t_element_t< K, V > &hash_map_t< K, V >::insert( const K &key, const V &value )
 	{
 		// Find the gucket
 		ui32_t bucket = this->hash( key ) % this->bucket_count;
@@ -181,7 +179,7 @@ namespace vul {
 		
 		// Find the element
 		list_element_t< hash_map_t_element_t< K, V > > *e = this->buckets[ bucket ]->find( hash_map_t_element_t< K, V >( key, V( ) ), this->comparator, true );
-		if( e != NULL  {
+		if( e != NULL ) {
 			V ret = e->value;
 			delete e;
 			return ret;
@@ -190,7 +188,7 @@ namespace vul {
 		}
 	}
 	template< typename K, typename V >
-	hash_map_t_element_t &hash_map_t< K, V >::get( const K &key )
+	hash_map_t_element_t< K, V > &hash_map_t< K, V >::get( const K &key )
 	{
 		// Find the gucket
 		ui32_t bucket = this->hash( key ) % this->bucket_count;
@@ -200,7 +198,7 @@ namespace vul {
 		
 	}
 	template< typename K, typename V >
-	const hash_map_t_element_t &hash_map_t< K, V >::get_const( const K &key ) const
+	const hash_map_t_element_t< K, V > &hash_map_t< K, V >::get_const( const K &key ) const
 	{
 		// Find the gucket
 		ui32_t bucket = this->hash( key ) % this->bucket_count;
@@ -224,6 +222,9 @@ namespace vul {
 			return V( ); // Return an empty value otherwise
 		}
 	}
+	// Undefine the macros
+#undef HASH_FUNCTION
+#undef COMPARE_FUNCTION
 }
 
 #endif

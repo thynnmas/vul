@@ -32,8 +32,7 @@ namespace vul
 	/**
 	 * Define the comparator function.
 	 */
-	template< typename T >
-	typedef int ( *compare_function )( const T &a, const T &b );
+#define COMPARE_FUNCTION( T, identifier ) int ( *identifier )( const T &a, const T &b )
 
 	/**
 	 * A doubly linked list. A linked list is just a root element.
@@ -85,12 +84,12 @@ namespace vul
 		 * The no_match_null == false option is very useful for finding the spot
 		 * to insert a new element.
 		 */
-		list_element_t *find( const T &data, compare_function comparator, bool no_match_null = false );
+		list_element_t *find( const T &data, COMPARE_FUNCTION( T, comparator ), bool no_match_null = false );
 		
 		/**
 		 * Inserts the given data into the list while keeping the list sorted.
 		 */
-		list_element_t *insert( const T &data, compare_function comparator );
+		list_element_t *insert( const T &data, COMPARE_FUNCTION( T, comparator ) );
 
 		/*
 		 * Returnes the length of the list from this element to the end.
@@ -137,7 +136,7 @@ namespace vul
 	}
 
 	template< typename T >
-	list_element_t *list_element_t< T >::insert_after( const T &data )
+	list_element_t< T > *list_element_t< T >::insert_after( const T &data )
 	{
 		list_element_t< T > *n = new list_element_t< T >( data, this->prev, this->next );
 		if( this->prev != NULL ) {
@@ -149,7 +148,7 @@ namespace vul
 	}
 
 	template< typename T >
-	list_element_t *list_element_t< T >::find( const T &data, compare_function comparator, bool no_match_null = false )
+	list_element_t< T > *list_element_t< T >::find( const T &data, COMPARE_FUNCTION( T, comparator ), bool no_match_null = false )
 	{
 		list_element_t< T > *head = this;
 
@@ -171,7 +170,7 @@ namespace vul
 	}
 
 	template< typename T >
-	list_element_t *list_element_t< T >::insert( const T &data, compare_function comparator )
+	list_element_t< T > *list_element_t< T >::insert( const T &data, COMPARE_FUNCTION( T, comparator ) )
 	{
 		// Find the spot
 		list_element_t< T > *before = this->find( data );
@@ -192,4 +191,9 @@ namespace vul
 
 		return length;
 	}
+
+	// Undefine the compare_function macro
+#undef COMPARE_FUNCTION
 }
+
+#endif

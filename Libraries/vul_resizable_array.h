@@ -331,9 +331,9 @@ void vul_vector_freemem( vul_vector_t *vec )
 * @param index Index of the element to remove.
 */
 #ifndef VUL_DEFINE
-void vul_vector_removeSwap( vul_vector_t *vec, unsigned int index );
+void vul_vector_remove_swap( vul_vector_t *vec, unsigned int index );
 #else
-void vul_vector_removeSwap( vul_vector_t *vec, unsigned int index )
+void vul_vector_remove_swap( vul_vector_t *vec, unsigned int index )
 {
 	assert( vec != NULL );
 	unsigned int elem, last, i;
@@ -577,18 +577,18 @@ void vul_vector_tighten( vul_vector_t *vec )
 #ifdef VUL_DEBUG
 	// @Note: Debug versions attempt to spot if you alter elemtns in the middle of a loop. That might cause a resize and in turn mayhem.
 	// Normal iterator
-	#define vul_foreach( T, list ) for ( T *it = list->begin( ), *first = list->begin( ), *last = list->end( ); internal_functional_assert( first == list->begin( ) ), internal_functional_assert( last == list->end( ) ), it != last; ++it )
+	#define vul_foreach( T, list ) for ( T *it = ( T* )vul_vector_begin( list ), *first = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ); internal_functional_assert( first == ( T* )vul_vector_begin( list ) ), internal_functional_assert( last == ( T* )vul_vector_end( list ) ), it != last; ++it )
 	// Easier for list of values; copies
-	#define vul_foreachval( T, ref, list ) for ( T *it = list->begin( ), *first = list->begin( ), *last = list->end( ), ref = ( ( it != last ) ? *it : T( ) ); internal_functional_assert( first == list->begin( ) ), internal_functional_assert( last == list->end( ) ), it != last; ref = *( ++it ) )
+	#define vul_foreachval( T, ref, list ) for ( T *it = ( T* )vul_vector_begin( list ), *first = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ), ref = ( ( it != last ) ? *it : T( ) ); internal_functional_assert( first == ( T* )vul_vector_begin( list ) ), internal_functional_assert( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
 	// Easier for list of pointers
-	#define vul_foreachptr( T, ref, list ) for ( T **it = list->begin( ), **first = list->begin( ), **last = list->end( ), *ref = ( ( it != last ) ? *it : NULL ); internal_functional_assert( first == list->begin( ) ), internal_functional_assert( last == list->end( ) ), it != last; ref = *( ++it ) )
+	#define vul_foreachptr( T, ref, list ) for ( T **it = ( T** )vul_vector_begin( list ), **first = ( T** )vul_vector_begin( list ), **last = ( T** )vul_vector_end( list ), *ref = ( ( it != last ) ? *it : NULL ); internal_functional_assert( first == ( T* )vul_vector_begin( list ) ), internal_functional_assert( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
 #else
 	// Normal iterator
-	#define vul_foreach( T, list ) for ( T *it = list->begin( ), *last = list->end( ); it != last; ++it )
+	#define vul_foreach( T, list ) for ( T *it = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ); it != last; ++it )
 	// Easier for list of values; copies
-	#define vul_foreachval( T, ref, list ) for ( T *it = list->begin( ), *last = list->end( ), ref = ( ( it != last ) ? *it : T( ) ); it != last; ref = *( ++it ) )
+	#define vul_foreachval( T, ref, list ) for ( T *it = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ), ref = ( ( it != last ) ? *it : T( ) ); it != last; ref = *( ++it ) )
 	// Easier for list of pointers
-	#define vul_foreachptr( T, ref, list ) for ( T **it = list->begin( ), **last = list->end( ), *ref = ( ( it != last ) ? *it : NULL ); it != last; ref = *( ++it ) )
+	#define vul_foreachptr( T, ref, list ) for ( T **it = ( T** )vul_vector_begin( list ), **last = ( T** )vul_vector_end( list ), *ref = ( ( it != last ) ? *it : NULL ); it != last; ref = *( ++it ) )
 #endif
 
 #endif

@@ -411,7 +411,7 @@ namespace vul {
 	template< class T >
 	void vector_t< T >::removeSwap( ui32_t index )
 	{
-		ui32_t elem, last, i;
+		ui32_t elem, i;
 
 		assert( index < mSize );
 		mList[ index ] = mList[ mSize - 1 ];
@@ -567,9 +567,9 @@ namespace vul {
 	// Normal iterator
 	#define vul_foreach( T, list ) for ( T *it = list.begin( ), *last = list.end( ); it != last; ++it )
 	// Easier for list of values; copies
-	#define vul_foreachval( T, ref, list ) for ( T *it = list.begin( ), *last = list.end( ), ref = ( ( it != last ) ? *it : T( ) ); it != last; ref = *( ++it ) )
+	#define vul_foreachval( T, list ) for ( T *it = list.begin( ), *last = list.end( ), ref = ( ( it != last ) ? *it : T( ) ); it != last; ref = *( ++it ) )
 	// Easier for list of pointers
-	#define vul_foreachptr( T, ref, list ) for ( T **it = list.begin( ), **last = list.end( ), *ref = ( ( it != last ) ? *it : NULL ); it != last; ref = *( ++it ) )
+	#define vul_foreachptr( T, list ) for ( T **it = list.begin( ), **last = list.end( ), *ref = ( ( it != last ) ? *it : NULL ); it != last; ref = *( ++it ) )
 #endif
 
 #endif

@@ -478,13 +478,13 @@ namespace vul_test {
 		assert( dt == dot( v9a, v9b ) );
 		
 #ifdef VUL_CPLUSPLUS11
-		assert( norm( Vector< f32_t, 2 >{ 1.f, 1.f } ) == sqrt( 2.f ) );
+		assert( norm( Vector< f32_t, 2 >{ 1.f, 1.f } ) - sqrt( 2.f ) < f32eps );
 		assert( norm( Vector< i32_t, 2 >{ 1, 1 } ) == 1 );
-		assert( fnorm( Vector< i32_t, 2 >{ 1, 1 } ) == sqrt( 2.f ) );
+		assert( fnorm( Vector< i32_t, 2 >{ 1, 1 } ) - sqrt( 2.f ) < f32eps );
 #else
-		assert( norm( makeVector< f32_t >( 1.f, 1.f ) ) == sqrt( 2.f ) );
+		assert( norm( makeVector< f32_t >( 1.f, 1.f ) ) - sqrt( 2.f ) < f32eps );
 		assert( norm( makeVector< i32_t >( 1, 1 ) ) == 1 );
-		assert( fnorm( makeVector< i32_t >( 1, 1 ) ) == sqrt( 2.f ) );
+		assert( fnorm( makeVector< i32_t >( 1, 1 ) ) - sqrt( 2.f ) < f32eps );
 #endif
 
 #ifdef VUL_CPLUSPLUS11

@@ -45,7 +45,7 @@ namespace vul_test {
 		assert( compares( ) );
 		assert( casts( ) );
 		assert( ops( ) );
-
+		
 		return true;
 	}
 
@@ -123,31 +123,31 @@ namespace vul_test {
 			fixed_32< 10 > f10_1, f10_2, r10, old10;
 			
 			f32_t tmp = VUL_TEST_RNG, rf;
-			while( abs( tmp ) >= 1 << ( 32 - 10 ) ) {
+			while( fabs( tmp ) >= ( f32_t )( 1 << ( 32 - 10 ) ) ) {
 				tmp = VUL_TEST_RNG;
 			}
 			f10_1 = tmp;
-			while( abs( tmp ) >= 1 << ( 32 - 10 ) || abs( tmp ) <= std::pow( 2.f, -10 ) ) { // Make sure we don't div by 0
+			while( fabs( tmp ) >= ( f32_t )( 1 << ( 32 - 10 ) ) || fabs( tmp ) <= std::pow( 2.f, -10 ) ) { // Make sure we don't div by 0
 				tmp = VUL_TEST_RNG;
 			}
 			f10_2 = tmp;
-
-			while( abs( tmp ) >= 1 << ( 32 - 16 ) ) {
+			
+			while( fabs( tmp ) >= ( f32_t )( 1 << ( 32 - 16 ) ) ) {
 				tmp = VUL_TEST_RNG;
 			}
 			f16_1 = tmp;
 
-			while( abs( tmp ) >= 1 << ( 32 - 16 ) || abs( tmp ) <= std::pow( 2.f, -16 ) ) { // Make sure we don't div by 0
+			while( fabs( tmp ) >= ( f32_t )( 1 << ( 32 - 16 ) ) || fabs( tmp ) <= std::pow( 2.f, -16 ) ) { // Make sure we don't div by 0
 				tmp = VUL_TEST_RNG;
 			}
 			f16_2 = tmp;
 			
-			while( abs( tmp ) >= 1 << ( 32 - 24 ) ) {
+			while( fabs( tmp ) >= ( f32_t )( 1 << ( 32 - 24 ) ) ) {
 				tmp = VUL_TEST_RNG;
 			}
 			f24_1 = tmp;
 
-			while( abs( tmp ) >= 1 << ( 32 - 24 ) || abs( tmp ) <= std::pow( 2.f, -24 ) ) { // Make sure we don't div by 0
+			while( fabs( tmp ) >= ( f32_t )( 1 << ( 32 - 24 ) ) || fabs( tmp ) <= std::pow( 2.f, -24 ) ) { // Make sure we don't div by 0
 				tmp = VUL_TEST_RNG;
 			}
 			f24_2 = tmp;

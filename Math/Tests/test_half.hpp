@@ -102,10 +102,10 @@ namespace vul_test {
 		f32_t f = VUL_TEST_RNG;
 		half h, hm;
 		h = f;
-		hm = -abs( f );
+		hm = -fabs( f );
 		f32_t f16eps = std::numeric_limits< half >::epsilon( );
-		assert( ( f32_t )abs( h ) - ( f32_t )abs( f ) < f16eps );
-		assert( ( f32_t )abs( hm ) - ( f32_t )abs( h ) < f16eps );
+		assert( ( f32_t )fabs( h ) - ( f32_t )fabs( f ) < f16eps );
+		assert( ( f32_t )fabs( hm ) - ( f32_t )fabs( h ) < f16eps );
 		
 		for( ui32_t i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
 			half a, b, r;
@@ -119,16 +119,16 @@ namespace vul_test {
 
 			r = a + b;
 			f = ( f32_t )a + ( f32_t )b;			
-			assert( ( f32_t )abs( ( f32_t )r - f ) <= ( f32_t )( f16eps + f16eps * ( f32_t )abs( r ) ) );
+			assert( ( f32_t )fabs( ( f32_t )r - f ) <= ( f32_t )( f16eps + f16eps * ( f32_t )fabs( r ) ) );
 			r = a - b;
 			f = ( f32_t )a - ( f32_t )b;
-			assert( ( f32_t )abs( ( f32_t )r - f ) <= ( f32_t )( f16eps + f16eps * ( f32_t )abs( r ) ) );
+			assert( ( f32_t )fabs( ( f32_t )r - f ) <= ( f32_t )( f16eps + f16eps * ( f32_t )fabs( r ) ) );
 			r = a * b;
 			f = ( f32_t )a * ( f32_t )b;
-			assert( ( f32_t )abs( ( f32_t )r - f ) <= ( f32_t )( f16eps + f16eps * ( f32_t )abs( r ) ) );
+			assert( ( f32_t )fabs( ( f32_t )r - f ) <= ( f32_t )( f16eps + f16eps * ( f32_t )fabs( r ) ) );
 			r = a / b;
 			f = ( f32_t )a / ( f32_t )b;
-			assert( ( f32_t )abs( ( f32_t )r - f ) <= ( f32_t )( f16eps + f16eps * ( f32_t )abs( r ) ) );
+			assert( ( f32_t )fabs( ( f32_t )r - f ) <= ( f32_t )( f16eps + f16eps * ( f32_t )fabs( r ) ) );
 			
 			r = a;
 			a += b;
@@ -173,10 +173,10 @@ namespace vul_test {
 		f = VUL_TEST_RNG;
 		h = ( half )f;
 		half h_old = h;
-		assert( ( f32_t )( ++h ) == ( f32_t )h_old + 1.f );
-		assert( ( f32_t )( --h ) == ( f32_t )h_old );
-		assert( -h == half( -f ) );
-		assert( +h == half( +f ) );
+		assert( ( f32_t )( ++h ) - ( ( f32_t )h_old + 1.f ) < f16eps );
+		assert( ( f32_t )( --h ) - ( f32_t )h_old < f16eps );
+		assert( ( f32_t )( -h - half( -f ) ) < f16eps );
+		assert( ( f32_t )( +h - half( +f ) ) < f16eps );
 
 		return true;
 	}
@@ -196,12 +196,12 @@ namespace vul_test {
 
 		vul_single_to_half_array( halfs, floats, VUL_TEST_FUZZ_COUNT );
 		for( ui32_t i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
-			assert( ( f32_t )abs( ( f32_t )halfs[ i ] - floats[ i ] ) < ( f32_t )( f16eps + f16eps * ( f32_t )abs( halfs[ i ] ) ) );
+			assert( ( f32_t )fabs( ( f32_t )halfs[ i ] - floats[ i ] ) < ( f32_t )( f16eps + f16eps * ( f32_t )fabs( halfs[ i ] ) ) );
 		}
 
 		vul_double_to_half_array( halfs, doubles, VUL_TEST_FUZZ_COUNT );
 		for( ui32_t i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
-			assert( ( f32_t )abs( ( f64_t )halfs[ i ] - doubles[ i ] ) < ( f32_t )( f16eps + f16eps * ( f32_t )abs( halfs[ i ] ) ) );
+			assert( ( f32_t )fabs( ( f64_t )halfs[ i ] - doubles[ i ] ) < ( f32_t )( f16eps + f16eps * ( f32_t )fabs( halfs[ i ] ) ) );
 		}
 
 		// Exhaustive
@@ -216,8 +216,8 @@ namespace vul_test {
 		vul_half_to_double_array( all_halfs_f64s, all_halfs, 1 << 16 );
 		
 		for( ui32_t i = 1; i < 1 << 16; ++i ) {
-			assert( ( f32_t )abs( ( f32_t )all_halfs[ i ] - all_halfs_f32s[ i ] ) < ( f32_t )( f16eps + f16eps * ( f32_t )abs( all_halfs[ i ] ) ) );
-			assert( ( f32_t )abs( ( f64_t )all_halfs[ i ] - all_halfs_f64s[ i ] ) < ( f32_t )( f16eps + f16eps * ( f32_t )abs( all_halfs[ i ] ) ) );		
+			assert( ( f32_t )fabs( ( f32_t )all_halfs[ i ] - all_halfs_f32s[ i ] ) < ( f32_t )( f16eps + f16eps * ( f32_t )fabs( all_halfs[ i ] ) ) );
+			assert( ( f32_t )fabs( ( f64_t )all_halfs[ i ] - all_halfs_f64s[ i ] ) < ( f32_t )( f16eps + f16eps * ( f32_t )fabs( all_halfs[ i ] ) ) );		
 		}
 
 		delete [] all_halfs_f32s;

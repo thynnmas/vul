@@ -42,7 +42,7 @@ namespace vul_test {
 		assert( make( ) );
 		assert( transforms( ) );
 		assert( makeMat44( ) );
-
+		
 		return true;
 	}
 
@@ -147,9 +147,9 @@ namespace vul_test {
 		// so what we test here is that Point and Vector functionality is different, as it should be.
 #ifdef VUL_CPLUSPLUS11
 		Affine< f32_t, 2 > i2,
-						   mv2( makeMatrix22< f32_t >( cos( VUL_PI / 4 ), -sin( VUL_PI / 4 ),
-													   sin( VUL_PI / 4 ),  cos( VUL_PI / 4 ) ),
-													   Vector< f32_t, 2 >{ 0.f, 1.f } );
+						   mv2( makeMatrix22< f32_t >(  cos( VUL_PI / 4 ),  sin( VUL_PI / 4 ),
+													   -sin( VUL_PI / 4 ),  cos( VUL_PI / 4 ) ),
+						   Vector< f32_t, 2 >{ 0.f, 1.f } );
 		Affine< f32_t, 3 > i3;
 		Affine< f32_t, 8 > i8;
 		Vector< f32_t, 2 > v2( 1.f );
@@ -170,28 +170,30 @@ namespace vul_test {
 		Vector< f32_t, 8 > v8 = makeVector< f32_t, 8 >( 1.f );
 		Point< f32_t, 2 > p2 = makePoint< f32_t, 2 >( 1.f );
 #endif
+		f32_t f32eps = 1e-5f;
+		
 		// Test identity transfomrations
 		v2 = i2 * v2;
-		assert( v2[ 0 ] == 1.f );
-		assert( v2[ 1 ] == 1.f );
+		assert( v2[ 0 ] - 1.f < f32eps );
+		assert( v2[ 1 ] - 1.f < f32eps );
 
 		v3 = i3 * v3;
-		assert( v3[ 0 ] == 1.f );
-		assert( v3[ 1 ] == 1.f );
-		assert( v3[ 2 ] == 1.f );
+		assert( v3[ 0 ] - 1.f < f32eps );
+		assert( v3[ 1 ] - 1.f < f32eps );
+		assert( v3[ 2 ] - 1.f < f32eps );
 
 		v8 = i8 * v8;
 		for( ui32_t i = 0; i < 8; ++i ) {
-			assert( v8[ i ] == 1.f );
+			assert( v8[ i ] - 1.f < f32eps );
 		}
 
 		// Test transforms of points and vectors behaving differently (and correctly).
 		v2 = mv2 * v2;
 		p2 = mv2 * p2;
-		assert( v2[ 0 ] == sqrt( 2.f ) );
-		assert( v2[ 1 ] == 0.f );
-		assert( p2[ 0 ] == sqrt( 2.f ) );
-		assert( p2[ 1 ] == 1.f );
+		assert( v2[ 0 ] - sqrt( 2.f ) < f32eps );
+		assert( v2[ 1 ] - 0.f < f32eps );
+		assert( p2[ 0 ] - sqrt( 2.f ) < f32eps );
+		assert( p2[ 1 ] - 1.f < f32eps );
 
 		return true;
 	}

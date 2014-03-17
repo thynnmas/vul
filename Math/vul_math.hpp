@@ -4,12 +4,12 @@
  * A scalar linear math library containing Vectors, Matrices, Points, Quaternions, AABBs
  * general affine transformations as well as fixed and half precision floating point types.
  *
- * The library contains both a C++11 version and a C++99-version, the primary difference
+ * The library contains both a C++11 version and a c++98-version, the primary difference
  * being the way we construct our types. The C++11 style uses normal constructors
  * and initializer lists:
  *		Vector< f32_t, 3 > foo( a ), bar{ b, c, d };
  *		foo = Vector< f32_t, 3 >( a );
- * while the C++99-version uses a function style:
+ * while the c++98-version uses a function style:
  *		Vector< f32_t, 3 > foo = makeVector< f32_t >( a, b, c );
  *		foo = makeVector< f32_t, 3 >( a );
  *

@@ -262,7 +262,7 @@ namespace vul_test {
 		}
 
 		pr = p9a + v9;
-		vr = p9a - p9b;
+		vr = p9b - p9a;
 		f32_t f32eps = 1e-5f;
 
 		for( ui32_t i = 0; i < 19; ++i ) {

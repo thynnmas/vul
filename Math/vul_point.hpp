@@ -130,7 +130,8 @@ namespace vul {
 	template< typename T, i32_t n >
 	Point< T, n > operator+( const Point< T, n > &a, const Vector< T, n > &b );
 	/**
-	 * Find the translation between points a and b, and return it as a vector.
+	 * Find the translation between points b and a, and return it as a vector.
+	 * Which means it behaves as a componentwise subtraction.
 	 */
 	template< typename T, i32_t n >
 	Vector< T, n > operator-( const Point< T, n > &a, const Point< T, n > &b );
@@ -471,7 +472,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = b[ i ] - a[ i ];
+			v[ i ] = a[ i ] - b[ i ];
 		}
 
 		return v;

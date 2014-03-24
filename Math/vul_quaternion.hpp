@@ -3,7 +3,7 @@
  *
  * This file describes a quaternion type that interfaces with the linear math
  * classes otherwise defined in this library. While any numeric type is in theory
- * allowed, it only makes sense to use real types. i32_termediate calculations
+ * allowed, it only makes sense to use f32_t types. i32_termediate calculations
  * and results of norm, dot etc. are returned in the same type as the quaternion's
  * content.
  *

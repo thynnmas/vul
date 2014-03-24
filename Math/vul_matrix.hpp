@@ -148,16 +148,17 @@ namespace vul {
 	Matrix< T, cols, rows > makeMatrix( i32_t (& a)[ rows * cols ] ); 	// From int array, to interface with other libraries
 	
 	template< typename T >
-	Matrix< T, 2, 2 > makeMatrix22( T xx, T xy, T yx, T yy );	// Componentwise
+	Matrix< T, 2, 2 > makeMatrix22( T c1r1, T c2r1, 
+									T c1r2, T c2r2 );	// Componentwise
 	template< typename T >
-	Matrix< T, 3, 3 > makeMatrix33( T xx, T xy, T xz, 
-									T yx, T yy, T yz,
-									T zx, T zy, T zz );			// Componentwise
+	Matrix< T, 3, 3 > makeMatrix33( T c1r1, T c2r1, T c3r1,
+									T c1r2, T c2r2, T c3r2,
+									T c1r3, T c2r3, T c3r3 );
 	template< typename T >
-	Matrix< T, 4, 4 > makeMatrix44( T xx, T xy, T xz, T xw, 
-									T yx, T yy, T yz, T yw,
-									T zx, T zy, T zz, T zw,
-									T wx, T wy, T wz, T ww );	// Componentwise
+	Matrix< T, 4, 4 > makeMatrix44( T c1r1, T c2r1, T c3r1, T c4r1, 
+									T c1r2, T c2r2, T c3r2, T c4r2,
+									T c1r3, T c2r3, T c3r3, T c4r3,
+									T c1r4, T c2r4, T c3r4, T c4r4 );
 	template< typename T >
 	Matrix< T, 2, 2 > makeMatrix22FromColumns( const Vector< T, 2 > &c1,
 											   const Vector< T, 2 > &c2 );
@@ -219,8 +220,8 @@ namespace vul {
 	bool any( const Matrix< T, cols, rows > &mat );
 	/**
 	 * Returns the first compnent that is evaluated to true by if( T ).
-	 * Equivalent to the ?: selector. Does
-	 * mat[0][0] ? mat[0][0] : ( mat[0][1] ? mat[0][1] : ... )
+	 * Equivalent to the ?: selector.
+	 * Operates row major; mat_row0_column1 comes before mat_row1_column0.
 	 */
 	template< typename T, i32_t cols, i32_t rows >
 	T select( const Matrix< T, cols, rows > &mat ); 
@@ -500,61 +501,61 @@ namespace vul {
 #endif
 
 	template< typename T >
-	Matrix< T, 2, 2 > makeMatrix22( T xx, T xy,
-									T yx, T yy )
+	Matrix< T, 2, 2 > makeMatrix22( T c1r1, T c2r1,
+									T c1r2, T c2r2 )
 	{
 		Matrix< T, 2, 2 > m;
 
-		m( 0, 0 ) = xx;
-		m( 0, 1 ) = xy;
-		m( 1, 0 ) = yx;
-		m( 1, 1 ) = yy;
+		m( 0, 0 ) = c1r1;
+		m( 0, 1 ) = c1r2;
+		m( 1, 0 ) = c2r1;
+		m( 1, 1 ) = c2r2;
 
 		return m;
 	}
 	template< typename T >
-	Matrix< T, 3, 3 > makeMatrix33( T xx, T xy, T xz, 
-									T yx, T yy, T yz,
-									T zx, T zy, T zz )
+	Matrix< T, 3, 3 > makeMatrix33( T c1r1, T c2r1, T c3r1,
+									T c1r2, T c2r2, T c3r2,
+									T c1r3, T c2r3, T c3r3 )
 	{
 		Matrix< T, 3, 3 > m;
 
-		m( 0, 0 ) = xx;
-		m( 0, 1 ) = xy;
-		m( 0, 2 ) = xz;
-		m( 1, 0 ) = yx;
-		m( 1, 1 ) = yy;
-		m( 1, 2 ) = yz;
-		m( 2, 0 ) = zx;
-		m( 2, 1 ) = zy;
-		m( 2, 2 ) = zz;
+		m( 0, 0 ) = c1r1;
+		m( 0, 1 ) = c1r2;
+		m( 0, 2 ) = c1r3;
+		m( 1, 0 ) = c2r1;
+		m( 1, 1 ) = c2r2;
+		m( 1, 2 ) = c2r3;
+		m( 2, 0 ) = c3r1;
+		m( 2, 1 ) = c3r2;
+		m( 2, 2 ) = c3r3;
 
 		return m;
 	}
 	template< typename T >
-	Matrix< T, 4, 4 > makeMatrix44( T xx, T xy, T xz, T xw, 
-									T yx, T yy, T yz, T yw,
-									T zx, T zy, T zz, T zw,
-									T wx, T wy, T wz, T ww )
+	Matrix< T, 4, 4 > makeMatrix44( T c1r1, T c2r1, T c3r1, T c4r1, 
+									T c1r2, T c2r2, T c3r2, T c4r2,
+									T c1r3, T c2r3, T c3r3, T c4r3,
+									T c1r4, T c2r4, T c3r4, T c4r4 )
 	{
 		Matrix< T, 4, 4 > m;
 
-		m( 0, 0 ) = xx;
-		m( 0, 1 ) = xy;
-		m( 0, 2 ) = xz;
-		m( 0, 3 ) = xw;
-		m( 1, 0 ) = yx;
-		m( 1, 1 ) = yy;
-		m( 1, 2 ) = yz;
-		m( 1, 3 ) = yw;
-		m( 2, 0 ) = zx;
-		m( 2, 1 ) = zy;
-		m( 2, 2 ) = zz;
-		m( 2, 3 ) = zw;
-		m( 3, 0 ) = wx;
-		m( 3, 1 ) = wy;
-		m( 3, 2 ) = wz;
-		m( 3, 3 ) = ww;
+		m( 0, 0 ) = c1r1;
+		m( 0, 1 ) = c1r2;
+		m( 0, 2 ) = c1r3;
+		m( 0, 3 ) = c1r4;
+		m( 1, 0 ) = c2r1;
+		m( 1, 1 ) = c2r2;
+		m( 1, 2 ) = c2r3;
+		m( 1, 3 ) = c2r4;
+		m( 2, 0 ) = c3r1;
+		m( 2, 1 ) = c3r2;
+		m( 2, 2 ) = c3r3;
+		m( 2, 3 ) = c3r4;
+		m( 3, 0 ) = c4r1;
+		m( 3, 1 ) = c4r2;
+		m( 3, 2 ) = c4r3;
+		m( 3, 3 ) = c4r4;
 
 		return m;
 	}

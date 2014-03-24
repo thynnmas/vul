@@ -215,8 +215,8 @@ namespace vul_test {
 		}
 
 
-		m22 = makeMatrix22< f32_t >( 1.f, -2.f, 
-								     4.f,  3.f );
+		m22 = makeMatrix22< f32_t >(  1.f, 4.f, 
+								     -2.f, 3.f );
 		assert( m22( 0, 0 ) == 1.f );
 		assert( m22( 0, 1 ) == -2.f );
 		assert( m22( 1, 0 ) == 4.f );
@@ -226,19 +226,19 @@ namespace vul_test {
 									  fi32_t( -1.f ), fi32_t(  0.f ), fi32_t(  1.f ),
 									  fi32_t(  2.f ), fi32_t(  3.f ), fi32_t(  4.f ) );
 		assert( m33( 0, 0 ) == fi32_t( -4.f ) );
-		assert( m33( 0, 1 ) == fi32_t( -3.f ) );
-		assert( m33( 0, 2 ) == fi32_t( -2.f ) );
-		assert( m33( 1, 0 ) == fi32_t( -1.f ) );
+		assert( m33( 1, 0 ) == fi32_t( -3.f ) );
+		assert( m33( 2, 0 ) == fi32_t( -2.f ) );
+		assert( m33( 0, 1 ) == fi32_t( -1.f ) );
 		assert( m33( 1, 1 ) == fi32_t(  0.f ) );
-		assert( m33( 1, 2 ) == fi32_t(  1.f ) );
-		assert( m33( 2, 0 ) == fi32_t(  2.f ) );
-		assert( m33( 2, 1 ) == fi32_t(  3.f ) );
+		assert( m33( 2, 1 ) == fi32_t(  1.f ) );
+		assert( m33( 0, 2 ) == fi32_t(  2.f ) );
+		assert( m33( 1, 2 ) == fi32_t(  3.f ) );
 		assert( m33( 2, 2 ) == fi32_t(  4.f ) );
 
-		m44 = makeMatrix44< i64_t >( 1L,   2L,  3L,  4L,
-									 5L,   6L,  7L,  8L,
-									 9L,  10L, 11L, 12L,
-									 13L, 14L, 15L, 16L );
+		m44 = makeMatrix44< i64_t >( 1L, 5L,  9L, 13L,
+									 2L, 6L, 10L, 14L,
+									 3L, 7L, 11L, 15L,
+									 4L, 8L, 12L, 16L );
 		for( ui32_t c = 0; c < 4; ++c ) {
 			for( ui32_t r = 0; r < 4; ++r ) {
 				assert( m44( c, r ) == ( i64_t )( c * 4 + r + 1 ) );
@@ -343,7 +343,7 @@ namespace vul_test {
 		Matrix< f32_t, 2, 2 > ms = makeMatrix22< f32_t >(  0.f, 2.f,
 														  -2.f, 1.f );
 #endif
-		assert( select( ms ) == -2.f ); // Column major, so ma( 1, 0 )comes before ma( 0, 1 )
+		assert( select( ms ) == 2.f ); // Row major, so ma( 0, 1 )comes before ma( 1, 0 )
 		return true;
 	}
 	bool TestMatrix::member_ops( )
@@ -620,8 +620,8 @@ namespace vul_test {
 		assert( m43( 3, 1 ) == col3[ 1 ] );
 		assert( m43( 3, 2 ) == col3[ 2 ] );
 		
-		Matrix< f32_t, 2, 2 > m22 = makeMatrix22< f32_t >(  7.f, 4.f,
-														   -8.f, 2.f ),
+		Matrix< f32_t, 2, 2 > m22 = makeMatrix22< f32_t >( 7.f, -8.f,
+														   4.f,  2.f ),
 						      m22r;
 		
 		m22r = max( m22, 0.f );
@@ -653,9 +653,9 @@ namespace vul_test {
 		
 		assert( determinant( m22 ) == 46.f );
 
-		m33 = makeMatrix33< f32_t >( -1.f,  0.f, -5.f,
-									  3.f, -6.f, -3.f,
-									 -3.f,  5.f,  1.f );
+		m33 = makeMatrix33< f32_t >( -1.f,  3.f, -3.f,
+									  0.f, -6.f,  5.f,
+									 -5.f, -3.f,  1.f );
 		assert( determinant( m33 ) == 6.f );
 
 		Matrix< f32_t, 3, 3 > m33i = inverse( m33 );

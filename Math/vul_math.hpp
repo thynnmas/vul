@@ -23,6 +23,9 @@
  * to vul_aabb.hpp's transform3D functions and the extensions to numeric_limits found in
  * vul_fixed.hpp and vul_half.hpp. Define VUL_DEFINE in a _single_ c/cpp file to define 
  * these functions in that file.
+ * 
+ * Any type that can be cast to and from a float can be used. Be aware that if integer types
+ * are used, f.e. norm will work with integer operations; use fnorm for accurate results.
  *
  * Library format inspired by http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/
  * 

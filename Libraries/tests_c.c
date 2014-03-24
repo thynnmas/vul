@@ -1,4 +1,7 @@
-#ifdef VUL_TEST
+#ifdef VUL_TEST_C
+
+#include "Tests/test_gl.h"
+
 
 #include <stdio.h>
 
@@ -339,18 +342,19 @@ void test_compression_rle( )
 	printf( "compare: %d\n", strcmp(strin, ( char* )out ) );
 }
 
-int main( int argc, char **argv )
+int main( int argv, char **argc )
 {
 	//bench_sorts( );
 	//bench_sorts_multiple( );
 	
 	//test_sorts( );
 
-	test_compression_rle( );
+	//test_compression_rle( );
 
-	// Wait for input
-	char buffer[ 1024 ];
-	gets_s( buffer, 1024 );
+
+	vul_test_gl( );
+		
+	printf( "Done, no errors.\n" );
 
 	return 0;
 }

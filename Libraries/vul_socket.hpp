@@ -35,8 +35,8 @@
 #else
 	vul needs a system defined
 #endif
-#include "vul_types.h"
-#include "vul_timer.h"
+#include "vul_types.hpp"
+#include "vul_timer.hpp"
 
 namespace vul {
 

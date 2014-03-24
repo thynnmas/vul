@@ -106,7 +106,7 @@ FILE *vul_fopen( char *filename, char *mode )
 			return NULL;
 		}
 	}
-	#endif
+#endif
 	if (f != NULL) {
 		vulf__file_data *d = ( vulf__file_data * ) malloc( sizeof( *d ) );
 		if ( !d ) { assert( 0 );  /* NOTREACHED */ fclose( f ); return NULL; }

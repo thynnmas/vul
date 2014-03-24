@@ -26,6 +26,8 @@
 
 namespace vul {
 
+	template< typename T >
+	class node_t;
 	/**
 	 * Class that holds edge information.
 	 */
@@ -41,7 +43,7 @@ namespace vul {
 	};
 
 	template< typename T >
-	edge_t::edge_t( const node_t< T > &src, const node_t< T > &dst )
+	edge_t< T >::edge_t( const node_t< T > &src, const node_t< T > &dst )
 	{
 		source = src;
 		destination = dst;
@@ -99,3 +101,5 @@ namespace vul {
 		this->edges.add( edge_t( *this, dst ) );
 	}
 }
+
+#endif

@@ -14,7 +14,7 @@
  *	-Stack; since the vector can be used for this with no extra work.
  * As of now proper iteration is not supported. This is however on my todo list, see:
  * @TODO: Proper iterators for all data types, see http://nothings.org/computer/iterate.html
- *		  Might want to write fast, simple iterators as well, expose them as constIterate
+ *		  Might want to write fast, simple iterators as well, expose them as const_iterate
  *		  and require that the underlying data structure is unaltered by the iteration.
  *
  * @TODO: Properly test all of these!

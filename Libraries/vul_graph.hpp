@@ -3,6 +3,7 @@
  *
  * This file describes a templated general graph as well as a few useful functions on them.
  * @TODO: Functions on it (BFS, DFS, Dijkstra etc.)
+ *		  This will require user-data in edge_t.
  * 
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
@@ -59,7 +60,7 @@ namespace vul {
 		 */
 		T data;
 		/**
-		 * Contains a pointer to the of the node.
+		 * Contains all the edges of the node.
 		 */
 		vector_t< edge_t< T > > edges;
 

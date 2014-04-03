@@ -37,7 +37,7 @@ namespace vul {
 										const T right,
 										const T bottom,
 										const T top,
-										const T near = 0.f,
+										const T near = -1.f,
 										const T far = 1.f );
 		
 		/**

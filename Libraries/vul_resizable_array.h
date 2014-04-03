@@ -575,7 +575,7 @@ void vul_vector_tighten( vul_vector_t *vec )
 
 // Iterators
 #ifdef VUL_DEBUG
-	// @Note: Debug versions attempt to spot if you alter elemtns in the middle of a loop. That might cause a resize and in turn mayhem.
+	// @Note: Debug versions attempt to spot if you alter the list in the middle of a loop. That might cause a resize and in turn mayhem.
 	// Normal iterator
 	#define vul_foreach( T, list ) for ( T *it = ( T* )vul_vector_begin( list ), *first = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ); internal_functional_assert( first == ( T* )vul_vector_begin( list ) ), internal_functional_assert( last == ( T* )vul_vector_end( list ) ), it != last; ++it )
 	// Easier for list of values; copies

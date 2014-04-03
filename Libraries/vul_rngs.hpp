@@ -80,6 +80,8 @@ namespace vul {
 		ui32_t val = rand_ui32( );
 		return ( f32_t ) ( val >> 8 ) / (16777216.0f - 1.0f);
 	}
+#undef VUL_RNG_TU_SEED_COUNT
+#undef VUL_RNG_TU_SEED_A
 
 
 	//--------------------------------

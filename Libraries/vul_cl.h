@@ -28,7 +28,7 @@
  * particular order to enable OpenCL/GL interop, so we leave it to the user!
  * @TODO: Comment this out!
  */
-#include <CL/opencl.h>
+//#include <CL/opencl.h>
 
 /**
  * The two types of kernel source:
@@ -71,7 +71,7 @@ static size_t vul__cl_context_count = 0;
 static vul__cl_context **vul__cl_contexts = NULL;
 
 /**
- * The struct of a cl program to keep track of laoded ones.
+ * The struct of a cl program to keep track of loaded ones.
  */
 typedef struct {
 	cl_program program;
@@ -100,7 +100,7 @@ typedef struct {
  */
 typedef struct {
 	size_t size;
-	void *content;
+	const void *content;
 } vul_cl_kernel_argument;
 
 /**
@@ -160,8 +160,8 @@ void vul_cl_setup( cl_context_properties *context_properties = NULL, cl_command_
 	// Now, for every platform
 	for( i = 0; i < platform_count; ++i ) {
 		// Create the context
+		vul__cl_contexts[ i ] = ( vul__cl_context* )malloc( sizeof( vul__cl_context ) );
 		context = vul__cl_contexts[ i ];
-		context = ( vul__cl_context* )malloc( sizeof( vul__cl_context ) );
 		assert( context );
 
 		// Store platform id
@@ -229,7 +229,7 @@ void vul_cl_setup( cl_context_properties *context_properties = NULL, cl_command_
  * Cleans up the contexts set up in vul_cl_setup and
  * all programs and kernels loaded in vul_cl_create_program/_kernel.
  */
-cl_int vul_cl_cleanup( )
+void vul_cl_cleanup( )
 {
 	size_t i;
 	cl_uint j;
@@ -320,8 +320,28 @@ cl_int vul_cl_cleanup( )
 }
 
 /**
+ * Write the output from a compile to the given output stream.
+ */
+void vul_cl_write_compile_output( vul_cl_program *prog, FILE *out = stdout )
+{
+	size_t len;
+	char buffer[ 65536 ];
+
+	for( ui32_t i = 0; i < prog->context->device_count; ++i ) {
+		fprintf( out, "Writing compile output for device %d:\n", i );
+		clGetProgramBuildInfo( prog->program,
+							   prog->context->device_list[ i ],
+							   CL_PROGRAM_BUILD_LOG, 
+							   sizeof( buffer ),
+							   &buffer,
+							   &len );
+		fprintf( out, "%s\n", buffer );
+	}
+}
+
+/**
  * Loads a program. Requires vul_cl_setup to have been called prior.
- * platform_id indicates wqhich platform to create & build the program on.
+ * platform_id indicates which platform to create & build the program on.
  * If is_binary is set, the source is assumed to be in binary format.
  * If async_build_callback is not NULL, the build does not wait until completions,
  * and the callback is called once it is done. See http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clBuildProgram.html
@@ -365,18 +385,16 @@ vul_cl_program *vul_cl_create_program( cl_platform_id platform_id, char *file_pa
 	rewind( f );
 
 	if( is_binary ) {
-		ret->binary = ( unsigned char* )malloc( lsize );
+		ret->binary = ( unsigned char* )malloc( sizeof( char ) * ( lsize + 1 ) );
 		assert( ret->binary );
-		ret->source = NULL;
 		size_t val = fread( ret->binary, 1, lsize, f );
 		if ( val != lsize ) {
 			assert( ferror( f ) == 0 );
 			ret->binary[ val ] = 0;
 		}
 	} else {
-		ret->source = ( char* )malloc( lsize );
+		ret->source = ( char* )malloc( sizeof( char ) * ( lsize + 1 ) );
 		assert( ret->source );
-		ret->binary = NULL;
 		size_t val = fread( ret->source, 1, lsize, f );
 		if ( val != lsize ) {
 			assert( ferror( f ) == 0 );
@@ -401,7 +419,7 @@ vul_cl_program *vul_cl_create_program( cl_platform_id platform_id, char *file_pa
 												 vul__cl_contexts[ platform_index ]->device_count,
 												 vul__cl_contexts[ platform_index ]->device_list,
 												 lengths,
-												 texts, 
+												 ( const unsigned char ** )texts, 
 												 statuses,
 												 &err );
 		for( cl_uint i = 0; i < vul__cl_contexts[ platform_index ]->device_count; ++i ) {
@@ -412,7 +430,11 @@ vul_cl_program *vul_cl_create_program( cl_platform_id platform_id, char *file_pa
 		free( texts );
 		free( statuses );
 	} else {
-		ret->program = clCreateProgramWithSource( vul__cl_contexts[ platform_index ]->context, 1, (const char **)&ret->source, NULL,  &err );
+		ret->program = clCreateProgramWithSource( vul__cl_contexts[ platform_index ]->context,
+												  1,
+												  ( const char ** )&ret->source, 
+												  NULL,
+												  &err );
 		assert( ret->program && err == CL_SUCCESS );
 	}
 
@@ -423,7 +445,10 @@ vul_cl_program *vul_cl_create_program( cl_platform_id platform_id, char *file_pa
 						  build_options,
 						  async_build_callback, 
 						  user_data );
-	assert( err == CL_SUCCESS );
+	if( err != CL_SUCCESS ) {
+		vul_cl_write_compile_output( ret );
+		assert( false );
+	}
 	
 	return ret;
 }
@@ -443,9 +468,10 @@ vul_cl_kernel *vul_cl_create_kernel( vul_cl_program *program, const char *entry_
 	assert( ret );
 
 	len = strlen( entry_point );
-	ret->entry_point = ( char* )malloc( len );
+	ret->entry_point = ( char* )malloc( len + 1 );
 	assert( ret->entry_point );
 	strncpy( ret->entry_point, entry_point, len );
+	ret->entry_point[ len ] = 0;
 	ret->program = program;
 	
 	ret->kernel = clCreateKernel( program->program, ret->entry_point, &err );
@@ -459,7 +485,7 @@ vul_cl_kernel *vul_cl_create_kernel( vul_cl_program *program, const char *entry_
 /**
  * Adds an argument to a kernel.
  */
-void vul_cl_kernel_add_argument( vul_cl_kernel *kernel, size_t data_size, void *data_ptr )
+void vul_cl_kernel_add_argument( vul_cl_kernel *kernel, size_t data_size, const void *data_ptr )
 {
 	vul_cl_kernel_argument *arg;
 	
@@ -749,6 +775,62 @@ cl_int vul_cl_call_kernel( vul_cl_kernel *kernel, size_t device_index, cl_uint d
 
 	return err;
 }
+
+/**
+ * Syncs the command queue for the device of given index in the kernel's context.
+ */
+cl_int vul_cl_sync( vul_cl_kernel *kernel, size_t device_index )
+{
+	cl_int err = clFlush( kernel->program->context->queue_list[ device_index ] );
+	if( err != CL_SUCCESS ) {
+		return err;
+	}
+
+	return err;
+}
+
+
+/**
+ * Retrieves the first platform found that matches the vendor string given.
+ * \return cl_platform_id of the platform, NULL if none found.
+ */
+cl_platform_id vul_cl_get_platform_by_vendor_string( const char *vendor_string )
+{
+	cl_int err;
+	ui32_t i;
+	size_t size;
+	char *name;
+
+	for( i = 0; i < vul__cl_context_count; ++i ) {
+		err = clGetPlatformInfo( vul__cl_contexts[ i ]->platform,
+								 CL_PLATFORM_VENDOR,
+								 NULL,
+								 0,
+								 &size );
+		name = ( char* )malloc( sizeof( char ) * size );
+		err = clGetPlatformInfo( vul__cl_contexts[ i ]->platform,
+								 CL_PLATFORM_VENDOR,
+								 size,
+								 name,
+								 NULL );
+
+		if( strcmp( vendor_string, name ) == 0 ) {
+			return vul__cl_contexts[ i ]->platform;
+		}
+	}
+	return NULL;
+}
+
+/**
+ * Retrieves the cl_platform_id of the context at the given index.
+ */
+cl_platform_id vul_cl_get_platform_by_context_index( ui32_t index )
+{
+	assert( index <= vul__cl_context_count );
+
+	return vul__cl_contexts[ index ]->platform;
+}
+
 
 // @TODO: Useful auxilliary functions, like "do_we_support_this_extesion_on_given_device"
 // or "type_of_given_device" to find the best devices for a certain thing.

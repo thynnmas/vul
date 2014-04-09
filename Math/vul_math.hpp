@@ -29,7 +29,6 @@
  *
  * Library format inspired by http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/
  * 
- * @TODO: Test C++11 version. Test other compilers!
  * @TODO: The todos in vul_half.hpp
  * @TODO: Run melton, lint & other static analysis tools.
  * @TODO: Planned features:
@@ -44,6 +43,7 @@
  *		 Possibly write full specializations instead for the normal types;
  *		 consider which will give less code duplication.
  *		-2x2, 3x3 & 4x4 matrix inversions as special cases for speed.
+ *		-Bezier curves, B-splies (as extensions, behind guards to make avoid bloat?)
  * 
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)

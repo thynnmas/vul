@@ -262,7 +262,6 @@ void vul_cl_cleanup( )
 
 		if( context->context != 0 ) {
 			clReleaseContext( context->context );
-			free( context );
 		}
 
 		// Destroy all programs, and all kernels in those programs
@@ -312,6 +311,9 @@ void vul_cl_cleanup( )
 		}
 		// Destroy the buffer list
 		vul_vector_destroy( context->buffers );
+		
+		// Free the context
+		free( context );
 
 		vul__cl_contexts[ i ] = NULL;
 	}
@@ -727,7 +729,7 @@ int vul_cl_resize_buffer( vul_cl_buffer *buffer, size_t new_size, void *host_ptr
  * for when waiting for this execution is desired.
  * @NOTE: This function only handles 1-dimensional work groups
  */
-cl_int vul_cl_call_kernel( vul_cl_kernel *kernel, size_t device_index, cl_uint dimensions, size_t global_size, cl_uint event_wait_list_size = 0, cl_event *event_wait_list = NULL, cl_event *wait_event = NULL )
+cl_int vul_cl_call_kernel( vul_cl_kernel *kernel, size_t device_index, size_t global_size, cl_uint event_wait_list_size = 0, cl_event *event_wait_list = NULL, cl_event *wait_event = NULL )
 {
 	cl_int err;
 	cl_uint i;

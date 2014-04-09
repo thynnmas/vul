@@ -114,7 +114,7 @@ namespace vul {
 		/**
 		 * Returns the size of the list.
 		 */
-		ui32_t size( void );
+		const ui32_t size( void ) const;
 
 		/**
 		 * Resizes the list to the given number of items. Preserves items already
@@ -331,7 +331,7 @@ namespace vul {
 		return ( mList + mSize );
 	}
 	template< class T >
-	ui32_t vector_t< T >::size( void )
+	const ui32_t vector_t< T >::size( void ) const
 	{
 		return mSize;
 	}

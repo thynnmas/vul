@@ -5,7 +5,7 @@
  * It also contains interfaces to the fixed point types of vul_fixed.h
  * if VUL_HALF_TABLE is defined, a lookup table is used for single/half
  * conversions, at the expense of 8576+1536 bytes of memory. ( see: ftp://ftp.fox-toolkit.org/pub/fasthalffloatconversion.pdf )
- * If VUL_HALF_SSE is defined, the SSE instructions _mm_cvtph_ps & _mm_vctps_ph
+ * If VUL_HALF_AVX is defined, the SSE instructions _mm_cvtph_ps & _mm_vctps_ph
  * are used for single/half conversions.
  * Otherwise, a slower runtime calculation is done.
  * 
@@ -35,7 +35,7 @@
 
 // Choose one or neither of these
 //#define VUL_HALF_TABLE // @TODO: Actually calculate the table and include it!
-//#define VUL_HALF_AVX // @TODO: Fix this; doesn't work atm.
+//#define VUL_HALF_AVX
 
 #ifdef VUL_HALF_AVX
 	#include <immintrin.h>
@@ -515,14 +515,14 @@ namespace vul {
 	{
 		unsigned int i;
 #ifdef VUL_HALF_AVX
-		M128 veci;
-		M128i veco;
+		__m128 veci;
+		__m128i veco;
 		unsigned int of[ 4 ], j;
 
 		for ( i = 0; i < ( count & 0xfffffffc ); i += 4 ) { // i < count - ( count % 4 )
 			veci = _mm_loadu_ps( &in[ i ] );
 			veco = _mm_cvtps_ph( veci );
-			_mm_store_si128( ( M128i* )of, veco );
+			_mm_store_si128( ( __m128i* )of, veco );
 			for( j = 0; j < 4; ++j ) {
 				out[ j ].data = ( unsigned short )of[ j ];
 			}
@@ -530,7 +530,7 @@ namespace vul {
 		j = count & 3;
 		veci = _mm_loadu_ps( &in[ i ] );
 		veco = _mm_cvtps_ph( veci );
-		_mm_store_si128( ( M128i* )of, veco );
+		_mm_store_si128( ( __m128i* )of, veco );
 		for(; j > 0; --j ) {
 			out[ i + j ].data = ( unsigned short )of[ j ];
 		}		
@@ -544,8 +544,8 @@ namespace vul {
 	{
 		unsigned int i;
 #ifdef VUL_HALF_AVX
-		M128i veci;
-		M128 veco;
+		__m128i veci;
+		__m128 veco;
 		unsigned int inf[ 4 ], j;
 		float of[ 4 ];
 
@@ -576,7 +576,7 @@ namespace vul {
 	void vul_double_to_half_array( half *out, double *in, unsigned int count )
 	{
 		unsigned int i;
-#ifdef VUL_HALF_SSE
+#ifdef VUL_HALF_AVX
 		__m128 veci;
 		__m128i veco;
 		unsigned int of[ 4 ], j;

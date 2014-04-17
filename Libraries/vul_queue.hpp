@@ -1,7 +1,7 @@
 /*
  * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
  *
- * This file describes a templated ring-buffer implementation of a queue_t.
+ * This file describes a templated ring-buffer implementation of a queue.
  * @TODO: Copy constructor.
  * 
  * ¹ If public domain is not legally valid in your legal jurisdiction
@@ -27,7 +27,7 @@ namespace vul {
 	typedef float f32_t;
 
 	/**
-	 * A templated ring-buffer implementation of a queue_t. Automatically resizes
+	 * A templated ring-buffer implementation of a queue. Automatically resizes
 	 * when full. The operation of resizing is slow, as it copies the entire buffer.
 	 */
 	template< typename T >

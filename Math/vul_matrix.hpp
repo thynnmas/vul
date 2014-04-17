@@ -47,6 +47,11 @@ namespace vul {
 		explicit Matrix< T, cols, rows >( T val );								// Initialize to a single value
 		Matrix< T, cols, rows >( const Matrix< T, cols, rows > &m );			// Copy constructor
 		explicit Matrix< T, cols, rows >( T (& a)[ cols ][ rows ] ); 			// Generic array constructor
+		/**
+		 * Initializer list takes values row-major. This is purely because it makes more sense
+		 * to write Matrix< T, 2, 2 > mat{ 1, 2,					[ 1 2 ]		  mat{ 1, 3,
+										   3, 4 } for the matrix	[ 3 4 ] than       2, 4 }
+		*/
 		explicit Matrix< T, cols, rows >( std::initializer_list<T> list );		// From initializer list. Componentwise init is non-c++11 equivalent.
 #endif	
 		// Operators
@@ -436,7 +441,7 @@ namespace vul {
 		typename std::initializer_list< T >::iterator it;
 
 		for( it = list.begin( ), i = 0; it != list.end( ) && i < cols * rows; ++it, ++i ) {
-			data[ i / rows ][ i % rows ] = *it;
+			data[ i % rows ][ i / rows ] = *it;
 		}
 	}
 #else

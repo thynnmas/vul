@@ -193,10 +193,11 @@ namespace vul_test {
 
 		// Only available in C++11
 #ifdef VUL_CPLUSPLUS11
-		Matrix< f32_t, 2, 2 > c11m22{ 1.f, -2.f, 4.f, 3.f };
+		Matrix< f32_t, 2, 2 > c11m22{ 1.f, -2.f,
+									  4.f, 3.f };
 		assert( c11m22( 0, 0 ) == 1.f );
-		assert( c11m22( 0, 1 ) == -2.f );
-		assert( c11m22( 1, 0 ) == 4.f );
+		assert( c11m22( 0, 1 ) == 4.f );
+		assert( c11m22( 1, 0 ) == -2.f );
 		assert( c11m22( 1, 1 ) == 3.f );
 #endif
 

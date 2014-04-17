@@ -489,17 +489,17 @@ namespace std {
 		static constexpr bool has_quiet_NaN = false;
 
 #ifdef VUL_DEFINE
-		static constexpr vul::fixed_32< Q > min( ) noexcept			{ vul::fixed_32< Q > f; f.data = 0; return f; }
-		static constexpr vul::fixed_32< Q > lowest( ) noexcept		{ vul::fixed_32< Q > f; f.data = 0xffff; return f; }
-		static constexpr vul::fixed_32< Q > max( ) noexcept			{ vul::fixed_32< Q > f; f.data = 0x7fff; return f; }
-		static constexpr vul::fixed_32< Q > epsilon( ) noexcept		{ vul::fixed_32< Q > f; f.data = 0x0001; return f; }
-		static constexpr vul::fixed_32< Q > round_error( ) noexcept { vul::fixed_32< Q > f; f.data = 1 << ( Q - 1); return f; }
+		static vul::fixed_32< Q > min( ) noexcept			{ vul::fixed_32< Q > f; f.data = 0; return f; }
+		static vul::fixed_32< Q > lowest( ) noexcept		{ vul::fixed_32< Q > f; f.data = 0xffff; return f; }
+		static vul::fixed_32< Q > max( ) noexcept			{ vul::fixed_32< Q > f; f.data = 0x7fff; return f; }
+		static vul::fixed_32< Q > epsilon( ) noexcept		{ vul::fixed_32< Q > f; f.data = 0x0001; return f; }
+		static vul::fixed_32< Q > round_error( ) noexcept { vul::fixed_32< Q > f; f.data = 1 << ( Q - 1); return f; }
 #else
-		static constexpr vul::fixed_32< Q > min( ) noexcept;
-		static constexpr vul::fixed_32< Q > lowest( ) noexcept;
-		static constexpr vul::fixed_32< Q > max( ) noexcept;
-		static constexpr vul::fixed_32< Q > epsilon( ) noexcept;
-		static constexpr vul::fixed_32< Q > round_error( ) noexcept;
+		static vul::fixed_32< Q > min( ) noexcept;
+		static vul::fixed_32< Q > lowest( ) noexcept;
+		static vul::fixed_32< Q > max( ) noexcept;
+		static vul::fixed_32< Q > epsilon( ) noexcept;
+		static vul::fixed_32< Q > round_error( ) noexcept;
 #endif
 #else
 		static const bool is_signed = true;

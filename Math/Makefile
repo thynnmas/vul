@@ -1,5 +1,5 @@
 setup:
-	mkdir ./bin/
+	mkdir -p ./bin/
 full:
 	g++ -std=c++11 -mavx -msse4 -Wall -I.:./Tests tests.cpp -o ./bin/test_full -D VUL_TEST -D VUL_CPLUSPLUS11 -D VUL_AOSOA_SSE -D VUL_AOSOA_AVX -fabi-version=6
 avx:

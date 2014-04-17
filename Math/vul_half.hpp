@@ -149,7 +149,7 @@ namespace vul {
 #else
 		int i, te;
 		unsigned int f, e;
-		f = *( ( unsigned int* )&a );
+		f = *( ( unsigned int* )&a );	// @NOTE: On platforms where int and float are not the same size, this will not work.
 		i = ( f >> 16 ) & 0x8000u;									// Always copy sign bit
 		if( ( f & 0x7f800000u ) == 0 ) {							// Zero is a special case
 			data = i; // Signed
@@ -218,7 +218,7 @@ namespace vul {
 			i |= ( m << 13 );				// Append 13 0-bits to mantissa and shift
 		}
 
-		return *( ( float* )&i );
+		return *( ( float* )&i );	// @NOTE: If int and float are not the same size, this will be bugged!
 #endif
 	}
 	half::operator double( ) const

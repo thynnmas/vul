@@ -4,7 +4,7 @@
  * A scalar linear math library containing Vectors, Matrices, Points, Quaternions, AABBs
  * general affine transformations as well as fixed and half precision floating point types.
  *
- * The library contains both a C++11 version and a c++98-version, the primary difference
+ * The library contains both a C++11 version and a C++98-version, the primary difference
  * being the way we construct our types. The C++11 style uses normal constructors
  * and initializer lists:
  *		Vector< f32_t, 3 > foo( a ), bar{ b, c, d };
@@ -29,8 +29,13 @@
  *
  * Library format inspired by http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/
  * 
+ * Tested compilers											|	Notes
+ *		-gcc (Debian 4.7.2-5) 4.7.2							|	C++98 & C++11. AVX builds, not tested
+ *		-MS VC 2010 Express									|	C++98 only
+ *		-clang 3.0-6.2										|	C++98 only; C++11 requires initializer_list 
+ *															|	which is introduced in clang 3.1
+ * 
  * @TODO: The todos in vul_half.hpp
- * @TODO: Run melton, lint & other static analysis tools.
  * @TODO: Planned features:
  *		-SIMD functions for more things
  *		-Linear solvers

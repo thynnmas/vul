@@ -23,7 +23,7 @@
 //#define VUL_DEFINE
 
 // Define one of these
-#define VUL_WINDOWS
+//#define VUL_WINDOWS
 //#define VUL_LINUX
 //#define VUL_OSX
 

@@ -73,18 +73,14 @@ static int vul__sort_vector_check_range( vul_vector_t *list, int low, int high )
  * Uses shell sort. Marcin Ciura's gap squence with inner insertion sort.
  */
 #ifndef VUL_DEFINE
-static void vul_sort_vector_shell( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low = 0, int high = -1 );
+static void vul_sort_vector_shell( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low, int high );
 #else
-static void vul_sort_vector_shell( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low = 0, int high = -1 )
+static void vul_sort_vector_shell( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low, int high )
 {
 	void *temp, *left, *right, *item;
 	int gap, gi, i, j;
 	int gaps[ ] = { 701, 301, 132, 67, 23, 10, 4, 1 };
 	
-	// Correct auto-arguments
-	if( high < 0 ) {
-		high = vul_vector_size( list ) - 1;
-	}
 	// Check range
 	assert( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_shell: Range check failed" );
 
@@ -148,20 +144,16 @@ static int vul__sort_vector_quick_partition( vul_vector_t *list, int (*comparato
  * Uses iterative quicksort with an auxiliary stack.
  */
 #ifndef VUL_DEFINE
-static void vul_sort_vector_quick( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low = 0, int high = -1 );
+static void vul_sort_vector_quick( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low, int high );
 #else
-static void vul_sort_vector_quick( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low = 0, int high = -1 )
+static void vul_sort_vector_quick( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low, int high )
 {
 	int *stack;
 	int top, pivot;
 	
-	// Correct auto-arguments
-	if( high < 0 ) {
-		high = vul_vector_size( list ) - 1;
-	}
 	// Check range
 	assert( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_quick: Range check failed" );
-	stack = new int[ high - low + 1 ];
+	stack = ( int* )malloc( sizeof( int ) * ( high - low + 1 ) );
     top = -1;
 	
 	stack[ ++top ] = low;
@@ -185,7 +177,7 @@ static void vul_sort_vector_quick( vul_vector_t *list, int (*comparator)( const 
         }
     }
 
-	delete [ ] stack;
+	free( stack );
 
 }
 #endif
@@ -198,17 +190,14 @@ static void vul_sort_vector_quick( vul_vector_t *list, int (*comparator)( const 
  * Uses insertion sort
  */
 #ifndef VUL_DEFINE
-static void vul_sort_vector_insertion( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low = 0, int high = -1, int start = -1 );
+static void vul_sort_vector_insertion( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low, int high, int start );
 #else
-static void vul_sort_vector_insertion( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low = 0, int high = -1, int start = -1 )
+static void vul_sort_vector_insertion( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low, int high, int start )
 {
 	int left, right, mid, n;
 	void *pivot;
 	
 	// Corerct auto-arguments
-	if( high < 0 ) {
-		high = vul_vector_size( list ) - 1;
-	}
 	if ( start <= low ) {
 		start = low + 1;
 	} else if ( start > high ) {
@@ -331,10 +320,10 @@ static int vul__sort_compute_minrun( int length )
 /**
  * Entry in the merge stack. Contains a pair of first entry and run length.
  */
-struct vul__sort_merge_stack_pair {
+typedef struct {
 	int base;
 	int length;
-};
+} vul__sort_merge_stack_pair;
 
 /**
  * Helper function for vul_sort_vector_thynn.
@@ -516,7 +505,7 @@ static void vul__sort_merge_low( vul_vector_t *list, int (*comparator)( const vo
 			&& "vul__sort_merge_low: Ranges are invalid." );
 
 	// Copy 1st list to a temporary list
-	vul_vector_copy( temp_list, 0, list, base1, length1 );
+	vul_vector_copy_partial( temp_list, 0, list, base1, length1 );
 	
 	// Move the first element of second run and deal with degenerate cases
 	c1 = 0;
@@ -667,7 +656,7 @@ static void vul__sort_merge_high( vul_vector_t *list, int (*comparator)( const v
 			&& "vul__sort_merge_high: Ranges are invalid." );
 
 	// Copy 1st list to a temporary list
-	vul_vector_copy( temp_list, 0, list, base2, length2 );
+	vul_vector_copy_partial( temp_list, 0, list, base2, length2 );
 	
 	// Move the first element of second run and deal with degenerate cases
 	c1 = base1 + length1 - 1;
@@ -944,19 +933,15 @@ static void vul__sort_force_merge_collapse( vul_vector_t *list, int (*comparator
  * @TODO: Possibly have a look at whether this is too similar to openjdk implementation (which is GPL)?
  */
 #ifndef VUL_DEFINE
-static void vul_sort_vector_thynn( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low = 0, int high = -1 );
+static void vul_sort_vector_thynn( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low, int high );
 #else
-static void vul_sort_vector_thynn( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low = 0, int high = -1 )
+static void vul_sort_vector_thynn( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low, int high )
 {
 	// Setup
 	int n, f, run_length, min_run_length;
 	vul__sort_merge_stack_pair *current;
-	vul_vector_t *merge_stack = vul_vector_create( sizeof( vul__sort_merge_stack_pair ) );
+	vul_vector_t *merge_stack = vul_vector_create( sizeof( vul__sort_merge_stack_pair ), 0 );
 
-	// Corerct auto-arguments
-	if( high < 0 ) {
-		high = vul_vector_size( list ) - 1;
-	}
 	// Check range
 	assert( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_thynn: Range check failed" );
 
@@ -1012,7 +997,7 @@ static void vul_sort_vector_thynn( vul_vector_t *list, int (*comparator)( const 
 		}
 
 		// Push to the merge stack
-		current = ( vul__sort_merge_stack_pair* )vul_vector_add( merge_stack );
+		current = ( vul__sort_merge_stack_pair* )vul_vector_add_empty( merge_stack );
 		current->base = low;
 		current->length = run_length;
 
@@ -1045,9 +1030,9 @@ static void vul_sort_vector_thynn( vul_vector_t *list, int (*comparator)( const 
  * we use sort:	           insertion sort		   |			shell sort			 |   thynn sort
  */
 #ifndef VUL_DEFINE
-static void vul_sort_vector( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low = 0, int high = -1 );
+static void vul_sort_vector( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low, int high );
 #else
-static void vul_sort_vector( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low = 0, int high = -1 )
+static void vul_sort_vector( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low, int high )
 {
 	int s;
 
@@ -1057,7 +1042,7 @@ static void vul_sort_vector( vul_vector_t *list, int (*comparator)( const void *
 	} else if ( s > VUL_SORT_MIN_SIZE_USE_SHELL ) {
 		vul_sort_vector_shell( list, comparator, low, high );
 	} else {
-		vul_sort_vector_insertion( list, comparator, low, high );
+		vul_sort_vector_insertion( list, comparator, low, high, 0 );
 	}
 }
 #endif

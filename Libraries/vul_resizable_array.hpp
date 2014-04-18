@@ -45,13 +45,13 @@ namespace vul {
 	public:
 		/**
 		 * Constructor. Takes an optional initial size.
-		 * @param initialSize [Optional] Initial size of list.
+		 * @param initialSize [Optional] Initial reserved size of list.
 		 */
 		vector_t< T >( ui32_t initialSize = 0 );
 		/**
 		 * Constructor. Takes an optional initial size.
 		 * @param sizeOfType Size, in bytes, of the type stored in this list.
-		 * @param initialSize [Optional] Initial size of list.
+		 * @param initialSize [Optional] Initial reserved size of list.
 		 */
 		vector_t< T >( ui32_t sizeOfType, ui32_t initialSize = 0 );
 		/**
@@ -241,13 +241,13 @@ namespace vul {
 	template< class T >
 	vector_t< T >::vector_t( ui32_t initialSize )
 	{
-		initialize( initialSize );
+		initialize( 0, initialSize );
 	}
 	template< class T >
 	vector_t< T >::vector_t( ui32_t sizeOfType, ui32_t initialSize )
 	{
 		mElementSize = sizeOfType;
-		initialize( initialSize );
+		initialize( 0, initialSize );
 	}
 	template< class T >
 	vector_t< T >::vector_t( const vector_t< T > &ref )

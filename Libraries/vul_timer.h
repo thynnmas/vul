@@ -46,7 +46,7 @@
 	vul needs an operating system defined.
 #endif
 
-struct vul_timer_t {
+typedef struct {
 #if defined( VUL_WINDOWS )
 	clock_t zero;
 
@@ -62,12 +62,12 @@ struct vul_timer_t {
 	uint64_t start;
 	mach_timebase_info_data_t timebase_info;
 #endif
-};
+} vul_timer_t;
 
 #ifndef VUL_DEFINE
-static void vul_timer_reset( vul_timer_t *c );
+void vul_timer_reset( vul_timer_t *c );
 #else
-static void vul_timer_reset( vul_timer_t *c )
+void vul_timer_reset( vul_timer_t *c )
 {
 #if defined( VUL_WINDOWS )
 	// Get the current process core mask
@@ -109,9 +109,9 @@ static void vul_timer_reset( vul_timer_t *c )
 #endif
 
 #ifndef VUL_DEFINE
-static vul_timer_t *vul_timer_create( );
+vul_timer_t *vul_timer_create( );
 #else
-static vul_timer_t *vul_timer_create( )
+vul_timer_t *vul_timer_create( )
 {
 	vul_timer_t *c;
 
@@ -124,9 +124,9 @@ static vul_timer_t *vul_timer_create( )
 #endif
 
 #ifndef VUL_DEFINE
-static void vul_timer_destroy( vul_timer_t *c );
+void vul_timer_destroy( vul_timer_t *c );
 #else
-static void vul_timer_destroy( vul_timer_t *c )
+void vul_timer_destroy( vul_timer_t *c )
 {
 	free( c );
 }
@@ -134,9 +134,9 @@ static void vul_timer_destroy( vul_timer_t *c )
 
 
 #ifndef VUL_DEFINE
-static unsigned long long vul_timer_get_millis( vul_timer_t *c );
+unsigned long long vul_timer_get_millis( vul_timer_t *c );
 #else
-static unsigned long long vul_timer_get_millis( vul_timer_t *c )
+unsigned long long vul_timer_get_millis( vul_timer_t *c )
 {
 #if defined( VUL_WINDOWS )
 	LARGE_INTEGER current_time;
@@ -192,9 +192,9 @@ static unsigned long long vul_timer_get_millis( vul_timer_t *c )
 #endif
 
 #ifndef VUL_DEFINE
-static unsigned long long vul_timer_get_millis_cpu( vul_timer_t *c );
+unsigned long long vul_timer_get_millis_cpu( vul_timer_t *c );
 #else
-static unsigned long long vul_timer_get_millis_cpu( vul_timer_t *c )
+unsigned long long vul_timer_get_millis_cpu( vul_timer_t *c )
 {
 	clock_t new_clock = clock( );
 	return ( unsigned long long ) ( ( double )( new_clock - c->zero ) / ( ( double )CLOCKS_PER_SEC / 1000.0 ) );
@@ -203,9 +203,9 @@ static unsigned long long vul_timer_get_millis_cpu( vul_timer_t *c )
 
 
 #ifndef VUL_DEFINE
-static unsigned long long vul_timer_get_micros( vul_timer_t *c );
+unsigned long long vul_timer_get_micros( vul_timer_t *c );
 #else
-static unsigned long long vul_timer_get_micros( vul_timer_t *c )
+unsigned long long vul_timer_get_micros( vul_timer_t *c )
 {
 #if defined( VUL_WINDOWS )
 	LARGE_INTEGER current_time;
@@ -216,6 +216,7 @@ static unsigned long long vul_timer_get_micros( vul_timer_t *c )
 	unsigned long check;
 	signed long ms_off;
 	LONGLONG adjust;
+	unsigned long long new_micro;
 
 	thread = GetCurrentThread( );
 	old_mask = SetThreadAffinityMask( thread, c->clock_mask );
@@ -237,7 +238,7 @@ static unsigned long long vul_timer_get_micros( vul_timer_t *c )
 	c->last_time = new_time;
 	
 	// scale by 1000000 for microseconds
-	unsigned long long new_micro = (unsigned long) (1000000 * new_time / c->frequency.QuadPart);
+	new_micro = (unsigned long) (1000000 * new_time / c->frequency.QuadPart);
 
 
 	return new_micro;
@@ -264,9 +265,9 @@ static unsigned long long vul_timer_get_micros( vul_timer_t *c )
 #endif
 
 #ifndef VUL_DEFINE
-static unsigned long long vul_timer_get_micros_cpu( vul_timer_t *c );
+unsigned long long vul_timer_get_micros_cpu( vul_timer_t *c );
 #else
-static unsigned long long vul_timer_get_micros_cpu( vul_timer_t *c )
+unsigned long long vul_timer_get_micros_cpu( vul_timer_t *c )
 {
 	clock_t new_clock = clock( );
 	return ( unsigned long long ) ( ( double )( new_clock - c->zero ) / ( ( double )CLOCKS_PER_SEC / 1000000.0 ) );

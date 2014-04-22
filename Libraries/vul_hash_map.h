@@ -204,13 +204,14 @@ void vul_map_destroy( vul_hash_map_t *map )
 		if( map->buckets[ b ] != NULL ) 
 		{
 			vul_list_destroy( map->buckets[ b ] );
+			map->buckets[ b ] = NULL;
 		}
 	}
 
 	free( map->buckets );
+	map->buckets = NULL;
 	free( map );
 	// By setting to null we are much more likely to trigger asserts if used after free.
-	map->buckets = NULL;
 	map = NULL;
 }
 #endif

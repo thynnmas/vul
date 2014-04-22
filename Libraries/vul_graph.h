@@ -57,7 +57,7 @@ struct vul_node_t{
 		content = NULL;
 		parent = NULL;
 		visited = false;
-		children = vul_vector_create( sizeof( vul_node_t ) );
+		children = vul_vector_create( sizeof( vul_node_t ), 0 );
 	}
 };
 
@@ -80,7 +80,7 @@ void vul_graph_dfs( vul_node_t *root, void (*func)( vul_node_t *root ), vul_grap
 void vul_graph_dfs( vul_node_t *root, void (*func)( vul_node_t *root ), vul_graph_dfs_strategy strategy = VUL_GRAPH_POST )
 {
 	vul_node_t **n, *c;
-	vul_vector_t *stack = vul_vector_create( sizeof( vul_node_t* ) );
+	vul_vector_t *stack = vul_vector_create( sizeof( vul_node_t* ), 0 );
 	i32_t offset;
 	
 	// Push the root
@@ -147,7 +147,7 @@ void vul_graph_bfs( vul_node_t *root, void (*func)( vul_node_t *root ) )
 {
 	// @TODO: Rewqrite this with a queue.
 	vul_node_t **n, *c;
-	vul_vector_t *stack = vul_vector_create( sizeof( vul_node_t* ) );
+	vul_vector_t *stack = vul_vector_create( sizeof( vul_node_t* ), 0 );
 	
 	// Push the root
 	root->visited = false;
@@ -212,7 +212,7 @@ vul_node_t *vul_graph_insert( vul_node_t *parent, void *content, ui32_t size_con
 	// Store the pointer to the parent
 	n.parent = parent;
 	// No chilren
-	n.children = vul_vector_create( sizeof( vul_node_t ) );
+	n.children = vul_vector_create( sizeof( vul_node_t ), 0 );
 	// Store content
 	n.content = malloc( size_content );
 	assert( n.content != NULL ); // Make sure malloc didn't fail

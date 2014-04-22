@@ -30,29 +30,29 @@
 //#define VUL_DEFINE
 
 
-typedef struct vul_list_element vul_list_element;
-struct vul_list_element
+typedef struct vul_list_element_t vul_list_element_t;
+struct vul_list_element_t
 {
 	void *data;
 	ui32_t data_size;
-	vul_list_element *prev;
-	vul_list_element *next;
+	vul_list_element_t *prev;
+	vul_list_element_t *next;
 };
 
 /**
- * Creates a new vul_list_element and adds it after the given element. Copies the given data.
+ * Creates a new vul_list_element_t and adds it after the given element. Copies the given data.
  * Should the given element be NULL, this is equivalent to creating a new list.
  */
 #ifndef VUL_DEFINE
-vul_list_element *vul__list_add_after( vul_list_element *e, void *data, ui32_t data_size );
+vul_list_element_t *vul__list_add_after( vul_list_element_t *e, void *data, ui32_t data_size );
 #else
-vul_list_element *vul__list_add_after( vul_list_element *e, void *data, ui32_t data_size )
+vul_list_element_t *vul__list_add_after( vul_list_element_t *e, void *data, ui32_t data_size )
 {
-	vul_list_element *ret, n;
+	vul_list_element_t *ret;
 
-	ret = ( vul_list_element* )malloc( sizeof( vul_list_element ) );
+	ret = ( vul_list_element_t* )malloc( sizeof( vul_list_element_t ) );
 	assert( ret != NULL ); // Make sure malloc didn't fail
-	ret->data = malloc( data_size);
+	ret->data = malloc( data_size );
 	assert( ret->data != NULL ); // Make sure malloc didn't fail
 	ret->data_size = data_size;
 	memcpy( ret->data, data, data_size );
@@ -61,11 +61,16 @@ vul_list_element *vul__list_add_after( vul_list_element *e, void *data, ui32_t d
 	{
 		ret->prev = e;
 		if ( e->next != NULL ) {
-			vul_list_element *n = e->next;
+			vul_list_element_t *n = e->next;
 			e->next = ret;
 			ret->next = n;
 			n->prev = ret;
+		} else {
+			ret->next = NULL;
 		}
+	} else {
+		ret->prev = NULL;
+		ret->next = NULL;
 	}
 
 	return ret;
@@ -73,12 +78,12 @@ vul_list_element *vul__list_add_after( vul_list_element *e, void *data, ui32_t d
 #endif
 
 /**
- * Removes the given vul_list_element from the list, and deletes it.
+ * Removes the given vul_list_element_t from the list, and deletes it.
  */
 #ifndef VUL_DEFINE
-void vul_list_remove( vul_list_element *e );
+void vul_list_remove( vul_list_element_t *e );
 #else
-void vul_list_remove( vul_list_element *e )
+void vul_list_remove( vul_list_element_t *e )
 {
 	assert( e != NULL );
 
@@ -105,9 +110,9 @@ void vul_list_remove( vul_list_element *e )
  */
 
 #ifndef VUL_DEFINE
-vul_list_element *vul_list_find( vul_list_element *head, void *data, int (*comparator)( void *a, void *b ) );
+vul_list_element_t *vul_list_find( vul_list_element_t *head, void *data, int (*comparator)( void *a, void *b ) );
 #else
-vul_list_element *vul_list_find( vul_list_element *head, void *data, int (*comparator)( void *a, void *b ) )
+vul_list_element_t *vul_list_find( vul_list_element_t *head, void *data, int (*comparator)( void *a, void *b ) )
 {
 	assert( head != NULL );
 
@@ -125,14 +130,18 @@ vul_list_element *vul_list_find( vul_list_element *head, void *data, int (*compa
  * If list_head is NULL this creates a new list!
  */
 #ifndef VUL_DEFINE
-vul_list_element *vul_list_insert( vul_list_element *list_head, void *data, ui32_t data_size, int (*comparator)( void *a, void *b ) );
+vul_list_element_t *vul_list_insert( vul_list_element_t *list_head, void *data, ui32_t data_size, int (*comparator)( void *a, void *b ) );
 #else
-vul_list_element *vul_list_insert( vul_list_element *list_head, void *data, ui32_t data_size, int (*comparator)( void *a, void *b ) )
+vul_list_element_t *vul_list_insert( vul_list_element_t *list_head, void *data, ui32_t data_size, int (*comparator)( void *a, void *b ) )
 {
-	vul_list_element *ret, *before;
+	vul_list_element_t *before;
 	
 	// Find the smallest element smaller than or equal to it
-	before = vul_list_find( list_head, data, comparator );
+	if( list_head != NULL ) {
+		before = vul_list_find( list_head, data, comparator );
+	} else {
+		before = NULL;
+	}
 
 	// Insert the data after it
 	return vul__list_add_after( before, data, data_size );
@@ -143,9 +152,9 @@ vul_list_element *vul_list_insert( vul_list_element *list_head, void *data, ui32
  * Returns the length of the given list.
  */
 #ifndef VUL_DEFINE
-ui32_t vul_list_size( vul_list_element *list_head );
+ui32_t vul_list_size( vul_list_element_t *list_head );
 #else
-ui32_t vul_list_size( vul_list_element *list_head )
+ui32_t vul_list_size( vul_list_element_t *list_head )
 {
 	int c;
 
@@ -166,9 +175,9 @@ ui32_t vul_list_size( vul_list_element *list_head )
  * @NOTE: If func alters the list, behaviour is undefined!
  */
 #ifndef VUL_DEFINE
-void vul_list_iterate( vul_list_element *list_head, void (*func)( vul_list_element *e ) );
+void vul_list_iterate( vul_list_element_t *list_head, void (*func)( vul_list_element_t *e ) );
 #else
-void vul_list_iterate( vul_list_element *list_head, void (*func)( vul_list_element *e ) )
+void vul_list_iterate( vul_list_element_t *list_head, void (*func)( vul_list_element_t *e ) )
 {
 	while( list_head != NULL ) {
 		func( list_head );
@@ -181,11 +190,11 @@ void vul_list_iterate( vul_list_element *list_head, void (*func)( vul_list_eleme
  * Deletes a the given list and all elements in it.
  */
 #ifndef VUL_DEFINE
-void vul_list_destroy( vul_list_element *list_head );
+void vul_list_destroy( vul_list_element_t *list_head );
 #else
-void vul_list_destroy( vul_list_element *list_head )
+void vul_list_destroy( vul_list_element_t *list_head )
 {
-	vul_list_element *next;
+	vul_list_element_t *next;
 
 	while( list_head != NULL )
 	{
@@ -206,11 +215,11 @@ void vul_list_destroy( vul_list_element *list_head )
  * Creates a copy of the given list.
  */
 #ifndef VUL_DEFINE
-vul_list_element *vul_list_copy( vul_list_element *list_head );
+vul_list_element_t *vul_list_copy( vul_list_element_t *list_head );
 #else
-vul_list_element *vul_list_copy( vul_list_element *list_head )
+vul_list_element_t *vul_list_copy( vul_list_element_t *list_head )
 {
-	vul_list_element *nhead, *n;
+	vul_list_element_t *nhead, *n;
 
 	nhead = vul__list_add_after( NULL, list_head->data, list_head->data_size );
 	n = nhead;

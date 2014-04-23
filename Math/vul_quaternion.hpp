@@ -210,7 +210,7 @@ namespace vul {
 	 * Construct a 3x3 rotation matrix from the orientation of the given quaternion.
 	 */
 	template< typename T >
-	Matrix< T, 3, 3 > makeMatrix( const Quaternion< T > &quat );
+	Matrix< T, 3, 3 > makeMatrix( const Quaternion< T > &q );
 	/**
 	 * Compare two quaternions within a given tolerance.
 	 */
@@ -262,7 +262,15 @@ namespace vul {
 	Quaternion< T > squadp( const Quaternion< T > &a, const Quaternion< T > &b,
 							const Quaternion< T > &c, const Quaternion< T > &d, 
 							T t, bool useShortestPath );
-
+	/**
+	 * Extracts the normalized positive vector of the given dimension from 
+	 * a quaternions interpreted as a 3-axis right-hand coordinate system.
+	 * This essentially contructs only the relevant column of the matrix
+	 * contruscted by makeMatrix( q ) and returns it as a vector,
+	 * thus being a faster way to extract the wanted vector from that matrix.
+	 */
+	template< typename T >
+	Vector< T, 3 > extractAxis( const Quaternion< T > &q, ui32_t dimension );
 
 	//----------------
 	// Definitions
@@ -871,6 +879,53 @@ namespace vul {
 		qd = slerp( b, c, t, false );
 
 		return slerp( qa, qd, st, false );
+	}
+
+	template< typename T >
+	Vector< T, 3 > extractAxis( const Quaternion< T > &q, ui32_t dimension )
+	{
+		Vector< T, 3 > ret;
+		T x2, y2, z2, xy, xz, xw, yz, yw, zw;	
+
+		assert( dimension < 3 );
+
+		T one, two;
+		one = static_cast< T >( 1.f );
+		two = static_cast< T >( 2.f );
+		
+		if( dimension == 0 ) {	
+			y2 = q[ 1 ] * q[ 1 ];
+			z2 = q[ 2 ] * q[ 2 ];
+			xy = q[ 0 ] * q[ 1 ];
+			xz = q[ 0 ] * q[ 2 ];
+			yw = q[ 1 ] * q[ 3 ];
+			zw = q[ 2 ] * q[ 3 ];
+			ret[ 0 ] = one - two * ( y2 + z2 );
+			ret[ 1 ] = two * ( xy + zw );
+			ret[ 2 ] = two * ( xz - yw );
+		} else if( dimension == 1 ) {		
+			x2 = q[ 0 ] * q[ 0 ];
+			z2 = q[ 2 ] * q[ 2 ];
+			xy = q[ 0 ] * q[ 1 ];
+			xw = q[ 0 ] * q[ 3 ];
+			yz = q[ 1 ] * q[ 2 ];
+			zw = q[ 2 ] * q[ 3 ];	
+			ret[ 0 ] = two * ( xy - zw );
+			ret[ 1 ] = one - two * ( x2 + z2 );
+			ret[ 2 ] = two * ( yz - xw );
+		} else if( dimension == 2 ) {
+			x2 = q[ 0 ] * q[ 0 ];
+			y2 = q[ 1 ] * q[ 1 ];
+			xz = q[ 0 ] * q[ 2 ];
+			xw = q[ 0 ] * q[ 3 ];
+			yz = q[ 1 ] * q[ 2 ];
+			yw = q[ 1 ] * q[ 3 ];
+			ret[ 0 ] = two * ( xz + yw );
+			ret[ 1 ] = two * ( yz - xw );
+			ret[ 2 ] = one - two * ( x2 + y2 );
+		}
+
+		return normalize( ret );
 	}
 
 }

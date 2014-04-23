@@ -1385,7 +1385,7 @@ namespace vul {
 			}
 			if ( c < r.count ) {
 				r.count = c;
-				r.index = i;
+				r.index = j;
 				r.type = VUL_MATRIX_ROW;
 			}
 		}

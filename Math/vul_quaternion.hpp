@@ -727,7 +727,7 @@ namespace vul {
 
 		m( 1, 0 ) = two * ( xy - zw );
 		m( 1, 1 ) = one - two * ( x2 + z2 );
-		m( 1, 2 ) = two * ( yz - xw );
+		m( 1, 2 ) = two * ( yz + xw );
 
 		m( 2, 0 ) = two * ( xz + yw );
 		m( 2, 1 ) = two * ( yz - xw );

@@ -575,7 +575,16 @@ namespace vul_test {
 		assert( mr( 1, 1 ) == 0.f );
 		assert( mr( 2, 0 ) == 0.f );
 		assert( mr( 2, 1 ) == 0.f );
-		return true;	
+
+		mr = -m32;
+		assert( mr( 0, 0 ) == -m32( 0, 0 ) );
+		assert( mr( 0, 1 ) == -m32( 0, 1 ) );
+		assert( mr( 1, 0 ) == -m32( 1, 0 ) );
+		assert( mr( 1, 1 ) == -m32( 1, 1 ) );
+		assert( mr( 2, 0 ) == -m32( 2, 0 ) );
+		assert( mr( 2, 1 ) == -m32( 2, 1 ) );
+
+		return true;
 	}
 	bool TestMatrix::functions( )
 	{

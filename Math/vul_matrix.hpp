@@ -84,7 +84,12 @@ namespace vul {
 		 * Componentwise subtraction of two matrices.
 		 */
 		Matrix< T, cols, rows >& operator-=( const Matrix< T, cols, rows > &rhs );
+		/**
+		 * Componentwise negation.
+		 */
+		Matrix< T, cols, rows > operator-( ) const;
 		
+
 		/**
 		 * Indexing operator.
 		 */
@@ -821,6 +826,20 @@ namespace vul {
 		}
 
 		return *this;
+	}
+	template< typename T, i32_t cols, i32_t rows >
+	Matrix< T, cols, rows > Matrix< T, cols, rows >::operator-( ) const
+	{
+		Matrix< T, cols, rows > m;
+		i32_t i, j;
+		
+		for( i = 0; i < cols; ++i ) {
+			for( j = 0; j < rows; ++j ) {
+				m.data[ i ][ j ] = -data[ i ][ j ];
+			}
+		}
+
+		return m;
 	}
 
 	template< typename T, i32_t cols, i32_t rows >

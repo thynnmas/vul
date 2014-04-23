@@ -445,6 +445,11 @@ namespace vul_test {
 		
 		assert( equals( squadp( a, r, q, b, 0.5f, false ), slerp( a, b, 0.5f, false ), 1e-2f ) );
 		
+		m33 = makeMatrix( q );
+		assert( all( extractAxis( q, 0 ) == column( m33, 0 ) ) );
+		assert( all( extractAxis( q, 1 ) == column( m33, 1 ) ) );
+		assert( all( extractAxis( q, 2 ) == column( m33, 2 ) ) );
+
 		return true;
 	}
 }

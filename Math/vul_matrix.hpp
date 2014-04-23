@@ -1315,7 +1315,7 @@ namespace vul {
 						continue;
 					}
 					for( i = 0, a = 0; i < n; ++i ) {
-						if ( j == k ) {
+						if ( i == k ) {
 							continue;
 						}
 						m( a, b ) = mat( i, j );

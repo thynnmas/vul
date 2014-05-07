@@ -23,6 +23,7 @@
 
 #include "vul_types.hpp"
 #include "vul_point.hpp"
+#include "vul_matrix.hpp"
 
 #include <assert.h>
 #include <cstring> // For memset
@@ -102,9 +103,25 @@ namespace vul {
 		 */
 		Point< T, n > &as_point( );
 		/**
-		 * Cast to const point.
+		 * Cast to const point. 
 		 */
 		const Point< T, n > &as_point( ) const;
+		/**
+		 * Cast to a matrix column. Useful for computing outer products.
+		 */
+		Matrix< T, 1, n > &as_column( );
+		/**
+		 * Cast to a matrix const column. Useful for computing outer products.
+		 */
+		const Matrix< T, 1, n > &as_column( ) const;
+		/**
+		 * Cast to a matrix row. Useful for computing outer products.
+		 */
+		Matrix< T, n, 1 > &as_row( );
+		/**
+		 * Cast to a matrix const row. Useful for computing outer products.
+		 */
+		const Matrix< T, n, 1 > &as_row( ) const;
 	};
 	
 	/*
@@ -842,6 +859,26 @@ namespace vul {
 		return reinterpret_cast< const Point< T, n > & >( data );
 	}
 	
+	template< typename T, i32_t n >
+	Matrix< T, 1, n > &Vector< T, n >::as_column( )
+	{
+		return reinterpret_cast< Matrix< T, 1, n > & >( data );
+	}
+	template< typename T, i32_t n >
+	const Matrix< T, 1, n > &Vector< T, n >::as_column( ) const
+	{
+		return reinterpret_cast< const Matrix< T, 1, n > & >( data );
+	}
+	template< typename T, i32_t n >
+	Matrix< T, n, 1 > &Vector< T, n >::as_row( )
+	{
+		return reinterpret_cast< Matrix< T, n, 1 > & >( data );
+	}
+	template< typename T, i32_t n >
+	const Matrix< T, n, 1 > &Vector< T, n >::as_row( ) const
+	{
+		return reinterpret_cast< const Matrix< T, n, 1 > & >( data );
+	}
 
 	template< typename T, i32_t n >
 	Vector< bool, n > operator==( const Vector< T, n > &a, const Vector< T, n > &b )

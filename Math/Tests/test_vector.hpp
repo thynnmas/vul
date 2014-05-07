@@ -374,6 +374,13 @@ namespace vul_test {
 			assert( v9[ i ] == p9[ i ] );
 			assert( v9[ i ] == pc9[ i ] );
 		}
+
+		Matrix< f64_t, 1, 9 > m9c = v9.as_column( );
+		Matrix< f64_t, 9, 1 > m9r = v9.as_row( );
+		for( ui32_t i = 0; i < 9; ++i ) {
+			assert( v9[ i ] == m9c( 0, i ) );
+			assert( v9[ i ] == m9r( i, 0 ) );
+		}
 		
 		return true;
 	}

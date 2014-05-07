@@ -9,7 +9,7 @@
  * and initializer lists:
  *		Vector< f32_t, 3 > foo( a ), bar{ b, c, d };
  *		foo = Vector< f32_t, 3 >( a );
- * while the c++98-version uses a function style:
+ * while the C++98-version uses a function style:
  *		Vector< f32_t, 3 > foo = makeVector< f32_t >( a, b, c );
  *		foo = makeVector< f32_t, 3 >( a );
  *
@@ -30,7 +30,7 @@
  * Library format inspired by http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/
  * 
  * Tested compilers											|	Notes
- *		-gcc (Debian 4.7.2-5) 4.7.2							|	C++98 & C++11. AVX builds, not tested
+ *		-gcc (Debian 4.7.2-5) 4.7.2							|	C++98 & C++11. AVX builds, is not tested
  *		-MS VC 2010 Express									|	C++98 only
  *		-clang 3.0-6.2										|	C++98 only; C++11 requires initializer_list 
  *															|	which is introduced in clang 3.1
@@ -48,7 +48,7 @@
  *		 Possibly write full specializations instead for the normal types;
  *		 consider which will give less code duplication.
  *		-2x2, 3x3 & 4x4 matrix inversions as special cases for speed.
- *		-Bezier curves, B-splies (as extensions, behind guards to make avoid bloat?)
+ *		-Bezier curves, B-splines (as extensions, behind guards to avoid bloat?)
  * 
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)

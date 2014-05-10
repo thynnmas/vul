@@ -38,6 +38,9 @@ namespace vul_test {
 		static bool centers( );
 		static bool extents( );
 		static bool insides( );
+		static bool containment( );
+		static bool unions( );
+		static bool instersects( );
 		static bool transforms3D( );
 	};
 
@@ -50,6 +53,9 @@ namespace vul_test {
 		assert( centers( ) );
 		assert( extents( ) );
 		assert( insides( ) );
+		assert( containment( ) );
+		assert( unions( ) );
+		assert( instersects( ) );
 		assert( transforms( ) );
 #if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX )
 		assert( transforms3D( ) );
@@ -344,6 +350,119 @@ namespace vul_test {
 
 		return true;
 	}
+	bool TestAABB::containment( )
+	{
+		// Test 2D, 8D vs known cases.
+#ifdef VUL_CPLUSPLUS11
+		AABB< f32_t, 2 > a2( Vector< f32_t >{ 0.f, 1.f }, makeVector< f32_t >{ 1.f, 2.f } );
+		AABB< f32_t, 2 > b2( Vector< f32_t >{ 0.5f, 1.5f }, makeVector< f32_t >{ 1.f, 2.f } ); // This tests inside but on boundary
+		AABB< f32_t, 2 > c2( Vector< f32_t >{ -0.5f, 1.f }, makeVector< f32_t >{ 1.f, 2.f } ); // This tests outside on one side
+		AABB< f32_t, 8 > a8( Vector< f32_t, 8 >( -1.f ), makeVector< f32_t, 8 >( 0.f ) );
+		AABB< f32_t, 8 > b8( Vector< f32_t, 8 >( -0.5f ), makeVector< f32_t, 8 >( 0.5f ) ); // This tests entirely inside
+		AABB< f32_t, 8 > c8( Vector< f32_t, 8 >( -8.f ), makeVector< f32_t, 8 >( -6.f ) ); // This tests entirely disparate
+#else
+		AABB< f32_t, 2 > a2 = makeAABB< f32_t >( makeVector< f32_t >( 0.f, 1.f ), makeVector< f32_t >( 1.f, 2.f ) );
+		AABB< f32_t, 2 > b2 = makeAABB< f32_t >( makeVector< f32_t >( 0.5f, 1.5f ), makeVector< f32_t >( 1.f, 2.f ) ); // This tests inside but on boundary
+		AABB< f32_t, 2 > c2 = makeAABB< f32_t >( makeVector< f32_t >( -0.5f, 1.f ), makeVector< f32_t >( 1.f, 2.f ) ); // This tests outside on one side
+		AABB< f32_t, 8 > a8 = makeAABB< f32_t >( makeVector< f32_t, 8 >( -1.f ), makeVector< f32_t, 8 >( 0.f ) );
+		AABB< f32_t, 8 > b8 = makeAABB< f32_t >( makeVector< f32_t, 8 >( -0.75f ), makeVector< f32_t, 8 >( -0.25f ) ); // This tests entirely inside
+		AABB< f32_t, 8 > c8 = makeAABB< f32_t >( makeVector< f32_t, 8 >( -8.f ), makeVector< f32_t, 8 >( -6.f ) ); // This tests entirely disparate
+#endif
+		assert( contains( a2, a2 ) ); // Tests selfcontainment
+		assert( contains( a2, b2 ) );
+		assert( !contains( b2, a2 ) );
+		assert( !contains( a2, c2 ) );
+
+		assert( contains( a8, a8 ) );
+		assert( contains( a8, b8 ) );
+		assert( !contains( a8, c8 ) );
+
+		return true;
+	}
+
+	bool TestAABB::unions( )
+	{
+		// Test 2D, 8D vs known cases.
+		AABB< f32_t, 2 > r2;
+		AABB< f32_t, 8 > r8;
+#ifdef VUL_CPLUSPLUS11
+		AABB< f32_t, 2 > a2( Vector< f32_t >{ 0.f, 1.f }, Vector< f32_t >{ 1.f, 2.f } );
+		AABB< f32_t, 2 > b2( Vector< f32_t >{ -1.f, 0.f }, Vector< f32_t >{ 2.f, 3.f } ); // This tests complete engulfment
+		AABB< f32_t, 2 > c2( Vector< f32_t >{ 0.5f, 1.5f }, Vector< f32_t >{ 1.5f, 2.5f } ); // This tests partial overlap
+		AABB< f32_t, 2 > d2( Vector< f32_t >{ 2.f, 1.5f }, Vector< f32_t >{ 3.f, 4.f } ); // This tests disparates
+		AABB< f32_t, 8 > a8( Vector< f32_t, 8 >( 0.f ), Vector< f32_t, 8 >( 1.f ) );
+		AABB< f32_t, 8 > b8( Vector< f32_t, 8 >( -0.5f ), Vector< f32_t, 8 >( 2.f ) ); // This tests complete engulfment
+		AABB< f32_t, 8 > c8( Vector< f32_t, 8 >( 0.5f ), Vector< f32_t, 8 >( 2.f ) ); // This tests partial overlap
+		AABB< f32_t, 8 > d8( Vector< f32_t, 8 >( 2.f ), Vector< f32_t, 8 >( 3.f ) ); // This tests disparates
+#else
+		AABB< f32_t, 2 > a2 = makeAABB< f32_t >( makeVector< f32_t >( 0.f, 1.f ), makeVector< f32_t >( 1.f, 2.f ) );
+		AABB< f32_t, 2 > b2 = makeAABB< f32_t >( makeVector< f32_t >( -1.f, 0.f ), makeVector< f32_t >( 2.f, 3.f ) ); // This tests complete engulfment
+		AABB< f32_t, 2 > c2 = makeAABB< f32_t >( makeVector< f32_t >( 0.5f, 1.5f ), makeVector< f32_t >( 1.5f, 2.5f ) ); // This tests partial overlap
+		AABB< f32_t, 2 > d2 = makeAABB< f32_t >( makeVector< f32_t >( 2.f, 1.5f ), makeVector< f32_t >( 3.f, 4.f ) ); // This tests disparates
+		AABB< f32_t, 8 > a8 = makeAABB< f32_t >( makeVector< f32_t, 8 >( 0.f ), makeVector< f32_t, 8 >( 1.f ) );
+		AABB< f32_t, 8 > b8 = makeAABB< f32_t >( makeVector< f32_t, 8 >( -0.5f ), makeVector< f32_t, 8 >( 2.f ) ); // This tests complete engulfment
+		AABB< f32_t, 8 > c8 = makeAABB< f32_t >( makeVector< f32_t, 8 >( 0.5f ), makeVector< f32_t, 8 >( 2.f ) ); // This tests partial overlap
+		AABB< f32_t, 8 > d8 = makeAABB< f32_t >( makeVector< f32_t, 8 >( 2.f ), makeVector< f32_t, 8 >( 3.f ) ); // This tests disparates
+#endif
+		r2 = unionize( a2, a2 ); // self union is self
+		assert( r2._min[ 0 ] == a2._min[ 0 ] ); assert( r2._min[ 1 ] == a2._min[ 1 ] );
+		assert( r2._max[ 0 ] == a2._max[ 0 ] ); assert( r2._max[ 1 ] == a2._max[ 1 ] );
+		r2 = unionize( a2, b2 ); // b contains a, so union is b
+		assert( r2._min[ 0 ] == b2._min[ 0 ] ); assert( r2._min[ 1 ] == b2._min[ 1 ] );
+		assert( r2._max[ 0 ] == b2._max[ 0 ] ); assert( r2._max[ 1 ] == b2._max[ 1 ] );
+		r2 = unionize( a2, c2 ); // partial overlap
+		assert( r2._min[ 0 ] == 0.f ); assert( r2._min[ 1 ] == 1.f );
+		assert( r2._max[ 0 ] == 1.5f ); assert( r2._max[ 1 ] == 2.5f );
+		r2 = unionize( a2, d2 ); // no overlap
+		assert( r2._min[ 0 ] == 0.f ); assert( r2._min[ 1 ] == 1.f );
+		assert( r2._max[ 0 ] == 3.f ); assert( r2._max[ 1 ] == 4.f );
+
+		r8 = unionize( a8, a8 );
+		assert( all( r8._min.as_vec( ) == a8._min.as_vec( ) ) ); assert( all( r8._max.as_vec( ) == a8._max.as_vec( ) ) );
+		r8 = unionize( a8, b8 );
+		assert( all( r8._min.as_vec( ) == b8._min.as_vec( ) ) ); assert( all( r8._max.as_vec( ) == b8._max.as_vec( ) ) );
+		r8 = unionize( a8, c8 );
+		assert( all( r8._min.as_vec( ) == a8._min.as_vec( ) ) ); assert( all( r8._max.as_vec( ) == c8._max.as_vec( ) ) );
+		r8 = unionize( a8, d8 );
+		assert( all( r8._min.as_vec( ) == a8._min.as_vec( ) ) ); assert( all( r8._max.as_vec( ) == d8._max.as_vec( ) ) );
+		
+		return true;
+	}
+
+	bool TestAABB::instersects( )
+	{		
+#ifdef VUL_CPLUSPLUS11
+		AABB< f32_t, 2 > a2( Vector< f32_t >{ 0.f, 1.f }, Vector< f32_t >{ 1.f, 2.f } );
+		AABB< f32_t, 2 > b2( Vector< f32_t >{ -1.f, 0.f }, Vector< f32_t >{ 2.f, 3.f } ); // This tests complete engulfment
+		AABB< f32_t, 2 > c2( Vector< f32_t >{ 0.5f, 1.5f }, Vector< f32_t >{ 1.5f, 2.5f } ); // This tests partial overlap
+		AABB< f32_t, 2 > d2( Vector< f32_t >{ 2.f, 1.5f }, Vector< f32_t >{ 3.f, 4.f } ); // This tests disparates
+		AABB< f32_t, 8 > a8( Vector< f32_t, 8 >( 0.f ), Vector< f32_t, 8 >( 1.f ) );
+		AABB< f32_t, 8 > b8( Vector< f32_t, 8 >( -0.5f ), Vector< f32_t, 8 >( 2.f ) ); // This tests complete engulfment
+		AABB< f32_t, 8 > c8( Vector< f32_t, 8 >( 0.5f ), Vector< f32_t, 8 >( 2.f ) ); // This tests partial overlap
+		AABB< f32_t, 8 > d8( Vector< f32_t, 8 >( 2.f ), Vector< f32_t, 8 >( 3.f ) ); // This tests disparates
+#else
+		AABB< f32_t, 2 > a2 = makeAABB< f32_t >( makeVector< f32_t >( 0.f, 1.f ), makeVector< f32_t >( 1.f, 2.f ) );
+		AABB< f32_t, 2 > b2 = makeAABB< f32_t >( makeVector< f32_t >( -1.f, 0.f ), makeVector< f32_t >( 2.f, 3.f ) ); // This tests complete engulfment
+		AABB< f32_t, 2 > c2 = makeAABB< f32_t >( makeVector< f32_t >( 0.5f, 1.5f ), makeVector< f32_t >( 1.5f, 2.5f ) ); // This tests partial overlap
+		AABB< f32_t, 2 > d2 = makeAABB< f32_t >( makeVector< f32_t >( 2.f, 1.5f ), makeVector< f32_t >( 3.f, 4.f ) ); // This tests disparates
+		AABB< f32_t, 8 > a8 = makeAABB< f32_t >( makeVector< f32_t, 8 >( 0.f ), makeVector< f32_t, 8 >( 1.f ) );
+		AABB< f32_t, 8 > b8 = makeAABB< f32_t >( makeVector< f32_t, 8 >( -0.5f ), makeVector< f32_t, 8 >( 2.f ) ); // This tests complete engulfment
+		AABB< f32_t, 8 > c8 = makeAABB< f32_t >( makeVector< f32_t, 8 >( 0.5f ), makeVector< f32_t, 8 >( 2.f ) ); // This tests partial overlap
+		AABB< f32_t, 8 > d8 = makeAABB< f32_t >( makeVector< f32_t, 8 >( 2.f ), makeVector< f32_t, 8 >( 3.f ) ); // This tests disparates
+#endif
+		assert(  intersect( a2, a2 ) ); // Self-intersection
+		assert(  intersect( a2, b2 ) );
+		assert(  intersect( a2, c2 ) );
+		assert( !intersect( a2, d2 ) );
+
+		assert(  intersect( a8, a8 ) ); // Self-intersection
+		assert(  intersect( a8, b8 ) );
+		assert(  intersect( a8, c8 ) );
+		assert( !intersect( a8, d8 ) );
+
+		return true;
+	}
+
 	bool TestAABB::transforms( )
 	{
 		// We test 2D and 3D case

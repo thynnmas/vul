@@ -24,6 +24,8 @@
 #ifndef VUL_MATRIX_HPP
 #define VUL_MATRIX_HPP
 
+#include <assert.h>
+
 #include "vul_types.hpp"
 
 namespace vul {

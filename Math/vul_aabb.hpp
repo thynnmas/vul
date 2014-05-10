@@ -80,6 +80,22 @@ namespace vul {
 	 */
 	template< typename T, i32_t n >
 	bool inside( const AABB< T, n > &aabb, const Point< T, n > &pt );
+	/**
+	 * Tests if an AABB entirely contains another AABB
+	 */
+	template< typename T, i32_t n >
+	bool contains( const AABB< T, n > &outer, const AABB< T, n > &inner );
+	/**
+	 * Tests whether two AABBs intersect.
+	 */
+	template< typename T, i32_t n >
+	bool intersect( const AABB< T, n > &a, const AABB< T, n > &b );
+	/**
+	 * Computes the union of two AABBs, the smallest AABB that contains both
+	 * AABBs given. Expects the AABBs to be well defined (_min < _max for both).
+	 */
+	template< typename T, i32_t n >
+	AABB< T, n > unionize( const AABB< T, n > &a, const AABB< T, n > &b );
 
 #ifndef VUL_CPLUSPLUS11
 	template< typename T, i32_t n >
@@ -321,7 +337,28 @@ namespace vul {
 					<=								// smaller than or equal to
 					abs( extent( aabb ) ) );		// the size of the extent
 	}
-	
+	template< typename T, i32_t n >
+	bool contains( const AABB< T, n > &outer, const AABB< T, n > &inner )
+	{
+		return all( outer._min.as_vec( ) <= inner._min.as_vec( ) )
+			&& all( outer._max.as_vec( ) >= inner._max.as_vec( ) );
+	}
+	template< typename T, i32_t n >
+	bool intersect( const AABB< T, n > &a, const AABB< T, n > &b )
+	{
+		return all( a._min.as_vec( ) <= b._max.as_vec( ) ) 
+			&& all( a._max.as_vec( ) >= b._min.as_vec( ) );
+	}
+	template< typename T, i32_t n >
+	AABB< T, n > unionize( const AABB< T, n > &a, const AABB< T, n > &b )
+	{
+		return makeAABB< T, n >( min( a._min.as_vec( ), 
+									  b._min.as_vec( ) ).as_point( ),
+								 max( a._max.as_vec( ), 
+									  b._max.as_vec( ) ).as_point( ) );
+	}
+
+
 	//--------------------------
 	// AOSOA SSE functions
 	// These are specializations for vectors of sse types (see vul_aosoa.hpp)

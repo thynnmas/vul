@@ -78,9 +78,9 @@ void vul_rng_tu_destroy( vul_rng_tu_t *r )
  * Gets the next unsigned integer from the given vul_rng_tu state, and advances it.
  */
 #ifndef VUL_DEFINE
-ui32_t vul_rng_tu_next( vul_rng_tu_t *r );
+ui32_t vul_rng_tu_next_unsigned( vul_rng_tu_t *r );
 #else
-ui32_t vul_rng_tu_next( vul_rng_tu_t *r ) 
+ui32_t vul_rng_tu_next_unsigned( vul_rng_tu_t *r ) 
 {
 	ui64_t t;
 	ui32_t x, val;
@@ -104,11 +104,11 @@ ui32_t vul_rng_tu_next( vul_rng_tu_t *r )
  * Gets the next float from the given vul_rng_tu state, and advacnes it.
  */
 #ifndef VUL_DEFINE
-f32_t vul_rng_tu_next( vul_rng_tu_t *r );
+f32_t vul_rng_tu_next_float( vul_rng_tu_t *r );
 #else
-f32_t vul_rng_tu_next( vul_rng_tu_t *r ) 
+f32_t vul_rng_tu_next_float( vul_rng_tu_t *r ) 
 {
-	ui32_t val = vul_rng_tu_next( r );
+	ui32_t val = vul_rng_tu_next_unsigned( r );
 	return ( f32_t ) ( val >> 8 ) / (16777216.0f - 1.0f);
 }
 #endif
@@ -148,9 +148,9 @@ vul_rng_xorshift_t *vul_rng_xorshift_create( )
  * Returns the next ui32_t in the given vul_rng_xorshift state, and advances it.
  */
 #ifndef VUL_DEFINE
-ui32_t vul_rng_xorshift_next( vul_rng_xorshift_t *r );
+ui32_t vul_rng_xorshift_next_unsigned( vul_rng_xorshift_t *r );
 #else
-ui32_t vul_rng_xorshift_next( vul_rng_xorshift_t *r )
+ui32_t vul_rng_xorshift_next_unsigned( vul_rng_xorshift_t *r )
 {
 	ui32_t t;
 	t = r->x ^ ( r->x << 11 );
@@ -165,11 +165,11 @@ ui32_t vul_rng_xorshift_next( vul_rng_xorshift_t *r )
  * Returns the next f32_t in the given vul_rng_xorshift state, and advances it.
  */
 #ifndef VUL_DEFINE
-f32_t vul_rng_xorshift_next( vul_rng_xorshift_t *r );
+f32_t vul_rng_xorshift_next_float( vul_rng_xorshift_t *r );
 #else
-f32_t vul_rng_xorshift_next( vul_rng_xorshift_t *r )
+f32_t vul_rng_xorshift_next_float( vul_rng_xorshift_t *r )
 {
-	return ( f32_t )( vul_rng_xorshift_next( r ) ) * ( 1.0f / 4294967296.0f );
+	return ( f32_t )( vul_rng_xorshift_next_unsigned( r ) ) * ( 1.0f / 4294967296.0f );
 }
 #endif
 
@@ -225,9 +225,9 @@ void vul_rng_xorhash_destroy( vul_rng_xorhash_t *r )
  * Returns the next ui32_t in the given vul_rng_xorhash state, and advances it.
  */
 #ifndef VUL_DEFINE
-ui32_t vul_rng_xorhash_next( vul_rng_xorhash_t *r );
+ui32_t vul_rng_xorhash_next_unsigned( vul_rng_xorhash_t *r );
 #else
-ui32_t vul_rng_xorhash_next( vul_rng_xorhash_t *r )
+ui32_t vul_rng_xorhash_next_unsigned( vul_rng_xorhash_t *r )
 {
 	r->s ^= ( r->s << 13 );
 	r->s ^= ( r->s >> 17 );
@@ -240,11 +240,11 @@ ui32_t vul_rng_xorhash_next( vul_rng_xorhash_t *r )
  * Returns the next f32_t in the given vul_rng_xorhash state, and advances it.
  */
 #ifndef VUL_DEFINE
-f32_t vul_rng_xorhash_next( vul_rng_xorhash_t *r );
+f32_t vul_rng_xorhash_next_float( vul_rng_xorhash_t *r );
 #else
-f32_t vul_rng_xorhash_next( vul_rng_xorhash_t *r )
+f32_t vul_rng_xorhash_next_float( vul_rng_xorhash_t *r )
 {
-	return ( f32_t )( vul_rng_xorhash_next( r ) ) * ( 1.0f / 4294967296.0f );
+	return ( f32_t )( vul_rng_xorhash_next_unsigned( r ) ) * ( 1.0f / 4294967296.0f );
 }
 #endif
 

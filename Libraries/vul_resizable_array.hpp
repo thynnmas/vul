@@ -560,9 +560,9 @@ namespace vul {
 	// Normal iterator
 	#define vul_foreach( T, list ) for ( T *it = list.begin( ), *first = list.begin( ), *last = list.end( ); assert( first == list.begin( ) ), assert( last == list.end( ) ), it != last; ++it )
 	// Easier for list of values; copies
-	#define vul_foreachval( T, ref, list ) for ( T *it = list.begin( ), *first = list.begin( ), *last = list.end( ), ref = ( ( it != last ) ? *it : T( ) ); assert( first == list.begin( ) ), assert( last == list.end( ) ), it != last; ref = *( ++it ) )
+	#define vul_foreachval( T, list ) for ( T *it = list.begin( ), *first = list.begin( ), *last = list.end( ), ref = ( ( it != last ) ? *it : T( ) ); assert( first == list.begin( ) ), assert( last == list.end( ) ), it != last; ref = *( ++it ) )
 	// Easier for list of pointers
-	#define vul_foreachptr( T, ref, list ) for ( T **it = list.begin( ), **first = list.begin( ), **last = list.end( ), *ref = ( ( it != last ) ? *it : NULL ); assert( first == list.begin( ) ), assert( last == list.end( ) ), it != last; ref = *( ++it ) )
+	#define vul_foreachptr( T, list ) for ( T **it = list.begin( ), **first = list.begin( ), **last = list.end( ), *ref = ( ( it != last ) ? *it : NULL ); assert( first == list.begin( ) ), assert( last == list.end( ) ), it != last; ref = *( ++it ) )
 #else
 	// Normal iterator
 	#define vul_foreach( T, list ) for ( T *it = list.begin( ), *last = list.end( ); it != last; ++it )

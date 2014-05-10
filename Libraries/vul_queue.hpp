@@ -37,7 +37,7 @@ namespace vul {
 		/**
 		 * The buffer.
 		 */
-		T data[ ];
+		T *data;
 		/**
 		 * The reserved size of the buffer.
 		 */
@@ -103,7 +103,7 @@ namespace vul {
 	template< typename T >
 	void queue_t< T >::resize( ui32_t new_size )
 	{
-		T buffer = new T[ new_size ];
+		T *buffer = new T[ new_size ];
 		assert( buffer != NULL );
 
 		ui32_t back = this->size( );
@@ -111,11 +111,11 @@ namespace vul {
 		if( this->back >= this->front )
 		{
 			memcpy( buffer,
-					&this->data[ q->front ],
+					&this->data[ this->front ],
 					( this->back - this->front ) * sizeof( T ) );
 		} else {
 			memcpy( buffer,
-					&this->data[ q->front ],
+					&this->data[ this->front ],
 					( this->reserved - this->front ) * sizeof( T ) );
 			memcpy( &buffer[ this->reserved - this->front ],
 					this->data,
@@ -171,7 +171,7 @@ namespace vul {
 			this->resize( ( ui32_t )( ( f32_t )this->reserved * this->growth_factor ) );
 		}
 		// Insert it
-		this-data[ this->back++ ] = data;
+		this->data[ this->back++ ] = data;
 		// Wrap if needed
 		if( this->back == this->reserved ) {
 			this->back = 0;

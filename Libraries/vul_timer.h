@@ -16,8 +16,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef vul_timer_H
-#define vul_timer_H
+#ifndef VUL_TIMER_H
+#define VUL_TIMER_H
 
 // Define in exactly _one_ C/CPP file
 //#define VUL_DEFINE
@@ -27,10 +27,14 @@
 //#define VUL_LINUX
 //#define VUL_OSX
 
+#define VUL_MIN( a, b ) ( a <= b ? a : b )
+#define VUL_MAX( a, b ) ( a >= b ? a : b )
+
 #include <malloc.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+#include <assert.h>
 #if defined( VUL_WINDOWS )
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
@@ -160,7 +164,7 @@ unsigned long long vul_timer_get_millis( vul_timer_t *c )
 	ms_off = (signed long)(new_ticks - check);
 	if (ms_off < -100 || ms_off > 100)
 	{
-		adjust = min( ms_off * c->frequency.QuadPart / 1000, new_time - c->last_time );
+		adjust = VUL_MIN( ms_off * c->frequency.QuadPart / 1000, new_time - c->last_time );
 		c->start_time.QuadPart += adjust;
 		new_time -= adjust;
 		new_ticks = (unsigned long) (1000 * new_time / c->frequency.QuadPart);
@@ -230,7 +234,7 @@ unsigned long long vul_timer_get_micros( vul_timer_t *c )
 	ms_off = (signed long)(new_ticks - check);
 	if (ms_off < -100 || ms_off > 100)
 	{
-		adjust = min( ms_off * c->frequency.QuadPart / 1000, new_time - c->last_time );
+		adjust = VUL_MIN( ms_off * c->frequency.QuadPart / 1000, new_time - c->last_time );
 		c->start_time.QuadPart += adjust;
 		new_time -= adjust;
 	}

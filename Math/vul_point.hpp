@@ -24,6 +24,7 @@
 #include "vul_types.hpp"
 
 #include <cstring> // For memset
+#include <assert.h>
 
 namespace vul {
 	

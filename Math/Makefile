@@ -1,21 +1,30 @@
+CC = g++
+CFLAGS = -fno-strict-aliasing -Wall -fabi-version=6 -D VUL_TEST
+C98 = -std=c++98
+C11 = -std=c++11 -D VUL_CPLUSPLUS11
+AVX = -mavx -D VUL_AOSOA_AVX
+SSE = -msse4 -D VUL_AOSOA_SSE
+INC = -I.:./Tests
+FILE = tests.cpp
+
 setup:
 	mkdir -p ./bin/
 full:
-	g++ -std=c++11 -mavx -msse4 -Wall -I.:./Tests tests.cpp -o ./bin/test_full -D VUL_TEST -D VUL_CPLUSPLUS11 -D VUL_AOSOA_SSE -D VUL_AOSOA_AVX -fabi-version=6
+	${CC} ${C11} ${AVX} ${SSE} ${INC} ${FILE} -o ./bin/test_full
 avx:
-	g++ -std=c++11 -mavx -Wall -I.:./Tests tests.cpp -o ./bin/test_avx -D VUL_TEST -D VUL_CPLUSPLUS11 -D VUL_AOSOA_AVX -fabi-version=6
+	${CC} ${C11} ${AVX} ${INC} ${FILE} -o ./bin/test_avx
 sse:
-	g++ -std=c++11 -msse4 -Wall -I.:./Tests tests.cpp -o ./bin/test_sse -D VUL_TEST -D VUL_CPLUSPLUS11 -D VUL_AOSOA_SSE -fabi-version=6
+	${CC} ${C11} ${SSE} ${INC} ${FILE} -o ./bin/test_sse
 pure:
-	g++ -std=c++11 -Wall -I.:./Tests tests.cpp -o ./bin/test_pure -D VUL_TEST -D VUL_CPLUSPLUS11 -fabi-version=6
+	${CC} ${C11} ${INC} ${FILE} -o ./bin/test_pure
 leg-full:
-	g++ -std=c++98 -mavx -msse4 -Wall -I.:./Tests tests.cpp -o ./bin/test_legacy_full -D VUL_TEST -D VUL_AOSOA_SSE -D VUL_AOSOA_AVX -fabi-version=6
+	${CC} ${C98} ${AVX} ${SSE} ${INC} ${FILE} -o ./bin/test_legacy_full
 leg-avx:
-	g++ -std=c++98 -mavx -Wall -I.:./Tests tests.cpp -o ./bin/test_legacy_avx -D VUL_TEST -D VUL_AOSOA_AVX -fabi-version=6
+	${CC} ${C98} ${AVX} ${INC} ${FILE} -o ./bin/test_legacy_avx
 leg-sse:
-	g++ -std=c++98 -msse4 -Wall -I.:./Tests tests.cpp -o ./bin/test_legacy_sse -D VUL_TEST -D VUL_AOSOA_SSE -fabi-version=6
+	${CC} ${C98} ${SSE} ${INC} ${FILE} -o ./bin/test_legacy_sse
 leg-pure:
-	g++ -std=c++98 -Wall -I.:./Tests tests.cpp -o ./bin/test_legacy_pure -D VUL_TEST -fabi-version=6
+	${CC} ${C98} ${INC} ${FILE} -o ./bin/test_legacy_pure
 
 all: setup full sse avx pure leg-full leg-avx leg-sse leg-pure
 	@echo "Done!"

@@ -203,6 +203,13 @@ namespace vul {
 	 */
 	template< typename T, i32_t dstc, i32_t dstr, i32_t srcc, i32_t srcr >
 	void copy( Matrix< T, dstc, dstr > *dst, const Matrix< T, srcc, srcr > &src );
+	/**
+	 * Copies the contents of matrix src (sized srcc X srcr) into the 
+	 * ( srcc X srcr ) submatrix of dst starting at column firstcol and row
+	 * firstrow. Dst must be at least as big as <srcc + firstcol, srcr + firstrow>.
+	 */
+	template< typename T, i32_t dstc, i32_t dstr, i32_t srcc, i32_t srcr >
+	void copy( Matrix< T, dstc, dstr > *dst, const Matrix< T, srcc, srcr > &src, i32_t firstcol, i32_t firstrow );
 
 	// Operations
 	/**
@@ -732,6 +739,19 @@ namespace vul {
 		for( i = 0; i < srcc; ++i ) {
 			for( j = 0; j < srcr; ++j ) {
 				(*dst)( i, j ) = src( i, j );
+			}
+		}
+	}
+	template< typename T, i32_t dstc, i32_t dstr, i32_t srcc, i32_t srcr >
+	void copy( Matrix< T, dstc, dstr > *dst, const Matrix< T, srcc, srcr > &src, i32_t firstcol, i32_t firstrow )
+	{
+		i32_t i, j;
+
+		assert( dstc >= srcc + firstcol && dstr >= srcr + firstrow );
+
+		for( i = 0; i < srcc; ++i ) {
+			for( j = 0; j < srcr; ++j ) {
+				(*dst)( i + firstcol, j + firstrow ) = src( i, j );
 			}
 		}
 	}

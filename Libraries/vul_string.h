@@ -119,7 +119,7 @@ char *vuls__wchar_to_utf8_large( vuls__wchar *str )
 // String searching / pattern matching.
 //
 
-typedef struct
+typedef struct vuls__search_table
 {
 	unsigned int size;
 	int *entries;

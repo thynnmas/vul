@@ -15,7 +15,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef VUL_TYPES_H 
+#if !defined( VUL_TYPES_H ) && !defined( VUL_TYPES_HPP )
 #define VUL_TYPES_H
 
 // Floats

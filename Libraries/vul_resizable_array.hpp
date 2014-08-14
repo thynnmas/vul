@@ -49,12 +49,6 @@ namespace vul {
 		 */
 		vector_t< T >( ui32_t initialSize = 0 );
 		/**
-		 * Constructor. Takes an optional initial size.
-		 * @param sizeOfType Size, in bytes, of the type stored in this list.
-		 * @param initialSize [Optional] Initial reserved size of list.
-		 */
-		vector_t< T >( ui32_t sizeOfType, ui32_t initialSize = 0 );
-		/**
 		 * Copy Constructor. Takes an optional initial size.
 		 * @param ref The list to copy from
 		 */

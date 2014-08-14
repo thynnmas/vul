@@ -11,7 +11,7 @@
 #ifndef VUL_DISTRIBUTIONS_HPP
 #define VUL_DISTRIBUTIONS_HPP
 
-#include "vul_types.h"
+#include "vul_types.hpp"
 
 namespace vul {
 
@@ -26,7 +26,9 @@ namespace vul {
 	public:
 		/**
 		 * Creates a new halton pair. Uses Thomas Wang's integer hash to 
-		 * initialize values from the seed.
+		 * initialize values from the seed, where we use the integer hash on the seed
+		 * to find two new seeds sa, sb. We then initialize value_a = 1-(sa/max)
+		 * and value_b = [ 1-(sb/max) ]^2
 		 */
 		halton_pair( ui32_t base1, ui32_t base2, ui32_t seed );
 		/**
@@ -39,6 +41,7 @@ namespace vul {
 		void fetch( f32_t *v1, f32_t *v2 );
 	};
 
+#ifdef VUL_DEFINE
 	halton_pair::halton_pair( ui32_t base1, ui32_t base2, ui32_t seed )
 	{
 		seed = (seed ^ 61) ^ (seed >> 16);
@@ -47,20 +50,21 @@ namespace vul {
 		seed *= 0x27d4eb2d;
 		seed = seed ^ (seed >> 15);
 
-		this->value_a = seed;
+		this->value_a = 1.f - ( ( f32_t )seed / std::numeric_limits< f32_t >::max( ) );
 
 		seed ^= ( seed << 13 );
 		seed ^= ( seed >> 17 );
 		seed ^= ( seed << 5 );
 
-		this->value_b = seed;
+		this->value_b = 1.f - ( ( f32_t )seed / std::numeric_limits< f32_t >::max( ) );
+		this->value_b *= this->value_b;
 		this->inv_base_a = 1.f / base1;
 		this->inv_base_b = 1.f / base2;
 	}
 	
 	void halton_pair::next( )
 	{	
-		f32_t r = 1.0 - this->value_a - 0.0000001;
+		f32_t r = 1.0 - ( this->value_a - 0.0000001 );
 		if ( this->inv_base_a < r ) {
 			this->value_a += this->inv_base_a;
 		} else {
@@ -89,7 +93,7 @@ namespace vul {
 		*v1 = this->value_a;
 		*v2 = this->value_b;
 	}
-
+#endif
 }
 
 #endif

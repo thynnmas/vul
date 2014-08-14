@@ -31,15 +31,14 @@
 //#define VUL_DEFINE
 
 
-typedef struct vul_skip_list_element vul_skip_list_element; 
-struct vul_skip_list_element
+typedef struct vul_skip_list_element
 {
 	void *data;
 	unsigned int levels;
 	vul_skip_list_element** nexts;
-};
+} vul_skip_list_element;
 
-typedef struct
+typedef struct vul_skip_list
 {
 	unsigned int levels;
 	vul_skip_list_element **heads;

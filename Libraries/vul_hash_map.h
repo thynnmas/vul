@@ -44,14 +44,14 @@
 
 typedef ui32_t ( *vul_hash_function )( const ui8_t* data, ui32_t len );
 
-typedef struct {
+typedef struct vul_hash_map_t {
 	ui32_t bucket_count;
 	vul_list_element_t **buckets;
 	vul_hash_function hash;
 	int (*comparator)( void* a, void *b );	// Comparison function
 } vul_hash_map_t;
 
-typedef struct {
+typedef struct vul_hash_map_element_t {
 	const ui8_t *key;
 	void *data;
 
@@ -112,6 +112,10 @@ vul_hash_map_element_t *vul_map_insert( vul_hash_map_t *map, const vul_hash_map_
 		return ( vul_hash_map_element_t* )map->buckets[ bucket ]->data;
 	} else {
 		e = vul_list_insert( map->buckets[ bucket ], ( void* )ref, sizeof( vul_hash_map_element_t ), map->comparator );
+		if( e->prev == NULL ) {
+			// We have changed head of the list!
+			map->buckets[ bucket] = e;
+		}
 		return ( vul_hash_map_element_t* )e->data;
 	}
 }
@@ -133,9 +137,10 @@ void vul_map_remove( vul_hash_map_t *map, const vul_hash_map_element_t *ref )
 
 	// Find the element
 	e = vul_list_find( map->buckets[ bucket ], ( void* )ref, map->comparator );
-	if( map->comparator( e->data, ( void* )ref ) == 0 )
+	// Delete if an exact match; vul_list_find will return NULL if what we search for is smaller than
+	// all elements in the list and the biggest smaller element if no match is found, so check it matches.
+	if( e != NULL && map->comparator( e->data, ( void* )ref ) == 0 )
 	{
-		// Only delete if equal, since vul_list_find will return a valid element regardles of match or not.
 		vul_list_remove( e );
 	}
 }
@@ -168,7 +173,7 @@ vul_hash_map_element_t *vul_map_get( vul_hash_map_t *map, const ui8_t *key, ui32
 	}
 	
 	// Check that it's an actual match
-	if( map->comparator( le->data, &e ) == 0 ) {
+	if( le != NULL && map->comparator( le->data, &e ) == 0 ) {
 		return ( vul_hash_map_element_t* )le->data;
 	} else {
 		return NULL;

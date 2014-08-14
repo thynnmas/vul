@@ -67,6 +67,7 @@ vul_list_element_t *vul__list_add_after( vul_list_element_t *e, void *data, ui32
 			n->prev = ret;
 		} else {
 			ret->next = NULL;
+			e->next = ret;
 		}
 	} else {
 		ret->prev = NULL;
@@ -106,7 +107,8 @@ void vul_list_remove( vul_list_element_t *e )
 /**
  * Finds the last element in the list that is equal to the given data, or if not available, 
  * the last one that is smaller. This is the element after which we would want to insert
- * a new element with the given data.
+ * a new element with the given data. If the given data is smaller than the entire list,
+ * we return NULL.
  */
 
 #ifndef VUL_DEFINE
@@ -115,9 +117,15 @@ vul_list_element_t *vul_list_find( vul_list_element_t *head, void *data, int (*c
 vul_list_element_t *vul_list_find( vul_list_element_t *head, void *data, int (*comparator)( void *a, void *b ) )
 {
 	assert( head != NULL );
+	
+	// If the first element is bigger then what we want the spot we wish to return
+	// is before the actual list, so we return null.
+	if( comparator( data, head->data ) < 0 ) {
+		return NULL;
+	}
 
 	while( head->next != NULL // Return last element of the list if data is bigger than all elements, not null
-		   && comparator( data, head->data ) <= 0 )	// And keep moving while data is smaller or equal.
+		   && comparator( data, head->next->data ) >= 0 )	// And keep moving while data is bigger than or equal to the next element.
 	{
 		head = head->next;
 	}
@@ -134,17 +142,26 @@ vul_list_element_t *vul_list_insert( vul_list_element_t *list_head, void *data, 
 #else
 vul_list_element_t *vul_list_insert( vul_list_element_t *list_head, void *data, ui32_t data_size, int (*comparator)( void *a, void *b ) )
 {
-	vul_list_element_t *before;
+	vul_list_element_t *before, *ret;
 	
 	// Find the smallest element smaller than or equal to it
 	if( list_head != NULL ) {
 		before = vul_list_find( list_head, data, comparator );
-	} else {
-		before = NULL;
-	}
 
-	// Insert the data after it
-	return vul__list_add_after( before, data, data_size );
+		// Insert the data after it (which if before == NULL means create a new head).
+		ret = vul__list_add_after( before, data, data_size );
+
+		// If we created a new head, we must manualy link it up
+		if( before == NULL )
+		{
+			ret->next = list_head;
+			list_head->prev = ret;
+		}
+	} else {
+		// Create a new head
+		ret = vul__list_add_after( NULL, data, data_size );
+	}
+	return ret;
 }
 #endif
 

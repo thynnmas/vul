@@ -172,7 +172,7 @@ unsigned long long vul_timer_get_millis( vul_timer_t *c )
 
 	c->last_time = new_time;
 
-	return new_ticks;
+	return ( ui64_t )new_ticks;
 #elif defined( VUL_LINUX )
 	timespec ts, temp;
 	clock_gettime( c->zero, &ts );
@@ -185,12 +185,12 @@ unsigned long long vul_timer_get_millis( vul_timer_t *c )
 		temp.tv_nsec = ts.tv_nsec - c->start_spec.tv_nsec;
 	}
 		
-	return temp.tv_nsec / 1000000;
+	return ( ui64_t )( temp.tv_nsec / 1000000 );
 #elif defined( VUL_OSX )
 	uint64_t end = mach_absolute_time( );
 	uint64_t elapsed = end - c->start;
 	uint64_t nsec = elapsed * c->timebase_info.numer / timebase_info.denom;
-	return nsec / 1000000;
+	return ( ui64_t )( nsec / 1000000 );
 #endif
 }
 #endif

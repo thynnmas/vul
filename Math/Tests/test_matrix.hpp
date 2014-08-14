@@ -630,6 +630,17 @@ namespace vul_test {
 		assert( m43( 3, 1 ) == col3[ 1 ] );
 		assert( m43( 3, 2 ) == col3[ 2 ] );
 		
+		Vector< f32_t, 3 > col0 = column( m43, 0 );
+		copy( &m43, m33, 1, 0 );
+		for( ui32_t c = 0; c < 3; ++c ) {
+			for( ui32_t r = 0; r < 3; ++r ) {
+				assert( m43( c + 1, r ) == m33( c, r ) );
+			}
+		}
+		assert( m43( 0, 0 ) == col0[ 0 ] );
+		assert( m43( 0, 1 ) == col0[ 1 ] );
+		assert( m43( 0, 2 ) == col0[ 2 ] );
+		
 		Matrix< f32_t, 2, 2 > m22 = makeMatrix22< f32_t >( 7.f, -8.f,
 														   4.f,  2.f ),
 						      m22r;

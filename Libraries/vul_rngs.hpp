@@ -42,6 +42,7 @@ namespace vul {
 		 */
 		f32_t rand_f32( );
 	};
+#ifdef VUL_DEFINE
 	rng_tu::rng_tu( ui32_t seed )
 	{
 		ui32_t i, j;
@@ -78,8 +79,9 @@ namespace vul {
 	f32_t rng_tu::rand_f32( ) 
 	{
 		ui32_t val = rand_ui32( );
-		return ( f32_t ) ( val >> 8 ) / (16777216.0f - 1.0f);
+		return ( f32_t ) ( val >> 8 ) / ( 16777216.0f - 1.0f );
 	}
+#endif
 #undef VUL_RNG_TU_SEED_COUNT
 #undef VUL_RNG_TU_SEED_A
 
@@ -108,7 +110,8 @@ namespace vul {
 		 */
 		f32_t rand_f32( );
 	};
-
+	
+#ifdef VUL_DEFINE
 	rng_xorshift::rng_xorshift( )
 	{
 		this->x = 123456789;
@@ -131,6 +134,7 @@ namespace vul {
 	{
 		return ( f32_t )( rand_ui32( ) ) * ( 1.0f / 4294967296.0f );
 	}
+#endif
 
 	//--------------------------------
 	// vul_rng_xorhash
@@ -158,7 +162,8 @@ namespace vul {
 		 */
 		f32_t next_f32( );
 	};
-
+	
+#ifdef VUL_DEFINE
 	rng_xorhash::rng_xorhash( ui32_t seed )
 	{
 		seed = ( seed ^61 ) ^ ( seed >> 16 );
@@ -181,5 +186,6 @@ namespace vul {
 	{
 		return ( f32_t )( next_ui32( ) ) * ( 1.0f / 4294967296.0f );
 	}
+#endif
 }
 #endif

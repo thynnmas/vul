@@ -55,7 +55,7 @@ enum vul__cl_buffer_type {
  * Our OpenCL context and a list of devices. This will be a single global
  * vul__cl_context.
  */
-typedef struct {
+typedef struct vul__cl_context {
 	cl_platform_id platform;
 	cl_context context;
 
@@ -73,7 +73,7 @@ static vul__cl_context **vul__cl_contexts = NULL;
 /**
  * The struct of a cl program to keep track of loaded ones.
  */
-typedef struct {
+typedef struct vul_cl_program {
 	cl_program program;
 	vul__cl_context *context;
 	vul__cl_kernel_type type;	// Type of source ( binary or cl source )
@@ -87,7 +87,7 @@ typedef struct {
 /**
  * The struct of a cl kernel. Contains a reference to the program and the entry point.
  */
-typedef struct {
+typedef struct vul_cl_kernel {
 	cl_kernel kernel;
 	vul_cl_program *program;
 	char *entry_point;
@@ -98,7 +98,7 @@ typedef struct {
  * The struct of a cl kernel argument. Contains size of argument, 
  * and a pointer to the arguemnt.
  */
-typedef struct {
+typedef struct vul_cl_kernel_argument {
 	size_t size;
 	const void *content;
 } vul_cl_kernel_argument;
@@ -108,7 +108,7 @@ typedef struct {
  * the cl_mem of the buffer in the CL context and either a pointer to the host memeory,
  * or the GLuint of the buffer in the GL context.
  */
-typedef struct {
+typedef struct vul_cl_buffer {
 	vul__cl_context *context;
 	cl_mem buffer;
 	vul__cl_buffer_type type;

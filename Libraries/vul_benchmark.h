@@ -25,7 +25,7 @@
 
 #include <stdarg.h>
 
-typedef struct {
+typedef struct vul_benchmark_result {
 	f64_t mean;
 	ui64_t median;
 	f64_t std_deviation;

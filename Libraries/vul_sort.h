@@ -320,7 +320,7 @@ static int vul__sort_compute_minrun( int length )
 /**
  * Entry in the merge stack. Contains a pair of first entry and run length.
  */
-typedef struct {
+typedef struct vul__sort_merge_stack_pair {
 	int base;
 	int length;
 } vul__sort_merge_stack_pair;

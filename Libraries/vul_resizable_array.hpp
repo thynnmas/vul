@@ -244,12 +244,6 @@ namespace vul {
 		initialize( 0, initialSize );
 	}
 	template< class T >
-	vector_t< T >::vector_t( ui32_t sizeOfType, ui32_t initialSize )
-	{
-		mElementSize = sizeOfType;
-		initialize( 0, initialSize );
-	}
-	template< class T >
 	vector_t< T >::vector_t( const vector_t< T > &ref )
 	{
 		ui32_t size = ref.size( );
@@ -261,7 +255,7 @@ namespace vul {
 		resize( size );
 
 		for ( ui32_t i = 0; i < size; ++i ) {
-			*( get( i ) ) = *( ref.get( i ) );
+			*( get( i ) ) = *( ref.getConst( i ) );
 		}
 	}
 	template< class T >
@@ -411,8 +405,6 @@ namespace vul {
 	template< class T >
 	void vector_t< T >::removeSwap( ui32_t index )
 	{
-		ui32_t elem, i;
-
 		assert( index < mSize );
 		mList[ index ] = mList[ mSize - 1 ];
 		resize( mSize - 1 );

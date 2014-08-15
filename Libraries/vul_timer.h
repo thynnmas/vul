@@ -61,7 +61,7 @@ typedef struct {
 
 	DWORD_PTR clock_mask;
 #elif defined( VUL_LINUX )
-	timespec start_spec;
+	struct timespec start_spec;
 #elif defined( VUL_OSX )
 	uint64_t start;
 	mach_timebase_info_data_t timebase_info;

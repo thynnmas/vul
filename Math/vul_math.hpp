@@ -37,6 +37,7 @@
  * 
  * @TODO: The todos in vul_half.hpp
  * @TODO: Planned features:
+ *		-NEON SIMD for ARM devices
  *		-SIMD functions for more things
  *		-Linear solvers
  *		-64-bit fixed type

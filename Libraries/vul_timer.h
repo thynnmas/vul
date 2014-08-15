@@ -51,9 +51,8 @@
 #endif
 
 typedef struct {
-#if defined( VUL_WINDOWS )
 	clock_t zero;
-
+#if defined( VUL_WINDOWS )
 	DWORD start_tick;
 	LONGLONG last_time;
 	LARGE_INTEGER start_time;
@@ -174,7 +173,7 @@ unsigned long long vul_timer_get_millis( vul_timer_t *c )
 
 	return ( ui64_t )new_ticks;
 #elif defined( VUL_LINUX )
-	timespec ts, temp;
+	struct timespec ts, temp;
 	clock_gettime( c->zero, &ts );
 
 	if( ( ts.tv_nsec - c->start_spec.tv_nsec ) < 0 ) {
@@ -247,7 +246,7 @@ unsigned long long vul_timer_get_micros( vul_timer_t *c )
 
 	return new_micro;
 #elif defined( VUL_LINUX )	
-	timespec ts, temp;
+	struct timespec ts, temp;
 	clock_gettime( c->zero, &ts );
 
 	if( ( ts.tv_nsec - c->start_spec.tv_nsec ) < 0 ) {

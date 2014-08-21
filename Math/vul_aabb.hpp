@@ -352,10 +352,10 @@ namespace vul {
 	template< typename T, i32_t n >
 	AABB< T, n > unionize( const AABB< T, n > &a, const AABB< T, n > &b )
 	{
-		return makeAABB< T, n >( min( a._min.as_vec( ), 
-									  b._min.as_vec( ) ).as_point( ),
-								 max( a._max.as_vec( ), 
-									  b._max.as_vec( ) ).as_point( ) );
+		return AABB< T, n >( min( a._min.as_vec( ), 
+					  b._min.as_vec( ) ).as_point( ),
+				     max( a._max.as_vec( ), 
+					  b._max.as_vec( ) ).as_point( ) );
 	}
 
 

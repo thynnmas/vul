@@ -123,33 +123,33 @@ namespace vul_test {
 
 		Vector< f32_t, 3 > v3c[ 3 ], v3r[ 3 ];
 #ifdef VUL_CPLUSPLUS11
-		v3c[ 0 ] = Vector< f32_t, 3 >{ -1.f/sqrt( 6.f ),  1.f/sqrt( 2.f ), 1.f/sqrt( 3.f ) };
-		v3c[ 1 ] = Vector< f32_t, 3 >{ -1.f/sqrt( 6.f ), -1.f/sqrt( 2.f ), 1.f/sqrt( 3.f ) };
-		v3c[ 2 ] = Vector< f32_t, 3 >{  2.f/sqrt( 6.f ),				0, 1.f/sqrt( 3.f ) };
-		v3r[ 0 ] = Vector< f32_t, 3 >{ -1.f/sqrt( 6.f ), -1.f/sqrt( 6.f ), 2.f/sqrt( 6.f ) };
-		v3r[ 1 ] = Vector< f32_t, 3 >{  1.f/sqrt( 2.f ), -1.f/sqrt( 2.f ), 0 };
-		v3r[ 2 ] = Vector< f32_t, 3 >{  1.f/sqrt( 3.f ),  1.f/sqrt( 3.f ), 1.f/sqrt( 3.f ) };
+		v3c[ 0 ] = Vector< f32_t, 3 >{ -1.f/sqrtf( 6.f ),  1.f/sqrtf( 2.f ), 1.f/sqrtf( 3.f ) };
+		v3c[ 1 ] = Vector< f32_t, 3 >{ -1.f/sqrtf( 6.f ), -1.f/sqrtf( 2.f ), 1.f/sqrtf( 3.f ) };
+		v3c[ 2 ] = Vector< f32_t, 3 >{  2.f/sqrtf( 6.f ),		  0, 1.f/sqrtf( 3.f ) };
+		v3r[ 0 ] = Vector< f32_t, 3 >{ -1.f/sqrtf( 6.f ), -1.f/sqrtf( 6.f ), 2.f/sqrtf( 6.f ) };
+		v3r[ 1 ] = Vector< f32_t, 3 >{  1.f/sqrtf( 2.f ), -1.f/sqrtf( 2.f ), 0 };
+		v3r[ 2 ] = Vector< f32_t, 3 >{  1.f/sqrtf( 3.f ),  1.f/sqrtf( 3.f ), 1.f/sqrtf( 3.f ) };
 #else
-		v3c[ 0 ] = makeVector< f32_t >( -1.f/sqrt( 6.f ),  1.f/sqrt( 2.f ), 1.f/sqrt( 3.f ) );
-		v3c[ 1 ] = makeVector< f32_t >( -1.f/sqrt( 6.f ), -1.f/sqrt( 2.f ), 1.f/sqrt( 3.f ) );
-		v3c[ 2 ] = makeVector< f32_t >(  2.f/sqrt( 6.f ),				 0, 1.f/sqrt( 3.f ) );
-		v3r[ 0 ] = makeVector< f32_t >( -1.f/sqrt( 6.f ), -1.f/sqrt( 6.f ), 2.f/sqrt( 6.f ) );
-		v3r[ 1 ] = makeVector< f32_t >(  1.f/sqrt( 2.f ), -1.f/sqrt( 2.f ), 0 );
-		v3r[ 2 ] = makeVector< f32_t >(  1.f/sqrt( 3.f ),  1.f/sqrt( 3.f ), 1.f/sqrt( 3.f ) );
+		v3c[ 0 ] = makeVector< f32_t >( -1.f/sqrtf( 6.f ),  1.f/sqrtf( 2.f ), 1.f/sqrtf( 3.f ) );
+		v3c[ 1 ] = makeVector< f32_t >( -1.f/sqrtf( 6.f ), -1.f/sqrtf( 2.f ), 1.f/sqrtf( 3.f ) );
+		v3c[ 2 ] = makeVector< f32_t >(  2.f/sqrtf( 6.f ),		   0, 1.f/sqrtf( 3.f ) );
+		v3r[ 0 ] = makeVector< f32_t >( -1.f/sqrtf( 6.f ), -1.f/sqrtf( 6.f ), 2.f/sqrtf( 6.f ) );
+		v3r[ 1 ] = makeVector< f32_t >(  1.f/sqrtf( 2.f ), -1.f/sqrtf( 2.f ), 0 );
+		v3r[ 2 ] = makeVector< f32_t >(  1.f/sqrtf( 3.f ),  1.f/sqrtf( 3.f ), 1.f/sqrtf( 3.f ) );
 #endif
 		qf = makeQuatFromAxes( v3c[ 0 ], v3c[ 1 ], v3c[ 2 ] );
-		f32_t root = sqrt( 1.f / sqrt( 3.f ) + 1.f / sqrt( 6.f ) + 1.f / sqrt( 2.f ) + 1.f );
-		assert( abs( qf.x - ( 0.5f / root ) * (  2.f / sqrt( 6.f ) - 1.f / sqrt( 3.f ) ) ) < f32eps );
-		assert( abs( qf.y - ( 0.5f / root ) * ( -1.f / sqrt( 3.f ) ) ) < f32eps );
+		f32_t root = sqrtf( 1.f / sqrtf( 3.f ) + 1.f / sqrtf( 6.f ) + 1.f / sqrtf( 2.f ) + 1.f );
+		assert( abs( qf.x - ( 0.5f / root ) * (  2.f / sqrtf( 6.f ) - 1.f / sqrtf( 3.f ) ) ) < f32eps );
+		assert( abs( qf.y - ( 0.5f / root ) * ( -1.f / sqrtf( 3.f ) ) ) < f32eps );
 		assert( abs( qf.z - root / 2.f ) < f32eps );
-		assert( abs( qf.w - ( 0.5f / root ) * (  1.f / sqrt( 2.f ) + 1.f / sqrt( 6.f ) ) ) < f32eps );
+		assert( abs( qf.w - ( 0.5f / root ) * (  1.f / sqrtf( 2.f ) + 1.f / sqrtf( 6.f ) ) ) < f32eps );
 		
 		Matrix< f32_t, 3, 3 > m33 = makeMatrixFromRows< f32_t, 3, 3 >( v3r );
 		qf = makeQuatFromMatrix( m33 );
-		assert( abs( qf.x - ( 0.5f / root ) * (  2.f / sqrt( 6.f ) - 1.f / sqrt( 3.f ) ) ) < f32eps );
-		assert( abs( qf.y - ( 0.5f / root ) * ( -1.f / sqrt( 3.f ) ) ) < f32eps );
+		assert( abs( qf.x - ( 0.5f / root ) * (  2.f / sqrtf( 6.f ) - 1.f / sqrtf( 3.f ) ) ) < f32eps );
+		assert( abs( qf.y - ( 0.5f / root ) * ( -1.f / sqrtf( 3.f ) ) ) < f32eps );
 		assert( abs( qf.z - root / 2.f ) < f32eps );
-		assert( abs( qf.w - ( 0.5f / root ) * (  1.f / sqrt( 2.f ) + 1.f / sqrt( 6.f ) ) ) < f32eps );
+		assert( abs( qf.w - ( 0.5f / root ) * (  1.f / sqrtf( 2.f ) + 1.f / sqrtf( 6.f ) ) ) < f32eps );
 				
 		qf = makeZero< f32_t >( );
 		assert( qf[ 0 ] == 0.f ); assert( qf[ 1 ] == 0.f ); assert( qf[ 2 ] == 0.f ); assert( qf[ 3 ] == 0.f );
@@ -431,9 +431,9 @@ namespace vul_test {
 		assert( equals( r, q, 1e-3f ) );
 
 #ifdef VUL_CPLUSPLUS11
-		a = Quaternion< f32_t >{ 0.f, 0.f, 1.f / sqrt( 2.f ), 1.f / sqrt( 2.f ) };
+		a = Quaternion< f32_t >{ 0.f, 0.f, 1.f / sqrtf( 2.f ), 1.f / sqrtf( 2.f ) };
 #else
-		a = makeQuat< f32_t >( 0.f, 0.f, 1.f / sqrt( 2.f ), 1.f / sqrt( 2.f ) );
+		a = makeQuat< f32_t >( 0.f, 0.f, 1.f / sqrtf( 2.f ), 1.f / sqrtf( 2.f ) );
 #endif
 		b = makeIdentity< f32_t >( );
 

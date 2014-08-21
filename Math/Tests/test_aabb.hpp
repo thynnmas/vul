@@ -354,12 +354,12 @@ namespace vul_test {
 	{
 		// Test 2D, 8D vs known cases.
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 2 > a2( Vector< f32_t >{ 0.f, 1.f }, makeVector< f32_t >{ 1.f, 2.f } );
-		AABB< f32_t, 2 > b2( Vector< f32_t >{ 0.5f, 1.5f }, makeVector< f32_t >{ 1.f, 2.f } ); // This tests inside but on boundary
-		AABB< f32_t, 2 > c2( Vector< f32_t >{ -0.5f, 1.f }, makeVector< f32_t >{ 1.f, 2.f } ); // This tests outside on one side
-		AABB< f32_t, 8 > a8( Vector< f32_t, 8 >( -1.f ), makeVector< f32_t, 8 >( 0.f ) );
-		AABB< f32_t, 8 > b8( Vector< f32_t, 8 >( -0.5f ), makeVector< f32_t, 8 >( 0.5f ) ); // This tests entirely inside
-		AABB< f32_t, 8 > c8( Vector< f32_t, 8 >( -8.f ), makeVector< f32_t, 8 >( -6.f ) ); // This tests entirely disparate
+		AABB< f32_t, 2 > a2( Vector< f32_t, 2 >{ 0.f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } );
+		AABB< f32_t, 2 > b2( Vector< f32_t, 2 >{ 0.5f, 1.5f }, Vector< f32_t, 2 >{ 1.f, 2.f } ); // This tests inside but on boundary
+		AABB< f32_t, 2 > c2( Vector< f32_t, 2 >{ -0.5f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } ); // This tests outside on one side
+		AABB< f32_t, 8 > a8( Vector< f32_t, 8 >( -1.f ), Vector< f32_t, 8 >( 0.f ) );
+		AABB< f32_t, 8 > b8( Vector< f32_t, 8 >( -0.75f ), Vector< f32_t, 8 >( -0.25f ) ); // This tests entirely inside
+		AABB< f32_t, 8 > c8( Vector< f32_t, 8 >( -8.f ), Vector< f32_t, 8 >( -6.f ) ); // This tests entirely disparate
 #else
 		AABB< f32_t, 2 > a2 = makeAABB< f32_t >( makeVector< f32_t >( 0.f, 1.f ), makeVector< f32_t >( 1.f, 2.f ) );
 		AABB< f32_t, 2 > b2 = makeAABB< f32_t >( makeVector< f32_t >( 0.5f, 1.5f ), makeVector< f32_t >( 1.f, 2.f ) ); // This tests inside but on boundary
@@ -386,10 +386,10 @@ namespace vul_test {
 		AABB< f32_t, 2 > r2;
 		AABB< f32_t, 8 > r8;
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 2 > a2( Vector< f32_t >{ 0.f, 1.f }, Vector< f32_t >{ 1.f, 2.f } );
-		AABB< f32_t, 2 > b2( Vector< f32_t >{ -1.f, 0.f }, Vector< f32_t >{ 2.f, 3.f } ); // This tests complete engulfment
-		AABB< f32_t, 2 > c2( Vector< f32_t >{ 0.5f, 1.5f }, Vector< f32_t >{ 1.5f, 2.5f } ); // This tests partial overlap
-		AABB< f32_t, 2 > d2( Vector< f32_t >{ 2.f, 1.5f }, Vector< f32_t >{ 3.f, 4.f } ); // This tests disparates
+		AABB< f32_t, 2 > a2( Vector< f32_t, 2 >{ 0.f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } );
+		AABB< f32_t, 2 > b2( Vector< f32_t, 2 >{ -1.f, 0.f }, Vector< f32_t, 2 >{ 2.f, 3.f } ); // This tests complete engulfment
+		AABB< f32_t, 2 > c2( Vector< f32_t, 2 >{ 0.5f, 1.5f }, Vector< f32_t, 2 >{ 1.5f, 2.5f } ); // This tests partial overlap
+		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >{ 2.f, 1.5f }, Vector< f32_t, 2 >{ 3.f, 4.f } ); // This tests disparates
 		AABB< f32_t, 8 > a8( Vector< f32_t, 8 >( 0.f ), Vector< f32_t, 8 >( 1.f ) );
 		AABB< f32_t, 8 > b8( Vector< f32_t, 8 >( -0.5f ), Vector< f32_t, 8 >( 2.f ) ); // This tests complete engulfment
 		AABB< f32_t, 8 > c8( Vector< f32_t, 8 >( 0.5f ), Vector< f32_t, 8 >( 2.f ) ); // This tests partial overlap
@@ -432,10 +432,10 @@ namespace vul_test {
 	bool TestAABB::instersects( )
 	{		
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 2 > a2( Vector< f32_t >{ 0.f, 1.f }, Vector< f32_t >{ 1.f, 2.f } );
-		AABB< f32_t, 2 > b2( Vector< f32_t >{ -1.f, 0.f }, Vector< f32_t >{ 2.f, 3.f } ); // This tests complete engulfment
-		AABB< f32_t, 2 > c2( Vector< f32_t >{ 0.5f, 1.5f }, Vector< f32_t >{ 1.5f, 2.5f } ); // This tests partial overlap
-		AABB< f32_t, 2 > d2( Vector< f32_t >{ 2.f, 1.5f }, Vector< f32_t >{ 3.f, 4.f } ); // This tests disparates
+		AABB< f32_t, 2 > a2( Vector< f32_t, 2 >{ 0.f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } );
+		AABB< f32_t, 2 > b2( Vector< f32_t, 2 >{ -1.f, 0.f }, Vector< f32_t, 2 >{ 2.f, 3.f } ); // This tests complete engulfment
+		AABB< f32_t, 2 > c2( Vector< f32_t, 2 >{ 0.5f, 1.5f }, Vector< f32_t, 2 >{ 1.5f, 2.5f } ); // This tests partial overlap
+		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >{ 2.f, 1.5f }, Vector< f32_t, 2 >{ 3.f, 4.f } ); // This tests disparates
 		AABB< f32_t, 8 > a8( Vector< f32_t, 8 >( 0.f ), Vector< f32_t, 8 >( 1.f ) );
 		AABB< f32_t, 8 > b8( Vector< f32_t, 8 >( -0.5f ), Vector< f32_t, 8 >( 2.f ) ); // This tests complete engulfment
 		AABB< f32_t, 8 > c8( Vector< f32_t, 8 >( 0.5f ), Vector< f32_t, 8 >( 2.f ) ); // This tests partial overlap
@@ -470,8 +470,8 @@ namespace vul_test {
 		
 		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >( -1.f ), Vector< f32_t, 2 >( 1.f ) );
 		AABB< f32_t, 3 > d3( Vector< f32_t, 3 >( -1.f ), Vector< f32_t, 3 >( 1.f ) );
-		Affine< f32_t, 2 > a2( Matrix< f32_t, 2, 2 >{ cos( ( f32_t )VUL_PI / 6 ), -sin( ( f32_t )VUL_PI / 6 ),
-													  sin( ( f32_t )VUL_PI / 6 ),  cos( ( f32_t )VUL_PI / 6 ) },
+		Affine< f32_t, 2 > a2( Matrix< f32_t, 2, 2 >{ cosf( ( f32_t )VUL_PI / 6 ), -sinf( ( f32_t )VUL_PI / 6 ),
+							      sinf( ( f32_t )VUL_PI / 6 ),  cosf( ( f32_t )VUL_PI / 6 ) },
 							   Vector< f32_t, 2 >{ -1.f, 1.f } );
 		Affine< f32_t, 3 > a3 = makeAffine3D( Vector< f32_t, 3 >( 1.f ),
 											  Vector< f32_t, 3 >{ 2.f, -2.f, 1.f },

@@ -49,6 +49,7 @@
 #else
 	vul needs an operating system defined.
 #endif
+#include "vul_types.h"
 
 typedef struct {
 	clock_t zero;

@@ -38,7 +38,6 @@
  * @TODO: The todos in vul_half.hpp
  * @TODO: Planned features:
  *		-NEON SIMD for ARM devices
- *		-SIMD functions for more things
  *		-Linear solvers
  *		-64-bit fixed type
  *		-Faster matrix multiplication for large matrices.
@@ -79,7 +78,7 @@
 
 #include "vul_aabb.hpp"
 #include "vul_affine.hpp"
-#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX )
+#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX ) || defined( VUL_AOSOA_NEON )
 	#include "vul_aosoa.hpp"		// This is the file where we pack scalar data into SIMD data.
 #endif
 #include "vul_fixed.hpp"

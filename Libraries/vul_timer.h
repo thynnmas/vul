@@ -39,6 +39,7 @@
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
 #elif defined( VUL_LINUX )
+	#include <time.h>
 	#include <unistd.h>
 	#include <sys/resource.h>
 	#include <sys/times.h>
@@ -61,7 +62,7 @@ typedef struct {
 
 	DWORD_PTR clock_mask;
 #elif defined( VUL_LINUX )
-	struct timespec start_spec;
+	struct timespec start;
 #elif defined( VUL_OSX )
 	uint64_t start;
 	mach_timebase_info_data_t timebase_info;
@@ -104,7 +105,7 @@ void vul_timer_reset( vul_timer_t *c )
 	c->zero = clock( );
 #elif defined( VUL_LINUX )
 	c->zero = clock( );
-	clock_gettime( c->zero, &c->start_spec );
+	clock_gettime( CLOCK_REALTIME, &c->start );
 #elif defined( VUL_OSX )
 	c->start = mach_absolute_time( );
 	mach_timebase_info( &c->timebase_info );
@@ -136,6 +137,16 @@ void vul_timer_destroy( vul_timer_t *c )
 }
 #endif
 
+#ifndef VUL_DEFINE
+unsigned long long vul_timer_get_millis_cpu( vul_timer_t *c );
+#else
+unsigned long long vul_timer_get_millis_cpu( vul_timer_t *c )
+{
+        clock_t new_clock = clock( );
+        return ( unsigned long long ) ( ( double )( new_clock - c->zero ) /
+		 ( ( double )CLOCKS_PER_SEC / 1000.0 ) );
+}
+#endif
 
 #ifndef VUL_DEFINE
 unsigned long long vul_timer_get_millis( vul_timer_t *c );
@@ -174,18 +185,10 @@ unsigned long long vul_timer_get_millis( vul_timer_t *c )
 
 	return ( ui64_t )new_ticks;
 #elif defined( VUL_LINUX )
-	struct timespec ts, temp;
-	clock_gettime( c->zero, &ts );
-
-	if( ( ts.tv_nsec - c->start_spec.tv_nsec ) < 0 ) {
-		temp.tv_sec = ts.tv_sec - c->start_spec.tv_sec - 1;
-		temp.tv_nsec = 1000000000 + ts.tv_nsec - c->start_spec.tv_nsec;
-	} else {
-		temp.tv_sec = ts.tv_sec - c->start_spec.tv_sec;
-		temp.tv_nsec = ts.tv_nsec - c->start_spec.tv_nsec;
-	}
-		
-	return ( ui64_t )( temp.tv_nsec / 1000000 );
+	struct timespec now;
+	clock_gettime( CLOCK_REALTIME, &now );
+	return ( ( now.tv_sec - c->start.tv_sec ) * 1000 )
+	      +( ( now.tv_nsec - c->start.tv_nsec ) / 1000000 );
 #elif defined( VUL_OSX )
 	uint64_t end = mach_absolute_time( );
 	uint64_t elapsed = end - c->start;
@@ -194,17 +197,6 @@ unsigned long long vul_timer_get_millis( vul_timer_t *c )
 #endif
 }
 #endif
-
-#ifndef VUL_DEFINE
-unsigned long long vul_timer_get_millis_cpu( vul_timer_t *c );
-#else
-unsigned long long vul_timer_get_millis_cpu( vul_timer_t *c )
-{
-	clock_t new_clock = clock( );
-	return ( unsigned long long ) ( ( double )( new_clock - c->zero ) / ( ( double )CLOCKS_PER_SEC / 1000.0 ) );
-}
-#endif
-
 
 #ifndef VUL_DEFINE
 unsigned long long vul_timer_get_micros( vul_timer_t *c );
@@ -247,18 +239,10 @@ unsigned long long vul_timer_get_micros( vul_timer_t *c )
 
 	return new_micro;
 #elif defined( VUL_LINUX )	
-	struct timespec ts, temp;
-	clock_gettime( c->zero, &ts );
-
-	if( ( ts.tv_nsec - c->start_spec.tv_nsec ) < 0 ) {
-		temp.tv_sec = ts.tv_sec - c->start_spec.tv_sec - 1;
-		temp.tv_nsec = 1000000000 + ts.tv_nsec - c->start_spec.tv_nsec;
-	} else {
-		temp.tv_sec = ts.tv_sec - c->start_spec.tv_sec;
-		temp.tv_nsec = ts.tv_nsec - c->start_spec.tv_nsec;
-	}
-		
-	return temp.tv_nsec / 1000;
+	struct timespec now;
+	clock_gettime( CLOCK_REALTIME, &now );
+	return ( ( now.tv_sec - c->start.tv_sec ) * 1000000 )
+	      +( now.tv_nsec - c->start.tv_nsec ) / 1000;
 #elif defined( VUL_OSX )
 	uint64_t end = mach_absolute_time( );
 	uint64_t elapsed = end - c->start;
@@ -277,5 +261,41 @@ unsigned long long vul_timer_get_micros_cpu( vul_timer_t *c )
 	return ( unsigned long long ) ( ( double )( new_clock - c->zero ) / ( ( double )CLOCKS_PER_SEC / 1000000.0 ) );
 }
 #endif
+
+/*
+ * OS agnostic sleep.
+ * Takes milliseconds to sleep.
+ * Returns milliseconds the amount of time left if interrupted before finishing
+ * the alotted sleeping time; only on unix.
+ */
+#ifndef VUL_DEFINE
+unsigned int vul_sleep( unsigned int milliseconds );
+#else
+unsigned int vul_sleep( unsigned int milliseconds )
+{
+#ifdef VUL_WINDOWS
+	DWORD ms;
+
+	ms = milliseconds;
+	Sleep( ms );
+	return 0;
+#elif defined( VUL_LINUX ) || defined( VUL_OSX )
+	struct timespec rem, req;
+	int err;
+	long tmp;
+
+	req.tv_sec = ( time_t )milliseconds / 1000;
+	req.tv_nsec = ( long )( milliseconds % 1000l ) * 1000000l;
+	err = clock_nanosleep( CLOCK_REALTIME, 0, &req, &rem );
+	if( err ) {
+		return ( int )( rem.tv_sec * 1000 ) + ( int )( rem.tv_nsec / 1000000l );
+	}
+	return 0;
+#else
+	assert( 0 && "vul_timer.h: OS not supported. Did you forget to specify an OS define?" );
+#endif
+}
+#endif
+
 
 #endif

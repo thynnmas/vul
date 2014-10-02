@@ -58,8 +58,8 @@ namespace vul {
 	class timer_t {
 
 	private:
-#if defined( VUL_WINDOWS )
 		clock_t zero;
+#if defined( VUL_WINDOWS )
 
 		DWORD start_tick;
 		LONGLONG last_time;
@@ -68,7 +68,7 @@ namespace vul {
 
 		DWORD_PTR clock_mask;
 #elif defined( VUL_LINUX )
-		timespec start_spec;
+		struct timespec start;
 #elif defined( VUL_OSX )
 		uint64_t start;
 		mach_timebase_info_data_t timebase_info;
@@ -83,6 +83,7 @@ namespace vul {
 		ui64_t milliseconds_cpu( );
 		ui64_t microseconds( );
 		ui64_t microseconds_cpu( );
+		ui32_t sleep( ui32_t millis );
 	};
 
 	void timer_t::reset( )
@@ -118,10 +119,10 @@ namespace vul {
 		this->zero = clock( );
 #elif defined( VUL_LINUX )
 		this->zero = clock( );
-		clock_gettime( this->zero, &this->start_spec );
+		clock_gettime( CLOCK_REALTIME, &this->start );
 #elif defined( VUL_OSX )
-		c->start = mach_absolute_time( );
-		mach_timebase_info( &c->timebase_info );
+		this->start = mach_absolute_time( );
+		mach_timebase_info( &this->timebase_info );
 #endif
 	}
 		
@@ -164,22 +165,14 @@ namespace vul {
 
 		return new_ticks;
 #elif defined( VUL_LINUX )
-		timespec ts, temp;
-		clock_gettime( this->zero, &ts );
-
-		if( ( ts.tv_nsec - this->start_spec.tv_nsec ) < 0 ) {
-			temp.tv_sec = ts.tv_sec - this->start_spec.tv_sec - 1;
-			temp.tv_nsec = 1000000000 + ts.tv_nsec - this->start_spec.tv_nsec;
-		} else {
-			temp.tv_sec = ts.tv_sec - this->start_spec.tv_sec;
-			temp.tv_nsec = ts.tv_nsec - this->start_spec.tv_nsec;
-		}
-		
-		return temp.tv_nsec / 1000000;
+		struct timespec now;
+		clock_gettime( CLOCK_REALTIME, &now );
+		return ( ( now.tv_sec - this->start.tv_sec ) * 1000 )
+			  +( ( now.tv_nsec - this->start.tv_nsec ) / 1000000 );
 #elif defined( VUL_OSX )
 		uint64_t end = mach_absolute_time( );
-		uint64_t elapsed = end - c->start;
-		uint64_t nsec = elapsed * c->timebase_info.numer / timebase_info.denom;
+		uint64_t elapsed = end - this->start;
+		uint64_t nsec = elapsed * this->timebase_info.numer / timebase_info.denom;
 		return nsec / 1000000;
 #endif
 	}
@@ -226,22 +219,14 @@ namespace vul {
 		
 		return new_micro;
 #elif defined( VUL_LINUX )
-		timespec ts, temp;
-		clock_gettime( this->zero, &ts );
-
-		if( ( ts.tv_nsec - this->start_spec.tv_nsec ) < 0 ) {
-			temp.tv_sec = ts.tv_sec - this->start_spec.tv_sec - 1;
-			temp.tv_nsec = 1000000000 + ts.tv_nsec - this->start_spec.tv_nsec;
-		} else {
-			temp.tv_sec = ts.tv_sec - this->start_spec.tv_sec;
-			temp.tv_nsec = ts.tv_nsec - this->start_spec.tv_nsec;
-		}
-		
-		return temp.tv_nsec / 1000;
+	struct timespec now;
+	clock_gettime( CLOCK_REALTIME, &now );
+	return ( ( now.tv_sec - this->start.tv_sec ) * 1000000 )
+	      +( now.tv_nsec - this->start.tv_nsec ) / 1000;
 #elif defined( VUL_OSX )
 		uint64_t end = mach_absolute_time( );
-		uint64_t elapsed = end - c->start;
-		uint64_t nsec = elapsed * c->timebase_info.numer / timebase_info.denom;
+		uint64_t elapsed = end - this->start;
+		uint64_t nsec = elapsed * this->timebase_info.numer / timebase_info.denom;
 		return nsec / 1000;
 #endif
 	}
@@ -251,6 +236,29 @@ namespace vul {
 		clock_t new_clock = clock( );
 		return ( ui64_t )( ( double )( new_clock - this->zero ) / ( ( double )CLOCKS_PER_SEC / 1000000.0 ) );
 	}
+
+	ui32_t timer_t::sleep( ui32_t millis )
+	{
+#ifdef VUL_WINDOWS
+	DWORD ms;
+	ms = millis;
+	Sleep( ms );
+	return 0;
+#elif defined( VUL_LINUX ) || defined( VUL_OSX )
+	struct timespec rem, req;
+	int err;
+	long tmp;
+
+	req.tv_sec = ( time_t )millis / 1000;
+	req.tv_nsec = ( long )( millis % 1000l ) * 1000000l;
+	err = clock_nanosleep( CLOCK_REALTIME, 0, &req, &rem );
+	if( err ) {
+		return ( int )( rem.tv_sec * 1000 ) + ( int )( rem.tv_nsec / 1000000l );
+	}
+	return 0;
+#else
+	Unsupported OS!
+#endif
 }
 
 #undef min

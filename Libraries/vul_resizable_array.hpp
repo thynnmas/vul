@@ -429,11 +429,9 @@ namespace vul {
 	template< class T >
 	T *vector_t< T >::insert( ui32_t index )
 	{
-		ui32_t i, last, first;
-
 		assert( index <= mSize );
 		resize( mSize + 1 );
-		for ( i = mSize - 1; i >= index + 1; --i ) {
+		for ( ui32_t i = mSize - 1; i >= index + 1; --i ) {
 			mList[ i ] = mList[ i - 1 ];
 		}
 		return ( &mList[ index ] );
@@ -457,23 +455,16 @@ namespace vul {
 	template< class T >
 	void vector_t< T >::copy( ui32_t index, const T* list, ui32_t count )
 	{
-		ui32_t i;
-		void *first;
-
 		if ( mSize < ( index + count ) ) {
 			resize( index + count );
 		}
-		for ( i = 0; i < count; ++i ) {
+		for ( ui32_t i = 0; i < count; ++i ) {
 			*( get( i + index ) ) = list[ i ];
 		}
 	}
 	template< class T >
 	void vector_t< T >::copy( ui32_t index, vector_t< T > &list, ui32_t otherFirstIndex, ui32_t otherCount )
 	{
-		ui32_t i;
-		void *firstLocal;
-		const void *firstOther;
-
 		if ( otherCount == 0xffffffff ) {
 			otherCount = list.size( ) - otherFirstIndex;
 		}
@@ -481,9 +472,9 @@ namespace vul {
 			resize( index + otherCount );
 		}
 		assert( list.size( ) >= ( otherFirstIndex + otherCount ) );
-		for ( i = 0; i < otherCount; ++i ) {
+		for ( ui32_t i = 0; i < otherCount; ++i ) {
 			*( get( i + index ) ) = *( list.getConst( i + otherFirstIndex ) );
-		}
+ 		}
 	}
 	template< class T >
 	void vector_t< T >::append( vector_t< T > &list, ui32_t otherFirstIndex, ui32_t otherCount )

@@ -247,7 +247,6 @@ namespace vul {
 #elif defined( VUL_LINUX ) || defined( VUL_OSX )
 	struct timespec rem, req;
 	int err;
-	long tmp;
 
 	req.tv_sec = ( time_t )millis / 1000;
 	req.tv_nsec = ( long )( millis % 1000l ) * 1000000l;

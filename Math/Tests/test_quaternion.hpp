@@ -20,6 +20,8 @@
 #include <cassert>
 
 #include "../vul_math.hpp"
+
+#pragma warning(disable: 6001)
 #define VUL_TEST_RNG ( float )( ( float )rand( ) / ( float )RAND_MAX )
 
 using namespace vul;
@@ -189,7 +191,7 @@ namespace vul_test {
 #else
 		q.xyz( )[ 1 ] = 4.f;
 #endif
-		assert( q.y = 4.f );
+		assert( q.y == 4.f );
 		
 #ifdef VUL_CPLUSPLUS11
 		Vector< f32_t, 4 > v = q.as_vec4;
@@ -455,5 +457,6 @@ namespace vul_test {
 }
 
 #undef VUL_TEST_RNG
+#pragma warning(default: 6001)
 
 #endif

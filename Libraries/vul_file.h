@@ -7,7 +7,7 @@
 #include <malloc.h>
 
 #ifdef _MSC_VER
-// Windows doesn't hav mmap, so we create our own
+// Windows doesn't have mmap, so we create our own
 
 #define PROT_NONE 0
 #define PROT_READ 1

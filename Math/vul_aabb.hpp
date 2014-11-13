@@ -190,6 +190,7 @@ namespace vul {
 		_max = rhs._max;
 	}
 #else
+#pragma warning(disable: 6001)
 	template< typename T, i32_t n >
 	AABB< T, n > makeAABB( )
 	{
@@ -316,6 +317,7 @@ namespace vul {
 
 		return res;
 	}
+#pragma warning(default: 6001)
 	
 	template< typename T, i32_t n >
 	Point< T, n > center( const AABB< T, n > &aabb )

@@ -5,7 +5,8 @@
  * @TODO: Proper statistics; at the moment this does the programmer's
  * hacky equivalent; specify iteration count and calculate mean,
  * median and standard deviation.
- * @TODO: Plotting.
+ * @TODO: Plotting (bar diagram of all iterations, histogram, smooth graf)
+ * nanovg should be useful for this; hide the whole thing behind a define.
  * 
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
@@ -133,9 +134,9 @@ f64_t vul__benchmark_standard_deviation( ui64_t *times, ui32_t left, ui32_t righ
 /**
  * Runs the given function the given amount of times, calculating mean, median and
  * std_deviation over the runs. All times in milliseconds.
- * The given function is of type void function( va_list, element_count_in_va_list ).
+ * The given function is of type void function( va_list ).
  */
-vul_benchmark_result vul_benchmark_millis( ui32_t repetitions, void ( *function )( va_list ), ... )
+vul_benchmark_result vul_benchmark_millis( ui32_t repetitions, void ( *function )( va_list* ), ... )
 {
 	ui32_t r;
 	ui64_t *times;
@@ -143,20 +144,19 @@ vul_benchmark_result vul_benchmark_millis( ui32_t repetitions, void ( *function 
 	vul_benchmark_result res;
 	va_list argp;
 
-	times = ( ui64_t* )malloc( sizeof ui64_t * repetitions );
+	times = ( ui64_t* )malloc( sizeof( ui64_t ) * repetitions );
 	clk = vul_timer_create( );
 
-	va_start( argp, function );
-
+	
 	// Run the benchmark
 	for( r = 0; r < repetitions; ++r ) {
+		va_start( argp, function );
 		vul_timer_reset( clk );
-		function( argp );
+		function( &argp );
 		times[ r ] = vul_timer_get_millis( clk );
+		va_end( argp );
 	}
 	
-	va_end( argp );
-
 	res.mean = vul__benchmark_mean( times, 0, repetitions );
 	res.median = vul__benchmark_median( times, 0, repetitions );
 	res.std_deviation = vul__benchmark_standard_deviation( times, 0, repetitions, res.mean );
@@ -179,7 +179,7 @@ vul_benchmark_result vul_benchmark_micros( ui32_t repetitions, void ( *function 
 	vul_benchmark_result res;
 	va_list argp;
 
-	times = ( ui64_t* )malloc( sizeof ui64_t * repetitions );
+	times = ( ui64_t* )malloc( sizeof( ui64_t ) * repetitions );
 	clk = vul_timer_create( );
 
 	va_start( argp, function );

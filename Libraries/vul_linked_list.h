@@ -99,7 +99,6 @@ void vul_list_remove( vul_list_element_t *e )
 	free( e->data );
 	free( e );
 	// By setting to null we are much more likely to trigger asserts if used after free.
-	e->data = NULL;
 	e = NULL;
 }
 #endif

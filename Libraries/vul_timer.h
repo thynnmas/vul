@@ -3,6 +3,7 @@
  *
  * This file contains a high performace timer that works on windows, linux
  * and OS X. Possibly works on other *nix systems as well.
+ * It also contains an OS agnostic sleep function.
  * 
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
@@ -49,6 +50,8 @@
 #else
 	vul needs an operating system defined.
 #endif
+
+#include "vul_types.h"
 
 typedef struct {
 	clock_t zero;
@@ -274,6 +277,31 @@ unsigned long long vul_timer_get_micros_cpu( vul_timer_t *c )
 {
 	clock_t new_clock = clock( );
 	return ( unsigned long long ) ( ( double )( new_clock - c->zero ) / ( ( double )CLOCKS_PER_SEC / 1000000.0 ) );
+}
+#endif
+
+/*
+ * OS agnostic sleep.
+ * Takes milliseconds to sleep.
+ * Returns milliseconds the amount of time left if interrupted before finishing
+ * the alotted sleeping time; only on unix.
+ */
+#ifndef VUL_DEFINE
+unsigned int vul_sleep( unsigned int milliseconds );
+#else
+unsigned int vul_sleep( unsigned int milliseconds )
+{
+#ifdef VUL_WINDOWS
+	DWORD ms;
+
+	ms = milliseconds;
+	Sleep( ms );
+	return 0;
+#elif defined( VUL_LINUX ) || defined( VUL_OSX )
+	return sleep( milliseconds );
+#else
+	assert( 0 && "vul_timer.h: OS not supported. Did you forget to specify an OS define?" );
+#endif
 }
 #endif
 

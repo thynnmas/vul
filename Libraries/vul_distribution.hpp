@@ -64,7 +64,7 @@ namespace vul {
 	
 	void halton_pair::next( )
 	{	
-		f32_t r = 1.0 - ( this->value_a - 0.0000001 );
+		f32_t r = 1.f - ( this->value_a - 0.0000001f );
 		if ( this->inv_base_a < r ) {
 			this->value_a += this->inv_base_a;
 		} else {
@@ -73,9 +73,9 @@ namespace vul {
 				h2 = h; 
 				h *= this->inv_base_a;
 			} while ( h >= r );
-			this->value_a += h2 + h - 1.0;
+			this->value_a += h2 + h - 1.f;
 		}
-		r = 1.0 - this->value_a - 0.0000001;
+		r = 1.f - this->value_a - 0.0000001f;
 		if ( this->inv_base_a < r ) {
 			this->value_b += this->inv_base_a;
 		} else {
@@ -84,7 +84,7 @@ namespace vul {
 				h2 = h; 
 				h *= this->inv_base_a;
 			} while ( h >= r );
-			this->value_b += h2 + h - 1.0;
+			this->value_b += h2 + h - 1.f;
 		}
 	}
 

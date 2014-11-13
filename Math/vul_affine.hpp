@@ -128,6 +128,7 @@ namespace vul {
 		this->vec = vec;
 	}
 #else
+#pragma warning(disable: 6001)
 	template< typename T, i32_t n >
 	Affine< T, n > makeAffine( )
 	{
@@ -241,5 +242,6 @@ namespace vul {
 	}
 
 }
+#pragma warning(default: 6001)
 
 #endif

@@ -21,6 +21,8 @@
 
 #include "../vul_math.hpp"
 
+#pragma warning(disable: 6001)
+
 #define VUL_TEST_RNG ( float )( ( float )rand( ) / ( float )RAND_MAX )
 
 using namespace vul;
@@ -398,5 +400,6 @@ namespace vul_test {
 };
 
 #undef VUL_TEST_RNG
+#pragma warning(default: 6001)
 
 #endif

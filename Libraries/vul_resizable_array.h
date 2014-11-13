@@ -198,6 +198,7 @@ void *vul_vector_resize( vul_vector_t *vec, unsigned int size, unsigned int free
 		assert( vec->list != NULL ); // Make sure malloc didn't fail
 	} else {
 		assert( vec->reserved_size > 0 );
+#pragma warning(suppress: 6308) // We know it might leak, but the assert will trigger if it does!
 		vec->list = ( unsigned char* )realloc( vec->list, vec->element_size * newSize );
 		assert( vec->list != NULL ); // Make sure realloc didn't fail
 	}

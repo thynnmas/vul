@@ -183,9 +183,9 @@ namespace vul_test {
 
 	bool TestHalf::masses( )
 	{
-		f64_t doubles[ VUL_TEST_FUZZ_COUNT ];
-		f32_t floats[ VUL_TEST_FUZZ_COUNT ];
-		half halfs[ VUL_TEST_FUZZ_COUNT ];
+		f64_t *doubles = new f64_t[ VUL_TEST_FUZZ_COUNT ];
+		f32_t *floats = new f32_t[ VUL_TEST_FUZZ_COUNT ];
+		half *halfs = new half[ VUL_TEST_FUZZ_COUNT ];
 		
 		f32_t f16eps = std::numeric_limits< half >::epsilon( );
 
@@ -205,7 +205,7 @@ namespace vul_test {
 		}
 
 		// Exhaustive
-		half all_halfs[ 1 << 16 ];
+		half *all_halfs = new half[ 1 << 16 ];
 		for( ui32_t i = 0; i < 1 << 16; ++i ) {
 			all_halfs[ i ].data = i;
 		}
@@ -220,9 +220,14 @@ namespace vul_test {
 			assert( ( f32_t )fabs( ( f64_t )all_halfs[ i ] - all_halfs_f64s[ i ] ) < ( f32_t )( f16eps + f16eps * ( f32_t )fabs( ( f32_t )all_halfs[ i ] ) ) );		
 		}
 
-		delete [] all_halfs_f32s;
-		delete [] all_halfs_f64s;
+		delete[ ] all_halfs;
+		delete[ ] all_halfs_f32s;
+		delete[ ] all_halfs_f64s;
 
+		delete[ ] doubles;
+		delete[ ] floats;
+		delete[ ] halfs;
+		
 		return true;
 	}
 };

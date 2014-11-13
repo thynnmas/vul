@@ -3,6 +3,7 @@
  *
  * This file contains utility functions to make interaction with OpenCL less
  * of a massive pain.
+ * @TODO: Add a define to make eveyrthing static to avoid global state.
  * 
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
@@ -43,7 +44,7 @@ enum vul__cl_kernel_type {
 };
 
 /**
- * The two types of buffers; those mirrored n host memory,
+ * The two types of buffers; those mirrored in host memory,
  * and those shared with an OpenGL context.
  */
 enum vul__cl_buffer_type {

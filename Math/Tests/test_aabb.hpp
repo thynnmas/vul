@@ -21,6 +21,8 @@
 
 #include "../vul_math.hpp"
 
+#pragma warning(disable: 6001)
+
 using namespace vul;
 
 namespace vul_test {
@@ -634,5 +636,5 @@ namespace vul_test {
 		return true;
 	}
 };
-
+#pragma warning(default: 6001)
 #endif

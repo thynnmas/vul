@@ -15,8 +15,9 @@
  *
  * For SIMD work on our vectors we use an AOSOA architecture; we pack 2-8 vectors into
  * vectors of simd types, f.e. 4 Vector< f32_t, 3 >s into 1 Vector< __m128, 3 >, then operate
- * on those. Both 128-bit (SSE) and 256-bit (AVX) vectors are supported, behind
- * guards VUL_AOSOA_SSE and VUL_AOSOA_AVX respectively.
+ * on those. 128-bit (SSE, NEON) and 256-bit (AVX) vectors are supported, behind
+ * guards VUL_AOSOA_SSE, VUL_AOSOA_NEON and VUL_AOSOA_AVX respectively. VUL_AOSOA_NEON only 
+ * supports 32-bit floats.
  *
  * Since templates need to be redefined for every compilation unit anyway, we only need a
  * definition guard for functions with no varied template arguments, which is constrained
@@ -37,8 +38,6 @@
  * 
  * @TODO: The todos in vul_half.hpp
  * @TODO: Planned features:
- *		-NEON SIMD for ARM devices
- *		-SIMD functions for more things
  *		-Linear solvers
  *		-64-bit fixed type
  *		-Faster matrix multiplication for large matrices.
@@ -50,6 +49,7 @@
  *		 consider which will give less code duplication.
  *		-2x2, 3x3 & 4x4 matrix inversions as special cases for speed.
  *		-Bezier curves, B-splines (as extensions, behind guards to avoid bloat?)
+ *		-More SIMDification where it makes sense.
  * 
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
@@ -79,7 +79,7 @@
 
 #include "vul_aabb.hpp"
 #include "vul_affine.hpp"
-#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX )
+#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX ) || defined( VUL_AOSOA_NEON )
 	#include "vul_aosoa.hpp"		// This is the file where we pack scalar data into SIMD data.
 #endif
 #include "vul_fixed.hpp"

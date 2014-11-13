@@ -1182,6 +1182,10 @@ namespace vul {
 		return maxi;
 	}
 	
+	/* @TODO: This is bad...we need reorganize so we don't neet to redeclare this */
+	template< typename T, i32_t n >
+	Vector< T, n > makeVector( T val );
+	
 	template< typename T, i32_t cols, i32_t rows >
 	Vector< T, rows > operator*( const Matrix< T, cols, rows >& mat, const Vector< T, cols > &vec )
 	{

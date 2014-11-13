@@ -59,7 +59,7 @@ namespace vul_test {
 		assert( unions( ) );
 		assert( instersects( ) );
 		assert( transforms( ) );
-#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX )
+#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX ) || defined( VUL_AOSOA_NEON )
 		assert( transforms3D( ) );
 #endif
 
@@ -356,12 +356,12 @@ namespace vul_test {
 	{
 		// Test 2D, 8D vs known cases.
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 2 > a2( Vector< f32_t >{ 0.f, 1.f }, makeVector< f32_t >{ 1.f, 2.f } );
-		AABB< f32_t, 2 > b2( Vector< f32_t >{ 0.5f, 1.5f }, makeVector< f32_t >{ 1.f, 2.f } ); // This tests inside but on boundary
-		AABB< f32_t, 2 > c2( Vector< f32_t >{ -0.5f, 1.f }, makeVector< f32_t >{ 1.f, 2.f } ); // This tests outside on one side
-		AABB< f32_t, 8 > a8( Vector< f32_t, 8 >( -1.f ), makeVector< f32_t, 8 >( 0.f ) );
-		AABB< f32_t, 8 > b8( Vector< f32_t, 8 >( -0.5f ), makeVector< f32_t, 8 >( 0.5f ) ); // This tests entirely inside
-		AABB< f32_t, 8 > c8( Vector< f32_t, 8 >( -8.f ), makeVector< f32_t, 8 >( -6.f ) ); // This tests entirely disparate
+		AABB< f32_t, 2 > a2( Vector< f32_t, 2 >{ 0.f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } );
+		AABB< f32_t, 2 > b2( Vector< f32_t, 2 >{ 0.5f, 1.5f }, Vector< f32_t, 2 >{ 1.f, 2.f } ); // This tests inside but on boundary
+		AABB< f32_t, 2 > c2( Vector< f32_t, 2 >{ -0.5f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } ); // This tests outside on one side
+		AABB< f32_t, 8 > a8( Vector< f32_t, 8 >( -1.f ), Vector< f32_t, 8 >( 0.f ) );
+		AABB< f32_t, 8 > b8( Vector< f32_t, 8 >( -0.75f ), Vector< f32_t, 8 >( -0.25f ) ); // This tests entirely inside
+		AABB< f32_t, 8 > c8( Vector< f32_t, 8 >( -8.f ), Vector< f32_t, 8 >( -6.f ) ); // This tests entirely disparate
 #else
 		AABB< f32_t, 2 > a2 = makeAABB< f32_t >( makeVector< f32_t >( 0.f, 1.f ), makeVector< f32_t >( 1.f, 2.f ) );
 		AABB< f32_t, 2 > b2 = makeAABB< f32_t >( makeVector< f32_t >( 0.5f, 1.5f ), makeVector< f32_t >( 1.f, 2.f ) ); // This tests inside but on boundary
@@ -388,10 +388,10 @@ namespace vul_test {
 		AABB< f32_t, 2 > r2;
 		AABB< f32_t, 8 > r8;
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 2 > a2( Vector< f32_t >{ 0.f, 1.f }, Vector< f32_t >{ 1.f, 2.f } );
-		AABB< f32_t, 2 > b2( Vector< f32_t >{ -1.f, 0.f }, Vector< f32_t >{ 2.f, 3.f } ); // This tests complete engulfment
-		AABB< f32_t, 2 > c2( Vector< f32_t >{ 0.5f, 1.5f }, Vector< f32_t >{ 1.5f, 2.5f } ); // This tests partial overlap
-		AABB< f32_t, 2 > d2( Vector< f32_t >{ 2.f, 1.5f }, Vector< f32_t >{ 3.f, 4.f } ); // This tests disparates
+		AABB< f32_t, 2 > a2( Vector< f32_t, 2 >{ 0.f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } );
+		AABB< f32_t, 2 > b2( Vector< f32_t, 2 >{ -1.f, 0.f }, Vector< f32_t, 2 >{ 2.f, 3.f } ); // This tests complete engulfment
+		AABB< f32_t, 2 > c2( Vector< f32_t, 2 >{ 0.5f, 1.5f }, Vector< f32_t, 2 >{ 1.5f, 2.5f } ); // This tests partial overlap
+		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >{ 2.f, 1.5f }, Vector< f32_t, 2 >{ 3.f, 4.f } ); // This tests disparates
 		AABB< f32_t, 8 > a8( Vector< f32_t, 8 >( 0.f ), Vector< f32_t, 8 >( 1.f ) );
 		AABB< f32_t, 8 > b8( Vector< f32_t, 8 >( -0.5f ), Vector< f32_t, 8 >( 2.f ) ); // This tests complete engulfment
 		AABB< f32_t, 8 > c8( Vector< f32_t, 8 >( 0.5f ), Vector< f32_t, 8 >( 2.f ) ); // This tests partial overlap
@@ -434,10 +434,10 @@ namespace vul_test {
 	bool TestAABB::instersects( )
 	{		
 #ifdef VUL_CPLUSPLUS11
-		AABB< f32_t, 2 > a2( Vector< f32_t >{ 0.f, 1.f }, Vector< f32_t >{ 1.f, 2.f } );
-		AABB< f32_t, 2 > b2( Vector< f32_t >{ -1.f, 0.f }, Vector< f32_t >{ 2.f, 3.f } ); // This tests complete engulfment
-		AABB< f32_t, 2 > c2( Vector< f32_t >{ 0.5f, 1.5f }, Vector< f32_t >{ 1.5f, 2.5f } ); // This tests partial overlap
-		AABB< f32_t, 2 > d2( Vector< f32_t >{ 2.f, 1.5f }, Vector< f32_t >{ 3.f, 4.f } ); // This tests disparates
+		AABB< f32_t, 2 > a2( Vector< f32_t, 2 >{ 0.f, 1.f }, Vector< f32_t, 2 >{ 1.f, 2.f } );
+		AABB< f32_t, 2 > b2( Vector< f32_t, 2 >{ -1.f, 0.f }, Vector< f32_t, 2 >{ 2.f, 3.f } ); // This tests complete engulfment
+		AABB< f32_t, 2 > c2( Vector< f32_t, 2 >{ 0.5f, 1.5f }, Vector< f32_t, 2 >{ 1.5f, 2.5f } ); // This tests partial overlap
+		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >{ 2.f, 1.5f }, Vector< f32_t, 2 >{ 3.f, 4.f } ); // This tests disparates
 		AABB< f32_t, 8 > a8( Vector< f32_t, 8 >( 0.f ), Vector< f32_t, 8 >( 1.f ) );
 		AABB< f32_t, 8 > b8( Vector< f32_t, 8 >( -0.5f ), Vector< f32_t, 8 >( 2.f ) ); // This tests complete engulfment
 		AABB< f32_t, 8 > c8( Vector< f32_t, 8 >( 0.5f ), Vector< f32_t, 8 >( 2.f ) ); // This tests partial overlap
@@ -472,8 +472,8 @@ namespace vul_test {
 		
 		AABB< f32_t, 2 > d2( Vector< f32_t, 2 >( -1.f ), Vector< f32_t, 2 >( 1.f ) );
 		AABB< f32_t, 3 > d3( Vector< f32_t, 3 >( -1.f ), Vector< f32_t, 3 >( 1.f ) );
-		Affine< f32_t, 2 > a2( Matrix< f32_t, 2, 2 >{ cos( ( f32_t )VUL_PI / 6 ), -sin( ( f32_t )VUL_PI / 6 ),
-													  sin( ( f32_t )VUL_PI / 6 ),  cos( ( f32_t )VUL_PI / 6 ) },
+		Affine< f32_t, 2 > a2( Matrix< f32_t, 2, 2 >{ cosf( ( f32_t )VUL_PI / 6 ), -sinf( ( f32_t )VUL_PI / 6 ),
+							      sinf( ( f32_t )VUL_PI / 6 ),  cosf( ( f32_t )VUL_PI / 6 ) },
 							   Vector< f32_t, 2 >{ -1.f, 1.f } );
 		Affine< f32_t, 3 > a3 = makeAffine3D( Vector< f32_t, 3 >( 1.f ),
 											  Vector< f32_t, 3 >{ 2.f, -2.f, 1.f },
@@ -522,6 +522,9 @@ namespace vul_test {
 #ifdef VUL_AOSOA_AVX
 		AABB< __m256, 3 > m256[ 8 ], r256[ 8 ];
 		AABB< __m256d, 3 > m256d[ 4 ], r256d[ 4 ];
+#endif
+#ifdef VUL_AOSOA_NEON
+		AABB< float32x4_t, 3 > m32x4[ 4 ], r32x4[ 4 ];
 #endif
 		AABB< f32_t, 3 > in32[ 8 ];
 		AABB< f64_t, 3 > in64[ 4 ];
@@ -580,14 +583,20 @@ namespace vul_test {
 		pack< 3 >( &m128[ 0 ], &in32[ 0 ], 1u );
 		pack< 3 >( &m128d[ 0 ], &in64[ 0 ], 1u );
 #endif
+#ifdef VUL_AOSOA_NEON
+		pack< 3 >( &m32x4[ 0 ], &in32[ 0 ], 1u );
+#endif
 #ifdef VUL_AOSOA_AVX
 		pack< 3 >( &m256[ 0 ], &in32[ 0 ], 1u );
 		pack< 3 >( &m256d[ 0 ], &in64[ 0 ], 1u );
 #endif
-		
+
 #ifdef VUL_AOSOA_SSE
 		transform3D( &r128[ 0 ], &m128[ 0 ], a32, 1u );
 		transform3D( &r128d[ 0 ], &m128d[ 0 ], a64, 1u );
+#endif
+#ifdef VUL_AOSOA_NEON
+		transform3D( &r32x4[ 0 ], &m32x4[ 0 ], a32, 1u );
 #endif
 #ifdef VUL_AOSOA_AVX
 		transform3D( &r256[ 0 ], &m256[ 0 ], a32, 1u );
@@ -595,14 +604,18 @@ namespace vul_test {
 #endif
 		
 		//unpack the vectorized ones and compare to reference
-#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX )
+#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX ) || defined( VUL_AOSOA_NEON )
 		f32_t f32eps = 1e-5f;
+#endif
+#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX )
 		f64_t f64eps = 1e-8;
 #endif
 #ifdef VUL_AOSOA_SSE
 		unpack< 3 >( &in32[ 0 ], &r128[ 0 ], 1u );
 		unpack< 3 >( &in64[ 0 ], &r128d[ 0 ], 1u );
+#endif
 
+#ifdef VUL_AOSOA_SSE
 #ifdef VUL_CPLUSPLUS11
 		assert( all( in32[ 0 ]._min - ref32_out._min < Vector< f32_t, 3 >( f32eps ) ) );
 		assert( all( in32[ 0 ]._max - ref32_out._max < Vector< f32_t, 3 >( f32eps ) ) );
@@ -615,6 +628,20 @@ namespace vul_test {
 		assert( all( in64[ 0 ]._max - ref64_out._max < makeVector< f64_t, 3 >( f64eps ) ) );
 #endif
 #endif // VUL_AOSOA_SSE
+
+#ifdef VUL_AOSOA_NEON
+		unpack< 3 >( &in32[ 0 ], &r32x4[ 0 ], 1u );
+#endif
+
+#ifdef VUL_AOSOA_NEON
+#ifdef VUL_CPLUSPLUS11
+		assert( all( in32[ 0 ]._min - ref32_out._min < Vector< f32_t, 3 >( f32eps ) ) );
+		assert( all( in32[ 0 ]._max - ref32_out._max < Vector< f32_t, 3 >( f32eps ) ) );
+#else
+		assert( all( in32[ 0 ]._min - ref32_out._min < makeVector< f32_t, 3 >( f32eps ) ) );
+		assert( all( in32[ 0 ]._max - ref32_out._max < makeVector< f32_t, 3 >( f32eps ) ) );
+#endif
+#endif // VUL_AOSOA_NEON
 		
 #ifdef VUL_AOSOA_AVX
 		unpack< 3 >( &in32[ 0 ], &r256[ 0 ], 1u );

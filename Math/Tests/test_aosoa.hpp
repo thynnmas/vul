@@ -42,6 +42,10 @@ namespace vul_test {
 		static bool vectors_avx( );
 		static bool aabbs_avx( );
 #endif
+#ifdef VUL_AOSOA_NEON
+		static bool vectors_neon( );	
+		static bool aabbs_neon( );
+#endif
 	};
 
 	bool TestAOSOA::test( )
@@ -53,6 +57,10 @@ namespace vul_test {
 #ifdef VUL_AOSOA_AVX
 		assert( vectors_avx( ) );
 		assert( aabbs_avx( ) );
+#endif
+#ifdef VUL_AOSOA_NEON
+		assert( vectors_neon( ) );
+		assert( aabbs_neon( ) );
 #endif
 
 		return true;
@@ -72,7 +80,7 @@ namespace vul_test {
 							   ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG };
 #ifdef VUL_CPLUSPLUS11
 			v32[ i ] = Vector< f32_t, 9 >( vec );
-			v64[ i ] = makeVector< f64_t, 9 >( vec );
+			v64[ i ] = Vector< f64_t, 9 >( vec );
 #else
 			v32[ i ] = makeVector< f32_t, 9 >( vec );
 			v64[ i ] = makeVector< f64_t, 9 >( vec );
@@ -135,7 +143,7 @@ namespace vul_test {
 							   ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG };
 #ifdef VUL_CPLUSPLUS11
 			v32[ i ] = Vector< f32_t, 9 >( vec );
-			v64[ i ] = makeVector< f64_t, 9 >( vec );
+			v64[ i ] = Vector< f64_t, 9 >( vec );
 #else
 			v32[ i ] = makeVector< f32_t, 9 >( vec );
 			v64[ i ] = makeVector< f64_t, 9 >( vec );
@@ -196,7 +204,43 @@ namespace vul_test {
 		return true;
 	}
 #endif // VUL_AOSOA_AVX
-	
+
+#ifdef VUL_AOSOA_NEON
+	bool TestAOSOA::vectors_neon( )
+	{	
+		Vector< f32_t, 9 > v32[ 16 ], o32[ 16 ];
+		Vector< float32x4_t, 9 > p32_4[ 4 ];
+		
+		for( ui32_t i = 0; i < 16; ++i ) {
+			f32_t vec[ 9 ] = { ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, 
+							   ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, 
+							   ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG };
+#ifdef VUL_CPLUSPLUS11
+			v32[ i ] = Vector< f32_t, 9 >( vec );
+#else
+			v32[ i ] = makeVector< f32_t, 9 >( vec );
+#endif
+		}
+		
+		pack< 9 >( p32_4, v32, 16 );
+
+		for( ui32_t j = 0; j < 9; ++j ) {
+			for( ui32_t i = 0; i < 4; ++i ) {
+				assert( vgetq_lane_f32( p32_4[ i ][ j ], 3 ) == v32[ i * 4     ][ j ] );
+				assert( vgetq_lane_f32( p32_4[ i ][ j ], 2 ) == v32[ i * 4 + 1 ][ j ] );
+				assert( vgetq_lane_f32( p32_4[ i ][ j ], 1 ) == v32[ i * 4 + 2 ][ j ] );
+				assert( vgetq_lane_f32( p32_4[ i ][ j ], 0 ) == v32[ i * 4 + 3 ][ j ] );
+			}
+		}
+		
+		unpack< 9 >( o32, p32_4, 16 );
+		for( ui32_t i = 0; i < 16; ++i ) {
+			assert( all( o32[ i ] == v32[ i ] ) );
+		}
+		return true;
+	}
+#endif // VUL_AOSOA_NEON
+
 #ifdef VUL_AOSOA_SSE	
 	bool TestAOSOA::aabbs_sse( )
 	{	
@@ -214,7 +258,7 @@ namespace vul_test {
 								( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG };
 #ifdef VUL_CPLUSPLUS11
 			v32[ i ] = AABB< f32_t, 9 >( Vector< f32_t, 9 >( mini ), Vector< f32_t, 9 >( maxi ) );
-			v64[ i ] = AABB< f64_t, 9 >( makeVector< f64_t, 9 >( mini ), makeVector< f64_t, 9 >( maxi ) );
+			v64[ i ] = AABB< f64_t, 9 >( Vector< f64_t, 9 >( mini ), Vector< f64_t, 9 >( maxi ) );
 #else
 			v32[ i ] = makeAABB< f32_t, 9 >( makeVector< f32_t, 9 >( mini ), makeVector< f32_t, 9 >( maxi ) );
 			v64[ i ] = makeAABB< f64_t, 9 >( makeVector< f64_t, 9 >( mini ), makeVector< f64_t, 9 >( maxi ) );
@@ -302,7 +346,7 @@ namespace vul_test {
 								( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG };
 #ifdef VUL_CPLUSPLUS11
 			v32[ i ] = AABB< f32_t, 9 >( Vector< f32_t, 9 >( mini ), Vector< f32_t, 9 >( maxi ) );
-			v64[ i ] = AABB< f64_t, 9 >( makeVector< f64_t, 9 >( mini ), makeVector< f64_t, 9 >( maxi ) );
+			v64[ i ] = AABB< f64_t, 9 >( Vector< f64_t, 9 >( mini ), Vector< f64_t, 9 >( maxi ) );
 #else
 			v32[ i ] = makeAABB< f32_t, 9 >( makeVector< f32_t, 9 >( mini ), makeVector< f32_t, 9 >( maxi ) );
 			v64[ i ] = makeAABB< f64_t, 9 >( makeVector< f64_t, 9 >( mini ), makeVector< f64_t, 9 >( maxi ) );
@@ -396,6 +440,52 @@ namespace vul_test {
 		return true;
 	}
 #endif // VUL_AOSOA_AVX
+
+#ifdef VUL_AOSOA_NEON
+	bool TestAOSOA::aabbs_neon( )
+	{	
+		AABB< f32_t, 9 > v32[ 16 ], o32[ 16 ];
+		AABB< float32x4_t, 9 > p32_4[ 4 ];
+		
+		for( ui32_t i = 0; i < 16; ++i ) {
+			f32_t mini[ 9 ] = { ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, 
+								( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, 
+								( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG };
+			f32_t maxi[ 9 ] = { ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, 
+								( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, 
+								( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG, ( f32_t )VUL_TEST_RNG };
+#ifdef VUL_CPLUSPLUS11
+			v32[ i ] = AABB< f32_t, 9 >( Vector< f32_t, 9 >( mini ), Vector< f32_t, 9 >( maxi ) );
+#else
+			v32[ i ] = makeAABB< f32_t, 9 >( makeVector< f32_t, 9 >( mini ), makeVector< f32_t, 9 >( maxi ) );
+#endif
+		}
+
+		pack< 9 >( p32_4, v32, 16 );
+
+		for( ui32_t j = 0; j < 9; ++j ) {
+			for( ui32_t i = 0; i < 4; ++i ) {
+				assert( vgetq_lane_f32( p32_4[ i ]._min[ j ], 3 ) == v32[ i * 4     ]._min[ j ] );
+				assert( vgetq_lane_f32( p32_4[ i ]._min[ j ], 2 ) == v32[ i * 4 + 1 ]._min[ j ] );
+				assert( vgetq_lane_f32( p32_4[ i ]._min[ j ], 1 ) == v32[ i * 4 + 2 ]._min[ j ] );
+				assert( vgetq_lane_f32( p32_4[ i ]._min[ j ], 0 ) == v32[ i * 4 + 3 ]._min[ j ] );
+				
+				assert( vgetq_lane_f32( p32_4[ i ]._max[ j ], 3 ) == v32[ i * 4     ]._max[ j ] );
+				assert( vgetq_lane_f32( p32_4[ i ]._max[ j ], 2 ) == v32[ i * 4 + 1 ]._max[ j ] );
+				assert( vgetq_lane_f32( p32_4[ i ]._max[ j ], 1 ) == v32[ i * 4 + 2 ]._max[ j ] );
+				assert( vgetq_lane_f32( p32_4[ i ]._max[ j ], 0 ) == v32[ i * 4 + 3 ]._max[ j ] );
+			}
+		}
+
+		unpack< 9 >( o32, p32_4, 16 );
+		for( ui32_t i = 0; i < 16; ++i ) {
+			assert( all( o32[ i ]._min == v32[ i ]._min ) );
+			assert( all( o32[ i ]._max == v32[ i ]._max ) );
+		}
+
+		return true;
+	}
+#endif // VUL_AOSOA_NEON
 
 };
 

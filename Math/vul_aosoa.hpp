@@ -26,6 +26,9 @@
 	#include <smmintrin.h>
 	#include <xmmintrin.h>
 #endif
+#ifdef VUL_AOSOA_NEON
+	#include <arm_neon.h>
+#endif
 
 #include "vul_types.hpp"
 #include "vul_vector.hpp"
@@ -64,6 +67,14 @@ namespace vul {
 	template< ui32_t n >
 	void pack( Vector< __m256d, n > *out, const Vector< f64_t, n > *in, ui32_t count );
 #endif
+#ifdef VUL_AOSOA_NEON
+	/**
+	 * Pack an array of Vector< f32_t, n > into an array of Vector< flaot32x4_t, n >
+	 * Expects in to be of size count + count % 4, and out to be of size (count + 3 ) / 4.
+	 */
+	template< ui32_t n >
+	void pack( Vector< float32x4_t, n > *out, const Vector< f32_t, n > *in, ui32_t count );
+#endif
 	
 #ifdef VUL_AOSOA_SSE
 	/**
@@ -92,6 +103,14 @@ namespace vul {
 	 */
 	template< ui32_t n >
 	void unpack( Vector< f64_t, n > *out, const Vector< __m256d, n > *in, ui32_t count );
+#endif
+#ifdef VUL_AOSOA_NEON
+	/**
+	 * Pack an array of Vector< float32x4_t, n > into an array of Vector< f32_t, n >
+	 * Expects out to be of size count + count % 4, and in to be of size (count + 3 ) / 4.
+	 */
+	template< ui32_t n >
+	void unpack( Vector< f32_t, n > *out, const Vector< float32x4_t, n > *in, ui32_t count );
 #endif
 	
 #ifdef VUL_AOSOA_SSE
@@ -122,6 +141,15 @@ namespace vul {
 	template< ui32_t n >
 	void pack( AABB< __m256d, n > *out, const AABB< f64_t, n > *in, ui32_t count );
 #endif
+#ifdef VUL_AOSOA_NEON
+	/**
+	 * Pack an array of AABB< f32_t, n > into an array of AABB< float32x4_t, n >
+	 * Expects in to be of size count + count % 4, and out to be of size (count + 3 ) / 4.
+	 */
+	template< ui32_t n >
+	void pack( AABB< float32x4_t, n > *out, const AABB< f32_t, n > *in, ui32_t count );
+#endif
+
 	
 #ifdef VUL_AOSOA_SSE
 	/**
@@ -150,6 +178,14 @@ namespace vul {
 	 */
 	template< ui32_t n >
 	void unpack( AABB< f64_t, n > *out, const AABB< __m256d, n > *in, ui32_t count );
+#endif
+#ifdef VUL_AOSOA_NEON
+	/**
+	 * Pack an array of AABB< float32x4_t, n > into an array of AABB< f32_t, n >
+	 * Expects out to be of size count + count % 4, and in to be of size (count + 3 ) / 4.
+	 */
+	template< ui32_t n >
+	void unpack( AABB< f32_t, n > *out, const AABB< float32x4_t, n > *in, ui32_t count );
 #endif
 	
 	
@@ -254,7 +290,32 @@ namespace vul {
 		}
 	}
 #endif
-	
+#ifdef VUL_AOSOA_NEON
+	template< ui32_t n >
+	void pack( Vector< float32x4_t, n > *out, const Vector< f32_t, n > *in, ui32_t count )
+	{
+		ui32_t simdCount, i, j;
+		float32x4_t tmp[ n ];
+		
+		simdCount = ( count + 3 ) / 4;
+		for( i = 0; i < simdCount; ++i )
+		{
+			for( j = 0; j < n; ++j )
+			{
+				tmp[ j ] = vsetq_lane_f32( in[ i * 4     ][ j ], tmp[ j ], 3 );
+				tmp[ j ] = vsetq_lane_f32( in[ i * 4 + 1 ][ j ], tmp[ j ], 2 );
+				tmp[ j ] = vsetq_lane_f32( in[ i * 4 + 2 ][ j ], tmp[ j ], 1 );
+				tmp[ j ] = vsetq_lane_f32( in[ i * 4 + 3 ][ j ], tmp[ j ], 0 );
+			}
+#ifdef VUL_CPLUSPLUS11
+			out[ i ] = Vector< float32x4_t, n >( tmp );
+#else
+			out[ i ] = makeVector< float32x4_t, n >( tmp );
+#endif
+		}
+	}
+#endif
+
 #ifdef VUL_AOSOA_SSE
 	template< ui32_t n >
 	void unpack( Vector< f32_t, n > *out, const Vector< __m128, n > *in, ui32_t count )
@@ -367,6 +428,26 @@ namespace vul {
 		}
 	}
 #endif
+#ifdef VUL_AOSOA_NEON
+	template< ui32_t n >
+	void unpack( Vector< f32_t, n > *out, const Vector< float32x4_t, n > *in, ui32_t count )
+	{		
+		ui32_t simdCount, i, j;
+		
+		simdCount = ( count + 3 ) / 4;
+		for( i = 0; i < simdCount; ++i )
+		{
+			for( j = 0; j < n; ++j )
+			{
+				out[ i * 4     ][ j ] = vgetq_lane_f32( in[ i ][ j ], 3 );
+				out[ i * 4 + 1 ][ j ] = vgetq_lane_f32( in[ i ][ j ], 2 );
+				out[ i * 4 + 2 ][ j ] = vgetq_lane_f32( in[ i ][ j ], 1 );
+				out[ i * 4 + 3 ][ j ] = vgetq_lane_f32( in[ i ][ j ], 0 );
+			}
+		}
+	}
+#endif
+
 
 #ifdef VUL_AOSOA_SSE
 	template< ui32_t n >
@@ -528,7 +609,43 @@ namespace vul {
 		}
 	}
 #endif
-	
+#ifdef VUL_AOSOA_NEON
+	template< ui32_t n >
+	void pack( AABB< float32x4_t, n > *out, const AABB< f32_t, n > *in, ui32_t count )
+	{
+		ui32_t simdCount, i, j;
+		float32x4_t mini[ n ], maxi[ n ];
+		
+		Point< float32x4_t, n > vmin __attribute__((aligned(16)));
+		Point< float32x4_t, n > vmax __attribute__((aligned(16)));
+		
+		simdCount = ( count + 3 ) / 4;
+		for( i = 0; i < simdCount; ++i )
+		{
+			for( j = 0; j < n; ++j )
+			{
+				mini[ j ] = vsetq_lane_f32( in[ i * 4     ]._min[ j ], mini[ j ], 3 );
+				mini[ j ] = vsetq_lane_f32( in[ i * 4 + 1 ]._min[ j ], mini[ j ], 2 );
+				mini[ j ] = vsetq_lane_f32( in[ i * 4 + 2 ]._min[ j ], mini[ j ], 1 );
+				mini[ j ] = vsetq_lane_f32( in[ i * 4 + 3 ]._min[ j ], mini[ j ], 0 );
+				maxi[ j ] = vsetq_lane_f32( in[ i * 4     ]._max[ j ], maxi[ j ], 3 );
+				maxi[ j ] = vsetq_lane_f32( in[ i * 4 + 1 ]._max[ j ], maxi[ j ], 2 );
+				maxi[ j ] = vsetq_lane_f32( in[ i * 4 + 2 ]._max[ j ], maxi[ j ], 1 );
+				maxi[ j ] = vsetq_lane_f32( in[ i * 4 + 3 ]._max[ j ], maxi[ j ], 0 );
+			}
+#ifdef VUL_CPLUSPLUS11
+			vmin = Point< float32x4_t, n >( mini );
+			vmax = Point< float32x4_t, n >( maxi );
+			out[ i ] = AABB< float32x4_t, n >( vmin, vmax );
+#else
+			vmin = makePoint< float32x4_t, n >( mini );
+			vmax = makePoint< float32x4_t, n >( maxi );
+			out[ i ] = makeAABB< float32x4_t, n >( vmin, vmax );
+#endif
+		}
+	}
+#endif
+
 #ifdef VUL_AOSOA_SSE
 	template< ui32_t n >
 	void unpack( AABB< f32_t, n > *out, const AABB< __m128, n > *in, ui32_t count )
@@ -681,6 +798,29 @@ namespace vul {
 		}
 	}
 #endif
-}
 
+#ifdef VUL_AOSOA_NEON
+	template< ui32_t n >
+	void unpack( AABB< f32_t, n > *out, const AABB< float32x4_t, n > *in, ui32_t count )
+	{
+		ui32_t simdCount, i, j;
+		
+		simdCount = ( count + 3 ) / 4;
+		for( i = 0; i < simdCount; ++i )
+		{
+			for( j = 0; j < n; ++j )
+			{
+				out[ i * 4     ]._min[ j ] = vgetq_lane_f32( in[ i ]._min[ j ],  3 );
+				out[ i * 4 + 1 ]._min[ j ] = vgetq_lane_f32( in[ i ]._min[ j ],  2 );
+				out[ i * 4 + 2 ]._min[ j ] = vgetq_lane_f32( in[ i ]._min[ j ],  1 );
+				out[ i * 4 + 3 ]._min[ j ] = vgetq_lane_f32( in[ i ]._min[ j ],  0 );
+				out[ i * 4     ]._max[ j ] = vgetq_lane_f32( in[ i ]._max[ j ],  3 );
+				out[ i * 4 + 1 ]._max[ j ] = vgetq_lane_f32( in[ i ]._max[ j ],  2 );
+				out[ i * 4 + 2 ]._max[ j ] = vgetq_lane_f32( in[ i ]._max[ j ],  1 );
+				out[ i * 4 + 3 ]._max[ j ] = vgetq_lane_f32( in[ i ]._max[ j ],  0 );
+			}
+		}
+	}
+#endif
+}
 #endif

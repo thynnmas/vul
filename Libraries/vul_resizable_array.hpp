@@ -23,6 +23,7 @@
 
 #include <cstddef>
 #include <cassert>
+#include <cstdlib>
 
 /**
  * If enabled, iterators look for undefined/illegal behaviour during loops.
@@ -258,7 +259,7 @@ namespace vul {
 		finish( );
 	}
 	template< class T >
-	void vector_t< T >::initialize( ui32_t initialSize = 0, ui32_t initialReservedSize = 0 )
+	void vector_t< T >::initialize( ui32_t initialSize, ui32_t initialReservedSize )
 	{
 		mList = NULL;
 		mSize = 0;
@@ -324,7 +325,7 @@ namespace vul {
 		return mSize;
 	}
 	template< class T >
-	T *vector_t< T >::resize( ui32_t size, bool freeZero = true, bool allocExactly = false )
+	T *vector_t< T >::resize( ui32_t size, bool freeZero, bool allocExactly )
 	{
 		ui32_t oldSize, newSize;
 			
@@ -378,7 +379,7 @@ namespace vul {
 		return mList;
 	}
 	template< class T >
-	void vector_t< T >::reserve( ui32_t size, bool allocExactly = false )
+	void vector_t< T >::reserve( ui32_t size, bool allocExactly )
 	{
 		ui32_t oldSize;
 
@@ -428,11 +429,9 @@ namespace vul {
 	template< class T >
 	T *vector_t< T >::insert( ui32_t index )
 	{
-		ui32_t i, last, first;
-
 		assert( index <= mSize );
 		resize( mSize + 1 );
-		for ( i = mSize - 1; i >= index + 1; --i ) {
+		for ( ui32_t i = mSize - 1; i >= index + 1; --i ) {
 			mList[ i ] = mList[ i - 1 ];
 		}
 		return ( &mList[ index ] );
@@ -456,36 +455,29 @@ namespace vul {
 	template< class T >
 	void vector_t< T >::copy( ui32_t index, const T* list, ui32_t count )
 	{
-		ui32_t i;
-		void *first;
-
 		if ( mSize < ( index + count ) ) {
 			resize( index + count );
 		}
-		for ( i = 0; i < count; ++i ) {
+		for ( ui32_t i = 0; i < count; ++i ) {
 			*( get( i + index ) ) = list[ i ];
 		}
 	}
 	template< class T >
-	void vector_t< T >::copy( ui32_t index, vector_t< T > &list, ui32_t otherFirstIndex = 0, ui32_t otherCount = 0xffffffff )
+	void vector_t< T >::copy( ui32_t index, vector_t< T > &list, ui32_t otherFirstIndex, ui32_t otherCount )
 	{
-		ui32_t i;
-		void *firstLocal;
-		const void *firstOther;
-
 		if ( otherCount == 0xffffffff ) {
-			otherCount = list.size( ); - otherFirstIndex;
+			otherCount = list.size( ) - otherFirstIndex;
 		}
-		if ( mSize < ( index + count ) ) {
-			resize( index + count );
+		if ( mSize < ( index + otherCount ) ) {
+			resize( index + otherCount );
 		}
 		assert( list.size( ) >= ( otherFirstIndex + otherCount ) );
-		for ( i = 0; i < count; ++i ) {
+		for ( ui32_t i = 0; i < otherCount; ++i ) {
 			*( get( i + index ) ) = *( list.getConst( i + otherFirstIndex ) );
-		}
+ 		}
 	}
 	template< class T >
-	void vector_t< T >::append( vector_t< T > &list, ui32_t otherFirstIndex, ui32_t otherCount = 0xffffffff )
+	void vector_t< T >::append( vector_t< T > &list, ui32_t otherFirstIndex, ui32_t otherCount )
 	{
 		ui32_t first;
 

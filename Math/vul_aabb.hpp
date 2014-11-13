@@ -18,7 +18,12 @@
 #ifndef VUL_AABB_HPP
 #define VUL_AABB_HPP
 
+#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX )
 #include <immintrin.h>
+#endif
+#ifdef VUL_AOSOA_NEON
+#include <arm_neon.h>
+#endif
 #include <float.h>
 
 #include "vul_types.hpp"
@@ -140,6 +145,15 @@ namespace vul {
 	 */
 	void transform3D( AABB< __m256d, 3 > *out, const AABB< __m256d, 3 > *in, const Affine< f64_t, 3 > &trans, ui32_t count );
 #endif
+#ifdef VUL_AOSOA_NEON
+	/**
+	 * Apply a 3D affine transform to multiple NEON packed AABBs with 3D-vectors.
+	 * Each AABB here contains 4 AABBs, where the vector data has the format float32x4_t[ 3 ]:
+	 * float32x4_t[ 0 ] = xxxx, float32x4_[ 1 ] = yyyy, float32x4_t[ 2 ] = zzzz
+	 */
+	void transform3D( AABB< float32x4_t, 3 > *out, const AABB< float32x4_t, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count );
+#endif
+
 
 	//----------------
 	// Definition
@@ -354,10 +368,17 @@ namespace vul {
 	template< typename T, i32_t n >
 	AABB< T, n > unionize( const AABB< T, n > &a, const AABB< T, n > &b )
 	{
+#ifdef VUL_CPLUSPLUS11
+		return AABB< T, n >( min( a._min.as_vec( ), 
+								  b._min.as_vec( ) ).as_point( ),
+						     max( a._max.as_vec( ), 
+								  b._max.as_vec( ) ).as_point( ) );
+#else
 		return makeAABB< T, n >( min( a._min.as_vec( ), 
 									  b._min.as_vec( ) ).as_point( ),
-								 max( a._max.as_vec( ), 
+							     max( a._max.as_vec( ), 
 									  b._max.as_vec( ) ).as_point( ) );
+#endif
 	}
 
 
@@ -624,6 +645,72 @@ namespace vul {
 		}
 	}
 #endif // VUL_AOSOA_AVX
+#ifdef VUL_AOSOA_NEON
+	void transform3D( AABB< float32x4_t, 3 > *out, const AABB< float32x4_t, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count )
+	{
+		ui32_t i, j, simdCount;
+		float32x4_t mat[ 4 ][ 3 ];
+
+		// Fill the matrix from the Affine
+		for( i = 0; i < 3; ++i ) {
+			for( j = 0;j < 3; ++j ) {
+				mat[ i ][ j ] = vdupq_n_f32( trans.mat( j, i ) );
+			}
+		}
+		mat[ 3 ][ 0 ] = vdupq_n_f32( trans.vec[ 0 ] );
+		mat[ 3 ][ 1 ] = vdupq_n_f32( trans.vec[ 1 ] );
+		mat[ 3 ][ 2 ] = vdupq_n_f32( trans.vec[ 2 ] );
+
+		// Tranform
+		simdCount = ( count + 3 ) / 4;
+		for( i = 0; i < simdCount; ++i )
+		{
+			float32x4_t xNewMinis = {  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX };
+			float32x4_t xNewMaxes = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
+			float32x4_t yNewMinis = {  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX };
+			float32x4_t yNewMaxes = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
+			float32x4_t zNewMinis = {  FLT_MAX,  FLT_MAX,  FLT_MAX,  FLT_MAX };
+			float32x4_t zNewMaxes = { -FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+			for( j = 0; j < 8; ++j )
+			{
+				const AABB< float32x4_t, 3 > bb = in[ i ];
+				float32x4_t xCorners = ( ( j & 1 ) != 0 ) ? bb._max[ 0 ] : bb._min[ 0 ];
+				float32x4_t yCorners = ( ( j & 2 ) != 0 ) ? bb._max[ 1 ] : bb._min[ 1 ];
+				float32x4_t zCorners = ( ( j & 4 ) != 0 ) ? bb._max[ 2 ] : bb._min[ 2 ];
+
+				float32x4_t xCornerTrans = vaddq_f32( vaddq_f32( vmulq_f32( xCorners, mat[ 0 ][ 0 ] ),
+																 vmulq_f32( yCorners, mat[ 1 ][ 0 ] ) ),
+													  vaddq_f32( vmulq_f32( zCorners, mat[ 2 ][ 0 ] ),
+																					  mat[ 3 ][ 0 ] ) );
+				float32x4_t yCornerTrans = vaddq_f32( vaddq_f32( vmulq_f32( xCorners, mat[ 0 ][ 1 ] ),
+																 vmulq_f32( yCorners, mat[ 1 ][ 1 ] ) ),
+													  vaddq_f32( vmulq_f32( zCorners, mat[ 2 ][ 1 ] ),
+																					  mat[ 3 ][ 1 ] ) );	
+				float32x4_t zCornerTrans = vaddq_f32( vaddq_f32( vmulq_f32( xCorners, mat[ 0 ][ 2 ] ),
+																 vmulq_f32( yCorners, mat[ 1 ][ 2 ] ) ),
+													  vaddq_f32( vmulq_f32( zCorners, mat[ 2 ][ 2 ] ),
+																					  mat[ 3 ][ 2 ] ) );	
+
+				xNewMinis = vminq_f32( xNewMinis, xCornerTrans );
+				xNewMaxes = vmaxq_f32( xNewMaxes, xCornerTrans );
+				yNewMinis = vminq_f32( yNewMinis, yCornerTrans );
+				yNewMaxes = vmaxq_f32( yNewMaxes, yCornerTrans );
+				zNewMinis = vminq_f32( zNewMinis, zCornerTrans );
+				zNewMaxes = vmaxq_f32( zNewMaxes, zCornerTrans );
+			}
+
+			AABB< float32x4_t, 3 > *bb = &out[ i ];
+			bb->_min[ 0 ] = xNewMinis;
+			bb->_max[ 0 ] = xNewMaxes;
+			bb->_min[ 1 ] = yNewMinis;
+			bb->_max[ 1 ] = yNewMaxes;
+			bb->_min[ 2 ] = zNewMinis;
+			bb->_max[ 2 ] = zNewMaxes;
+		}
+	}
+#endif // VUL_AOSOA_NEON
+
 #endif // VUL_DEFINE
 }
 

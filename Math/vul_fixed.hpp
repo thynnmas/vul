@@ -162,14 +162,18 @@ namespace vul {
 	template< int Q32 >
 	fixed_32< Q >::fixed_32( fixed_32< Q32 > a )
 	{
-#pragma warning ( disable: 4293 ) // We are aware, and branch accordingly
+#ifdef VUL_WINDOWS
+	#pragma warning ( disable: 4293 ) // We are aware, and branch accordingly
+#endif
 		// Negative shifts are undefined, so branch
 		if( Q > Q32 ) {
 			data = a.data << ( Q - Q32 );
 		} else {
 			data = a.data >> ( Q32 - Q );
 		}
-#pragma warning ( default: 4293 )
+#ifdef VUL_WINDOWS
+	#pragma warning ( default: 4293 )
+#endif
 	}
 	
 	template< int Q >
@@ -196,14 +200,18 @@ namespace vul {
 	{
 		fixed_32< Q32 > r;
 
-#pragma warning ( disable: 4293 ) // We are aware, and branch accordingly
+#ifdef VUL_WINDOWS
+	#pragma warning ( disable: 4293 ) // We are aware, and branch accordingly
+#endif
 		// Negative shifts are undefined, so branch
 		if( Q > Q32 ) {
 			r.data = data << ( Q - Q32 );
 		} else {
 			r.data = data >> ( Q32 - Q );
 		}
-#pragma warning ( default: 4293 )
+#ifdef VUL_WINDOWS
+	#pragma warning ( default: 4293 )
+#endif
 
 		return r;
 	}

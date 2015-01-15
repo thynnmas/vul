@@ -12,6 +12,7 @@
  * @TODO: Implement table and SSE versions!
  * @TODO: Convert directly to/from double and fixed formats.
  * @TODO: Test if working in half format the whole way is faster (for ops)
+ * @TODO: See ryg for potentially faster versions: https://fgiesen.wordpress.com/2012/03/28/half-to-float-done-quic/
  *
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)

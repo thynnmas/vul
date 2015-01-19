@@ -134,27 +134,24 @@ f64_t vul__benchmark_standard_deviation( ui64_t *times, ui32_t left, ui32_t righ
 /**
  * Runs the given function the given amount of times, calculating mean, median and
  * std_deviation over the runs. All times in milliseconds.
- * The given function is of type void function( va_list ).
  */
-vul_benchmark_result vul_benchmark_millis( ui32_t repetitions, void ( *function )( va_list* ), ... )
+vul_benchmark_result vul_benchmark_millis( ui32_t repetitions, 
+										   void ( *function )( void *data ), void* func_data )
 {
 	ui32_t r;
 	ui64_t *times;
 	vul_timer_t *clk;
 	vul_benchmark_result res;
-	va_list argp;
 
 	times = ( ui64_t* )malloc( sizeof( ui64_t ) * repetitions );
 	clk = vul_timer_create( );
 
-	
 	// Run the benchmark
 	for( r = 0; r < repetitions; ++r ) {
 		va_start( argp, function );
 		vul_timer_reset( clk );
-		function( &argp );
+		function( func_data );
 		times[ r ] = vul_timer_get_millis( clk );
-		va_end( argp );
 	}
 	
 	res.mean = vul__benchmark_mean( times, 0, repetitions );
@@ -169,30 +166,25 @@ vul_benchmark_result vul_benchmark_millis( ui32_t repetitions, void ( *function 
 /**
  * Runs the given function the given amount of times, calculating mean, median and
  * std_deviation over the runs. All times in microseconds.
- * The given function is of type void function( va_list ).
  */
-vul_benchmark_result vul_benchmark_micros( ui32_t repetitions, void ( *function )( va_list ), ... )
+vul_benchmark_result vul_benchmark_micros( ui32_t repetitions, 
+										   void ( *function )( void *data ), void *func_data )
 {
 	ui32_t r;
 	ui64_t *times;
 	vul_timer_t *clk;
 	vul_benchmark_result res;
-	va_list argp;
 
 	times = ( ui64_t* )malloc( sizeof( ui64_t ) * repetitions );
 	clk = vul_timer_create( );
 
-	va_start( argp, function );
-
 	// Run the benchmark
 	for( r = 0; r < repetitions; ++r ) {
 		vul_timer_reset( clk );
-		function( argp );
+		function( func_data );
 		times[ r ] = vul_timer_get_micros( clk );
 	}
 	
-	va_end( argp );
-
 	res.mean = vul__benchmark_mean( times, 0, repetitions - 1 );
 	res.median = vul__benchmark_median( times, 0, repetitions - 1 );
 	res.std_deviation = vul__benchmark_standard_deviation( times, 0, repetitions - 1, res.mean );

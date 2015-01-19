@@ -8,9 +8,9 @@
 using namespace vul;
 using namespace vul_test;
 
+#include <malloc.h>
 int main( int argc, char **argv )
 {
-
 	TestGL::test( );
 
 	// Wait for input

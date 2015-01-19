@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file includes the various datatypes of vul. At the moment, this includes:
  *	-General graph
@@ -36,4 +36,5 @@
 #include "vul_skip_list.h"
 #include "vul_queue.h"
 #include "vul_resizable_array.h"
+#include "vul_stable_array.h"
 #include "vul_hash_map.h"

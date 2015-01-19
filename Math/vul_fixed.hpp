@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file contains fixed point types of 32 bit size.
  * It also interfaces with the half precision type in vul_half.h
@@ -118,7 +118,6 @@ namespace vul {
 	//---------------------------
 	// Definitions
 	//
-
 #ifdef VUL_DEFINE
 	float round( float v )
 	{
@@ -128,7 +127,7 @@ namespace vul {
 	{
 		return floor( v + 0.5 );
 	}
-
+#endif
 	
 #ifdef VUL_CPLUSPLUS11
 	template< int Q >
@@ -476,7 +475,6 @@ namespace vul {
 
 		return r;
 	}
-#endif
 }
 
 	//------------------------------------
@@ -496,19 +494,11 @@ namespace std {
 		static constexpr bool has_infinity = false;
 		static constexpr bool has_quiet_NaN = false;
 
-#ifdef VUL_DEFINE
 		static vul::fixed_32< Q > min( ) noexcept			{ vul::fixed_32< Q > f; f.data = 0; return f; }
-		static vul::fixed_32< Q > lowest( ) noexcept		{ vul::fixed_32< Q > f; f.data = 0xffff; return f; }
-		static vul::fixed_32< Q > max( ) noexcept			{ vul::fixed_32< Q > f; f.data = 0x7fff; return f; }
-		static vul::fixed_32< Q > epsilon( ) noexcept		{ vul::fixed_32< Q > f; f.data = 0x0001; return f; }
+		static vul::fixed_32< Q > lowest( ) noexcept		{ vul::fixed_32< Q > f; f.data = 0xffffffff; return f; }
+		static vul::fixed_32< Q > max( ) noexcept			{ vul::fixed_32< Q > f; f.data = 0x7fffffff; return f; }
+		static vul::fixed_32< Q > epsilon( ) noexcept		{ vul::fixed_32< Q > f; f.data = 0x00000001; return f; }
 		static vul::fixed_32< Q > round_error( ) noexcept { vul::fixed_32< Q > f; f.data = 1 << ( Q - 1); return f; }
-#else
-		static vul::fixed_32< Q > min( ) noexcept;
-		static vul::fixed_32< Q > lowest( ) noexcept;
-		static vul::fixed_32< Q > max( ) noexcept;
-		static vul::fixed_32< Q > epsilon( ) noexcept;
-		static vul::fixed_32< Q > round_error( ) noexcept;
-#endif
 #else
 		static const bool is_signed = true;
 		static const bool is_exact = false;
@@ -517,19 +507,11 @@ namespace std {
 		static const bool has_infinity = false;
 		static const bool has_quiet_NaN = false;
 
-#ifdef VUL_DEFINE
 		static const vul::fixed_32< Q > min( )			{ vul::fixed_32< Q > f; f.data = 0; return f; }
-		static const vul::fixed_32< Q > lowest( )		{ vul::fixed_32< Q > f; f.data = 0xffff; return f; }
-		static const vul::fixed_32< Q > max( )			{ vul::fixed_32< Q > f; f.data = 0x7fff; return f; }
-		static const vul::fixed_32< Q > epsilon( )		{ vul::fixed_32< Q > f; f.data = 0x0001; return f; }
+		static const vul::fixed_32< Q > lowest( )		{ vul::fixed_32< Q > f; f.data = 0xffffffff; return f; }
+		static const vul::fixed_32< Q > max( )			{ vul::fixed_32< Q > f; f.data = 0x7fffffff; return f; }
+		static const vul::fixed_32< Q > epsilon( )		{ vul::fixed_32< Q > f; f.data = 0x00000001; return f; }
 		static const vul::fixed_32< Q > round_error( )	{ vul::fixed_32< Q > f; f.data = 1 << ( Q - 1); return f; };
-#else
-		static const vul::fixed_32< Q > min( );
-		static const vul::fixed_32< Q > lowest( );
-		static const vul::fixed_32< Q > max( );
-		static const vul::fixed_32< Q > epsilon( );
-		static const vul::fixed_32< Q > round_error( );
-#endif
 
 #endif
 	};

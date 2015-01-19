@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * An AABB struct that works in unlimited dimensions.
  * 
@@ -32,13 +32,14 @@
 #include "vul_affine.hpp"
 
 namespace vul {
-	
+
 	//----------------
 	// Declarations
 	// 	
 
 	template< typename T, i32_t n >
 	struct AABB {
+		// @TODO(thynn): Consider changing this to center, extent
 		Point< T, n > _min;
 		Point< T, n > _max;
 
@@ -68,23 +69,24 @@ namespace vul {
 	 */
 	template< typename T, i32_t n >
 	AABB< T, n > transform( const AABB< T, n > &aabb, const Affine< T, n > &a );
-	
-	/** 
+
+	/**
 	 * Returns the center of an AABB
 	 */
 	template< typename T, i32_t n >
 	Point< T, n > center( const AABB< T, n > &aabb );
-	/** 
+	/**
 	 * Returns half the extent of an AABB,
 	 * so corners are described by center( aabb ) +- extent( aabb ).
 	 */
 	template< typename T, i32_t n >
 	Vector< T, n > extent( const AABB< T, n > &aabb );
 	/**
-	 * Tests if a point is inside an AABB
+	 * Tests if a point is inside an AABB within a given epsilon
+	 * @TODO(thynn): Move from eps to ULP comparison, see https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
 	 */
 	template< typename T, i32_t n >
-	bool inside( const AABB< T, n > &aabb, const Point< T, n > &pt );
+	bool inside( const AABB< T, n > &aabb, const Point< T, n > &pt, T epsilon = T( 0.f ) );
 	/**
 	 * Tests if an AABB entirely contains another AABB
 	 */
@@ -102,6 +104,12 @@ namespace vul {
 	template< typename T, i32_t n >
 	AABB< T, n > unionize( const AABB< T, n > &a, const AABB< T, n > &b );
 
+	/**
+	 * Test if the given AABB is inside the given frustum.
+	 */
+	template< typename T, i32_t n >
+	bool insideFrustum( const AABB< T, n > &aabb, const Vector< T, n + 1 > planes[ n * 2 ] );
+
 #ifndef VUL_CPLUSPLUS11
 	template< typename T, i32_t n >
 	AABB< T, n > makeAABB( );
@@ -110,12 +118,12 @@ namespace vul {
 	template< typename T, i32_t n >
 	AABB< T, n > makeAABB( const Vector< T, n > &mini, const Vector< T, n > &maxi );
 	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( T (& a)[ 2 ][ n ] );
+	AABB< T, n > makeAABB( T( &a )[ 2 ][ n ] );
 #endif
 	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( f32_t (& a)[ 2 ][ n ] );
+	AABB< T, n > makeAABB( f32_t( &a )[ 2 ][ n ] );
 	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( i32_t (& a)[ 2 ][ n ] );
+	AABB< T, n > makeAABB( i32_t( &a )[ 2 ][ n ] );
 
 #ifdef VUL_AOSOA_SSE
 	/**
@@ -130,6 +138,18 @@ namespace vul {
 	 * __m128d[ 0 ] = xx, __m128d[ 1 ] = yy, __m128d[ 2 ] = zz
 	 */
 	void transform3D( AABB< __m128d, 3 > *out, const AABB< __m128d, 3 > *in, const Affine< f64_t, 3 > &trans, ui32_t count );
+	/**
+	* Test an array of packed AABBs against a frustum of 6 planes.
+	* Fill the result into the array out, where each result is 8 bytes.
+	* Single precision.
+	*/
+	void inside_test( ui32_t *out, const AABB< __m128, 3 > *aabbs, Vector< f32_t, 4 > planes[ 6 ], ui32_t count );
+	/**
+	* Test an array of packed AABBs against a frustum of 6 planes.
+	* Fill the result into the array out, where each result is 8 bytes.
+	* Double precision.
+	*/
+	void inside_test( ui32_t *out, const AABB< __m128d, 3 > *aabbs, Vector< f64_t, 4 > planes[ 6 ], ui32_t count );
 #endif
 #ifdef VUL_AOSOA_AVX
 	/**
@@ -144,6 +164,18 @@ namespace vul {
 	 * __m256d[ 0 ] = xxxx, __m256d[ 1 ] = yyyy, __m256d[ 2 ] = zzzz
 	 */
 	void transform3D( AABB< __m256d, 3 > *out, const AABB< __m256d, 3 > *in, const Affine< f64_t, 3 > &trans, ui32_t count );
+	/**
+	* Test an array of packed AABBs against a frustum of 6 planes.
+	* Fill the result into the array out, where each result is 8 bytes.
+	* Single precision.
+	*/
+	void inside_test( ui32_t *out, const AABB< __m256, 3 > *aabbs, Vector< f32_t, 4 > planes[ 6 ], ui32_t count );
+	/**
+	* Test an array of packed AABBs against a frustum of 6 planes.
+	* Fill the result into the array out, where each result is 8 bytes.
+	* Double precision.
+	*/
+	void inside_test( ui32_t *out, const AABB< __m256d, 3 > *aabbs, Vector< f64_t, 4 > planes[ 6 ], ui32_t count );
 #endif
 #ifdef VUL_AOSOA_NEON
 	/**
@@ -152,9 +184,13 @@ namespace vul {
 	 * float32x4_t[ 0 ] = xxxx, float32x4_[ 1 ] = yyyy, float32x4_t[ 2 ] = zzzz
 	 */
 	void transform3D( AABB< float32x4_t, 3 > *out, const AABB< float32x4_t, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count );
+	/**
+	* Test an array of packed AABBs against a frustum of 6 planes.
+	* Fill the result into the array out, where each result is 8 bytes.
+	*/
+	void inside_test( ui32_t *out, const AABB< float32x4_t, 3 > *aabbs, Vector< f32_t, 4 > planes[ 6 ], ui32_t count );
 #endif
-
-
+	
 	//----------------
 	// Definition
 	//
@@ -346,12 +382,13 @@ namespace vul {
 	}
 
 	template< typename T, i32_t n >
-	bool inside( const AABB< T, n > &aabb, const Point< T, n > &pt )
+	bool inside( const AABB< T, n > &aabb, const Point< T, n > &pt, T epsilon )
 	{
+		Vector< T, n > eps = makeVector< T, n >( epsilon );
 		return all(									// Are all coordinates'
 					abs( pt - center( aabb ) )		// distance to the center
-					<=								// smaller than or equal to
-					abs( extent( aabb ) ) );		// the size of the extent
+				  - abs( extent( aabb ) )			// smaller than or equal to
+					<= eps );						// the size of the extent
 	}
 	template< typename T, i32_t n >
 	bool contains( const AABB< T, n > &outer, const AABB< T, n > &inner )
@@ -381,6 +418,25 @@ namespace vul {
 #endif
 	}
 
+	template< typename T, i32_t n >
+	bool insideFrustum( const AABB< T, n > &aabb, const Vector< T, n + 1 > planes[ n * 2 ] )
+	{
+		ui32_t i;
+		Vector< T, n > c, e, p;
+		
+		c = aabb._min.as_vec( ) + aabb._max.as_vec( );
+		e = aabb._max.as_vec( ) - aabb._min.as_vec( );
+
+		for( i = 0; i < n * 2; ++i ) {
+			p = truncate< T, n, n + 1 >( planes[ i ] );
+			// This isn't really optimized, for that you'd use the SIMD versions
+			if( dot( c, p ) + dot( e, abs( p ) ) > -planes[ i ][ n ] ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	//--------------------------
 	// AOSOA SSE functions
@@ -710,6 +766,345 @@ namespace vul {
 		}
 	}
 #endif // VUL_AOSOA_NEON
+
+#ifdef VUL_AOSOA_SSE
+	void inside_test( ui32_t *out, const AABB< __m128, 3 > *aabbs, Vector< f32_t, 4 > planes[ 6 ], ui32_t count )
+	{
+		__m128 c[ 3 ];
+		__m128 e[ 3 ];
+		__m128 p[ 6 ][ 4 ]; // [ plane_nr ][ coordinate ]
+		__m128 signFlip[ 3 ], signBit;
+		__m128 t0[ 3 ];
+		__m128 t1[ 3 ];
+		ui32_t simdCount;
+
+		signBit = _mm_set1_ps( 0x80000000 );
+
+		for( ui32_t j = 0; j < 6; ++j ) {
+			p[ j ][ 0 ] = _mm_set1_ps( planes[ j ][ 0 ] );
+			p[ j ][ 1 ] = _mm_set1_ps( planes[ j ][ 1 ] );
+			p[ j ][ 2 ] = _mm_set1_ps( planes[ j ][ 2 ] );
+			p[ j ][ 3 ] = _mm_set1_ps( -planes[ j ][ 3 ] );
+		}
+		
+		simdCount = ( count + 3 ) / 4;
+		for( ui32_t i = 0; i < simdCount; ++i ) {
+			c[ 0 ] = _mm_add_ps( aabbs[ i ]._min.data[ 0 ], aabbs[ i ]._max.data[ 0 ] );
+			c[ 1 ] = _mm_add_ps( aabbs[ i ]._min.data[ 1 ], aabbs[ i ]._max.data[ 1 ] );
+			c[ 2 ] = _mm_add_ps( aabbs[ i ]._min.data[ 2 ], aabbs[ i ]._max.data[ 2 ] );
+
+			e[ 0 ] = _mm_sub_ps( aabbs[ i ]._max.data[ 0 ], aabbs[ i ]._min.data[ 0 ] );
+			e[ 1 ] = _mm_sub_ps( aabbs[ i ]._max.data[ 1 ], aabbs[ i ]._min.data[ 1 ] );
+			e[ 2 ] = _mm_sub_ps( aabbs[ i ]._max.data[ 2 ], aabbs[ i ]._min.data[ 2 ] );
+
+			out[ i ] = 0x00000000;
+			for( ui32_t j = 0; j < 6; ++j ) {
+				signFlip[ 0 ] = _mm_and_ps( p[ j ][ 0 ], signBit );
+				signFlip[ 1 ] = _mm_and_ps( p[ j ][ 1 ], signBit );
+				signFlip[ 2 ] = _mm_and_ps( p[ j ][ 2 ], signBit );
+
+				// t0 = xor( e, signFlip )
+				t0[ 0 ] = _mm_xor_ps( e[ 0 ], signFlip[ 0 ] );
+				t0[ 1 ] = _mm_xor_ps( e[ 1 ], signFlip[ 1 ] );
+				t0[ 2 ] = _mm_xor_ps( e[ 2 ], signFlip[ 2 ] );
+
+				// t1 = c + t0
+				t1[ 0 ] = _mm_add_ps( c[ 0 ], t0[ 0 ] );
+				t1[ 1 ] = _mm_add_ps( c[ 1 ], t0[ 1 ] );
+				t1[ 2 ] = _mm_add_ps( c[ 2 ], t0[ 2 ] );
+
+				// t2 = dot ( t1, plane.xyz )
+				t0[ 0 ] = _mm_mul_ps( t1[ 0 ], p[ j ][ 0 ] );
+				t0[ 1 ] = _mm_mul_ps( t1[ 1 ], p[ j ][ 1 ] );
+				t0[ 2 ] = _mm_mul_ps( t1[ 2 ], p[ j ][ 2 ] );
+				t1[ 0 ] = _mm_add_ps( t0[ 0 ], t0[ 1 ] );
+				t1[ 1 ] = _mm_add_ps( t1[ 0 ], t0[ 2 ] );
+
+				// t2 > -plane.w
+				t1[ 2 ] = _mm_cmpgt_ps( t1[ 1 ], p[ j ][ 3 ] );
+
+				// Store result
+				out[ i ] = ( t1[ 2 ].m128_u32[ 0 ] == 0xffffffff ? 0xff000000 : 0x00000000 )
+						 | ( t1[ 2 ].m128_u32[ 1 ] == 0xffffffff ? 0x00ff0000 : 0x00000000 )
+						 | ( t1[ 2 ].m128_u32[ 2 ] == 0xffffffff ? 0x0000ff00 : 0x00000000 )
+						 | ( t1[ 2 ].m128_u32[ 3 ] == 0xffffffff ? 0x000000ff : 0x00000000 );
+			}
+		}
+	}
+	void inside_test( ui32_t *out, const AABB< __m128d, 3 > *aabbs, Vector< f64_t, 4 > planes[ 6 ], ui32_t count )
+	{
+		__m128d c[ 3 ];
+		__m128d e[ 3 ];
+		__m128d p[ 6 ][ 4 ]; // [ plane_nr ][ coordinate ]
+		__m128d signFlip[ 3 ], signBit;
+		__m128d t0[ 3 ];
+		__m128d t1[ 3 ];
+		ui32_t simdCount;
+
+		signBit = _mm_set1_pd( 0x80000000 );
+
+		for( ui32_t j = 0; j < 6; ++j ) {
+			p[ j ][ 0 ] = _mm_set1_pd( planes[ j ][ 0 ] );
+			p[ j ][ 1 ] = _mm_set1_pd( planes[ j ][ 1 ] );
+			p[ j ][ 2 ] = _mm_set1_pd( planes[ j ][ 2 ] );
+			p[ j ][ 3 ] = _mm_set1_pd( -planes[ j ][ 3 ] );
+		}
+
+		simdCount = ( count + 1 ) / 2;
+		for( ui32_t i = 0; i < simdCount; ++i ) {
+			c[ 0 ] = _mm_add_pd( aabbs[ i ]._min.data[ 0 ], aabbs[ i ]._max.data[ 0 ] );
+			c[ 1 ] = _mm_add_pd( aabbs[ i ]._min.data[ 1 ], aabbs[ i ]._max.data[ 1 ] );
+			c[ 2 ] = _mm_add_pd( aabbs[ i ]._min.data[ 2 ], aabbs[ i ]._max.data[ 2 ] );
+
+			e[ 0 ] = _mm_sub_pd( aabbs[ i ]._max.data[ 0 ], aabbs[ i ]._min.data[ 0 ] );
+			e[ 1 ] = _mm_sub_pd( aabbs[ i ]._max.data[ 1 ], aabbs[ i ]._min.data[ 1 ] );
+			e[ 2 ] = _mm_sub_pd( aabbs[ i ]._max.data[ 2 ], aabbs[ i ]._min.data[ 2 ] );
+
+			out[ i ] = 0x00000000;
+			for( ui32_t j = 0; j < 6; ++j ) {
+				signFlip[ 0 ] = _mm_and_pd( p[ j ][ 0 ], signBit );
+				signFlip[ 1 ] = _mm_and_pd( p[ j ][ 1 ], signBit );
+				signFlip[ 2 ] = _mm_and_pd( p[ j ][ 2 ], signBit );
+
+				// t0 = xor( e, signFlip )
+				t0[ 0 ] = _mm_xor_pd( e[ 0 ], signFlip[ 0 ] );
+				t0[ 1 ] = _mm_xor_pd( e[ 1 ], signFlip[ 1 ] );
+				t0[ 2 ] = _mm_xor_pd( e[ 2 ], signFlip[ 2 ] );
+
+				// t1 = c + t0
+				t1[ 0 ] = _mm_add_pd( c[ 0 ], t0[ 0 ] );
+				t1[ 1 ] = _mm_add_pd( c[ 1 ], t0[ 1 ] );
+				t1[ 2 ] = _mm_add_pd( c[ 2 ], t0[ 2 ] );
+
+				// t2 = dot ( t1, plane.xyz )
+				t0[ 0 ] = _mm_mul_pd( t1[ 0 ], p[ j ][ 0 ] );
+				t0[ 1 ] = _mm_mul_pd( t1[ 1 ], p[ j ][ 1 ] );
+				t0[ 2 ] = _mm_mul_pd( t1[ 2 ], p[ j ][ 2 ] );
+				t1[ 0 ] = _mm_add_pd( t0[ 0 ], t0[ 1 ] );
+				t1[ 1 ] = _mm_add_pd( t1[ 0 ], t0[ 2 ] );
+
+				// t2 > -plane.w
+				t1[ 2 ] = _mm_cmpgt_pd( t1[ 1 ], p[ j ][ 3 ] );
+
+				// Store result
+				if( i % 1 ) {
+					out[ i ] = ( *( ( ui64_t* )&t1[ 2 ].m128d_f64[ 0 ] ) == 0xffffffffffffffff ? 0x0000ff00 : 0x00000000 )
+							 | ( *( ( ui64_t* )&t1[ 2 ].m128d_f64[ 1 ] ) == 0xffffffffffffffff ? 0x000000ff : 0x00000000 );
+				} else {
+					out[ i ] = ( *( ( ui64_t* )&t1[ 2 ].m128d_f64[ 0 ] ) == 0xffffffffffffffff ? 0xff000000 : 0x00000000 )
+							 | ( *( ( ui64_t* )&t1[ 2 ].m128d_f64[ 1 ] ) == 0xffffffffffffffff ? 0x00ff0000 : 0x00000000 );
+				}
+			}
+		}
+	}
+#endif // VUL_AOSOA_SSE
+#ifdef VUL_AOSOA_AVX
+	/**
+	* Test an array of packed AABBs against a frustum of 6 planes.
+	* Fill the result into the array out, where 0 is false and everything else is true.
+	*/
+	void inside_test( ui32_t *out, const AABB< __m256, 3 > *aabbs, Vector< f32_t, 4 > planes[ 6 ], ui32_t count )
+	{
+		__m256 c[ 3 ];
+		__m256 e[ 3 ];
+		__m256 p[ 6 ][ 4 ]; // [ plane_nr ][ coordinate ]
+		__m256 signFlip[ 3 ], signBit;
+		__m256 t0[ 3 ];
+		__m256 t1[ 3 ];
+		ui32_t simdCount;
+
+		signBit = _mm256_set1_ps( 0x80000000 );
+
+		for( ui32_t j = 0; j < 6; ++j ) {
+			p[ j ][ 0 ] = _mm256_set1_ps( planes[ j ][ 0 ] );
+			p[ j ][ 1 ] = _mm256_set1_ps( planes[ j ][ 1 ] );
+			p[ j ][ 2 ] = _mm256_set1_ps( planes[ j ][ 2 ] );
+			p[ j ][ 3 ] = _mm256_set1_ps( -planes[ j ][ 3 ] );
+		}
+
+		simdCount = ( count + 7 ) / 8;
+		for( ui32_t i = 0; i < simdCount; ++i ) {
+			c[ 0 ] = _mm256_add_ps( aabbs[ i ]._min.data[ 0 ], aabbs[ i ]._max.data[ 0 ] );
+			c[ 1 ] = _mm256_add_ps( aabbs[ i ]._min.data[ 1 ], aabbs[ i ]._max.data[ 1 ] );
+			c[ 2 ] = _mm256_add_ps( aabbs[ i ]._min.data[ 2 ], aabbs[ i ]._max.data[ 2 ] );
+
+			e[ 0 ] = _mm256_sub_ps( aabbs[ i ]._max.data[ 0 ], aabbs[ i ]._min.data[ 0 ] );
+			e[ 1 ] = _mm256_sub_ps( aabbs[ i ]._max.data[ 1 ], aabbs[ i ]._min.data[ 1 ] );
+			e[ 2 ] = _mm256_sub_ps( aabbs[ i ]._max.data[ 2 ], aabbs[ i ]._min.data[ 2 ] );
+
+			out[ i ] = 0x00000000;
+			for( ui32_t j = 0; j < 6; ++j ) {
+				signFlip[ 0 ] = _mm256_and_ps( p[ j ][ 0 ], signBit );
+				signFlip[ 1 ] = _mm256_and_ps( p[ j ][ 1 ], signBit );
+				signFlip[ 2 ] = _mm256_and_ps( p[ j ][ 2 ], signBit );
+
+				// t0 = xor( e, signFlip )
+				t0[ 0 ] = _mm256_xor_ps( e[ 0 ], signFlip[ 0 ] );
+				t0[ 1 ] = _mm256_xor_ps( e[ 1 ], signFlip[ 1 ] );
+				t0[ 2 ] = _mm256_xor_ps( e[ 2 ], signFlip[ 2 ] );
+
+				// t1 = c + t0
+				t1[ 0 ] = _mm256_add_ps( c[ 0 ], t0[ 0 ] );
+				t1[ 1 ] = _mm256_add_ps( c[ 1 ], t0[ 1 ] );
+				t1[ 2 ] = _mm256_add_ps( c[ 2 ], t0[ 2 ] );
+
+				// t2 = dot ( t1, plane.xyz )
+				t0[ 0 ] = _mm256_mul_ps( t1[ 0 ], p[ j ][ 0 ] );
+				t0[ 1 ] = _mm256_mul_ps( t1[ 1 ], p[ j ][ 1 ] );
+				t0[ 2 ] = _mm256_mul_ps( t1[ 2 ], p[ j ][ 2 ] );
+				t1[ 0 ] = _mm256_add_ps( t0[ 0 ], t0[ 1 ] );
+				t1[ 1 ] = _mm256_add_ps( t1[ 0 ], t0[ 2 ] );
+
+				// t2 > -plane.w
+				t1[ 2 ] = _mm256_cmp_ps( t1[ 1 ], p[ j ][ 3 ], _CMP_GT_OQ );
+
+				// Store result
+				out[ i * 2 ] = ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 0 ] ) == 0 ? 0x00000000 : 0xff000000 )
+							 | ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 1 ] ) == 0 ? 0x00000000 : 0x00ff0000 )
+							 | ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 2 ] ) == 0 ? 0x00000000 : 0x0000ff00 )
+							 | ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 3 ] ) == 0 ? 0x00000000 : 0x000000ff );
+				out[ i * 2 + 1 ] = ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 4 ] ) == 0 ? 0x00000000 : 0xff000000 )
+								 | ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 5 ] ) == 0 ? 0x00000000 : 0x00ff0000 )
+								 | ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 6 ] ) == 0 ? 0x00000000 : 0x0000ff00 )
+								 | ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 7 ] ) == 0 ? 0x00000000 : 0x000000ff );
+			}
+		}
+	}
+	void inside_test( ui32_t *out, const AABB< __m256d, 3 > *aabbs, Vector< f64_t, 4 > planes[ 6 ], ui32_t count )
+	{
+		__m256d c[ 3 ];
+		__m256d e[ 3 ];
+		__m256d p[ 6 ][ 4 ]; // [ plane_nr ][ coordinate ]
+		__m256d signFlip[ 3 ], signBit;
+		__m256d t0[ 3 ];
+		__m256d t1[ 3 ];
+		ui32_t simdCount;
+
+		signBit = _mm256_set1_pd( 0x80000000 );
+
+		for( ui32_t j = 0; j < 6; ++j ) {
+			p[ j ][ 0 ] = _mm256_set1_pd( planes[ j ][ 0 ] );
+			p[ j ][ 1 ] = _mm256_set1_pd( planes[ j ][ 1 ] );
+			p[ j ][ 2 ] = _mm256_set1_pd( planes[ j ][ 2 ] );
+			p[ j ][ 3 ] = _mm256_set1_pd( -planes[ j ][ 3 ] );
+		}
+
+		simdCount = ( count + 3 ) / 4;
+		for( ui32_t i = 0; i < simdCount; ++i ) {
+			c[ 0 ] = _mm256_add_pd( aabbs[ i ]._min.data[ 0 ], aabbs[ i ]._max.data[ 0 ] );
+			c[ 1 ] = _mm256_add_pd( aabbs[ i ]._min.data[ 1 ], aabbs[ i ]._max.data[ 1 ] );
+			c[ 2 ] = _mm256_add_pd( aabbs[ i ]._min.data[ 2 ], aabbs[ i ]._max.data[ 2 ] );
+
+			e[ 0 ] = _mm256_sub_pd( aabbs[ i ]._max.data[ 0 ], aabbs[ i ]._min.data[ 0 ] );
+			e[ 1 ] = _mm256_sub_pd( aabbs[ i ]._max.data[ 1 ], aabbs[ i ]._min.data[ 1 ] );
+			e[ 2 ] = _mm256_sub_pd( aabbs[ i ]._max.data[ 2 ], aabbs[ i ]._min.data[ 2 ] );
+
+			out[ i ] = 0x00000000;
+			for( ui32_t j = 0; j < 6; ++j ) {
+				signFlip[ 0 ] = _mm256_and_pd( p[ j ][ 0 ], signBit );
+				signFlip[ 1 ] = _mm256_and_pd( p[ j ][ 1 ], signBit );
+				signFlip[ 2 ] = _mm256_and_pd( p[ j ][ 2 ], signBit );
+
+				// t0 = xor( e, signFlip )
+				t0[ 0 ] = _mm256_xor_pd( e[ 0 ], signFlip[ 0 ] );
+				t0[ 1 ] = _mm256_xor_pd( e[ 1 ], signFlip[ 1 ] );
+				t0[ 2 ] = _mm256_xor_pd( e[ 2 ], signFlip[ 2 ] );
+
+				// t1 = c + t0
+				t1[ 0 ] = _mm256_add_pd( c[ 0 ], t0[ 0 ] );
+				t1[ 1 ] = _mm256_add_pd( c[ 1 ], t0[ 1 ] );
+				t1[ 2 ] = _mm256_add_pd( c[ 2 ], t0[ 2 ] );
+
+				// t2 = dot ( t1, plane.xyz )
+				t0[ 0 ] = _mm256_mul_pd( t1[ 0 ], p[ j ][ 0 ] );
+				t0[ 1 ] = _mm256_mul_pd( t1[ 1 ], p[ j ][ 1 ] );
+				t0[ 2 ] = _mm256_mul_pd( t1[ 2 ], p[ j ][ 2 ] );
+				t1[ 0 ] = _mm256_add_pd( t0[ 0 ], t0[ 1 ] );
+				t1[ 1 ] = _mm256_add_pd( t1[ 0 ], t0[ 2 ] );
+
+				// t2 > -plane.w
+				t1[ 2 ] = _mm256_cmp_pd( t1[ 1 ], p[ j ][ 3 ], _CMP_GT_OQ );
+
+				// Store result
+				out[ i ] = ( *( ( ui32_t* )&t1[ 2 ].m256d_f64[ 0 ] ) == 0 ? 0x0000000000000000 : 0xff000000 )
+						 | ( *( ( ui32_t* )&t1[ 2 ].m256d_f64[ 1 ] ) == 0 ? 0x0000000000000000 : 0x00ff0000 )
+						 | ( *( ( ui32_t* )&t1[ 2 ].m256d_f64[ 2 ] ) == 0 ? 0x0000000000000000 : 0x0000ff00 )
+						 | ( *( ( ui32_t* )&t1[ 2 ].m256d_f64[ 3 ] ) == 0 ? 0x0000000000000000 : 0x000000ff );
+			}
+		}
+	}
+#endif // VUL_AOSOA_AVX
+#ifdef VUL_AOSOA_NEON
+	/**
+	* Test an array of packed AABBs against a frustum of 6 planes.
+	* Fill the result into the array out, where 0 is false and everything else is true.
+	*/
+	void inside_test( ui32_t *out, const AABB< float32x4_t, 3 > *aabbs, Vector< f32_t, 4 > planes[ 6 ], ui32_t count )
+	{
+		float32x4_t c[ 3 ];
+		float32x4_t e[ 3 ];
+		float32x4_t p[ 6 ][ 4 ]; // [ plane_nr ][ coordinate ]
+		float32x4_t signFlip[ 3 ], signBit;
+		float32x4_t t0[ 3 ];
+		float32x4_t t1[ 3 ];
+		uint32x4_t res;
+		ui32_t simdCount;
+
+		signBit = _mm_set1_ps( 0x80000000 );
+
+		for( ui32_t j = 0; j < 6; ++j ) {
+			p[ j ][ 0 ] = vdupq_n_f32( planes[ j ][ 0 ] );
+			p[ j ][ 1 ] = vdupq_n_f32( planes[ j ][ 1 ] );
+			p[ j ][ 2 ] = vdupq_n_f32( planes[ j ][ 2 ] );
+			p[ j ][ 3 ] = vdupq_n_f32( -planes[ j ][ 3 ] );
+		}
+
+		simdCount = ( count + 3 ) / 4;
+		for( ui32_t i = 0; i < simdCount; ++i ) {
+			c[ 0 ] = vaddq_f32( aabbs[ i ]._min.data[ 0 ], aabbs[ i ]._max.data[ 0 ] );
+			c[ 1 ] = vaddq_f32( aabbs[ i ]._min.data[ 1 ], aabbs[ i ]._max.data[ 1 ] );
+			c[ 2 ] = vaddq_f32( aabbs[ i ]._min.data[ 2 ], aabbs[ i ]._max.data[ 2 ] );
+
+			e[ 0 ] = vsubq_f32( aabbs[ i ]._max.data[ 0 ], aabbs[ i ]._min.data[ 0 ] );
+			e[ 1 ] = vsubq_f32( aabbs[ i ]._max.data[ 1 ], aabbs[ i ]._min.data[ 1 ] );
+			e[ 2 ] = vsubq_f32( aabbs[ i ]._max.data[ 2 ], aabbs[ i ]._min.data[ 2 ] );
+
+			out[ i ] = 0x00000000;
+			for( ui32_t j = 0; j < 6; ++j ) {
+				signFlip[ 0 ] = vandq_f32( p[ j ][ 0 ], signBit );
+				signFlip[ 1 ] = vandq_f32( p[ j ][ 1 ], signBit );
+				signFlip[ 2 ] = vandq_f32( p[ j ][ 2 ], signBit );
+
+				// t0 = xor( e, signFlip )
+				t0[ 0 ] = vxorq_f32( e[ 0 ], signFlip[ 0 ] );
+				t0[ 1 ] = vxorq_f32( e[ 1 ], signFlip[ 1 ] );
+				t0[ 2 ] = vxorq_f32( e[ 2 ], signFlip[ 2 ] );
+
+				// t1 = c + t0
+				t1[ 0 ] = vaddq_f32( c[ 0 ], t0[ 0 ] );
+				t1[ 1 ] = vaddq_f32( c[ 1 ], t0[ 1 ] );
+				t1[ 2 ] = vaddq_f32( c[ 2 ], t0[ 2 ] );
+
+				// t2 = dot ( t1, plane.xyz )
+				t0[ 0 ] = vmul1_f32( t1[ 0 ], p[ j ][ 0 ] );
+				t0[ 1 ] = vmul1_f32( t1[ 1 ], p[ j ][ 1 ] );
+				t0[ 2 ] = vmul1_f32( t1[ 2 ], p[ j ][ 2 ] );
+				t1[ 0 ] = vaddq_f32( t0[ 0 ], t0[ 1 ] );
+				t1[ 1 ] = vaddq_f32( t1[ 0 ], t0[ 2 ] );
+
+				// t2 > -plane.w
+				res = vcgtq_f32( t1[ 1 ], p[ j ][ 3 ] );
+
+				// Store result
+				out[ i ] = ( vgetq_lane_f32( res, 0 ) == 0xffffffff ? 0xff000000 : 0x00000000 )
+						 | ( vgetq_lane_f32( res, 1 ) == 0xffffffff ? 0x00ff0000 : 0x00000000 )
+						 | ( vgetq_lane_f32( res, 2 ) == 0xffffffff ? 0x0000ff00 : 0x00000000 )
+						 | ( vgetq_lane_f32( res, 3 ) == 0xffffffff ? 0x000000ff : 0x00000000 );
+			}
+		}
+	}
+#endif // VUL_AOSOA_NEON
+	
 
 #endif // VUL_DEFINE
 }

@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file describes a ring-buffer implementation of a queue.
  * 
@@ -186,8 +186,6 @@ void *vul_queue_peek( vul_queue *q );
 #else
 void *vul_queue_peek( vul_queue *q )
 {
-	void *ret;
-	
 	// Get element.
 	return ( void* )( ( unsigned int )q->data + ( q->front * q->element_size ) );
 }
@@ -250,7 +248,10 @@ void vul_queue_destroy( vul_queue *q );
 #else
 void vul_queue_destroy( vul_queue *q )
 {
-	free( q->data );
+	assert( q );
+	if( q->data ) {
+		free( q->data );
+	}
 	free( q );
 	// By setting to null we are much more likely to trigger asserts if used after free.
 	q->data = NULL;

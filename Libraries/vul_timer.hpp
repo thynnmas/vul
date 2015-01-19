@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file contains a high performace timer that works on windows, linux
  * and OS X. Possibly works on other *nix systems as well.
@@ -147,7 +147,7 @@ namespace vul {
 		old_mask = SetThreadAffinityMask( thread, this->clock_mask );
 		QueryPerformanceCounter( &current_time );
 		SetThreadAffinityMask( thread, old_mask );
-		new_time = current_time.QuadPart - current_time.QuadPart;
+		new_time = current_time.QuadPart - this->start_time.QuadPart;
 		new_ticks = ( ui32_t )( 1000 * new_time / this->frequency.QuadPart );
 
 		// Microsoft KB: Q274323
@@ -199,7 +199,7 @@ namespace vul {
 		old_mask = SetThreadAffinityMask( thread, this->clock_mask );
 		QueryPerformanceCounter( &current_time );
 		SetThreadAffinityMask( thread, old_mask );
-		new_time = current_time.QuadPart - current_time.QuadPart;
+		new_time = current_time.QuadPart - this->start_time.QuadPart;
 		new_ticks = ( ui32_t )( 1000 * new_time / this->frequency.QuadPart );
 
 		// Microsoft KB: Q274323

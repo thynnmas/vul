@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * A scalar linear math library containing Vectors, Matrices, Points, Quaternions, AABBs
  * general affine transformations as well as fixed and half precision floating point types.
@@ -37,6 +37,8 @@
  *															|	which is introduced in clang 3.1
  * 
  * @TODO: The todos in vul_half.hpp
+ * @TODO: Write pass-by-value versions of everything; is faster up to about 64 byte parameters in
+ *		  local benchmarks, and much better for the optimizer. Probably worth changing for our usage.
  * @TODO: Planned features:
  *		-Linear solvers
  *		-64-bit fixed type

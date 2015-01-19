@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file describes generic vectors. Specializations for 2, 3 & 4 vectors of 
  * all reasonable float, fixed, int and uint types (not 128bit) are made.
@@ -1176,7 +1176,7 @@ namespace vul {
 		i32_t i;
 		T invnorm;
 
-		invnorm = static_cast< T >( 1.0 ) / norm( a );
+		invnorm = static_cast< T >( 1.f ) / norm( a );
 		for( i = 0; i < n; ++i ) {
 			v[ i ] = a[ i ] * invnorm;
 		}

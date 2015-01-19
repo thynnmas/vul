@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file describes a templated general graph as well as a few useful functions on them.
  * @TODO: Functions on it (BFS, DFS, Dijkstra etc.)

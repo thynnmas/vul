@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file describes an alternative to the STL vector class. This is mostly 
  * based on Tom Forsyth's ArbitraryList found here: https://home.comcast.net/~tom_forsyth/blog.wiki.html
@@ -542,6 +542,29 @@ unsigned int vul_vector_find( vul_vector_t *vec, void *item )
 	return vec->size;
 }
 #endif
+/**
+* Finds the index of the given item, or -1 if not found.
+* This compares value of entire element, not pointers.
+* @param item The item to find
+* @return the index of the item, -1 if not found.
+*/
+#ifndef VUL_DEFINE
+unsigned int vul_vector_find_val( vul_vector_t *vec, void *item );
+#else
+unsigned int vul_vector_find_val( vul_vector_t *vec, void *item )
+{
+	unsigned int i;
+
+	assert( vec != NULL );
+
+	for( i = 0; i < vec->size; i += vec->element_size ) {
+		if( memcmp( &vec->list[ i ], item, vec->element_size ) == 0 ) {
+			return i;
+		}
+	}
+	return vec->size;
+}
+#endif
 		
 /**
 * Shrinks the vector to fit the current size.
@@ -564,11 +587,11 @@ void vul_vector_tighten( vul_vector_t *vec )
 #ifdef VUL_DEBUG
 	// @Note: Debug versions attempt to spot if you alter the list in the middle of a loop. That might cause a resize and in turn mayhem.
 	// Normal iterator
-	#define vul_foreach( T, list ) for ( T *it = ( T* )vul_vector_begin( list ), *first = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ); internal_functional_assert( first == ( T* )vul_vector_begin( list ) ), internal_functional_assert( last == ( T* )vul_vector_end( list ) ), it != last; ++it )
+#define vul_foreach( T, list ) for ( T *it = ( T* )vul_vector_begin( list ), *first = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ); assert( first == ( T* )vul_vector_begin( list ) ), assert( last == ( T* )vul_vector_end( list ) ), it != last; ++it )
 	// Easier for list of values; copies
-	#define vul_foreachval( T, ref, list ) for ( T *it = ( T* )vul_vector_begin( list ), *first = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ), ref = ( ( it != last ) ? *it : T( ) ); internal_functional_assert( first == ( T* )vul_vector_begin( list ) ), internal_functional_assert( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
+#define vul_foreachval( T, ref, list ) for ( T *it = ( T* )vul_vector_begin( list ), *first = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ), ref = ( ( it != last ) ? *it : T( ) ); assert( first == ( T* )vul_vector_begin( list ) ), assert( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
 	// Easier for list of pointers
-	#define vul_foreachptr( T, ref, list ) for ( T **it = ( T** )vul_vector_begin( list ), **first = ( T** )vul_vector_begin( list ), **last = ( T** )vul_vector_end( list ), *ref = ( ( it != last ) ? *it : NULL ); internal_functional_assert( first == ( T* )vul_vector_begin( list ) ), internal_functional_assert( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
+#define vul_foreachptr( T, ref, list ) for ( T **it = ( T** )vul_vector_begin( list ), **first = ( T** )vul_vector_begin( list ), **last = ( T** )vul_vector_end( list ), *ref = ( ( it != last ) ? *it : NULL ); assert( first == ( T* )vul_vector_begin( list ) ), assert( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
 #else
 	// Normal iterator
 	#define vul_foreach( T, list ) for ( T *it = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ); it != last; ++it )

@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file defines shorter type names for the common math types in VUL.
  * 
@@ -18,20 +18,22 @@
 #if !defined( VUL_TYPES_H ) && !defined( VUL_TYPES_HPP )
 #define VUL_TYPES_H
 
+#include <stdint.h>
+
 // Floats
 typedef float f32_t;
 typedef double f64_t;
 
 // Signed Integers
-typedef char i8_t;
-typedef short i16_t;
-typedef int i32_t;
-typedef long long i64_t;
+typedef int8_t i8_t;
+typedef int16_t i16_t;
+typedef int32_t i32_t;
+typedef int64_t i64_t;
 
 // Unsigned integers
-typedef unsigned char ui8_t;
-typedef unsigned short ui16_t;
-typedef unsigned int ui32_t;
-typedef unsigned long long ui64_t;
+typedef uint8_t ui8_t;
+typedef uint16_t ui16_t;
+typedef uint32_t ui32_t;
+typedef uint64_t ui64_t;
 
 #endif

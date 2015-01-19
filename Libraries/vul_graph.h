@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file describes a general graph as well as a few useful functions on them.
  * @TODO: Dijkstra etc.
@@ -32,8 +32,7 @@
  */
 //#define VUL_DEFINE
 
-typedef struct vul_node_t vul_node_t;
-struct vul_node_t{
+typedef struct vul_node_t {
 	/**
 	 * The content of the graph.
 	 */
@@ -41,7 +40,7 @@ struct vul_node_t{
 	/**
 	 * Parent node
 	 */
-	vul_node_t *parent;
+	struct vul_node_t *parent;
 	/**
 	 * Children
 	 */
@@ -59,7 +58,7 @@ struct vul_node_t{
 		visited = false;
 		children = vul_vector_create( sizeof( vul_node_t ), 0 );
 	}
-};
+} vul_node_t;
 
 /**
  * Strategy to use when DFS iterating over a graph; do we visit

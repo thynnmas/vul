@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file contains auxilliary functions for benchmarking.
  * @TODO: Proper statistics; at the moment this does the programmer's
@@ -113,19 +113,18 @@ f64_t vul__benchmark_mean( ui64_t *times, ui32_t left, ui32_t right )
 /**
  * Calculates the stad_deviation of an array of times given the mean of the array.  O(n)
  */
-f64_t vul__benchmark_standard_deviation( ui64_t *times, ui32_t left, ui32_t right, ui64_t mean )
+f64_t vul__benchmark_standard_deviation( ui64_t *times, ui32_t left, ui32_t right, f64_t mean )
 {
 	ui32_t i;
-	ui64_t d;
-	f64_t dev, inv_count;
+	f64_t d, dev, inv_count;
 
 	inv_count = 1.0 / ( f64_t )( ( right - left ) - 1 );
 	dev = 0;
 	for( i = left; i < right; ++i )
 	{
-		d = times[ i ] - mean;
+		d = ( f64_t )times[ i ] - mean;
 		d *= d;
-		dev += ( f64_t )d * inv_count;
+		dev += d * inv_count;
 	}
 
 	return sqrt( dev );
@@ -171,7 +170,7 @@ vul_benchmark_result vul_benchmark_millis( ui32_t repetitions, void ( *function 
  * std_deviation over the runs. All times in microseconds.
  * The given function is of type void function( va_list ).
  */
-vul_benchmark_result vul_benchmark_micros( ui32_t repetitions, void ( *function )( va_list ), ... )
+vul_benchmark_result vul_benchmark_micros( ui32_t repetitions, void ( *function )( va_list* ), ... )
 {
 	ui32_t r;
 	ui64_t *times;
@@ -187,7 +186,7 @@ vul_benchmark_result vul_benchmark_micros( ui32_t repetitions, void ( *function 
 	// Run the benchmark
 	for( r = 0; r < repetitions; ++r ) {
 		vul_timer_reset( clk );
-		function( argp );
+		function( &argp );
 		times[ r ] = vul_timer_get_micros( clk );
 	}
 	

@@ -1,4 +1,4 @@
-/* Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain*
+/* Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain*
  *
  * This library is a tiny XML parser. It was initially made for vul_svg
  * @TODO: -One markup cases is not yet handled:
@@ -359,6 +359,7 @@ void vul_xml_print_node( vul_node_t *node )
 {
 	vul_xml_node_content *c = ( vul_xml_node_content* )node->content;
 	char *str = ( char* )malloc( sizeof( char ) * c->strlen );
+	assert( str );
 	for( ui32_t i = 0; i < c->strlen; ++i ) {
 		str[ i ] = c->string[ i ];
 	}

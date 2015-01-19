@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file contains an implementation of IEEE 754 half precision flaoting point.
  * It also contains interfaces to the fixed point types of vul_fixed.h
@@ -129,7 +129,6 @@ namespace vul {
 	// Definitions
 	//
 #ifdef VUL_DEFINE
-	
 #ifdef VUL_CPLUSPLUS11
 	constexpr half::half( ) : data( 0 )
 	{
@@ -638,7 +637,6 @@ namespace vul {
 #endif
 	}
 #endif
-
 }
 
 	//------------------------------------

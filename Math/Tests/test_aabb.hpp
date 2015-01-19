@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file contains tests for the AABB struct in vul_aabb.hpp
  * 
@@ -43,7 +43,9 @@ namespace vul_test {
 		static bool containment( );
 		static bool unions( );
 		static bool instersects( );
+		static bool frustum_tests( );
 		static bool transforms3D( );
+		static bool inside_tests( );
 	};
 
 	bool TestAABB::test( )
@@ -59,8 +61,10 @@ namespace vul_test {
 		assert( unions( ) );
 		assert( instersects( ) );
 		assert( transforms( ) );
+		assert( frustum_tests( ) );
 #if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX ) || defined( VUL_AOSOA_NEON )
 		assert( transforms3D( ) );
+		assert( inside_tests( ) );
 #endif
 
 		return true;
@@ -320,8 +324,8 @@ namespace vul_test {
 
 		// Check that the centers are inside
 		assert( inside( d2, p2 ) );
-		assert( inside( d3, p3 ) );
-		assert( inside( d8, p8 ) );
+		assert( inside( d3, p3, ( f32_t )1e-5 ) );
+		assert( inside( d8, p8, ( f32_t )1e-5 ) );
 
 		// For each component, invert it, which puts the point outside our box, and test it is not inside.
 		for( ui32_t i = 0; i < 2; ++i ) {
@@ -379,6 +383,14 @@ namespace vul_test {
 		assert( contains( a8, b8 ) );
 		assert( !contains( a8, c8 ) );
 
+		return true;
+	}
+
+	bool TestAABB::frustum_tests( )
+	{
+		// @TODO(thynn): This needs to be tested!
+		// Fully inside, partially inside, fully outside, identical
+		// For 2D, 3D, 4D, 8D
 		return true;
 	}
 
@@ -659,6 +671,31 @@ namespace vul_test {
 		assert( all( in64[ 0 ]._max - ref64_out._max < makeVector< f64_t, 3 >( f64eps ) ) );
 #endif
 #endif // VUL_AOSOA_AVX
+
+		return true;
+	}
+
+
+	bool TestAABB::inside_tests( )
+	{
+#ifdef VUL_AOSOA_SSE
+		AABB< __m128, 3 > m128[ 4 ], r128[ 4 ];
+		AABB< __m128d, 3 > m128d[ 2 ], r128d[ 2 ];
+#endif
+#ifdef VUL_AOSOA_AVX
+		AABB< __m256, 3 > m256[ 8 ], r256[ 8 ];
+		AABB< __m256d, 3 > m256d[ 4 ], r256d[ 4 ];
+#endif
+#ifdef VUL_AOSOA_NEON
+		AABB< float32x4_t, 3 > m32x4[ 4 ], r32x4[ 4 ];
+#endif
+		AABB< f32_t, 3 > in32[ 8 ];
+		AABB< f64_t, 3 > in64[ 4 ];
+		Vector< f32_t, 4 > planes32[ 6 ];
+		Vector< f64_t, 4 > planes64[ 6 ];
+
+		// @TODO(thynn): These tests
+		// All the inside_tests(  )
 
 		return true;
 	}

@@ -1,5 +1,5 @@
 ﻿/*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file contains a collection helper functions useful when working with
  * OpenGL.
@@ -33,7 +33,7 @@ void vul_gl_ortho( f32_t *mat44,
 				   const f32_t bottom,
 				   const f32_t top,
 				   const f32_t near,
-				   const f32_t far )
+				   const f32_t far );
 #else
 void vul_gl_ortho( f32_t *mat44,
 				   const f32_t left,
@@ -142,7 +142,7 @@ void vul_gl_perspective_fov( f32_t *mat44,
 	f32_t h, w;
 	
 	h = ( f32_t )cos( 0.5f * fov_y ) / ( f32_t )sin( 0.5f * fov_y );
-	w = h * height / width;
+	w = h * ( height / width );
 	
 	// Rotation & shear
 	mat44[ 1 ] = mat44[ 2 ] = 0.f; 

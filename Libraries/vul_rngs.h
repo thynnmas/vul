@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file contains several pseudorandom number generators:
  * -vul_rng_tu: Based on Thatcher Ulrich's RNG found here http://tu-testbed.svn.sourceforge.net/viewvc/tu-testbed/trunk/tu-testbed/base/tu_random.h?view=markup 
@@ -68,11 +68,15 @@ vul_rng_tu_t *vul_rng_tu_create( ui32_t seed )
 /**
  * Destroys a vul_rnd_tu state.
  */
+#ifndef VUL_DEFINE
+void vul_rng_tu_destroy( vul_rng_tu_t *r );
+#else
 void vul_rng_tu_destroy( vul_rng_tu_t *r )
 {
 	assert( r != NULL );
 	free( r );
 }
+#endif
 
 /**
  * Gets the next unsigned integer from the given vul_rng_tu state, and advances it.
@@ -134,6 +138,7 @@ vul_rng_xorshift_t *vul_rng_xorshift_create( );
 vul_rng_xorshift_t *vul_rng_xorshift_create( )
 {
 	vul_rng_xorshift_t *r = ( vul_rng_xorshift_t* )malloc( sizeof( vul_rng_xorshift_t ) );
+	assert( r );
 
 	r->x = 123456789;
 	r->y = 362436069;

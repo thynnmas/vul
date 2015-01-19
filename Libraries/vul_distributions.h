@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file contains several number distribution functions.
  * -vul_halton_par: Halton series of 2 given numbers. Distributes values 
@@ -20,7 +20,7 @@
 /**
  * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!
  */
-#define VUL_DEFINE
+//#define VUL_DEFINE
 
 /**
  * State of a vul_halton_parir
@@ -48,13 +48,13 @@ vul_halton_pair_t *vul_halton_pair_create( ui32_t base1, ui32_t base2, ui32_t se
 	seed *= 0x27d4eb2d;
 	seed = seed ^ (seed >> 15);
 
-	r->value_a = seed;
+	r->value_a = *( ( f32_t* )seed );
 
 	seed ^= ( seed << 13 );
 	seed ^= ( seed >> 17 );
 	seed ^= ( seed << 5 );
 
-	r->value_b = seed;
+	r->value_b = *( ( f32_t* )seed );
 	r->inv_base_a = 1.f / base1;
 	r->inv_base_b = 1.f / base2;
 
@@ -85,7 +85,7 @@ void vul_halton_pair_next( vul_halton_pair_t *rng )
 {
 	assert( rng != NULL );
 	
-	f32_t r = 1.0 - rng->value_a - 0.0000001;
+	f32_t r = 1.f - rng->value_a - 0.0000001f;
 	if ( rng->inv_base_a < r ) {
 		rng->value_a += rng->inv_base_a;
 	} else {
@@ -94,9 +94,9 @@ void vul_halton_pair_next( vul_halton_pair_t *rng )
 			h2 = h; 
 			h *= rng->inv_base_a;
 		} while ( h >= r );
-		rng->value_a += h2 + h - 1.0;
+		rng->value_a += h2 + h - 1.f;
 	}
-	r = 1.0 - rng->value_a - 0.0000001;
+	r = 1.f - rng->value_a - 0.0000001f;
 	if ( rng->inv_base_a < r ) {
 		rng->value_b += rng->inv_base_a;
 	} else {
@@ -105,7 +105,7 @@ void vul_halton_pair_next( vul_halton_pair_t *rng )
 			h2 = h; 
 			h *= rng->inv_base_a;
 		} while ( h >= r );
-		rng->value_b += h2 + h - 1.0;
+		rng->value_b += h2 + h - 1.f;
 	}
 }
 #endif

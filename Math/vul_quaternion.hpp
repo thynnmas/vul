@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file describes a quaternion type that interfaces with the linear math
  * classes otherwise defined in this library. While any numeric type is in theory
@@ -154,6 +154,18 @@ namespace vul {
 	 */
 	template< typename T >
 	Quaternion< T > makeIdentity( );
+	// QTangents
+	/**
+	* Construct a QTangent from a 3-axis system.
+	* Axes must be normalized.
+	*/
+	template< typename T >
+	Quaternion< T > makeQtangent( const Vector< T, 3 > &b, const Vector< T, 3 > &t, const Vector< T, 3 > &n );
+	/**
+	 * Construct a tangent frame from a Qtangent
+	 */
+	template< typename T >
+	Matrix< T, 3, 3 > makeTangentFrame( const Quaternion< T > &quat );
 
 	// Quaternion operators
 	/**
@@ -443,7 +455,7 @@ namespace vul {
 		Matrix< T, 3, 3 > m;
 				
 		m = makeMatrix33FromColumns( x, y, z );
-		
+
 		return makeQuatFromMatrix( m );
 	}
 	template< typename T >
@@ -451,42 +463,46 @@ namespace vul {
 	{
 
 		Quaternion< T > q;
-		T trace, root;
-		T zero, pfive, one;
-		ui32_t i, j, k;
-		const ui32_t next[ 3 ] = { 1, 2, 0 };
+		T s, t, is;
+		T zero, one, two, p25, eps;
 
 		zero = static_cast< T >( 0.f );
-		pfive = static_cast< T >( 0.5f );
 		one = static_cast< T >( 1.f );
+		two = static_cast< T >( 2.f );
+		p25 = static_cast< T >( 0.25f );
+		eps = static_cast< T >( 1e-7 );
 
-		trace = mat( 0, 0 ) + mat( 1, 1 ) + mat( 2, 2 );
-
-		if ( trace > zero )
-		{
-			root = sqrt( trace + one );
-			q[ 3 ] = pfive * root;
-			root = pfive / root;
-			q[ 0 ] = root * ( mat( 1, 2 ) - mat( 2, 1 ) );
-			q[ 1 ] = root * ( mat( 2, 0 ) - mat( 0, 2 ) );
-			q[ 2 ] = root * ( mat( 0, 1 ) - mat( 1, 0 ) );
+		// @TODO(thynn): Optimize this, there's a few operations to get rid of here (MADD all things!)
+		// @TODO(thynn): Better form: https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf
+		t = one + mat( 0, 0 ) + mat( 1, 1 ) + mat( 2, 2 );
+		if( t > eps ) {
+			s = sqrt( t ) * two;
+			is = one / s;
+			q.x = ( mat( 2, 1 ) - mat( 1, 2 ) ) * is;
+			q.y = ( mat( 0, 2 ) - mat( 2, 0 ) ) * is;
+			q.z = ( mat( 1, 0 ) - mat( 0, 1 ) ) * is;
+			q.w = p25 * s;
+		} else if ( mat( 0, 0 ) > mat( 1, 1 ) && mat( 0, 0 ) > mat( 2, 2 ) )  {
+			s = sqrt( one + mat( 0, 0 ) - mat( 1, 1 ) - mat( 2, 2 ) ) * two;
+			is = one / s;
+			q.x = p25 * s;
+			q.y = ( mat( 1, 0 ) + mat( 0, 1 ) ) * is;
+			q.z = ( mat( 0, 2 ) + mat( 2, 0 ) ) * is;
+			q.w = ( mat( 2, 1 ) - mat( 1, 2 ) ) * is;
+		} else if( mat( 1, 1 ) > mat( 2, 2 ) ) {
+			s = sqrt( one + mat( 1, 1 ) - mat( 0, 0 ) - mat( 2, 2 ) ) * two;
+			is = one / s;
+			q.x = ( mat( 1, 0 ) + mat( 0, 1 ) ) * is;
+			q.y = p25 * s;
+			q.z = ( mat( 2, 1 ) + mat( 1, 2 ) ) * is;
+			q.w = ( mat( 0, 2 ) - mat( 2, 0 ) ) * is;
 		} else {
-			i = 0;
-			if( mat( 1, 1 ) > mat( 0, 0 ) ) {
-				i = 1;
-			}
-			if( mat( 2, 2 ) > mat( 1, 1 ) ) {
-				i = 2;
-			}
-			j = next[ i ];
-			k = next[ j ];
-
-			root = sqrt( mat( i, i ) - mat( j, j ) - mat( k, k ) + one );
-			q[ i ] = pfive * root;
-			root = pfive / root;
-			q[ 3 ] = root * ( mat( j, k ) - mat( k, j ) );
-			q[ j ] = root * ( mat( i, j ) - mat( j, i ) );
-			q[ k ] = root * ( mat( i, k ) - mat( k, i ) );
+			s = sqrt( one + mat( 2, 2 ) - mat( 0, 0 ) - mat( 1, 1 ) ) * two;
+			is = one / s;
+			q.x = ( mat( 0, 2 ) + mat( 2, 0 ) ) * is;
+			q.y = ( mat( 2, 1 ) + mat( 1, 2 ) ) * is;
+			q.z = p25 * s;
+			q.w = ( mat( 1, 0 ) - mat( 0, 1 ) ) * is;
 		}
 
 		return q;
@@ -511,7 +527,61 @@ namespace vul {
 
 		return q;
 	}
+	// QTangents
+	template< typename T >
+	Quaternion< T > makeQtangent( const Vector< T, 3 > &b, const Vector< T, 3 > &t, const Vector< T, 3 > &n )
+	{
+		Matrix< T, 3, 3 > m;
+		Quaternion< T > q;
+		T bias, renorm, scale, qs;
+		T zero, one;
 
+		zero = static_cast< T >( 0.f );
+		one = static_cast< T >( 1.f );
+
+		m = makeMatrix33FromColumns( b, t, n );
+
+		scale = determinant( m ) < zero ? one : -one;
+		m( 2, 0 ) *= scale;
+		m( 2, 1 ) *= scale;
+		m( 2, 2 ) *= scale;
+		
+		q = normalize( makeQuatFromMatrix( m ) );
+
+		bias = T( 1e-7 );
+		renorm = sqrt( one - bias * bias );
+
+		if( -bias < q.w && q.w < bias ) {
+			q.w = q.w > zero ? bias : -bias;
+			q.x *= renorm;
+			q.y *= renorm;
+			q.z *= renorm;
+		}
+
+		qs = ( scale < zero && q.w > zero ) ||
+			 ( scale > zero && q.w < zero ) ? -one : one;
+		
+		q.w *= qs;
+		q.x *= qs;
+		q.y *= qs;
+		q.z *= qs;
+
+		return q;
+	}
+	template< typename T >
+	Matrix< T, 3, 3 > makeTangentFrame( const Quaternion< T > &quat )
+	{
+		Matrix< T, 3, 3 > m;
+		T f;
+
+		f = ( quat.w < T( 0.f ) ? T( -1.f ) : T( 1.f ) );
+		m = makeMatrix( quat );
+		m( 2, 0 ) *= f;
+		m( 2, 1 ) *= f;
+		m( 2, 2 ) *= f;
+
+		return m;
+	}
 
 	// Quaternion operators	
 	template< typename T >
@@ -722,15 +792,15 @@ namespace vul {
 		zw = q[ 2 ] * q[ 3 ];
 
 		m( 0, 0 ) = one - two * ( y2 + z2 );
-		m( 0, 1 ) = two * ( xy + zw );
-		m( 0, 2 ) = two * ( xz - yw );
+		m( 0, 1 ) = two * ( xy - zw );
+		m( 0, 2 ) = two * ( xz + yw );
 
-		m( 1, 0 ) = two * ( xy - zw );
+		m( 1, 0 ) = two * ( xy + zw );
 		m( 1, 1 ) = one - two * ( x2 + z2 );
-		m( 1, 2 ) = two * ( yz + xw );
+		m( 1, 2 ) = two * ( yz - xw );
 
-		m( 2, 0 ) = two * ( xz + yw );
-		m( 2, 1 ) = two * ( yz - xw );
+		m( 2, 0 ) = two * ( xz - yw );
+		m( 2, 1 ) = two * ( yz + xw );
 		m( 2, 2 ) = one - two * ( x2 + y2 );
 
 		return m;

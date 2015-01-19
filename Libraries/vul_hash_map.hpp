@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file describes hash map implementation.
  * Buckets are implemented as linked lists to deal with collissions.
@@ -18,6 +18,11 @@
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
+ * @TODO(thynn): Keep keys locally (use a stable array to store ll-elements,
+ * point the keys to those in those elements; change key-ptr in map-elements
+ * upon remove_swap in key-element list). Also possibly rewrite to something 
+ * mroe data-oriented...
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,8 +31,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef VUL_hash_map_t_HPP
-#define VUL_hash_map_t_HPP
+#ifndef VUL_HASH_MAP_HPP
+#define VUL_HASH_MAP_HPP
 
 #include <cstddef>
 #include <cassert>

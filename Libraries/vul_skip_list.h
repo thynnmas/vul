@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2014. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
  *
  * This file describes a singly linked skip list. The current implementation is
  * not indexable.
@@ -98,19 +98,20 @@ vul_skip_list_element *vul_skip_list_find( vul_skip_list *list, void *data );
 vul_skip_list_element *vul_skip_list_find( vul_skip_list *list, void *data )
 {
 	int l;
-	vul_skip_list_element *e;
+	vul_skip_list_element *e = NULL;
 
 	if ( list == NULL || list->heads == NULL ) return NULL;
 	
 	for( l = list->levels - 1; l >= 0; --l )
 	{
+		e = list->heads[ l ];
 		while( list->comparator( e->data, data ) < 0 )
 		{
 			e = e->nexts[ l ];
 		}
 	}
 
-	if ( list->comparator( e->data, data ) == 0 ) return e;
+	if ( e && list->comparator( e->data, data ) == 0 ) return e;
 	return NULL;
 }
 #endif
@@ -136,7 +137,7 @@ void vul_skip_list_remove( vul_skip_list *list, vul_skip_list_element *e )
 		// See if e exists on this level
 		while( h != NULL && h != e ) {
 			p = h;
-			h = h->nests[ l ];
+			h = h->nexts[ l ];
 		}
 		// And if it does, remove it's link
 		if( h == e ) {
@@ -174,6 +175,7 @@ vul_skip_list_element *vul_skip_list_insert( vul_skip_list *list, void *data )
 	
 	for( l = list->levels - 1; l >= 0; --l )
 	{
+		e = list->heads[ l ];
 		while( list->comparator( e->data, data ) < 0 )
 		{
 			if( e->nexts[ l ] == NULL ) {
@@ -200,6 +202,7 @@ vul_skip_list_element *vul_skip_list_insert( vul_skip_list *list, void *data )
 	{
 		ret->nexts[ l ] = el[ l ]->nexts[ l ];
 	}
+	return NULL; // @NOTE: never reached due to the above todo: we assert false!
 }
 #endif
 

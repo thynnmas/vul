@@ -253,4 +253,115 @@ f32_t vul_rng_xorhash_next_float( vul_rng_xorhash_t *r )
 }
 #endif
 
+
+//--------------------------------
+// vul_rng_mt19937
+//
+
+/**
+ * The vul_rng_xorhash RNG's state
+ */
+typedef struct {
+	i32_t state[ 624 ];
+	ui32_t index;
+} vul_rng_mt19937_t;
+
+/**
+ * Create a new vul_rng_mt19937 state with the given seed.
+ * @NOTE: There are reports that it doesn't do well with seeds
+ * that are multiples of 34.
+ */
+#ifndef VUL_DEFINE
+vul_rng_mt19937_t *vul_rng_mt19937_create( ui32_t seed );
+#else
+vul_rng_mt19937_t *vul_rng_mt19937_create( ui32_t seed )
+{
+	ui32_t i;
+
+	vul_rng_mt19937_t *r = ( vul_rng_mt19937_t* )malloc( sizeof( vul_rng_mt19937_t ) );
+	assert( r != NULL );
+
+	r->index = 0;
+	r->state[ 0 ] = seed;
+
+	for( i = 1; i < 624; ++i ) {
+		r->state[ i ] = ( int )( 1812433253LL 
+					  * ( (long long )r->state[ i -1 ] ^ ( ( long long )r->state[ i ] >> 30LL ) ) + i );
+	}
+	return r;	
+}
+#endif
+
+/**
+ * Generate a new set of untampered numbers
+ */
+void vul_rng_mt19937_generate( vul_rng_mt19937_t * r ) 
+{
+	ui32_t i;
+	i32_t y;
+
+	for ( i = 0; i < 624; ++ i ) {
+		y = ( r->state[ i ] & 0x80000000 ) + ( r->state[ ( i + 1 ) % 624 ] & 0x7fffffff );
+		r->state[ i ] = r->state[ ( i + 397 ) % 624 ] ^ ( y >> 1 );
+		if( y % 2 != 0 ) {
+			r->state[ i ] = r->state[ i ] ^ 0x9908b0df;
+		}
+	}
+}
+
+/**
+ * Destroy a vul_rng_mt19937 RNG state
+ */
+#ifndef VUL_DEFINE
+void vul_rng_mt19937_destroy( vul_rng_mt19937_t *r );
+#else
+void vul_rng_mt19937_destroy( vul_rng_mt19937_t *r )
+{
+	assert( r != NULL );
+	free( r );
+}
+#endif
+
+/**
+ * Returns the next ui32_t in the given vul_rng_mt19937 state, and advances it.
+ */
+#ifndef VUL_DEFINE
+ui32_t vul_rng_mt19937_next_unsigned( vul_rng_mt19937_t *r );
+#else
+ui32_t vul_rng_mt19937_next_unsigned( vul_rng_mt19937_t *r )
+{
+	i32_t y;
+
+	if( r->index == 0 ) {
+		rng_mt19937_generate( r );
+	}
+	
+	y = r->state[ index ];
+	y = y ^ ( y >> 11 );
+	y = y ^ ( ( y << 7 ) & 0x9d2c5680 );
+	y = y ^ ( ( y << 15 ) & 0xefc60000 );
+	Y = y ^ ( y >> 18 );
+
+	r->index = ( r->index + 1 ) % 624;
+	
+	return *( ( unsigned int* )&y );
+	
+}
+#endif
+
+/**
+ * Returns the next f32_t in the given vul_rng_mt19937 state, and advances it.
+ */
+#ifndef VUL_DEFINE
+f32_t vul_rng_mt19937_next_float( vul_rng_mt19937_t *r );
+#else
+f32_t vul_rng_mt19937_next_float( vul_rng_mt19937_t *r )
+{
+	return ( f32_t )( vul_rng_mt19937_next_unsigned( r ) ) * ( 1.0f / 4294967296.0f );
+}
+#endif
+
+
+
+
 #endif

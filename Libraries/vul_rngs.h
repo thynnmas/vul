@@ -336,11 +336,11 @@ ui32_t vul_rng_mt19937_next_unsigned( vul_rng_mt19937_t *r )
 		rng_mt19937_generate( r );
 	}
 	
-	y = r->state[ index ];
+	y = r->state[ r->index ];
 	y = y ^ ( y >> 11 );
 	y = y ^ ( ( y << 7 ) & 0x9d2c5680 );
 	y = y ^ ( ( y << 15 ) & 0xefc60000 );
-	Y = y ^ ( y >> 18 );
+	y = y ^ ( y >> 18 );
 
 	r->index = ( r->index + 1 ) % 624;
 	

@@ -184,9 +184,9 @@ const ui8_t *vul_compress_rle( const ui8_t *src, ui32_t src_size, ui32_t *dst_si
  * Takes the destination buffer as an input. If it is found too small, an assert will fail.
  */
 #ifndef VUL_DEFINE
-void vul_compress_rle( ui8_t *dst, ui32_t dst_size, const ui8_t *src, ui32_t src_size );
+void vul_compress_rle_inplace( ui8_t *dst, ui32_t dst_size, const ui8_t *src, ui32_t src_size );
 #else
-void vul_compress_rle( ui8_t *dst, ui32_t dst_size, const ui8_t *src, ui32_t src_size )
+void vul_compress_rle_inplace( ui8_t *dst, ui32_t dst_size, const ui8_t *src, ui32_t src_size )
 {
 	ui8_t last;
 	ui32_t local_count, total_count, dst_index, bytes;
@@ -281,9 +281,9 @@ const ui8_t *vul_decompress_rle( const ui8_t *src, ui32_t src_size, ui32_t *dst_
  * Takes the destination buffer as an argument. If it is found too small an assert will fail.
  */
 #ifndef VUL_DEFINE
-void vul_decompress_rle( ui8_t *dst, ui32_t dst_size, const ui8_t *src, ui32_t src_size );
+void vul_decompress_rle_inplace( ui8_t *dst, ui32_t dst_size, const ui8_t *src, ui32_t src_size );
 #else
-void vul_decompress_rle( ui8_t *dst, ui32_t dst_size, const ui8_t *src, ui32_t src_size )
+void vul_decompress_rle_inplace( ui8_t *dst, ui32_t dst_size, const ui8_t *src, ui32_t src_size )
 {
 	ui32_t local_count, total_count, dst_index, i;
 	

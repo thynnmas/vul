@@ -860,13 +860,15 @@ static void vul__sort_merge_at( vul_vector_t *list, int (*comparator)( const voi
  * Helper function for vul_sort_vector_thynn.
  * Takes a vector of vul__sort_merge_stack_pair elements.
  * Merges runs until the sort invariant is fulfilled.
+ * @NOTE(thynn): This includes the fix described here: 
+ * http://envisage-project.eu/proving-android-java-and-python-sorting-algorithm-is-broken-and-how-to-fix-it/
  */
 #ifndef VUL_DEFINE
 static void vul__sort_merge_collapse( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), vul_vector_t *stack );
 #else
 static void vul__sort_merge_collapse( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), vul_vector_t *stack )
 {
-	const vul__sort_merge_stack_pair *en, *en1, *enm1;
+	const vul__sort_merge_stack_pair *en, *en1, *enm1, *enm2;
 	int n;
 
 	while( vul_vector_size( stack ) > 1 )
@@ -876,18 +878,15 @@ static void vul__sort_merge_collapse( vul_vector_t *list, int (*comparator)( con
 		en = ( const vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n );
 		en1 = ( const vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n + 1 );
 			
-		if( n > 0 && 
-			( enm1 = ( const vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n - 1 ) )->length
-				<= en->length + en1->length ) {
+		if( ( n > 0 && ( enm1 = ( const vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n - 1 ) )->length <= en->length + en1->length )
+			|| ( n - 1 > 0 && ( enm2 = ( const vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n - 2 ) )->length <= en->length + enm1->length ) ) {
 			if( enm1->length < en1->length ) {
 				--n;
 			}
-			vul__sort_merge_at( list, comparator, n, stack );
-		} else if( en->length <= en1->length ) {
-			vul__sort_merge_at( list, comparator, n, stack );
-		} else {
+		} else if( n < 0 || en->length > en1->length ) {
 			break;
 		}
+		vul__sort_merge_at( list, comparator, n, stack );
 	}
 }
 #endif

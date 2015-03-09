@@ -1,4 +1,3 @@
-#define VUL_TEST_CPP // @TODO: Remove this and do it properly
 #ifdef VUL_TEST_CPP
 
 #define VUL_DEFINE

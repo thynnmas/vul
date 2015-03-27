@@ -147,7 +147,6 @@ vul_benchmark_result vul_benchmark_millis( ui32_t repetitions,
 
 	// Run the benchmark
 	for( r = 0; r < repetitions; ++r ) {
-		va_start( argp, function );
 		vul_timer_reset( clk );
 		function( func_data );
 		times[ r ] = vul_timer_get_millis( clk );

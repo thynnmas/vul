@@ -295,7 +295,10 @@ vul_rng_mt19937_t *vul_rng_mt19937_create( ui32_t seed )
 /**
  * Generate a new set of untampered numbers
  */
-void vul_rng_mt19937_generate( vul_rng_mt19937_t * r ) 
+#ifndef VUL_DEFINE
+void vul_rng_mt19937_generate( vul_rng_mt19937_t * r );
+#else
+void vul_rng_mt19937_generate( vul_rng_mt19937_t * r )
 {
 	ui32_t i;
 	i32_t y;
@@ -308,6 +311,7 @@ void vul_rng_mt19937_generate( vul_rng_mt19937_t * r )
 		}
 	}
 }
+#endif
 
 /**
  * Destroy a vul_rng_mt19937 RNG state

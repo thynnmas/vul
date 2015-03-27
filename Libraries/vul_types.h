@@ -36,4 +36,8 @@ typedef uint16_t ui16_t;
 typedef uint32_t ui32_t;
 typedef uint64_t ui64_t;
 
+typedef ui32_t bool32_t;
+#define VUL_TRUE 1
+#define VUL_FALSE 0
+
 #endif

@@ -333,7 +333,7 @@ ui32_t vul_rng_mt19937_next_unsigned( vul_rng_mt19937_t *r )
 	i32_t y;
 
 	if( r->index == 0 ) {
-		rng_mt19937_generate( r );
+		vul_rng_mt19937_generate( r );
 	}
 	
 	y = r->state[ r->index ];

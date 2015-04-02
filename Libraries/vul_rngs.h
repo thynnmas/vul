@@ -1,13 +1,14 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
  *
  * This file contains several pseudorandom number generators:
  * -vul_rng_tu: Based on Thatcher Ulrich's RNG found here http://tu-testbed.svn.sourceforge.net/viewvc/tu-testbed/trunk/tu-testbed/base/tu_random.h?view=markup 
  * -vul_rng_xorshift: The Xorshift RNG, as described here http://www.jstatsoft.org/v08/i14/paper
  * -vul_rng_xorhash: Thomas Wang's XorHash as reported by Bob Jenkins here: http://burtleburtle.net/bob/hash/integer.html
  *					 is used to initialize. We use an alternate XorShift to advance the state.
+ * -vul_rng_mt19937: Mersenne twister 19937.
  *
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  */
 #ifndef VUL_RNGS_H
@@ -259,7 +260,7 @@ f32_t vul_rng_xorhash_next_float( vul_rng_xorhash_t *r )
 //
 
 /**
- * The vul_rng_xorhash RNG's state
+ * The vul_rng_mt19937 RNG's state
  */
 typedef struct {
 	i32_t state[ 624 ];

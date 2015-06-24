@@ -55,7 +55,6 @@ namespace vul_test {
 		const f32_t f32eps = 1e-5f;
 		const f64_t f64eps = 1e-8f;
 
-
 		gm32 = glm::ortho( -2.f, 0.f, -1.f, 1.f, 0.1f, 100.f );
 		gm64 = glm::ortho( -2.0, 0.0, -1.0, 1.0, 0.1, 100.0 );
 

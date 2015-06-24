@@ -28,21 +28,21 @@
 #endif
 
 #ifdef VUL_WINDOWS
-#define PROT_NONE 0
-#define PROT_READ FILE_MAP_READ
-#define PROT_WRITE FILE_MAP_WRITE
-#define PROT_EXEC FILE_MAP_EXECUTE
+#define VUL_MMAP_PROT_NONE 0
+#define VUL_MMAP_PROT_READ FILE_MAP_READ
+#define VUL_MMAP_PROT_WRITE FILE_MAP_WRITE
+#define VUL_MMAP_PROT_EXEC FILE_MAP_EXECUTE
 #else
-#define PROT_NONE 0
-#define PROT_READ 1
-#define PROT_WRITE 2
-#define PROT_EXEC 3
+#define VUL_MMAP_PROT_NONE 0
+#define VUL_MMAP_PROT_READ 1
+#define VUL_MMAP_PROT_WRITE 2
+#define VUL_MMAP_PROT_EXEC 3
 #endif
 
-#define MAP_FAILED 0
-#define MAP_SHARED 1
-#define MAP_PRIVATE 2
-#define MAP_FIXED 4
+#define VUL_MMAP_MAP_FAILED 0
+#define VUL_MMAP_MAP_SHARED 1
+#define VUL_MMAP_MAP_PRIVATE 2
+#define VUL_MMAP_MAP_FIXED 4
 
 typedef struct vul_mmap_file_t {
 	void *map;

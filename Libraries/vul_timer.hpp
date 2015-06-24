@@ -24,6 +24,9 @@
 //#define VUL_LINUX
 //#define VUL_OSX
 
+#define VUL_MIN( a, b ) ( a < b ? a : b )
+#define VUL_MAX( a, b ) ( a > b ? a : b )
+
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
@@ -42,8 +45,6 @@
 	vul needs an operating system defined.
 #endif
 
-#define min( a, b ) ( a < b ? a : b )
-#define max( a, b ) ( a > b ? a : b )
 
 namespace vul {
 	
@@ -80,9 +81,7 @@ namespace vul {
 		void reset( );
 
 		ui64_t milliseconds( );
-		ui64_t milliseconds_cpu( );
 		ui64_t microseconds( );
-		ui64_t microseconds_cpu( );
 		ui32_t sleep( ui32_t millis );
 	};
 
@@ -118,7 +117,6 @@ namespace vul {
 		this->last_time = 0;
 		this->zero = clock( );
 #elif defined( VUL_LINUX )
-		this->zero = clock( );
 		clock_gettime( CLOCK_REALTIME, &this->start );
 #elif defined( VUL_OSX )
 		this->start = mach_absolute_time( );
@@ -155,7 +153,7 @@ namespace vul {
 		ms_off = (i32_t)(new_ticks - check);
 		if( ms_off < -100 || ms_off > 100 )
 		{
-			adjust = min( ms_off * this->frequency.QuadPart / 1000, new_time - this->last_time );
+			adjust = VUL_MIN( ms_off * this->frequency.QuadPart / 1000, new_time - this->last_time );
 			this->start_time.QuadPart += adjust;
 			new_time -= adjust;
 			new_ticks = (ui32_t) (1000 * new_time / this->frequency.QuadPart);
@@ -175,12 +173,6 @@ namespace vul {
 		uint64_t nsec = elapsed * this->timebase_info.numer / timebase_info.denom;
 		return nsec / 1000000;
 #endif
-	}
-
-	ui64_t timer_t::milliseconds_cpu( )
-	{
-		clock_t new_clock = clock( );
-		return ( ui64_t )( ( double )( new_clock - this->zero ) / ( ( double )CLOCKS_PER_SEC / 1000.0 ) );
 	}
 
 	ui64_t timer_t::microseconds( )
@@ -207,7 +199,7 @@ namespace vul {
 		ms_off = (i32_t)(new_ticks - check);
 		if( ms_off < -100 || ms_off > 100 )
 		{
-			adjust = min( ms_off * this->frequency.QuadPart / 1000, new_time - this->last_time );
+			adjust = VUL_MIN( ms_off * this->frequency.QuadPart / 1000, new_time - this->last_time );
 			this->start_time.QuadPart += adjust;
 			new_time -= adjust;
 		}
@@ -231,36 +223,29 @@ namespace vul {
 #endif
 	}
 	
-	ui64_t timer_t::microseconds_cpu( )
-	{
-		clock_t new_clock = clock( );
-		return ( ui64_t )( ( double )( new_clock - this->zero ) / ( ( double )CLOCKS_PER_SEC / 1000000.0 ) );
-	}
-
 	ui32_t timer_t::sleep( ui32_t millis )
 	{
 #ifdef VUL_WINDOWS
-	DWORD ms;
-	ms = millis;
-	Sleep( ms );
-	return 0;
+		DWORD ms;
+		ms = millis;
+		Sleep( ms );
+		return 0;
 #elif defined( VUL_LINUX ) || defined( VUL_OSX )
-	struct timespec rem, req;
-	int err;
+		struct timespec rem, req;
+		int err;
 
-	req.tv_sec = ( time_t )millis / 1000;
-	req.tv_nsec = ( long )( millis % 1000l ) * 1000000l;
-	err = clock_nanosleep( CLOCK_REALTIME, 0, &req, &rem );
-	if( err ) {
-		return ( int )( rem.tv_sec * 1000 ) + ( int )( rem.tv_nsec / 1000000l );
-	}
-	return 0;
+		req.tv_sec = ( time_t )millis / 1000;
+		req.tv_nsec = ( long )( millis % 1000l ) * 1000000l;
+		err = clock_nanosleep( CLOCK_REALTIME, 0, &req, &rem );
+		if( err ) {
+			return ( int )( rem.tv_sec * 1000 ) + ( int )( rem.tv_nsec / 1000000l );
+		}
+		return 0;
 #else
-	Unsupported OS!
+		Unsupported OS!
 #endif
-}
+	}
 
-#undef min
-#undef max
+}
 
 #endif

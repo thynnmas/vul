@@ -18,7 +18,6 @@
 #define VUL_LINKED_LIST_H
 
 #include <stdlib.h>
-#include <malloc.h>
 #include <assert.h>
 #include <string.h>
 
@@ -44,15 +43,19 @@ struct vul_list_element_t
  * Should the given element be NULL, this is equivalent to creating a new list.
  */
 #ifndef VUL_DEFINE
-vul_list_element_t *vul__list_add_after( vul_list_element_t *e, void *data, ui32_t data_size );
+vul_list_element_t *vul__list_add_after( vul_list_element_t *e, 
+										 void *data, ui32_t data_size,
+										 void *( *allocator )( size_t size ) );
 #else
-vul_list_element_t *vul__list_add_after( vul_list_element_t *e, void *data, ui32_t data_size )
+vul_list_element_t *vul__list_add_after( vul_list_element_t *e, 
+										 void *data, ui32_t data_size,
+										 void *( *allocator )( size_t size ) )
 {
 	vul_list_element_t *ret;
 
-	ret = ( vul_list_element_t* )malloc( sizeof( vul_list_element_t ) );
+	ret = ( vul_list_element_t* )allocator( sizeof( vul_list_element_t ) );
 	assert( ret != NULL ); // Make sure malloc didn't fail
-	ret->data = malloc( data_size );
+	ret->data = allocator( data_size );
 	assert( ret->data != NULL ); // Make sure malloc didn't fail
 	ret->data_size = data_size;
 	memcpy( ret->data, data, data_size );
@@ -82,9 +85,9 @@ vul_list_element_t *vul__list_add_after( vul_list_element_t *e, void *data, ui32
  * Removes the given vul_list_element_t from the list, and deletes it.
  */
 #ifndef VUL_DEFINE
-void vul_list_remove( vul_list_element_t *e );
+void vul_list_remove( vul_list_element_t *e, void ( *deallocator )( void *ptr ) );
 #else
-void vul_list_remove( vul_list_element_t *e )
+void vul_list_remove( vul_list_element_t *e, void ( *deallocator )( void *ptr ) )
 {
 	assert( e != NULL );
 
@@ -96,8 +99,8 @@ void vul_list_remove( vul_list_element_t *e )
 	{
 		e->next->prev = e->prev;
 	}
-	free( e->data );
-	free( e );
+	deallocator( e->data );
+	deallocator( e );
 	// By setting to null we are much more likely to trigger asserts if used after free.
 	e = NULL;
 }
@@ -137,9 +140,15 @@ vul_list_element_t *vul_list_find( vul_list_element_t *head, void *data, int (*c
  * If list_head is NULL this creates a new list!
  */
 #ifndef VUL_DEFINE
-vul_list_element_t *vul_list_insert( vul_list_element_t *list_head, void *data, ui32_t data_size, int (*comparator)( void *a, void *b ) );
+vul_list_element_t *vul_list_insert( vul_list_element_t *list_head, 
+									 void *data, ui32_t data_size, 
+									 int( *comparator )( void *a, void *b ),
+									 void *( *allocator )( size_t size ) );
 #else
-vul_list_element_t *vul_list_insert( vul_list_element_t *list_head, void *data, ui32_t data_size, int (*comparator)( void *a, void *b ) )
+vul_list_element_t *vul_list_insert( vul_list_element_t *list_head, 
+									 void *data, ui32_t data_size, 
+									 int (*comparator)( void *a, void *b ),
+									 void *( *allocator )( size_t size ) )
 {
 	vul_list_element_t *before, *ret;
 	
@@ -148,7 +157,7 @@ vul_list_element_t *vul_list_insert( vul_list_element_t *list_head, void *data, 
 		before = vul_list_find( list_head, data, comparator );
 
 		// Insert the data after it (which if before == NULL means create a new head).
-		ret = vul__list_add_after( before, data, data_size );
+		ret = vul__list_add_after( before, data, data_size, allocator );
 
 		// If we created a new head, we must manualy link it up
 		if( before == NULL )
@@ -158,7 +167,7 @@ vul_list_element_t *vul_list_insert( vul_list_element_t *list_head, void *data, 
 		}
 	} else {
 		// Create a new head
-		ret = vul__list_add_after( NULL, data, data_size );
+		ret = vul__list_add_after( NULL, data, data_size, allocator );
 	}
 	return ret;
 }
@@ -206,9 +215,9 @@ void vul_list_iterate( vul_list_element_t *list_head, void (*func)( vul_list_ele
  * Deletes a the given list and all elements in it.
  */
 #ifndef VUL_DEFINE
-void vul_list_destroy( vul_list_element_t *list_head );
+void vul_list_destroy( vul_list_element_t *list_head, void ( *deallocator )( void *ptr ) );
 #else
-void vul_list_destroy( vul_list_element_t *list_head )
+void vul_list_destroy( vul_list_element_t *list_head, void ( *deallocator )( void *ptr ) )
 {
 	vul_list_element_t *next;
 
@@ -216,8 +225,8 @@ void vul_list_destroy( vul_list_element_t *list_head )
 	{
 		next = list_head->next;
 
-		free( list_head->data );
-		free( list_head );
+		deallocator( list_head->data );
+		deallocator( list_head );
 		// By setting to null we are much more likely to trigger asserts if used after free.
 		list_head->data = NULL;
 		list_head = NULL;
@@ -231,18 +240,18 @@ void vul_list_destroy( vul_list_element_t *list_head )
  * Creates a copy of the given list.
  */
 #ifndef VUL_DEFINE
-vul_list_element_t *vul_list_copy( vul_list_element_t *list_head );
+vul_list_element_t *vul_list_copy( vul_list_element_t *list_head, void *( *allocator )( size_t size ) );
 #else
-vul_list_element_t *vul_list_copy( vul_list_element_t *list_head )
+vul_list_element_t *vul_list_copy( vul_list_element_t *list_head, void *( *allocator )( size_t size ) )
 {
 	vul_list_element_t *nhead, *n;
 
-	nhead = vul__list_add_after( NULL, list_head->data, list_head->data_size );
+	nhead = vul__list_add_after( NULL, list_head->data, list_head->data_size, allocator );
 	n = nhead;
 	while( list_head->next )
 	{
 		list_head = list_head->next;
-		n = vul__list_add_after( n, list_head->data, list_head->data_size );
+		n = vul__list_add_after( n, list_head->data, list_head->data_size, allocator );
 	}
 
 	return nhead;

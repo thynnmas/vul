@@ -877,8 +877,10 @@ static void vul__sort_merge_collapse( vul_vector_t *list, int (*comparator)( con
 		
 		en = ( const vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n );
 		en1 = ( const vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n + 1 );
-			
-		if( ( n > 0 && ( enm1 = ( const vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n - 1 ) )->length <= en->length + en1->length )
+		
+		// Some compiler really want this, so give it to them, even though it's not needed
+		enm1 = NULL; enm2 = NULL;
+		if(	   ( n     > 0 && ( enm1 = ( const vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n - 1 ) )->length <= en->length +  en1->length )
 			|| ( n - 1 > 0 && ( enm2 = ( const vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n - 2 ) )->length <= en->length + enm1->length ) ) {
 			if( enm1->length < en1->length ) {
 				--n;
@@ -1033,7 +1035,9 @@ void vul_sort_vector( vul_vector_t *list, int (*comparator)( const void *a, cons
 	int s;
 
 	s = vul_vector_size( list );
-	if( s > VUL_SORT_MIN_SIZE_USE_THYNN ) {
+	if( s < 2 ) {
+		return; // Trivial case
+	} else if( s > VUL_SORT_MIN_SIZE_USE_THYNN ) {
 		vul_sort_vector_thynn( list, comparator, low, high );
 	} else if ( s > VUL_SORT_MIN_SIZE_USE_SHELL ) {
 		vul_sort_vector_shell( list, comparator, low, high );

@@ -1,11 +1,11 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
  *
  * This file contains utility functions to make interaction with OpenCL less
  * of a massive pain.
  * @TODO: Add a define to make eveyrthing static to avoid global state.
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -38,19 +38,19 @@
  *  clGetProgramInfo( id, CL_PROGRAM_BINARIES, ... ), which allows us to
  *  make assembly corrections/optimizations.
  */
-enum vul__cl_kernel_type {
+typedef enum {
 	VUL__CL_KERNEL_SOURCE,
 	VUL__CL_KERNEL_BINARY
-};
+} vul__cl_kernel_type;
 
 /**
  * The two types of buffers; those mirrored in host memory,
  * and those shared with an OpenGL context.
  */
-enum vul__cl_buffer_type {
+typedef enum {
 	VUL__CL_BUFFER_HOST,
 	VUL__CL_BUFFER_OPENGL
-};
+} vul__cl_buffer_type;
 
 /**
  * Our OpenCL context and a list of devices. This will be a single global
@@ -128,8 +128,11 @@ typedef struct vul_cl_buffer {
  * is cleaned up before returning!
  * MUST be called before any other functions in this file are used,
  * and vul_cl_cleanup() MUST be called before the program exits.
+ * 
+ * Defaults parameters are ( NULL, 0 )
  */
-void vul_cl_setup( cl_context_properties *context_properties = NULL, cl_command_queue_properties command_queue_properites = 0 )
+void vul_cl_setup( cl_context_properties *context_properties, 
+						 cl_command_queue_properties command_queue_properites )
 {
 	cl_int err;
 	cl_platform_id *platforms;
@@ -217,10 +220,10 @@ void vul_cl_setup( cl_context_properties *context_properties = NULL, cl_command_
 		}
 		
 		// Create program list
-		context->programs = vul_vector_create( sizeof( vul_cl_program ) );
+		context->programs = vul_vector_create( sizeof( vul_cl_program ), 0 );
 		
 		// Create buffer list
-		context->buffers = vul_vector_create( sizeof( vul_cl_buffer ) );
+		context->buffers = vul_vector_create( sizeof( vul_cl_buffer ), 0 );
 	}
 
 	free( platforms );
@@ -325,7 +328,7 @@ void vul_cl_cleanup( )
 /**
  * Write the output from a compile to the given output stream.
  */
-void vul_cl_write_compile_output( vul_cl_program *prog, FILE *out = stdout )
+void vul_cl_write_compile_output( vul_cl_program *prog, FILE *out )
 {
 	size_t len;
 	char buffer[ 65536 ];
@@ -345,14 +348,19 @@ void vul_cl_write_compile_output( vul_cl_program *prog, FILE *out = stdout )
 /**
  * Loads a program. Requires vul_cl_setup to have been called prior.
  * platform_id indicates which platform to create & build the program on.
- * If is_binary is set, the source is assumed to be in binary format.
+ * If no build options are wanted, set to an empty string.
+ * If is_binary is non-zero, the source is assumed to be in binary format.
  * If async_build_callback is not NULL, the build does not wait until completions,
  * and the callback is called once it is done. See http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clBuildProgram.html
- * user_data is passed to async_build_callback. If no async_build_callback is set, this
- * parameter is ignored.
+ * user_data is passed to async_build_callback. Set to NULL to ignore.
  * Do NOT manually clean this up, it is cleaned up with vul_cl_cleanup!
  */
-vul_cl_program *vul_cl_create_program( cl_platform_id platform_id, char *file_path, const char *build_options = "", bool is_binary = false, void (__stdcall *async_build_callback )( cl_program, void* ) = NULL, void *user_data = NULL )
+vul_cl_program *vul_cl_create_program( cl_platform_id platform_id, 
+													char *file_path, 
+													const char *build_options, 
+													int is_binary,
+													void ( *async_build_callback )( cl_program, void* ), 
+													void *user_data )
 {
 	FILE *f;
 	size_t lsize, j, platform_index, *lengths;
@@ -365,7 +373,7 @@ vul_cl_program *vul_cl_create_program( cl_platform_id platform_id, char *file_pa
 	assert( vul__cl_contexts );
 	platform_index = vul__cl_context_count;
 	for( j = 0; j < vul__cl_context_count; ++j ) {
-		if( vul__cl_contexts[ j ]->platform == platform_id ) {
+	if( vul__cl_contexts[ j ]->platform == platform_id ) {
 			platform_index = j;
 			break;
 		}
@@ -373,12 +381,12 @@ vul_cl_program *vul_cl_create_program( cl_platform_id platform_id, char *file_pa
 	assert( platform_index < vul__cl_context_count );
 
 	// Create the return object
-	ret = ( vul_cl_program* )vul_vector_add( vul__cl_contexts[ platform_index ]->programs );
+	ret = ( vul_cl_program* )vul_vector_add_empty( vul__cl_contexts[ platform_index ]->programs );
 	assert( ret );
 	ret->context = vul__cl_contexts[ platform_index ];
 	ret->type = is_binary ? VUL__CL_KERNEL_BINARY : VUL__CL_KERNEL_SOURCE;
 	// Create kernel list
-	ret->kernels = vul_vector_create( sizeof( vul_cl_kernel ) );
+	ret->kernels = vul_vector_create( sizeof( vul_cl_kernel ), 0 );
 
 	// Read the suorce / binary
 	f = fopen( file_path, "r" );
@@ -449,8 +457,8 @@ vul_cl_program *vul_cl_create_program( cl_platform_id platform_id, char *file_pa
 						  async_build_callback, 
 						  user_data );
 	if( err != CL_SUCCESS ) {
-		vul_cl_write_compile_output( ret );
-		assert( false );
+		vul_cl_write_compile_output( ret, stdout );
+		assert( 0 );
 	}
 	
 	return ret;
@@ -467,7 +475,7 @@ vul_cl_kernel *vul_cl_create_kernel( vul_cl_program *program, const char *entry_
 	size_t len;
 	cl_int err;
 	
-	ret = ( vul_cl_kernel* )vul_vector_add( program->kernels );
+	ret = ( vul_cl_kernel* )vul_vector_add_empty( program->kernels );
 	assert( ret );
 
 	len = strlen( entry_point );
@@ -480,7 +488,7 @@ vul_cl_kernel *vul_cl_create_kernel( vul_cl_program *program, const char *entry_
 	ret->kernel = clCreateKernel( program->program, ret->entry_point, &err );
 	assert( ret->kernel && err == CL_SUCCESS );
 
-	ret->arguments = vul_vector_create( sizeof( vul_cl_kernel_argument ) );
+	ret->arguments = vul_vector_create( sizeof( vul_cl_kernel_argument ), 0 );
 
 	return ret;
 }
@@ -492,7 +500,7 @@ void vul_cl_kernel_add_argument( vul_cl_kernel *kernel, size_t data_size, const 
 {
 	vul_cl_kernel_argument *arg;
 	
-	arg = ( vul_cl_kernel_argument* )vul_vector_add( kernel->arguments );
+	arg = ( vul_cl_kernel_argument* )vul_vector_add_empty( kernel->arguments );
 	arg->content = data_ptr;
 	arg->size = data_size;
 }
@@ -522,7 +530,7 @@ vul_cl_buffer *vul_cl_create_buffer( cl_platform_id platform_id, cl_mem_flags fl
 	assert( j < vul__cl_context_count );
 
 	// Create the return object
-	ret = ( vul_cl_buffer* )vul_vector_add( vul__cl_contexts[ platform_index ]->buffers );
+	ret = ( vul_cl_buffer* )vul_vector_add_empty( vul__cl_contexts[ platform_index ]->buffers );
 	ret->context = vul__cl_contexts[ platform_index ];
 	ret->type = VUL__CL_BUFFER_HOST;
 	ret->flags = flags;
@@ -551,7 +559,7 @@ vul_cl_buffer *vul_cl_create_buffer( cl_platform_id platform_id, cl_mem_flags fl
  * with a call to glBufferData, but needs not be initialized prior to this call.
  * For flags, see http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clCreateBuffer.html
  */
-vul_cl_buffer *vul_cl_create_buffer( cl_platform_id platform_id, cl_mem_flags flags, unsigned int gl_buffer )
+vul_cl_buffer *vul_cl_create_gl_buffer( cl_platform_id platform_id, cl_mem_flags flags, unsigned int gl_buffer )
 {
 	size_t j, platform_index;
 	vul_cl_buffer *ret;
@@ -569,7 +577,7 @@ vul_cl_buffer *vul_cl_create_buffer( cl_platform_id platform_id, cl_mem_flags fl
 	assert( j < vul__cl_context_count );
 
 	// Create the return object
-	ret = ( vul_cl_buffer* )vul_vector_add( vul__cl_contexts[ platform_index ]->buffers );
+	ret = ( vul_cl_buffer* )vul_vector_add_empty( vul__cl_contexts[ platform_index ]->buffers );
 	ret->context = vul__cl_contexts[ platform_index ];
 	ret->type = VUL__CL_BUFFER_OPENGL;
 	ret->flags = flags;
@@ -599,7 +607,15 @@ vul_cl_buffer *vul_cl_create_buffer( cl_platform_id platform_id, cl_mem_flags fl
  * for when waiting for this write is desired.
  * Returns 0 if successful, !0 otherwise.
  */
-int vul_cl_write_buffer( size_t queue_index, vul_cl_buffer *buffer, void *host_ptr = NULL, size_t offset = 0, size_t size_of_write = 0, bool blocking_write = true, cl_uint event_wait_list_size = 0, cl_event *event_wait_list = NULL, cl_event *wait_event = NULL )
+int vul_cl_write_buffer( size_t queue_index, 
+								 vul_cl_buffer *buffer, 
+								 void *host_ptr, 
+								 size_t offset, 
+								 size_t size_of_write, 
+								 int blocking_write, // Acts as bool
+								 cl_uint event_wait_list_size,
+								 cl_event *event_wait_list, 
+								 cl_event *wait_event )
 {
 	cl_int err;
 
@@ -630,7 +646,15 @@ int vul_cl_write_buffer( size_t queue_index, vul_cl_buffer *buffer, void *host_p
  * for when waiting for this copy is desired.
  * Returns 0 if successful, !0 otherwise.
  */
-int vul_cl_copy_buffer( size_t queue_index, vul_cl_buffer *src_buffer, vul_cl_buffer *dst_buffer, size_t src_offset = 0, size_t dst_offset = 0, size_t size_of_copy = 0, cl_uint event_wait_list_size = 0, cl_event *event_wait_list = NULL, cl_event *wait_event = NULL )
+int vul_cl_copy_buffer( size_t queue_index, 
+								vul_cl_buffer *src_buffer, 
+								vul_cl_buffer *dst_buffer, 
+								size_t src_offset,
+								size_t dst_offset, 
+								size_t size_of_copy, 
+								cl_uint event_wait_list_size, 
+								cl_event *event_wait_list, 
+								cl_event *wait_event )
 {
 	cl_int err;
 
@@ -667,7 +691,15 @@ int vul_cl_copy_buffer( size_t queue_index, vul_cl_buffer *src_buffer, vul_cl_bu
  * for when waiting for this read is desired.
  * Returns 0 if successful, !0 otherwise.
  */
-int vul_cl_read_buffer( size_t queue_index, vul_cl_buffer *buffer, void *host_ptr, size_t offset = 0,size_t size_of_read = 0, bool blocking_read = true, cl_uint event_wait_list_size = 0, cl_event *event_wait_list = NULL, cl_event *wait_event = NULL )
+int vul_cl_read_buffer( size_t queue_index, 
+								vul_cl_buffer *buffer, 
+								void *host_ptr, 
+								size_t offset,
+								size_t size_of_read, 
+								int blocking_read, // Acts as bool
+								cl_uint event_wait_list_size,
+								cl_event *event_wait_list, 
+								cl_event *wait_event )
 {
 	cl_int err;
 
@@ -693,7 +725,7 @@ int vul_cl_read_buffer( size_t queue_index, vul_cl_buffer *buffer, void *host_pt
 /** 
  * Resizes the given buffer.
  */
-int vul_cl_resize_buffer( vul_cl_buffer *buffer, size_t new_size, void *host_ptr = NULL ) 
+int vul_cl_resize_buffer( vul_cl_buffer *buffer, size_t new_size, void *host_ptr ) 
 {
 	cl_int err;
 
@@ -730,7 +762,12 @@ int vul_cl_resize_buffer( vul_cl_buffer *buffer, size_t new_size, void *host_ptr
  * for when waiting for this execution is desired.
  * @NOTE: This function only handles 1-dimensional work groups
  */
-cl_int vul_cl_call_kernel( vul_cl_kernel *kernel, size_t device_index, size_t global_size, cl_uint event_wait_list_size = 0, cl_event *event_wait_list = NULL, cl_event *wait_event = NULL )
+cl_int vul_cl_call_kernel( vul_cl_kernel *kernel, 
+									size_t device_index, 
+									size_t global_size, 
+									cl_uint event_wait_list_size, 
+									cl_event *event_wait_list, 
+									cl_event *wait_event )
 {
 	cl_int err;
 	cl_uint i;
@@ -832,6 +869,35 @@ cl_platform_id vul_cl_get_platform_by_context_index( ui32_t index )
 	assert( index <= vul__cl_context_count );
 
 	return vul__cl_contexts[ index ]->platform;
+}
+
+/**
+ * Prints all platforms found
+ */
+void vul_cl_print_platform_vendor_strings( )
+{
+	cl_int err;
+	ui32_t i;
+	size_t size;
+	char *name;
+
+	for( i = 0; i < vul__cl_context_count; ++i ) {
+		if( !vul__cl_contexts[ i ]  ) {
+			continue;
+		}
+		err = clGetPlatformInfo( vul__cl_contexts[ i ]->platform,
+								 CL_PLATFORM_VENDOR,
+								 NULL,
+								 0,
+								 &size );
+		name = ( char* )malloc( sizeof( char ) * size );
+		err = clGetPlatformInfo( vul__cl_contexts[ i ]->platform,
+								 CL_PLATFORM_VENDOR,
+								 size,
+								 name,
+								 NULL );
+		printf( "Platform %d: %s\n", i, name );
+	}
 }
 
 

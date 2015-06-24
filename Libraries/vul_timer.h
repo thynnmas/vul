@@ -1,11 +1,11 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
  *
  * This file contains a high performace timer that works on windows, linux
  * and OS X. Possibly works on other *nix systems as well.
  * It also contains an OS agnostic sleep function.
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -16,7 +16,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 #ifndef VUL_TIMER_H
 #define VUL_TIMER_H
 
@@ -68,6 +67,8 @@ typedef struct  {
 	mach_timebase_info_data_t timebase_info;
 #endif
 } vul_timer_t;
+
+#endif
 
 #ifndef VUL_DEFINE
 void vul_timer_reset( vul_timer_t *c );
@@ -272,6 +273,4 @@ unsigned int vul_sleep( unsigned int milliseconds )
 	assert( 0 && "vul_timer.h: OS not supported. Did you forget to specify an OS define?" );
 #endif
 }
-#endif
-
 #endif

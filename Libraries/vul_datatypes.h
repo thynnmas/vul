@@ -31,10 +31,11 @@
  * THE SOFTWARE.
  */
 
-#include "vul_graph.h"
 #include "vul_linked_list.h"
 #include "vul_skip_list.h"
 #include "vul_queue.h"
 #include "vul_resizable_array.h"
 #include "vul_stable_array.h"
 #include "vul_hash_map.h"
+#include "vul_stack.h"
+#include "vul_priority_heap.h"

@@ -18,7 +18,6 @@
 #ifndef VUL_SKIP_LIST_H
 #define VUL_SKIP_LIST_H
 
-#include <malloc.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -29,7 +28,6 @@
  * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!
  */
 //#define VUL_DEFINE
-
 
 typedef struct vul_skip_list_element
 {
@@ -42,9 +40,15 @@ typedef struct vul_skip_list
 {
 	unsigned int levels;
 	vul_skip_list_element **heads;
-	int (*comparator)( void *a, void *b );
 	unsigned int data_size;
+	int (*comparator)( void *a, void *b );
+
+	/* Memory management functions */
+	void *( *allocator )( size_t size );
+	void( *deallocator )( void *ptr );
 } vul_skip_list;
+
+#endif
 
 /**
  * Simulates a coin flip; .5 probability of 0, same for 1.
@@ -54,8 +58,7 @@ int vul__skip_list_coin_flip( );
 #else
 int vul__skip_list_coin_flip( )
 {
-	return ( rand() / RAND_MAX ) > 0.5;
-	// @TODO: Uniform distribution you said? Halton series!
+	return ( ( f32_t )rand( ) / ( f32_t )RAND_MAX ) > 0.5;
 }
 #endif
 
@@ -64,20 +67,28 @@ int vul__skip_list_coin_flip( )
  * as arguments and returns an empty list.
  */
 #ifndef VUL_DEFINE
-vul_skip_list *vul_skip_list_create(unsigned int data_size, int (*comparator)( void *a, void *b ) );
+vul_skip_list *vul_skip_list_create(unsigned int data_size, 
+									 int( *comparator )( void *a, void *b ),
+									 void *( *allocator )( size_t size ),
+									 void( *deallocator )( void *ptr ) );
 #else
-vul_skip_list *vul_skip_list_create(unsigned int data_size, int (*comparator)( void *a, void *b ) )
+vul_skip_list *vul_skip_list_create( unsigned int data_size,
+									 int( *comparator )( void *a, void *b ),
+									 void *( *allocator )( size_t size ),
+									 void( *deallocator )( void *ptr ) )
 {
 	vul_skip_list *ret;
 	int l;
 
-	ret = ( vul_skip_list* )malloc( sizeof( vul_skip_list ) );
-	assert( ret != NULL ); // Make sure malloc didn't fail
+	ret = ( vul_skip_list* )allocator( sizeof( vul_skip_list ) );
+	assert( ret != NULL ); // Make sure allocation didn't fail
 	ret->levels = 1;
-	ret->heads = ( vul_skip_list_element** )malloc( sizeof( vul_skip_list_element* ) );
-	assert( ret->heads != NULL ); // Make sure malloc didn't fail
+	ret->heads = ( vul_skip_list_element** )allocator( sizeof( vul_skip_list_element* ) );
+	assert( ret->heads != NULL ); // Make sure allocation didn't fail
 	ret->comparator = comparator;
 	ret->data_size = data_size;
+	ret->allocator = allocator;
+	ret->deallocator = deallocator;
 
 	for( l = ret->levels - 1; l >= 0; --l )
 	{
@@ -100,8 +111,8 @@ vul_skip_list_element *vul_skip_list_find( vul_skip_list *list, void *data )
 	int l;
 	vul_skip_list_element *e = NULL;
 
-	if ( list == NULL || list->heads == NULL ) return NULL;
-	
+	if( list == NULL || list->heads == NULL ) return NULL;
+
 	for( l = list->levels - 1; l >= 0; --l )
 	{
 		e = list->heads[ l ];
@@ -111,7 +122,7 @@ vul_skip_list_element *vul_skip_list_find( vul_skip_list *list, void *data )
 		}
 	}
 
-	if ( e && list->comparator( e->data, data ) == 0 ) return e;
+	if( e && list->comparator( e->data, data ) == 0 ) return e;
 	return NULL;
 }
 #endif
@@ -128,9 +139,9 @@ void vul_skip_list_remove( vul_skip_list *list, vul_skip_list_element *e )
 	vul_skip_list_element *p, *h;
 
 	assert( e != NULL );
-	
+
 	// For every level
-	for ( l = list->levels - 1; l >= 0; --l )
+	for( l = list->levels - 1; l >= 0; --l )
 	{
 		p = NULL;
 		h = list->heads[ l ];
@@ -145,10 +156,10 @@ void vul_skip_list_remove( vul_skip_list *list, vul_skip_list_element *e )
 		}
 	}
 
-	free( e->data );
-	free( e->nexts );
-	free( e );
-	// By setting to null we are much more likely to trigger asserts if used after free.
+	list->deallocator( e->data );
+	list->deallocator( e->nexts );
+	list->deallocator( e );
+	// By setting to null we are much more likely to trigger asserts if used after deallocation
 	e->data = NULL;
 	e->nexts = NULL;
 	e = NULL;
@@ -167,12 +178,12 @@ vul_skip_list_element *vul_skip_list_insert( vul_skip_list *list, void *data )
 {
 	int l;
 	vul_skip_list_element **el, *e, *ret;
-	
-	if ( list == NULL || list->heads == NULL ) return NULL;
 
-	el = ( vul_skip_list_element** )malloc( list->levels * sizeof( vul_skip_list_element* ) );
-	assert( el != NULL ); // Make sure malloc didn't fail
-	
+	if( list == NULL || list->heads == NULL ) return NULL;
+
+	el = ( vul_skip_list_element** )list->allocator( list->levels * sizeof( vul_skip_list_element* ) );
+	assert( el != NULL ); // Make sure allocation didn't fail
+
 	for( l = list->levels - 1; l >= 0; --l )
 	{
 		e = list->heads[ l ];
@@ -187,18 +198,18 @@ vul_skip_list_element *vul_skip_list_insert( vul_skip_list *list, void *data )
 	}
 
 	// Create our element
-	ret = ( vul_skip_list_element* )malloc( sizeof( vul_skip_list_element ) );
-	assert( ret != NULL ); // Make sure malloc didn't fail
-	ret->data = malloc( list->data_size );
-	assert( ret->data != NULL ); // Make sure malloc didn't fail
+	ret = ( vul_skip_list_element* )list->allocator( sizeof( vul_skip_list_element ) );
+	assert( ret != NULL ); // Make sure allocation didn't fail
+	ret->data = list->allocator( list->data_size );
+	assert( ret->data != NULL ); // Make sure allocation didn't fail
 	memcpy( ret->data, data, list->data_size );
 	ret->levels = 1;
 	while( vul__skip_list_coin_flip( ) ) ++ret->levels;
-	ret->nexts = ( vul_skip_list_element** )malloc( ret->levels * sizeof( vul_skip_list_element* ) );
-	assert( ret->nexts != NULL ); // Make sure malloc didn't fail
-	/* @TODO: THIS IS NOT WORKING YET! */ assert(false && "Skip lists aren't correctly implemented here.");
+	ret->nexts = ( vul_skip_list_element** )list->allocator( ret->levels * sizeof( vul_skip_list_element* ) );
+	assert( ret->nexts != NULL ); // Make sure allocation didn't fail
+	/* @TODO: THIS IS NOT WORKING YET! */ assert( false && "Skip lists aren't correctly implemented here." );
 	// Insert it at bottom level, and each above if coinflip is false
-	for ( l = ret->levels - 1; l >= 0; --l )
+	for( l = ret->levels - 1; l >= 0; --l )
 	{
 		ret->nexts[ l ] = el[ l ]->nexts[ l ];
 	}
@@ -216,7 +227,7 @@ unsigned int vul_skip_list_size( vul_skip_list *list )
 {
 	int c;
 	vul_skip_list_element *e;
-	
+
 	// Count elements in the lowest list.
 	e = list->heads[ 0 ];
 	c = 0;
@@ -236,9 +247,9 @@ unsigned int vul_skip_list_size( vul_skip_list *list )
  * @NOTE: If func alters the list, behaviour is undefined!
  */
 #ifndef VUL_DEFINE
-void vul_skip_list_iterate( vul_skip_list *list, void (*func)( vul_skip_list_element *e ) );
+void vul_skip_list_iterate( vul_skip_list *list, void( *func )( vul_skip_list_element *e ) );
 #else
-void vul_skip_list_iterate( vul_skip_list *list, void (*func)( vul_skip_list_element *e ) )
+void vul_skip_list_iterate( vul_skip_list *list, void( *func )( vul_skip_list_element *e ) )
 {
 	vul_skip_list_element *e;
 
@@ -259,30 +270,30 @@ void vul_skip_list_destroy( vul_skip_list *list );
 void vul_skip_list_destroy( vul_skip_list *list )
 {
 	vul_skip_list_element *e, *n;
-	
+
 	// Destroy all elements from the list at level 0
 	e = list->heads[ 0 ];
 	while( e != NULL )
 	{
 		n = e->nexts[ 0 ];
 
-		free( e->data );
-		free( e->nexts );
-		free( e );
-		// By setting to null we are much more likely to trigger asserts if used after free.
+		list->deallocator( e->data );
+		list->deallocator( e->nexts );
+		list->deallocator( e );
+		// By setting to null we are much more likely to trigger asserts if used after deallocation.
 		e->data = NULL;
 		e->nexts = NULL;
 		e = NULL;
-		
+
 		e = n;
 	}
 
-	// Then free the other heads
-	free( list->heads );
+	// Then deallocate the other heads
+	list->deallocator( list->heads );
 	// And finally, the list
-	free( list );
-	
-	// By setting to null we are much more likely to trigger asserts if used after free.
+	list->deallocator( list );
+
+	// By setting to null we are much more likely to trigger asserts if used after deallocation.
 	list->heads = NULL;
 	list = NULL;
 }
@@ -312,6 +323,4 @@ vul_skip_list *vul_skip_list_copy( vul_skip_list *src )
 
 	return dst;
 }
-#endif
-
 #endif

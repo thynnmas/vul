@@ -53,6 +53,8 @@ typedef struct vul_hash_map_t {
 	vul_list_element_t **buckets;
 	vul_hash_function hash;
 	int (*comparator)( void* a, void *b );	// Comparison function
+
+	/* Memory management functions */
 	void *( *allocator )( size_t size );
 	void  ( *deallocator )( void *ptr );
 } vul_hash_map_t;
@@ -64,6 +66,8 @@ typedef struct vul_hash_map_element_t {
 	ui32_t key_size;
 	ui32_t data_size;
 } vul_hash_map_element_t;
+
+#endif
 
 /**
  * Creates a new hash map. Takes the number of slots to use, the hash function
@@ -77,26 +81,26 @@ vul_hash_map_t *vul_map_create( ui32_t bucket_count,
 								vul_hash_function hash_function, 
 								int (*comparator)( void* a, void *b ), 
 								void *( *allocator )( size_t size ), 
-								void ( *deallocator )( void *ptr ) );
+								void( *deallocator )( void *ptr ) );
 #else
-vul_hash_map_t *vul_map_create( ui32_t bucket_count, 
-								vul_hash_function hash_function, 
-								int (*comparator)( void* a, void *b ), 
-								void *( *allocator )( size_t size ), 
-								void ( *deallocator )( void *ptr )  )
+vul_hash_map_t *vul_map_create( ui32_t bucket_count,
+								vul_hash_function hash_function,
+								int( *comparator )( void* a, void *b ),
+								void *( *allocator )( size_t size ),
+								void( *deallocator )( void *ptr ) )
 {
 	vul_hash_map_t *map;
 	ui32_t i;
 
 	map = ( vul_hash_map_t* )allocator( sizeof( vul_hash_map_t ) );
-	assert( map != NULL ); // Make sure malloc didn't fail
+	assert( map != NULL ); // Make sure allocation didn't fail
 	map->bucket_count = bucket_count;
 	map->hash = hash_function;
 	map->comparator = comparator;
 	map->buckets = ( vul_list_element_t** )allocator( sizeof( vul_list_element_t* ) * bucket_count );
 	map->allocator = allocator;
 	map->deallocator = deallocator;
-	assert( map->buckets != NULL ); // Make sure malloc didn't fail
+	assert( map->buckets != NULL ); // Make sure allocation didn't fail
 	for( i = 0; i < bucket_count; ++i )
 	{
 		map->buckets[ i ] = NULL;
@@ -120,21 +124,21 @@ vul_hash_map_element_t *vul_map_insert( vul_hash_map_t *map, const vul_hash_map_
 
 	// Find the bucket
 	bucket = map->hash( ( ui8_t* )ref->key, ref->key_size ) % map->bucket_count;
-	
+
 	// Insert it into the list at that bucket.
 	// vul_list_insert copies entire element, so both data and key.
-	if ( map->buckets[ bucket ] == NULL ) {
-		map->buckets[ bucket ] = vul_list_insert( NULL, 
-												  ( void* )ref, sizeof( vul_hash_map_element_t ), 
+	if( map->buckets[ bucket ] == NULL ) {
+		map->buckets[ bucket ] = vul_list_insert( NULL,
+												  ( void* )ref, sizeof( vul_hash_map_element_t ),
 												  map->comparator, map->allocator );
 		return ( vul_hash_map_element_t* )map->buckets[ bucket ]->data;
 	} else {
-		e = vul_list_insert( map->buckets[ bucket ], 
-							 ( void* )ref, sizeof( vul_hash_map_element_t ), 
+		e = vul_list_insert( map->buckets[ bucket ],
+							 ( void* )ref, sizeof( vul_hash_map_element_t ),
 							 map->comparator, map->allocator );
 		if( e->prev == NULL ) {
 			// We have changed head of the list!
-			map->buckets[ bucket] = e;
+			map->buckets[ bucket ] = e;
 		}
 		return ( vul_hash_map_element_t* )e->data;
 	}
@@ -194,7 +198,7 @@ vul_hash_map_element_t *vul_map_get( vul_hash_map_t *map, void *key, ui32_t key_
 	} else {
 		return NULL;
 	}
-	
+
 	// Check that it's an actual match
 	if( le != NULL && map->comparator( le->data, &e ) == 0 ) {
 		return ( vul_hash_map_element_t* )le->data;
@@ -218,7 +222,7 @@ const vul_hash_map_element_t *vul_map_get_const( vul_hash_map_t *map, void *key,
 #endif
 
 /**
- * Destroys the given has map, freeing all it's used memory.
+ * Destroys the given has map, deallocating all it's used memory.
  */
 #ifndef VUL_DEFINE
 void vul_map_destroy( vul_hash_map_t *map );
@@ -229,7 +233,7 @@ void vul_map_destroy( vul_hash_map_t *map )
 
 	for( b = 0; b < map->bucket_count; ++b )
 	{
-		if( map->buckets[ b ] != NULL ) 
+		if( map->buckets[ b ] != NULL )
 		{
 			vul_list_destroy( map->buckets[ b ], map->deallocator );
 			map->buckets[ b ] = NULL;
@@ -239,9 +243,7 @@ void vul_map_destroy( vul_hash_map_t *map )
 	map->deallocator( map->buckets );
 	map->buckets = NULL;
 	map->deallocator( map );
-	// By setting to null we are much more likely to trigger asserts if used after free.
+	// By setting to null we are much more likely to trigger asserts if used after decallocation.
 	map = NULL;
 }
-#endif
-
 #endif

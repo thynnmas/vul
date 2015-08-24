@@ -52,7 +52,7 @@
 #endif
 #include "vul_types.h"
 		
-typedef struct  {
+typedef struct vul_timer_t {
 #if defined( VUL_WINDOWS )
 	DWORD start_tick;
 	LONGLONG last_time;
@@ -68,11 +68,45 @@ typedef struct  {
 #endif
 } vul_timer_t;
 
+/**
+ * Reset the timer to zero
+ */
+void vul_timer_reset( vul_timer_t *c );
+
+/**
+ * Create a new timer on the heap (using malloc).
+ * To create one on the stack (or using your own
+ * allocation scheme, allocate enough memory for it,
+ * then pass that to vul_timer_reset to initialize it.
+ */
+vul_timer_t *vul_timer_create( );
+
+/**
+ * Destroy a timer created with vul_timer_create (using free).
+ */
+void vul_timer_destroy( vul_timer_t *c );
+
+/**
+ * Get the number of mulliseconds elapsed since the last reset/creation.
+ */
+ui64_t vul_timer_get_millis( vul_timer_t *c );
+
+/**
+ * Get the number of microseconds since the last reset/creation.
+ */
+ui64_t vul_timer_get_micros( vul_timer_t *c );
+
+/*
+ * OS agnostic sleep.
+ * Takes milliseconds to sleep.
+ * Returns milliseconds the amount of time left if interrupted before finishing
+ * the alotted sleeping time; only on unix.
+ */
+unsigned int vul_sleep( unsigned int milliseconds );
 #endif
 
-#ifndef VUL_DEFINE
-void vul_timer_reset( vul_timer_t *c );
-#else
+#ifdef VUL_DEFINE
+
 void vul_timer_reset( vul_timer_t *c )
 {
 #if defined( VUL_WINDOWS )
@@ -82,9 +116,9 @@ void vul_timer_reset( vul_timer_t *c )
 	HANDLE thread;
 	DWORD_PTR old_mask;
 
-	GetProcessAffinityMask( GetCurrentProcess(), &process_mask, &system_mask );
+	GetProcessAffinityMask( GetCurrentProcess( ), &process_mask, &system_mask );
 
-	if (process_mask == 0)
+	if( process_mask == 0 )
 		process_mask = 1;
 
 	if( c->clock_mask == 0 )
@@ -110,11 +144,7 @@ void vul_timer_reset( vul_timer_t *c )
 	mach_timebase_info( &c->timebase_info );
 #endif
 }
-#endif
 
-#ifndef VUL_DEFINE
-vul_timer_t *vul_timer_create( );
-#else
 vul_timer_t *vul_timer_create( )
 {
 	vul_timer_t *c;
@@ -122,23 +152,15 @@ vul_timer_t *vul_timer_create( )
 	c = ( vul_timer_t* )malloc( sizeof( vul_timer_t ) );
 	assert( c != NULL ); // Make sure malloc didn't fail
 	vul_timer_reset( c );
-	
+
 	return c;
 }
-#endif
 
-#ifndef VUL_DEFINE
-void vul_timer_destroy( vul_timer_t *c );
-#else
 void vul_timer_destroy( vul_timer_t *c )
 {
 	free( c );
 }
-#endif
 
-#ifndef VUL_DEFINE
-ui64_t vul_timer_get_millis( vul_timer_t *c );
-#else
 ui64_t vul_timer_get_millis( vul_timer_t *c )
 {
 #if defined( VUL_WINDOWS )
@@ -159,9 +181,9 @@ ui64_t vul_timer_get_millis( vul_timer_t *c )
 	new_ticks = ( ui32_t )( 1000 * new_time / c->frequency.QuadPart );
 
 	// Microsoft KB: Q274323
-	check = GetTickCount() - c->start_tick;
+	check = GetTickCount( ) - c->start_tick;
 	ms_off = ( i32_t )( new_ticks - check );
-	if (ms_off < -100 || ms_off > 100)
+	if( ms_off < -100 || ms_off > 100 )
 	{
 		adjust = VUL_MIN( ms_off * c->frequency.QuadPart / 1000, new_time - c->last_time );
 		c->start_time.QuadPart += adjust;
@@ -176,7 +198,7 @@ ui64_t vul_timer_get_millis( vul_timer_t *c )
 	struct timespec now;
 	clock_gettime( CLOCK_REALTIME, &now );
 	return ( ( now.tv_sec - c->start.tv_sec ) * 1000 )
-	      +( ( now.tv_nsec - c->start.tv_nsec ) / 1000000 );
+		+ ( ( now.tv_nsec - c->start.tv_nsec ) / 1000000 );
 #elif defined( VUL_OSX )
 	uint64_t end = mach_absolute_time( );
 	uint64_t elapsed = end - c->start;
@@ -184,11 +206,7 @@ ui64_t vul_timer_get_millis( vul_timer_t *c )
 	return ( ui64_t )( nsec / 1000000 );
 #endif
 }
-#endif
 
-#ifndef VUL_DEFINE
-ui64_t vul_timer_get_micros( vul_timer_t *c );
-#else
 ui64_t vul_timer_get_micros( vul_timer_t *c )
 {
 #if defined( VUL_WINDOWS )
@@ -207,12 +225,12 @@ ui64_t vul_timer_get_micros( vul_timer_t *c )
 	QueryPerformanceCounter( &current_time );
 	SetThreadAffinityMask( thread, old_mask );
 	new_time = current_time.QuadPart - c->start_time.QuadPart;
-	new_ticks = (ui32_t) (1000 * new_time / c->frequency.QuadPart);
+	new_ticks = ( ui32_t )( 1000 * new_time / c->frequency.QuadPart );
 
 	// Microsoft KB: Q274323
-	check = GetTickCount() - c->start_tick;
-	ms_off = (i32_t)(new_ticks - check);
-	if (ms_off < -100 || ms_off > 100)
+	check = GetTickCount( ) - c->start_tick;
+	ms_off = ( i32_t )( new_ticks - check );
+	if( ms_off < -100 || ms_off > 100 )
 	{
 		adjust = VUL_MIN( ms_off * c->frequency.QuadPart / 1000, new_time - c->last_time );
 		c->start_time.QuadPart += adjust;
@@ -220,9 +238,9 @@ ui64_t vul_timer_get_micros( vul_timer_t *c )
 	}
 
 	c->last_time = new_time;
-	
+
 	// scale by 1000000 for microseconds
-	new_micro = (ui32_t) (1000000 * new_time / c->frequency.QuadPart);
+	new_micro = ( ui32_t )( 1000000 * new_time / c->frequency.QuadPart );
 
 
 	return new_micro;
@@ -230,7 +248,7 @@ ui64_t vul_timer_get_micros( vul_timer_t *c )
 	struct timespec now;
 	clock_gettime( CLOCK_REALTIME, &now );
 	return ( ( now.tv_sec - c->start.tv_sec ) * 1000000 )
-	      +( now.tv_nsec - c->start.tv_nsec ) / 1000;
+		+ ( now.tv_nsec - c->start.tv_nsec ) / 1000;
 #elif defined( VUL_OSX )
 	uint64_t end = mach_absolute_time( );
 	uint64_t elapsed = end - c->start;
@@ -238,17 +256,7 @@ ui64_t vul_timer_get_micros( vul_timer_t *c )
 	return nsec / 1000;
 #endif
 }
-#endif
 
-/*
- * OS agnostic sleep.
- * Takes milliseconds to sleep.
- * Returns milliseconds the amount of time left if interrupted before finishing
- * the alotted sleeping time; only on unix.
- */
-#ifndef VUL_DEFINE
-unsigned int vul_sleep( unsigned int milliseconds );
-#else
 unsigned int vul_sleep( unsigned int milliseconds )
 {
 #ifdef VUL_WINDOWS
@@ -273,4 +281,5 @@ unsigned int vul_sleep( unsigned int milliseconds )
 	assert( 0 && "vul_timer.h: OS not supported. Did you forget to specify an OS define?" );
 #endif
 }
+
 #endif

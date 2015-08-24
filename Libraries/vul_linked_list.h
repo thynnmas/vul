@@ -38,6 +38,8 @@ struct vul_list_element_t
 	vul_list_element_t *next;
 };
 
+#endif
+
 /**
  * Creates a new vul_list_element_t and adds it after the given element. Copies the given data.
  * Should the given element be NULL, this is equivalent to creating a new list.
@@ -256,6 +258,4 @@ vul_list_element_t *vul_list_copy( vul_list_element_t *list_head, void *( *alloc
 
 	return nhead;
 }
-#endif
-
 #endif

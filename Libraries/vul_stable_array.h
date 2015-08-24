@@ -2,9 +2,9 @@
 * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
 *
 * This file describes a vector class that never moves elements upon
-* resize. It is implemented as an exponentially growing series of buffers
+* resize. It is implemented as an series of exponentially growing buffers
 * into which pointers will remain constant. @NOTE: Functionality is
-* currently somewhat limited as it's use is quitespecific atm.
+* currently somewhat limited as it's use is quite specific atm.
 *
 * ¹ If public domain is not legally valid in your legal jurisdiction
 *   the MIT licence applies (see the LICENCE file)
@@ -21,7 +21,6 @@
 #define VUL_STABLE_RESIZEABLE_ARRAY_H
 
 #include <stdlib.h>
-#include <malloc.h>
 #include <assert.h>
 #include <string.h>
 #include <math.h>
@@ -39,6 +38,7 @@
 /**
 * If enabled, iterators look for undefined/illegal behaviour during loops.
 * Slower, but might help track down ugly bugs!
+* @TODO(thynn): We don't currently do this!
 */
 //#define VUL_DEBUG
 
@@ -48,27 +48,49 @@ typedef struct vul_svector_t {
 	ui32_t buffer_base_size;
 	ui32_t element_size;
 	void **buffers;
+
+	/* Memory management functions */
+	void *( *allocator )( size_t size );
+	void( *deallocator )( void *ptr );
 } vul_svector_t;
 
+#endif
+
+/**
+* Create a stable vector, given the size of an element and the size of
+* the base buffer (the smallest one). Every buffer after is double the size.
+* Also takes in memory mamagement functions.
+*/
 #ifndef VUL_DEFINE
-vul_svector_t *vul_svector_create( ui32_t element_size, ui32_t buffer_base_size );
+vul_svector_t *vul_svector_create( ui32_t element_size,
+								   ui32_t buffer_base_size,
+								   void *( *allocator )( size_t size ),
+								   void( *deallocator )( void *ptr ) );
 #else
-vul_svector_t *vul_svector_create( ui32_t element_size, ui32_t buffer_base_size )
+vul_svector_t *vul_svector_create( ui32_t element_size,
+								   ui32_t buffer_base_size,
+								   void *( *allocator )( size_t size ),
+								   void( *deallocator )( void *ptr ) )
 {
 	vul_svector_t *ret;
 
-	ret = ( vul_svector_t* )malloc( sizeof( vul_svector_t ) );
+	ret = ( vul_svector_t* )allocator( sizeof( vul_svector_t ) );
 	assert( ret );
 	ret->buffer_count = 0;
 	ret->size = 0;
 	ret->buffer_base_size = buffer_base_size;
 	ret->element_size = element_size;
 	ret->buffers = NULL;
+	ret->allocator = allocator;
+	ret->deallocator = deallocator;
 
 	return ret;
 }
 #endif
 
+/**
+* Destroy the vector.
+*/
 #ifndef VUL_DEFINE
 void vul_svector_destroy( vul_svector_t *vec );
 #else
@@ -78,12 +100,36 @@ void vul_svector_destroy( vul_svector_t *vec )
 
 	assert( vec );
 	for( i = 0; i < vec->buffer_count; ++i ) {
-		free( vec->buffers[ i ] );
+		vec->deallocator( vec->buffers[ i ] );
 	}
-	free( vec->buffers );
-	free( vec );
+	vec->deallocator( vec->buffers );
+	vec->deallocator( vec );
 }
 #endif
+
+/**
+* Frees the memory. Equivalent to destroying the vector
+* and creating a new one.
+*/
+#ifndef VUL_DEFINE
+void vul_svector_freemem( vul_svector_t *vec );
+#else
+void vul_svector_freemem( vul_svector_t *vec )
+{
+	ui32_t i;
+
+	assert( vec );
+	for( i = 0; i < vec->buffer_count; ++i ) {
+		vec->deallocator( vec->buffers[ i ] );
+	}
+	vec->deallocator( vec->buffers );
+	vec->buffers = NULL;
+
+	vec->buffer_count = 0;
+	vec->size = 0;
+}
+#endif
+
 
 /**
 * Calculates the index of the buffer this element is in.
@@ -125,6 +171,9 @@ ui32_t vul__stable_vector_calculate_relative_index( ui32_t base_size, ui32_t bi,
 }
 #endif
 
+/**
+* Append an empty object to the vector and return the pointer to it.
+*/
 #ifndef VUL_DEFINE
 void *vul_svector_append_empty( vul_svector_t *vec );
 #else
@@ -149,8 +198,8 @@ void *vul_svector_append_empty( vul_svector_t *vec )
 	}
 	// Make sure the buffer exists
 	if( !vec->buffers[ bi ] ) {
-		vec->buffers[ bi ] = malloc( ( ui32_t )pow( ( f32_t )vec->buffer_base_size, 
-													( i32_t )bi + 1 ) * vec->element_size );
+		vec->buffers[ bi ] = vec->allocator( ( ui32_t )pow( ( f32_t )vec->buffer_base_size,
+			( i32_t )bi + 1 ) * vec->element_size );
 	}
 	assert( vec->buffers[ bi ] ); // This should always be valid at this point!
 
@@ -158,6 +207,10 @@ void *vul_svector_append_empty( vul_svector_t *vec )
 }
 #endif
 
+/**
+* Append the given object to the vector by copying it into place
+* and return the pointer to the new element.
+*/
 #ifndef VUL_DEFINE
 void *vul_svector_append( vul_svector_t *vec, void *element );
 #else
@@ -217,7 +270,7 @@ void vul_svector_remove_swap( vul_svector_t *vec, ui32_t index )
 	assert( vec );
 	if( vec->size == 1 ) {
 		--vec->size;
-		return; // We don't free down to zero.
+		return; // We don't deallocate down to zero.
 	}
 	rem = vul_svector_get( vec, index );
 	rep = vul_svector_get( vec, vec->size - 1 );
@@ -227,13 +280,13 @@ void vul_svector_remove_swap( vul_svector_t *vec, ui32_t index )
 	}
 	// Decrese size
 	--vec->size;
-	// Check if we can free a buffer. We only free a buffer if the next smaller one
-	// is empty, so only if we have _two_ empty buffer at the end. Memory is cheaper
-	// than malloc<->free oscillations at borders.
+	// Check if we can deallocate a buffer. We only deallocate a buffer if the next smaller 
+	// one is empty, so only if we have _two_ empty buffer at the end. Memory is cheaper
+	// than alloc<->dealloc oscillations at borders.
 	if( vec->buffer_count > 1 &&
 		vul__stable_vector_calculate_buffer_index( vec->buffer_base_size, vec->size )
 		< vec->buffer_count - 1 ) {
-		free( vec->buffers[ --vec->buffer_count ] );
+		vec->deallocator( vec->buffers[ --vec->buffer_count ] );
 	}
 }
 #endif
@@ -246,9 +299,13 @@ void vul_svector_remove_swap( vul_svector_t *vec, ui32_t index )
 * data into it.
 */
 #ifndef VUL_DEFINE
-void vul_svector_iterate( vul_svector_t *vec, void( *func )( void *data, ui32_t index, void *func_data ), void *func_data );
+void vul_svector_iterate( vul_svector_t *vec, 
+						  void( *func )( void *data, ui32_t index, void *func_data ), 
+						  void *func_data );
 #else
-void vul_svector_iterate( vul_svector_t *vec, void( *func )( void *data, ui32_t index, void *func_data ), void *func_data )
+void vul_svector_iterate( vul_svector_t *vec,
+						  void( *func )( void *data, ui32_t index, void *func_data ),
+						  void *func_data )
 {
 	ui32_t i, ai, bi, bs;
 
@@ -257,7 +314,7 @@ void vul_svector_iterate( vul_svector_t *vec, void( *func )( void *data, ui32_t 
 	ai = 0;
 	for( bi = 0; bi < vec->buffer_count; ++bi ) {
 		bs = ( ui32_t )pow( ( f32_t )vec->buffer_base_size, ( i32_t )bi + 1 );
-		for( i = 0; i < bs; ++i, ++ai ) {
+		for( i = 0; i < bs && ai < vec->size; ++i, ++ai ) {
 			func( ( void* )( ( ui8_t* )vec->buffers[ bi ] + ( vec->element_size * i ) ), ai, func_data );
 		}
 	}
@@ -269,9 +326,11 @@ void vul_svector_iterate( vul_svector_t *vec, void( *func )( void *data, ui32_t 
 * comparison function.
 */
 #ifndef VUL_DEFINE
-void *vul_svector_find( vul_svector_t *vec, void *element, int( *comparator )( void *a, void *b ) );
+void *vul_svector_find( vul_svector_t *vec, 
+						void *element, int( *comparator )( void *a, void *b ) );
 #else
-void *vul_svector_find( vul_svector_t *vec, void *element, int( *comparator )( void *a, void *b ) )
+void *vul_svector_find( vul_svector_t *vec,
+						void *element, int( *comparator )( void *a, void *b ) )
 {
 	ui32_t i, ai, bi, bs;
 	void *current;
@@ -292,6 +351,9 @@ void *vul_svector_find( vul_svector_t *vec, void *element, int( *comparator )( v
 }
 #endif
 
+/**
+* Returns the number of elements in the vector.
+*/
 #ifndef VUL_DEFINE
 ui32_t vul_svector_size( vul_svector_t *vec );
 #else
@@ -302,14 +364,15 @@ ui32_t vul_svector_size( vul_svector_t *vec )
 }
 #endif
 
+/**
+* Returns true if the vector is empty
+*/
 #ifndef VUL_DEFINE
-ui32_t vul_svector_is_empty( vul_svector_t *vec );
+bool32_t vul_svector_is_empty( vul_svector_t *vec );
 #else
-ui32_t vul_svector_is_empty( vul_svector_t *vec )
+bool32_t vul_svector_is_empty( vul_svector_t *vec )
 {
 	assert( vec );
 	return vec->size == 0;
 }
-#endif
-
 #endif

@@ -30,7 +30,10 @@
 
 // Define in exactly_one_ C/CPP file.
 //#define VUL_DEFINE
-#include "vul_resizable_array.h"
+
+#ifndef VUL_DEFINE
+	#include "vul_resizable_array.h"
+#endif
 
 /**
  * Minimum number of elements per merge run (thynnsort)
@@ -492,7 +495,10 @@ static void vul__sort_merge_low( vul_vector_t *list, int (*comparator)( const vo
 #else
 static void vul__sort_merge_low( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int base1, int length1, int base2, int length2 )
 {
-	vul_vector_t *temp_list = vul_vector_create( list->element_size, length1 );
+	vul_vector_t *temp_list = vul_vector_create( list->element_size, length1, 
+												 list->allocator,
+												 list->deallocator,
+												 list->reallocator );
 	int c1, c2, dest, minG, running, count1, count2;
 
 	// Range checks
@@ -643,7 +649,10 @@ static void vul__sort_merge_high( vul_vector_t *list, int (*comparator)( const v
 #else
 static void vul__sort_merge_high( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int base1, int length1, int base2, int length2 )
 {
-	vul_vector_t *temp_list = vul_vector_create( list->element_size, length2 + 1 );
+	vul_vector_t *temp_list = vul_vector_create( list->element_size, length2 + 1,
+												 list->allocator,
+												 list->deallocator,
+												 list->reallocator );
 	int c1, c2, dest, minG, running, count1, count2;
 
 	// Range checks
@@ -938,7 +947,10 @@ void vul_sort_vector_thynn( vul_vector_t *list, int (*comparator)( const void *a
 	// Setup
 	int n, f, run_length, min_run_length;
 	vul__sort_merge_stack_pair *current;
-	vul_vector_t *merge_stack = vul_vector_create( sizeof( vul__sort_merge_stack_pair ), 0 );
+	vul_vector_t *merge_stack = vul_vector_create( sizeof( vul__sort_merge_stack_pair ), 0,
+												   list->allocator,
+												   list->deallocator,
+												   list->reallocator );
 
 	// Check range
 	assert( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_thynn: Range check failed" );

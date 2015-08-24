@@ -20,7 +20,6 @@
 #define VUL_RESIZEABLE_ARRAY_H
 
 #include <stdlib.h>
-#include <malloc.h>
 #include <assert.h>
 #include <string.h>
 
@@ -66,7 +65,13 @@ typedef struct {
 	*/
 	unsigned int element_size;
 
+	/* Memory management fucntions */
+	void *( *allocator )( size_t size );
+	void( *deallocator )( void *ptr );
+	void *( *reallocator )( void *ptr, size_t size );
 } vul_vector_t;
+
+#endif
 
 /**
 * Returns the pointer to the first element of the list->
@@ -81,6 +86,7 @@ void *vul_vector_begin( vul_vector_t *vec )
 	return vec->list;
 }
 #endif
+
 /**
 * Returns the pointer to the last element of the list plus 1.
 * This is the equivalent of the STL vector.end().
@@ -102,18 +108,19 @@ void *vul_vector_end( vul_vector_t *vec )
 #ifndef VUL_DEFINE
 const unsigned int vul_vector_size( const vul_vector_t *vec );
 #else
-const unsigned int vul_vector_size( const vul_vector_t *vec ) 
+const unsigned int vul_vector_size( const vul_vector_t *vec )
 {
 	assert( vec != NULL );
 	return vec->size;
 }
 #endif
+
 /**
 * Returns the pointer to the item at the given location.
 * If templates are used, this is typed, if not it is a void*.
 * @param index Index of the element to get.
 */	
-#ifndef VUL_DEFINE	
+#ifndef VUL_DEFINE
 void *vul_vector_get( vul_vector_t *vec, const unsigned int index );
 #else
 void *vul_vector_get( vul_vector_t *vec, const unsigned int index )
@@ -123,12 +130,13 @@ void *vul_vector_get( vul_vector_t *vec, const unsigned int index )
 	return ( void* )( &vec->list[ vec->element_size * index ] );
 }
 #endif
+
 /**
 * Returns a const pointer to the item at the given location.
 * If templates are used, this is typed, if not it is a void*.
 * @param index
 */	
-#ifndef VUL_DEFINE	
+#ifndef VUL_DEFINE
 const void *vul_vector_get_const( vul_vector_t *vec, const unsigned int index );
 #else
 const void *vul_vector_get_const( vul_vector_t *vec, const unsigned int index )
@@ -143,40 +151,41 @@ const void *vul_vector_get_const( vul_vector_t *vec, const unsigned int index )
 * Resizes the list to the given number of items. Preserves items already
 * in the list up to the new size, others are lost.
 * @param size Size of the new list
-* @param freeZero [Optional] Whether the memory should be freed if new size is 0.
-* @param allocExactly [Optional] Whether reserved size and size should be equal.
+* @param freeZero Whether the memory should be freed if new size is 0.
+* @param allocExactly Whether reserved size and size should be equal.
 * @return a pointer to the first element of the new list->
 */
 #ifndef VUL_DEFINE
-void *vul_vector_resize( vul_vector_t *vec, unsigned int size, unsigned int free_zero, unsigned int alloc_exactly );
+void *vul_vector_resize( vul_vector_t *vec, unsigned int size,
+						 unsigned int free_zero, unsigned int alloc_exactly );
 #else
 void *vul_vector_resize( vul_vector_t *vec, unsigned int size, unsigned int free_zero, unsigned int alloc_exactly )
 {
 	unsigned int oldSize, newSize;
 
 	assert( vec != NULL );
-			
+
 	oldSize = vec->size;
 	vec->size = size;
 
-	if ( vec->size == vec->reserved_size ) {
+	if( vec->size == vec->reserved_size ) {
 		// Size matches exactly. Assert that things are well then leave.
-		if ( vec->reserved_size == 0 ) {
+		if( vec->reserved_size == 0 ) {
 			assert( vec->list == NULL );
 		} else  {
 			assert( vec->list != NULL );
 		}
 		return vec->list;
-	} else if ( vec->size < vec->reserved_size ) {
+	} else if( vec->size < vec->reserved_size ) {
 		// We have enough room.
-		if ( ( vec->size == 0) && free_zero ) {
+		if( ( vec->size == 0 ) && free_zero ) {
 			// New size is zero and freeing is wanted
-			free( vec->list );
+			vec->deallocator( vec->list );
 			vec->list = NULL;
 			vec->reserved_size = 0;
 			return NULL;
 		}
-		if ( !alloc_exactly ) {
+		if( !alloc_exactly ) {
 			// No resizing needed
 			return vec->list;
 		}
@@ -184,33 +193,34 @@ void *vul_vector_resize( vul_vector_t *vec, unsigned int size, unsigned int free
 	// We need to resize
 	assert( vec->size > 0 );
 	newSize = vec->size;
-	if ( !alloc_exactly ) {
+	if( !alloc_exactly ) {
 		// Grow by 50% and make sure it's not too small
 		newSize = ( vec->size * 3 ) >> 1;
-		if ( newSize < 8 ) {
+		if( newSize < 8 ) {
 			newSize = 8;
 		}
 		assert( newSize > vec->reserved_size );
 	}
-	if ( vec->list == NULL ) {
+	if( vec->list == NULL ) {
 		assert( vec->reserved_size == 0 );
-		vec->list = ( unsigned char* )malloc( vec->element_size * newSize );
-		assert( vec->list != NULL ); // Make sure malloc didn't fail
+		vec->list = ( unsigned char* )vec->allocator( vec->element_size * newSize );
+		assert( vec->list != NULL ); // Make sure allocation didn't fail
 	} else {
 		assert( vec->reserved_size > 0 );
 #pragma warning(suppress: 6308) // We know it might leak, but the assert will trigger if it does!
-		vec->list = ( unsigned char* )realloc( vec->list, vec->element_size * newSize );
-		assert( vec->list != NULL ); // Make sure realloc didn't fail
+		vec->list = ( unsigned char* )vec->reallocator( vec->list, vec->element_size * newSize );
+		assert( vec->list != NULL ); // Make sure reallocation didn't fail
 	}
 	assert( vec->list != NULL );
 	vec->reserved_size = newSize;
 	return vec->list;
 }
 #endif
+
 /**
 * Preallocates the list to at least this size.
 * @param size Minimum size of allocated area.
-* @param allocExactly [Optional] Whether reserved size and size should be equal.
+* @param allocExactly Whether reserved size and size should be equal.
 */
 #ifndef VUL_DEFINE
 void vul_vector_reserve( vul_vector_t *vec, unsigned int size, int allocExactly );
@@ -221,7 +231,7 @@ void vul_vector_reserve( vul_vector_t *vec, unsigned int size, int allocExactly 
 	assert( vec != NULL );
 
 	assert( size >= vec->size );
-	if ( size <= vec->reserved_size ) {
+	if( size <= vec->reserved_size ) {
 		return;
 	}
 
@@ -230,13 +240,15 @@ void vul_vector_reserve( vul_vector_t *vec, unsigned int size, int allocExactly 
 	vec->size = oldSize;
 }
 #endif
+
 /**
-* Initializes the list-> Starting sizes are optional.
-* @param initialSize [Optional] Initial size of list->
-* @param initialReservedSize [Optional] Initial size of reserved space.
+* Initializes the list
+* @param initialSize Initial size of list
+* @param initialReservedSize Initial size of reserved space.
 */
 #ifndef VUL_DEFINE
-void vul_vector_initialize( vul_vector_t *vec, unsigned int initialSize, unsigned int initialReservedSize );
+void vul_vector_initialize( vul_vector_t *vec, unsigned int initialSize, 
+							unsigned int initialReservedSize );
 #else
 void vul_vector_initialize( vul_vector_t *vec, unsigned int initialSize, unsigned int initialReservedSize )
 {
@@ -244,31 +256,47 @@ void vul_vector_initialize( vul_vector_t *vec, unsigned int initialSize, unsigne
 	vec->list = NULL;
 	vec->size = 0;
 	vec->reserved_size = 0;
-	if ( initialReservedSize > initialSize ) {
+	if( initialReservedSize > initialSize ) {
 		vul_vector_reserve( vec, initialReservedSize, VUL_TRUE );
 		vul_vector_resize( vec, initialSize, VUL_FALSE, VUL_FALSE );
-	} else if ( initialSize > 0 ) {
+	} else if( initialSize > 0 ) {
 		vul_vector_resize( vec, initialSize, VUL_TRUE, VUL_TRUE );
 	}
 }
 #endif
+
 /**
-* Constructor. Takes an optional initial size.
+* Constructor. Takes initial size.
 * @param sizeOfType Size, in bytes, of the type stored in this list.
-* @param initialSize [Optional] Initial reseurved size of list.
+* @param initialSize Initial reseurved size of list.
+* @param allocator Allocation function (f.ex. malloc)
+* @param deallocator Deallocation function (f.ex. free)
+* @param reallocator Reallocation function (f.ex. realloc)
 */
 #ifndef VUL_DEFINE
-vul_vector_t *vul_vector_create( unsigned int sizeOfType, unsigned int initialSize );
+vul_vector_t *vul_vector_create( unsigned int sizeOfType, 
+								 unsigned int initialSize,
+								 void *( *allocator )( size_t size ),
+								 void  ( *deallocator )( void *ptr ),
+								 void *( *reallocator )( void *ptr, size_t size ) );
 #else
-vul_vector_t *vul_vector_create( unsigned int sizeOfType, unsigned int initialSize )
+vul_vector_t *vul_vector_create( unsigned int sizeOfType,
+								 unsigned int initialSize,
+								 void *( *allocator )( size_t size ),
+								 void( *deallocator )( void *ptr ),
+								 void *( *reallocator )( void *ptr, size_t size ) )
 {
-	vul_vector_t *vec = ( vul_vector_t* )malloc( sizeof( vul_vector_t ) );
-	assert( vec != NULL ); // Make sure malloc didn't fail
+	vul_vector_t *vec = ( vul_vector_t* )allocator( sizeof( vul_vector_t ) );
+	assert( vec != NULL ); // Make sure allocation didn't fail
 	vec->element_size = sizeOfType;
+	vec->allocator = allocator;
+	vec->deallocator = deallocator;
+	vec->reallocator = reallocator;
 	vul_vector_initialize( vec, 0, initialSize );
 	return vec;
 }
 #endif
+
 /**
 * Deletes the list and cleans up.
 */
@@ -278,18 +306,18 @@ void vul_vector_destroy( vul_vector_t *vec );
 void vul_vector_destroy( vul_vector_t *vec )
 {
 	assert( vec != NULL );
-	if ( vec->list == NULL ) {
+	if( vec->list == NULL ) {
 		assert( vec->reserved_size == 0 );
 		assert( vec->size == 0 );
 	} else {
 		assert( vec->reserved_size > 0 );
 		assert( vec->size >= 0 );
-		free( vec->list );
+		vec->deallocator( vec->list );
 		vec->reserved_size = 0;
 		vec->size = 0;
 		vec->list = NULL;
 	}
-	free( vec );
+	vec->deallocator( vec );
 }
 #endif
 
@@ -321,12 +349,13 @@ void vul_vector_remove_swap( vul_vector_t *vec, unsigned int index )
 	assert( index < vec->size );
 	elem = index * vec->element_size;
 	last = ( vec->size - 1 ) * vec->element_size;
-	for ( i = 0; i < vec->element_size; ++i ) {
+	for( i = 0; i < vec->element_size; ++i ) {
 		vec->list[ elem + i ] = vec->list[ last + i ];
 	}
 	vul_vector_resize( vec, vec->size - 1, VUL_TRUE, VUL_FALSE );
 }
 #endif
+
 /**
 * Removes the item at the given index. Copies all following elements one slot forward,
 * preserving order of the list->
@@ -347,6 +376,7 @@ void vul_vector_remove_cascade( vul_vector_t *vec, unsigned int index )
 	vul_vector_resize( vec, vec->size - 1, VUL_TRUE, VUL_FALSE );
 }
 #endif
+
 /**
 * Adds the slot for an item to teh list and returns a pointer to it.
 * @return the pointer to the item
@@ -361,6 +391,7 @@ void *vul_vector_add_empty( vul_vector_t *vec )
 	return ( void* )( &vec->list[ ( vec->size - 1 ) * vec->element_size ] );
 }
 #endif
+
 /**
 * Copies the given item to the list->
 * @param item item to add
@@ -378,6 +409,7 @@ void vul_vector_add( vul_vector_t *vec, void *item )
 	memcpy( slot, item, vec->element_size );
 }
 #endif
+
 /**
 * Inserts a slot for an item to the list at the given location
 * and returns a pointer to it. Cascades everything after index
@@ -398,12 +430,13 @@ void *vul_vector_insert_empty( vul_vector_t *vec, unsigned int index )
 	vul_vector_resize( vec, vec->size + 1, VUL_TRUE, VUL_FALSE );
 	last = vec->size - 1;
 	first = ( index + 1 ) * vec->element_size;
-	for ( i = last; i >= first; --i ) {
+	for( i = last; i >= first; --i ) {
 		vec->list[ i ] = vec->list[ i - vec->element_size ];
 	}
 	return ( &vec->list[ index * vec->element_size ] );
 }
 #endif
+
 /**
 * Copies the given item to the list-> Cascades everything after index
 * down one slot.
@@ -416,13 +449,14 @@ void vul_vector_insert( vul_vector_t *vec, void *item, unsigned int index );
 void vul_vector_insert( vul_vector_t *vec, void *item, unsigned int index )
 {
 	void *slot;
-		
+
 	assert( vec != NULL );
-	
+
 	slot = vul_vector_insert_empty( vec, index );
 	memcpy( slot, item, vec->element_size );
 }
 #endif
+
 /**
 * Swaps the elemnts at the given indices
 * @param indexA index of first element
@@ -439,8 +473,8 @@ void vul_vector_swap( vul_vector_t *vec, unsigned int indexA, unsigned int index
 	assert( indexA < vec->size );
 	assert( indexB < vec->size );
 
-	temp = malloc( vec->element_size );
-	assert( temp != NULL ); // Make sure malloc didn't fail
+	temp = vec->allocator( vec->element_size );
+	assert( temp != NULL ); // Make sure allocation didn't fail
 	memcpy( temp, &vec->list[ indexA * vec->element_size ], vec->element_size );
 	memcpy( &vec->list[ indexA * vec->element_size ], &vec->list[ indexB * vec->element_size ], vec->element_size );
 	memcpy( &vec->list[ indexB * vec->element_size ], temp, vec->element_size );
@@ -455,7 +489,8 @@ void vul_vector_swap( vul_vector_t *vec, unsigned int indexA, unsigned int index
 * @param count The number of items to copy
 */
 #ifndef VUL_DEFINE
-void vul_vector_copy( vul_vector_t *dest, unsigned int index, const void* list, unsigned int count );
+void vul_vector_copy( vul_vector_t *dest, unsigned int index, 
+					  const void* list, unsigned int count );
 #else
 void vul_vector_copy( vul_vector_t *dest, unsigned int index, const void* list, unsigned int count )
 {
@@ -463,23 +498,26 @@ void vul_vector_copy( vul_vector_t *dest, unsigned int index, const void* list, 
 
 	assert( dest != NULL );
 
-	if ( dest->size < ( index + count ) ) {
+	if( dest->size < ( index + count ) ) {
 		vul_vector_resize( dest, index + count, VUL_TRUE, VUL_FALSE );
 	}
 	first = vul_vector_get( dest, index );
 	memcpy( first, list, count * dest->element_size );
 }
 #endif
+
 /**
 * Copies from the given vector into this one. Will overwrite anything after
 * index with the new items.
 * @param index The index to copy the first item to
 * @param list The other vector that is to be copied from
-* @param otherFirstIndex [Optional] The first index in the other vector to copy. Default is 0.
-* @param otherCount [Optional] The number of items to copy. 
+* @param otherFirstIndex The first index in the other vector to copy. Default is 0.
+* @param otherCount The number of items to copy. 
 */
 #ifndef VUL_DEFINE
-void vul_vector_copy_partial( vul_vector_t *dest, unsigned int index, vul_vector_t *list, unsigned int otherFirstIndex, unsigned int otherCount );
+void vul_vector_copy_partial( vul_vector_t *dest, unsigned int index, 
+							  vul_vector_t *list, unsigned int otherFirstIndex, 
+							  unsigned int otherCount );
 #else
 void vul_vector_copy_partial( vul_vector_t *dest, unsigned int index, vul_vector_t *list, unsigned int otherFirstIndex, unsigned int otherCount )
 {
@@ -489,7 +527,7 @@ void vul_vector_copy_partial( vul_vector_t *dest, unsigned int index, vul_vector
 	assert( dest != NULL );
 	assert( list != NULL );
 
-	if ( dest->size < ( index + otherCount ) ) {
+	if( dest->size < ( index + otherCount ) ) {
 		vul_vector_resize( dest, index + otherCount, VUL_TRUE, VUL_FALSE );
 	}
 	assert( vul_vector_size( list ) >= ( otherFirstIndex + otherCount ) );
@@ -503,10 +541,11 @@ void vul_vector_copy_partial( vul_vector_t *dest, unsigned int index, vul_vector
 * Copies from the given vector onto the end of this one.
 * @param list The other vector that is to be copied from
 * @param otherFirstIndex The first index in the other vector to copy
-* @param otherCount [Optional] The number of items to copy. 
+* @param otherCount The number of items to copy. 
 */
 #ifndef VUL_DEFINE
-void vul_vector_append( vul_vector_t *dest, vul_vector_t *list, unsigned int otherFirstIndex, unsigned int otherCount );
+void vul_vector_append( vul_vector_t *dest, vul_vector_t *list, 
+						unsigned int otherFirstIndex, unsigned int otherCount );
 #else
 void vul_vector_append( vul_vector_t *dest, vul_vector_t *list, unsigned int otherFirstIndex, unsigned int otherCount )
 {
@@ -520,6 +559,7 @@ void vul_vector_append( vul_vector_t *dest, vul_vector_t *list, unsigned int oth
 	vul_vector_copy_partial( dest, first, list, otherFirstIndex, otherCount );
 }
 #endif
+
 /**
 * Finds the index of the given item, or -1 if not found.
 * @param item The item to find
@@ -534,14 +574,15 @@ unsigned int vul_vector_find( vul_vector_t *vec, void *item )
 
 	assert( vec != NULL );
 
-	for ( i = 0; i < vec->size; i += vec->element_size ) {
-		if ( &vec->list[ i ] == item ) {
+	for( i = 0; i < vec->size; i += vec->element_size ) {
+		if( &vec->list[ i ] == item ) {
 			return i;
 		}
 	}
 	return vec->size;
 }
 #endif
+
 /**
 * Finds the index of the given item, or -1 if not found.
 * This compares value of entire element, not pointers.
@@ -584,6 +625,16 @@ void vul_vector_tighten( vul_vector_t *vec )
 // Macros
 //
 
+// Undefine them if we're redefining them, so we don't get complaining compilers...
+#ifdef vul_foreachptr
+#undef vul_foreachptr
+#endif
+#ifdef vul_foreachval
+#undef vul_foreachval
+#endif
+#ifdef vul_foreach
+#undef vul_foreach
+#endif
 #ifdef VUL_DEBUG
 	// @Note: Debug versions attempt to spot if you alter the list in the middle of a loop. That might cause a resize and in turn mayhem.
 	// Normal iterator
@@ -622,9 +673,4 @@ void vul_vector_tighten( vul_vector_t *vec )
 		// Easier for list of pointers
 		#define vul_foreachptr( T, ref, it, last, list ) for ( it = ( T** )vul_vector_begin( list ), last = ( T** )vul_vector_end( list ), *ref = ( ( it != last ) ? *it : NULL ); it != last; ref = *( ++it ) )
 	#endif
-#endif
-
-#undef VUL_TRUE
-#undef VUL_FALSE
-
 #endif

@@ -27,7 +27,9 @@
 #include "vul_types.h"
 #include "vul_linked_list.h"
 
-#define VUL_QUEUE_BUFFER_BYTE_SIZE 1024
+#ifndef VUL_QUEUE_BUFFER_BYTE_SIZE
+	#define VUL_QUEUE_BUFFER_BYTE_SIZE 1024
+#endif
 
 typedef struct vul__queue_buffer_t {
 	ui8_t data[ VUL_QUEUE_BUFFER_BYTE_SIZE ];

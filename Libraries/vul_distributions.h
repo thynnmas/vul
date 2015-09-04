@@ -1,11 +1,11 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
  *
  * This file contains several number distribution functions.
  * -vul_halton_par: Halton series of 2 given numbers. Distributes values 
  *					uniformely in the range [0, 1]
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  */
 #ifndef VUL_DISTRIBUTIONS_H
@@ -47,14 +47,13 @@ vul_halton_pair_t *vul_halton_pair_create( ui32_t base1, ui32_t base2, ui32_t se
 	seed = seed ^ (seed >> 4);
 	seed *= 0x27d4eb2d;
 	seed = seed ^ (seed >> 15);
-
-	r->value_a = *( ( f32_t* )seed );
+	r->value_a = ( f32_t )seed / 4294967295.f;
 
 	seed ^= ( seed << 13 );
 	seed ^= ( seed >> 17 );
 	seed ^= ( seed << 5 );
 
-	r->value_b = *( ( f32_t* )seed );
+	r->value_b = ( f32_t )seed / 4294967295.f;
 	r->inv_base_a = 1.f / base1;
 	r->inv_base_b = 1.f / base2;
 
@@ -96,14 +95,14 @@ void vul_halton_pair_next( vul_halton_pair_t *rng )
 		} while ( h >= r );
 		rng->value_a += h2 + h - 1.f;
 	}
-	r = 1.f - rng->value_a - 0.0000001f;
-	if ( rng->inv_base_a < r ) {
-		rng->value_b += rng->inv_base_a;
+	r = 1.f - rng->value_b - 0.0000001f;
+	if ( rng->inv_base_b < r ) {
+		rng->value_b += rng->inv_base_b;
 	} else {
-		f32_t h = rng->inv_base_a, h2;
+		f32_t h = rng->inv_base_b, h2;
 		do{
 			h2 = h; 
-			h *= rng->inv_base_a;
+			h *= rng->inv_base_b;
 		} while ( h >= r );
 		rng->value_b += h2 + h - 1.f;
 	}

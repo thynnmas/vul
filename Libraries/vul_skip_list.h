@@ -305,14 +305,18 @@ void vul_skip_list_destroy( vul_skip_list *list )
  * differently internally, and thus may perform slightly different.
  */
 #ifndef VUL_DEFINE
-vul_skip_list *vul_skip_list_copy( vul_skip_list *src );
+vul_skip_list *vul_skip_list_copy( vul_skip_list *src,
+								   void *( *allocator )( size_t size ),
+								   void( *deallocator )( void *ptr ) );
 #else
-vul_skip_list *vul_skip_list_copy( vul_skip_list *src )
+vul_skip_list *vul_skip_list_copy( vul_skip_list *src,
+								   void *( *allocator )( size_t size ),
+								   void( *deallocator )( void *ptr ) )
 {
 	vul_skip_list *dst;
 	vul_skip_list_element *e;
 
-	dst = vul_skip_list_create( src->data_size, src->comparator );
+	dst = vul_skip_list_create( src->data_size, src->comparator, allocator, deallocator );
 
 	e = src->heads[ 0 ];
 	while( e != NULL )

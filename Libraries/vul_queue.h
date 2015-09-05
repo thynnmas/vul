@@ -25,7 +25,9 @@
 #include <string.h>
 
 #include "vul_types.h"
+#ifndef VUL_LINKED_LIST_H
 #include "vul_linked_list.h"
+#endif
 
 #ifndef VUL_QUEUE_BUFFER_BYTE_SIZE
 	#define VUL_QUEUE_BUFFER_BYTE_SIZE 1024

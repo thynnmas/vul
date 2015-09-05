@@ -39,7 +39,9 @@
 #include <string.h>
 
 #include "vul_types.h"
+#ifndef VUL_LINKED_LIST_H
 #include "vul_linked_list.h"
+#endif
 
 /**
  * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!

@@ -23,7 +23,9 @@
 #include <string.h>
 
 #include "vul_types.h"
+#ifndef VUL_STABLE_RESIZEABLE_ARRAY_H
 #include "vul_stable_array.h"
+#endif
 
 /**
 * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!

@@ -335,13 +335,13 @@ ui32_t vul_rng_mt19937_next_unsigned( vul_rng_mt19937_t *r );
 #else
 ui32_t vul_rng_mt19937_next_unsigned( vul_rng_mt19937_t *r )
 {
-	i32_t y;
+	ui32_t y;
 
 	if( r->index == 0 ) {
 		vul_rng_mt19937_generate( r );
 	}
 	
-	y = r->state[ r->index ];
+	y = *((unsigned int* )&r->state[ r->index ]);
 	y = y ^ ( y >> 11 );
 	y = y ^ ( ( y << 7 ) & 0x9d2c5680 );
 	y = y ^ ( ( y << 15 ) & 0xefc60000 );
@@ -349,8 +349,7 @@ ui32_t vul_rng_mt19937_next_unsigned( vul_rng_mt19937_t *r )
 
 	r->index = ( r->index + 1 ) % 624;
 	
-	return *( ( unsigned int* )&y );
-	
+	return y;	
 }
 #endif
 

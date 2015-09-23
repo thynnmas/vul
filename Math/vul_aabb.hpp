@@ -1,9 +1,9 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
  *
  * An AABB struct that works in unlimited dimensions.
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -18,8 +18,11 @@
 #ifndef VUL_AABB_HPP
 #define VUL_AABB_HPP
 
-#if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX )
+#if defined( VUL_AOSOA_SSE ) 
 #include <immintrin.h>
+#elif defined( VUL_AOSOA_AVX )
+#include <immintrin.h>
+#include <avxintrin.h>
 #endif
 #ifdef VUL_AOSOA_NEON
 #include <arm_neon.h>
@@ -821,13 +824,17 @@ namespace vul {
 				t1[ 1 ] = _mm_add_ps( t1[ 0 ], t0[ 2 ] );
 
 				// t2 > -plane.w
-				t1[ 2 ] = _mm_cmpgt_ps( t1[ 1 ], p[ j ][ 3 ] );
+				union {
+					__m128 v;
+					f32_t a[ 4 ];
+				} t;
+				t.v = _mm_cmpgt_ps( t1[ 1 ], p[ j ][ 3 ] );
 
 				// Store result
-				out[ i ] = ( t1[ 2 ].m128_u32[ 0 ] == 0xffffffff ? 0xff000000 : 0x00000000 )
-						 | ( t1[ 2 ].m128_u32[ 1 ] == 0xffffffff ? 0x00ff0000 : 0x00000000 )
-						 | ( t1[ 2 ].m128_u32[ 2 ] == 0xffffffff ? 0x0000ff00 : 0x00000000 )
-						 | ( t1[ 2 ].m128_u32[ 3 ] == 0xffffffff ? 0x000000ff : 0x00000000 );
+				out[ i ] = ( t.a[ 0 ] == 0xffffffff ? 0xff000000 : 0x00000000 )
+						 | ( t.a[ 1 ] == 0xffffffff ? 0x00ff0000 : 0x00000000 )
+						 | ( t.a[ 2 ] == 0xffffffff ? 0x0000ff00 : 0x00000000 )
+						 | ( t.a[ 3 ] == 0xffffffff ? 0x000000ff : 0x00000000 );
 			}
 		}
 	}
@@ -884,15 +891,19 @@ namespace vul {
 				t1[ 1 ] = _mm_add_pd( t1[ 0 ], t0[ 2 ] );
 
 				// t2 > -plane.w
-				t1[ 2 ] = _mm_cmpgt_pd( t1[ 1 ], p[ j ][ 3 ] );
+				union {
+					__m128d v;
+					f64_t a[ 2 ];
+				} t;
+				t.v = _mm_cmpgt_pd( t1[ 1 ], p[ j ][ 3 ] );
 
 				// Store result
 				if( i % 1 ) {
-					out[ i ] = ( *( ( ui64_t* )&t1[ 2 ].m128d_f64[ 0 ] ) == 0xffffffffffffffff ? 0x0000ff00 : 0x00000000 )
-							 | ( *( ( ui64_t* )&t1[ 2 ].m128d_f64[ 1 ] ) == 0xffffffffffffffff ? 0x000000ff : 0x00000000 );
+					out[ i ] = ( *( ( ui64_t* )&t.a[ 0 ] ) == 0xffffffffffffffff ? 0x0000ff00 : 0x00000000 )
+							 | ( *( ( ui64_t* )&t.a[ 1 ] ) == 0xffffffffffffffff ? 0x000000ff : 0x00000000 );
 				} else {
-					out[ i ] = ( *( ( ui64_t* )&t1[ 2 ].m128d_f64[ 0 ] ) == 0xffffffffffffffff ? 0xff000000 : 0x00000000 )
-							 | ( *( ( ui64_t* )&t1[ 2 ].m128d_f64[ 1 ] ) == 0xffffffffffffffff ? 0x00ff0000 : 0x00000000 );
+					out[ i ] = ( *( ( ui64_t* )&t.a[ 0 ] ) == 0xffffffffffffffff ? 0xff000000 : 0x00000000 )
+							 | ( *( ( ui64_t* )&t.a[ 1 ] ) == 0xffffffffffffffff ? 0x00ff0000 : 0x00000000 );
 				}
 			}
 		}
@@ -957,17 +968,21 @@ namespace vul {
 				t1[ 1 ] = _mm256_add_ps( t1[ 0 ], t0[ 2 ] );
 
 				// t2 > -plane.w
-				t1[ 2 ] = _mm256_cmp_ps( t1[ 1 ], p[ j ][ 3 ], _CMP_GT_OQ );
+				union {
+					__m256 v;
+					f32_t a[ 8 ];
+				} t;
+				t.v = _mm256_cmp_ps( t1[ 1 ], p[ j ][ 3 ], _CMP_GT_OQ );
 
 				// Store result
-				out[ i * 2 ] |= ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 7 ] ) == 0.f ? 0x00000000 : 0xff000000 )
-							  | ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 6 ] ) == 0.f ? 0x00000000 : 0x00ff0000 )
-							  | ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 5 ] ) == 0.f ? 0x00000000 : 0x0000ff00 )
-							  | ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 4 ] ) == 0.f ? 0x00000000 : 0x000000ff );
-				out[ i * 2 + 1 ] |= ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 3 ] ) == 0.f ? 0x00000000 : 0xff000000 )
-								  | ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 2 ] ) == 0.f ? 0x00000000 : 0x00ff0000 )
-								  | ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 1 ] ) == 0.f ? 0x00000000 : 0x0000ff00 )
-								  | ( *( ( ui32_t* )&t1[ 2 ].m256_f32[ 0 ] ) == 0.f ? 0x00000000 : 0x000000ff );
+				out[ i * 2 ] |= ( *( ( ui32_t* )&t.a[ 7 ] ) == 0.f ? 0x00000000 : 0xff000000 )
+							  | ( *( ( ui32_t* )&t.a[ 6 ] ) == 0.f ? 0x00000000 : 0x00ff0000 )
+							  | ( *( ( ui32_t* )&t.a[ 5 ] ) == 0.f ? 0x00000000 : 0x0000ff00 )
+							  | ( *( ( ui32_t* )&t.a[ 4 ] ) == 0.f ? 0x00000000 : 0x000000ff );
+				out[ i * 2 + 1 ] |= ( *( ( ui32_t* )&t.a[ 3 ] ) == 0.f ? 0x00000000 : 0xff000000 )
+								  | ( *( ( ui32_t* )&t.a[ 2 ] ) == 0.f ? 0x00000000 : 0x00ff0000 )
+								  | ( *( ( ui32_t* )&t.a[ 1 ] ) == 0.f ? 0x00000000 : 0x0000ff00 )
+								  | ( *( ( ui32_t* )&t.a[ 0 ] ) == 0.f ? 0x00000000 : 0x000000ff );
 			}
 		}
 	}
@@ -1024,13 +1039,17 @@ namespace vul {
 				t1[ 1 ] = _mm256_add_pd( t1[ 0 ], t0[ 2 ] );
 
 				// t2 > -plane.w
-				t1[ 2 ] = _mm256_cmp_pd( t1[ 1 ], p[ j ][ 3 ], _CMP_GT_OQ );
+				union {
+					__m256d v;
+					f64_t a[ 4 ];
+				} t;
+				t.v = _mm256_cmp_pd( t1[ 1 ], p[ j ][ 3 ], _CMP_GT_OQ );
 
 				// Store result
-				out[ i ] |= ( *( ( ui32_t* )&t1[ 2 ].m256d_f64[ 3 ] ) == 0 ? 0x0000000000000000 : 0xff000000 )
-						  | ( *( ( ui32_t* )&t1[ 2 ].m256d_f64[ 2 ] ) == 0 ? 0x0000000000000000 : 0x00ff0000 )
-						  | ( *( ( ui32_t* )&t1[ 2 ].m256d_f64[ 1 ] ) == 0 ? 0x0000000000000000 : 0x0000ff00 )
-						  | ( *( ( ui32_t* )&t1[ 2 ].m256d_f64[ 0 ] ) == 0 ? 0x0000000000000000 : 0x000000ff );
+				out[ i ] |= ( *( ( ui32_t* )&t.a[ 3 ] ) == 0 ? 0x0000000000000000 : 0xff000000 )
+						  | ( *( ( ui32_t* )&t.a[ 2 ] ) == 0 ? 0x0000000000000000 : 0x00ff0000 )
+						  | ( *( ( ui32_t* )&t.a[ 1 ] ) == 0 ? 0x0000000000000000 : 0x0000ff00 )
+						  | ( *( ( ui32_t* )&t.a[ 0 ] ) == 0 ? 0x0000000000000000 : 0x000000ff );
 			}
 		}
 	}

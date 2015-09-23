@@ -1,11 +1,11 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
  *
  * This defines normal type operators on __m128 and __m256 which allow us
  * to write SOA simd code just like scalar code with Vector< __m128, n >-style.
  * Depending on VUL_AOSOA_FLOAT_WIDTH we use 32 or 64 bit floats
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -21,6 +21,7 @@
 
 #ifdef VUL_AOSOA_AVX
 	#include <immintrin.h>
+	#include <avxintrin.h>
 #endif
 #ifdef VUL_AOSOA_SSE
 	#include <smmintrin.h>

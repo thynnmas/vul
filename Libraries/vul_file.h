@@ -1,11 +1,11 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
  *
  * This file includes an abstraction of mmap.
  *
  * @TODO: Properly test all of these!
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -25,6 +25,15 @@
 
 #ifdef VUL_WINDOWS
 #include <Windows.h>
+#else
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
 #endif
 
 #ifdef VUL_WINDOWS
@@ -102,27 +111,27 @@ int vul_munmap( vul_mmap_file_t file )
 	return ( ret == 0 ) ? -1 : 0;
 }
 #else
-#include <sys/mman.h>
 vul_mmap_file_t vul_mmap_file( const char *path, void *base_addr, int prot, int flags, size_t file_offset, size_t map_length )
 {
-	vul_mmap_file_t ret;
+   vul_mmap_file_t ret;
 
-	ret.fd = fopen( path, // @TODO(thynn): this flag! );
-	if( map_length == -1 ) {
-		fseek( ret.fd, 0L, SEEK_END );
-		map_length = ftell( ret.fd );
-	}
-	ret.map = mmap( addr, map_length, prot, flags, fd, file_offset );
-	ret.length = length;
+   ret.fd = open( path, O_RDONLY );
+   if( map_length == -1 ) {
+	  struct stat sb;
+	  fstat(ret.fd, &sb);
+	  map_length = ( size_t )sb.st_size;
+   }
+   ret.map = mmap( base_addr, map_length, prot, flags, ret.fd, file_offset );
+   ret.length = map_length;
 
-	return ret;
+   return ret;
 }
 int vul_munmap( vul_mmap_file_t file )
 {
 	int ret;
 	
 	ret = munmap( file.map, file.length );
-	ret |= flose( ret.fd );
+	ret |= close( file.fd );
 
 	return ret;
 }

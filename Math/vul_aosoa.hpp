@@ -21,7 +21,6 @@
 
 #ifdef VUL_AOSOA_AVX
 	#include <immintrin.h>
-	#include <avxintrin.h>
 #endif
 #ifdef VUL_AOSOA_SSE
 	#include <smmintrin.h>

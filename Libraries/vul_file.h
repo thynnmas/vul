@@ -415,8 +415,8 @@ int vul_file_close( vul_file_t *f, vul_file_keep keep, void (*deallcator)( void*
 
 	fclose( f->file );
 
-	if( f->tmp_path != NULL ) {
-		return 0; // No temporary file to copy
+	if( f->tmp_path == NULL ) {
+		return ok; // No temporary file to copy
 	}
 
 	if( keep == vul_file_keep_if_different ) {

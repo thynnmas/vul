@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
  *
  * This file includes an abstraction of mmap and a bunch of file handling functions
  * from stb.h (since including only those from stb.h without the rest of the file 
@@ -8,7 +8,7 @@
  *
  * @TODO: Properly test all of these!
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -30,7 +30,14 @@
 #include <Windows.h>
 #include <io.h>
 #else
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
 #include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
 #endif
 
 #include "vul_string.h"
@@ -109,13 +116,14 @@ vul_mmap_file_t vul_mmap_file( const char *path, void *base_addr, int prot, int 
 								   NULL );
 	}
 #else
-	ret.fd = fopen( path, // @TODO(thynn): this flag! );
-					if( map_length == -1 ) {
-						fseek( ret.fd, 0L, SEEK_END );
-						map_length = ftell( ret.fd );
-					}
-	ret.map = mmap( addr, map_length, prot, flags, fd, file_offset );
-	ret.length = length;
+	ret.fd = open( path, O_RDONLY );
+	if( map_length == -1 ) {
+		struct stat sb;
+		fstat(ret.fd, &sb);
+		map_length = ( size_t )sb.st_size;
+	}
+	ret.map = mmap( base_addr, map_length, prot, flags, ret.fd, file_offset );
+	ret.length = map_length;
 #endif
 
 	return ret;

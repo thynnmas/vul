@@ -1,5 +1,5 @@
 CC = clang++
-CFLAGS= -stdlib=libstdc++ -fno-strict-aliasing -Wall -D VUL_TEST -Werror -Wno-error=shift-count-negative -Wno-unknown-pragmas
+CFLAGS= -stdlib=libstdc++ -fno-strict-aliasing -Wall -D VUL_TEST -Werror -Wno-error=shift-count-negative -Wno-unknown-pragmas -lm -g
 C98 = -std=c++98
 C11 = -std=c++11 -D VUL_CPLUSPLUS11
 AVX = -mavx -D VUL_AOSOA_AVX

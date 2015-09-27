@@ -1,9 +1,9 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
  *
  * This file contains tests for the AABB struct in vul_aabb.hpp
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -689,10 +689,10 @@ namespace vul_test {
 #ifdef VUL_AOSOA_NEON
 		AABB< float32x4_t, 3 > m32x4[ 4 ], r32x4[ 4 ];
 #endif
-		AABB< f32_t, 3 > in32[ 8 ];
-		AABB< f64_t, 3 > in64[ 4 ];
-		Vector< f32_t, 4 > planes32[ 6 ];
-		Vector< f64_t, 4 > planes64[ 6 ];
+		//AABB< f32_t, 3 > in32[ 8 ];
+		//AABB< f64_t, 3 > in64[ 4 ];
+		//Vector< f32_t, 4 > planes32[ 6 ];
+		//Vector< f64_t, 4 > planes64[ 6 ];
 
 		// @TODO(thynn): These tests
 		// All the inside_tests(  )

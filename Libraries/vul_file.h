@@ -147,8 +147,9 @@ bool32_t vul_munmap( vul_mmap_file_t file )
 	return ( ret == 0 ) ? -1 : 0;
 #else
 	ret = munmap( file.map, file.length );
-	ret |= flose( ret.fd );
+	ret |= close( file.fd );
 #endif
+	return ret;
 }
 #endif
 

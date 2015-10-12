@@ -30,7 +30,6 @@
 #define VUL_MIN( a, b ) ( a <= b ? a : b )
 #define VUL_MAX( a, b ) ( a >= b ? a : b )
 
-#include <malloc.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
@@ -38,7 +37,9 @@
 #if defined( VUL_WINDOWS )
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
+	#include <malloc.h>
 #elif defined( VUL_LINUX )
+	#include <malloc.h>
 	#include <time.h>
 	#include <unistd.h>
 	#include <sys/resource.h>

@@ -19,7 +19,11 @@
 
 #include <stdio.h>
 #include <assert.h>
+#ifdef VUL_OSX
+#include <stdlib.h>
+#else
 #include <malloc.h>
+#endif
 #include <string.h>
 
 #include "vul_resizable_array.h"

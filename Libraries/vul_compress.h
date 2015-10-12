@@ -35,7 +35,9 @@
 #define VUL_COMPRESS_H
 
 #include <stdlib.h>
+#ifndef VUL_OSX
 #include <malloc.h>
+#endif
 #include <assert.h>
 #include <string.h>
 

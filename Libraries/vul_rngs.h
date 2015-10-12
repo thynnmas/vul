@@ -17,7 +17,9 @@
 #include "vul_types.h"
 
 #include <stdlib.h>
+#ifndef VUL_OSX
 #include <malloc.h>
+#endif
 #include <assert.h>
 
 /**

@@ -26,7 +26,9 @@
  */
 #include <assert.h>
 #include <stdlib.h>
+#ifndef VUL_OSX
 #include <malloc.h>
+#endif
 
 // Define in exactly_one_ C/CPP file.
 //#define VUL_DEFINE

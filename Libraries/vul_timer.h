@@ -273,7 +273,7 @@ unsigned int vul_sleep( unsigned int milliseconds )
 
 	req.tv_sec = ( time_t )milliseconds / 1000;
 	req.tv_nsec = ( long )( milliseconds % 1000l ) * 1000000l;
-#ifdef VUL_LINUX
+#ifdef VUL_OSX
 	err = nanosleep( &req, &rem );
 #else
 	err = clock_nanosleep( CLOCK_REALTIME, 0, &req, &rem );

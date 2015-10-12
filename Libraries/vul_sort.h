@@ -154,6 +154,7 @@ void vul_sort_vector_quick( vul_vector_t *list, int (*comparator)( const void *a
 	// Check range
 	assert( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_quick: Range check failed" );
 	stack = ( int* )malloc( sizeof( int ) * ( high - low + 1 ) );
+	assert( stack != NULL && "vul_sort_vector_quick: Could not allocate memory for the stack" );
     top = -1;
 	
 	stack[ ++top ] = low;

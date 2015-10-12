@@ -27,13 +27,14 @@
 //#define VUL_DEFINE
 
 #include <stdlib.h>
-#include <malloc.h>
 #if defined( VUL_WINDOWS )
+	#include <malloc.h>
 	#define WIN32_LEAN_AND_MEAN
 	#include <Windows.h>
 	#include <WinSock2.h>
 	#include <WS2tcpip.h>
 #elif defined( VUL_LINUX )
+	#include <malloc.h>
 	#include <sys/socket.h>
 #elif defined( VUL_OSX )
 	BAH

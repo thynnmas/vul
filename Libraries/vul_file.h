@@ -24,7 +24,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#ifndef VUL_OSX
 #include <malloc.h>
+#endif
 
 #ifdef VUL_WINDOWS
 #include <Windows.h>

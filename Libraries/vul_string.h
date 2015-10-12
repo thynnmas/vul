@@ -17,7 +17,9 @@
 */
 #include <string.h>
 #include <stdio.h>
+#ifndef VUL_OSX
 #include <malloc.h>
+#endif
 #include <stdlib.h>
 #include <wchar.h>
 

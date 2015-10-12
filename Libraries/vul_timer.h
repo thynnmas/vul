@@ -30,7 +30,6 @@
 #define VUL_MIN( a, b ) ( a <= b ? a : b )
 #define VUL_MAX( a, b ) ( a >= b ? a : b )
 
-#include <malloc.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
@@ -38,7 +37,9 @@
 #if defined( VUL_WINDOWS )
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
+	#include <malloc.h>
 #elif defined( VUL_LINUX )
+	#include <malloc.h>
 	#include <time.h>
 	#include <unistd.h>
 	#include <sys/resource.h>
@@ -202,7 +203,7 @@ ui64_t vul_timer_get_millis( vul_timer_t *c )
 #elif defined( VUL_OSX )
 	uint64_t end = mach_absolute_time( );
 	uint64_t elapsed = end - c->start;
-	uint64_t nsec = elapsed * c->timebase_info.numer / timebase_info.denom;
+	uint64_t nsec = elapsed * c->timebase_info.numer / c->timebase_info.denom;
 	return ( ui64_t )( nsec / 1000000 );
 #endif
 }
@@ -252,7 +253,7 @@ ui64_t vul_timer_get_micros( vul_timer_t *c )
 #elif defined( VUL_OSX )
 	uint64_t end = mach_absolute_time( );
 	uint64_t elapsed = end - c->start;
-	uint64_t nsec = elapsed * c->timebase_info.numer / timebase_info.denom;
+	uint64_t nsec = elapsed * c->timebase_info.numer / c->timebase_info.denom;
 	return nsec / 1000;
 #endif
 }
@@ -272,7 +273,11 @@ unsigned int vul_sleep( unsigned int milliseconds )
 
 	req.tv_sec = ( time_t )milliseconds / 1000;
 	req.tv_nsec = ( long )( milliseconds % 1000l ) * 1000000l;
+#ifdef VUL_OSX
+	err = nanosleep( &req, &rem );
+#else
 	err = clock_nanosleep( CLOCK_REALTIME, 0, &req, &rem );
+#endif
 	if( err ) {
 		return ( int )( rem.tv_sec * 1000 ) + ( int )( rem.tv_nsec / 1000000l );
 	}

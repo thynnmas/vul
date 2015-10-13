@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
  *
  * This file contains auxilliary functions for benchmarking.
  * @TODO: Proper statistics; at the moment this does the programmer's
@@ -8,7 +8,7 @@
  * @TODO: Plotting (bar diagram of all iterations, histogram, smooth graf)
  * nanovg should be useful for this; hide the whole thing behind a define.
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -32,23 +32,24 @@ typedef struct vul_benchmark_result {
 	f64_t std_deviation;
 } vul_benchmark_result;
 
+
 /**
- * Helper function used to find the median. In all honesty, this is the median-of-median
+ * Helper function used to find the median. This is the median-of-median
  * algorithm, and all the median-function does is pretend the k-argument doesn't exist.
  */
-ui32_t vul__benchmark_select( ui64_t *times, ui32_t left, ui32_t right, ui32_t k )
+uint32_t vul__benchmark_select( uint64_t *times, uint32_t left, uint32_t right, uint32_t k )
 {
-	ui64_t order[ 5 ], time;
-	ui32_t i, l, count, median;
-	i32_t j;
+	uint64_t order[ 5 ], time;
+	uint32_t i, l, count, median;
+	int32_t j;
 
 	count = right - left;
 	if( count < 5 )
 	{
-		// Just find the median element the hard way
+		// Just find the k-th element the hard way
 		l = 1;
 		order[ 0 ] = times[ left ];
-		for( i = 1; i < count; ++i ) 
+		for( i = 1; i < count + 1; ++i ) 
 		{
 			time = times[ left + i ];
 			if( time < order[ l - 1 ] ) {
@@ -69,12 +70,12 @@ ui32_t vul__benchmark_select( ui64_t *times, ui32_t left, ui32_t right, ui32_t k
 		}
 	}
 
-	for( i = 0; i < count / 5; ++i )
+	for( i = 0; i < ( count / 5 ) + 1; ++i )
 	{
 		l = 5 * i; // Left bound of new array
 		j = ( l + 4 ) > right ? right : ( l + 4 ); // Right bound of new array
 		
-		median = vul__benchmark_select( times, l, j, 3 );
+		median = vul__benchmark_select( times, l, j, 2 ); // 0-indexed k
 
 		time = times[ median ];
 		times[ median ] = times[ i ];
@@ -83,6 +84,7 @@ ui32_t vul__benchmark_select( ui64_t *times, ui32_t left, ui32_t right, ui32_t k
 
 	return vul__benchmark_select( times, 0, count / 5, count / 10 );
 }
+
 
 /**
  * Finds the median element of an array of times. O(n)
@@ -190,4 +192,149 @@ vul_benchmark_result vul_benchmark_micros( ui32_t repetitions,
 	vul_timer_destroy( clk );
 
 	return res;
+}
+
+typedef struct vul_benchmark_histogram {
+	uint32_t *buckets, bucket_count, bucket_max;
+	uint64_t smallest, largest;
+} vul_benchmark_histogram;
+
+void vul__benchmark_create_histogram( vul_benchmark_histogram *hist, uint64_t *times, 
+												  uint32_t left, uint32_t right, uint32_t buckets )
+{
+	double s, l, r, t;
+	uint32_t i, j;
+	hist->bucket_count = buckets;
+	
+	// Find range
+	hist->smallest = -1;
+	hist->largest = 0;
+	for( i = left; i < right; ++i ) {
+		hist->smallest = times[ i ] < hist->smallest ? times[ i ] : hist->smallest;
+		hist->largest = times[ i ] > hist->largest ? times[ i ] : hist->largest;
+	}
+	s = ( double )( hist->largest - hist->smallest ) / ( double )buckets;
+	if( hist->largest - hist->smallest < ( uint64_t )buckets ) {
+		uint32_t hb = buckets / 2;
+		double med = ( double )hist->smallest + ( s * ( double )hb );
+		s = 1.0;
+		hist->smallest = med - s * ( double )hb;
+		hist->largest = med + s * ( double )hb;
+	}
+	
+	// Fill buckets
+	hist->buckets = ( uint32_t* )malloc( sizeof( uint32_t ) * buckets );
+	l = ( double )hist->smallest;
+	r = ( double )hist->smallest + s;
+	for( i = 0; i < buckets; ++i ) {
+		hist->buckets[ i ] = 0;
+		for( j = left; j < right; ++j ) {
+			t = ( double )times[ j ];
+			if( t >= l && ( t < r || ( i == buckets - 1  && t == ( double )hist->largest ) ) ) { 
+				++hist->buckets[ i ];
+			}
+		}
+		l = r;
+		r += s;
+	}
+
+	// Find largest bucket
+	hist->bucket_max = 0;
+	for( i = 0; i < buckets; ++i ) {
+		hist->bucket_max = hist->buckets[ i ] > hist->bucket_max ? hist->buckets[ i ] : hist->bucket_max;
+	}
+}
+
+/**
+ * Print a histogram to stdout with a given number of buckets.
+ */
+void vul_benchmark_print_histogram_millis( uint64_t *times, uint32_t left, uint32_t right, uint32_t buckets )
+{
+	uint32_t i, j, ml;
+	uint64_t v, s;
+	double l, r, ds;
+	vul_benchmark_histogram hist;
+	
+	// Calcualte it
+	vul__benchmark_create_histogram( &hist, times, left, right, buckets );
+	
+	// Print legend
+	printf( "Time (ms) | Count |0" );
+	ml = ( uint32_t )log10( ( double )hist.bucket_max );
+	for( i = 1; i < buckets - ml; ++i ) printf(" ");
+	printf( "%d|\n", hist.bucket_max );
+	printf( "----------|-------|" );
+	for( i = 0; i < buckets; ++i ) printf("-");
+	printf("|\n");
+
+	s = hist.bucket_max / buckets;
+	ds = ( double )( hist.largest - hist.smallest ) / ( double )buckets;
+	l = ( double )hist.smallest;
+	r = l + ds;
+	for( i = 0; i < buckets; ++i ) {
+		v = 0;
+		printf("%02.1f-%02.1f | %d", l, r, hist.buckets[ i ]);
+		ml = ( uint32_t )log10( ( double )hist.buckets[ i ] );
+		for( j = 0; j < 5 - ml; ++j ) printf(" ");
+		printf("|");
+		l = r;
+		r += ds;
+		for( j = 0; j < buckets && hist.buckets[ i ] > v; ++j ) {
+			printf("*");
+			v += s;
+		}
+		for( ; j < buckets; ++j ) printf(" ");
+		printf("|\n");
+	}
+	printf("\n");
+
+	// Clean up
+	free( hist.buckets );
+}
+
+/**
+ * Print a histogram to stdout with a given number of buckets.
+ */
+void vul_benchmark_print_histogram_micros( uint64_t *times, uint32_t left, uint32_t right, uint32_t buckets )
+{
+	uint32_t i, j, ml;
+	uint64_t v, s;
+	double l, r, ds;
+	vul_benchmark_histogram hist;
+	
+	// Calcualte it
+	vul__benchmark_create_histogram( &hist, times, left, right, buckets );
+	
+	// Print legend
+	printf( "Time (ms)   | Count |0" );
+	ml = ( uint32_t )log10( ( double )hist.bucket_max ) + 1;
+	for( i = 1; i < buckets - ml; ++i ) printf(" ");
+	printf( "%d|\n", hist.bucket_max );
+	printf( "------------|-------|" );
+	for( i = 0; i < buckets; ++i ) printf("-");
+	printf("|\n");
+
+	s = hist.bucket_max / buckets;
+	ds = ( double )( hist.largest - hist.smallest ) / ( double )buckets;
+	l = ( double )hist.smallest;
+	r = l + ds;
+	for( i = 0; i < buckets; ++i ) {
+		v = 0;
+		printf("%02.2f-%02.2f | %d", l / 1000.0, r / 1000.0, hist.buckets[ i ]);
+		ml = ( uint32_t )log10( ( double )hist.buckets[ i ] );
+		for( j = 0; j < 5 - ml; ++j ) printf(" ");
+		printf("|");
+		l = r;
+		r += ds;
+		for( j = 0; j < buckets && hist.buckets[ i ] > v; ++j ) {
+			printf("*");
+			v += s;
+		}
+		for( ; j < buckets; ++j ) printf(" ");
+		printf("|\n");
+	}
+	printf("\n");
+
+	// Clean up
+	free( hist.buckets );
 }

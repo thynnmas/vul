@@ -27,6 +27,7 @@
 #include <stdarg.h>
 
 typedef struct vul_benchmark_result {
+	ui32_t iterations;
 	f64_t mean;
 	ui64_t median;
 	f64_t std_deviation;
@@ -154,6 +155,7 @@ vul_benchmark_result vul_benchmark_millis( ui32_t repetitions,
 		times[ r ] = vul_timer_get_millis( clk );
 	}
 	
+	res.iterations = repetitions;
 	res.mean = vul__benchmark_mean( times, 0, repetitions );
 	res.median = vul__benchmark_median( times, 0, repetitions );
 	res.std_deviation = vul__benchmark_standard_deviation( times, 0, repetitions, res.mean );
@@ -162,6 +164,7 @@ vul_benchmark_result vul_benchmark_millis( ui32_t repetitions,
 
 	return res;
 }
+
 
 /**
  * Runs the given function the given amount of times, calculating mean, median and
@@ -188,12 +191,130 @@ vul_benchmark_result vul_benchmark_micros( ui32_t repetitions,
 	res.mean = vul__benchmark_mean( times, 0, repetitions - 1 );
 	res.median = vul__benchmark_median( times, 0, repetitions - 1 );
 	res.std_deviation = vul__benchmark_standard_deviation( times, 0, repetitions - 1, res.mean );
+	res.iterations = repetitions;
 
 	vul_timer_destroy( clk );
 
 	return res;
 }
 
+/**
+ * Runs the given function, calculating mean, median and
+ * std_deviation over the runs, until the given percentage of samples (ci) is expected
+ * to lie in the interval mean +- error * mean.
+ * It will run at least min_iter iterations, and at most max_iter.
+ */
+vul_benchmark_result vul_benchmark_millis_confidence( f32_t ci, f32_t error, ui32_t min_iter, ui32_t max_iter,
+																		void ( *function )( void *data ), void *func_data )
+{
+	ui32_t iter, count;
+	ui64_t *times;
+	vul_timer_t *clk;
+	vul_benchmark_result res;
+
+	times = 0;
+	iter = 0;
+	count = min_iter;
+	clk = vul_timer_create( );
+
+	while( count <= max_iter ) {
+		// (re)allocate the times array, maintaining the values we already have
+		if( times == NULL ) {
+			times = ( ui64_t* )malloc( sizeof( ui64_t ) * count );
+		} else {
+			times = ( ui64_t )realloc( times, sizeof( ui64_t ) * count );
+		}
+		// Run the benchmark
+		while( iter < count ) {
+			vul_timer_reset( clk );
+			function( func_data );
+			times[ iter++ ] = vul_timer_get_millis( clk );
+		}
+		
+		// Calculate important values to determine if finished
+		res.mean = vul__benchmark_mean( times, 0, count - 1 );
+		res.std_deviation = vul__benchmark_standard_deviation( times, 0, count - 1, res.mean );
+		res.iterations = count;
+
+		// Calculate teh size of error relative to the std.dev.
+		f64_t z = error / res.std_deviation;
+		// The percentage of samples expected to be in the CI is given as erf(z/sqrt(2))
+		f64_t eci = erf( z / sqrt( 2.f ) );
+		// If we have the desired precision, break
+		if( eci <= ci ) {
+			break;
+		}
+		count *= 2;
+		if( count > max_iter ) {
+			count = max_iter;
+		}
+	}
+	// Calculate the median after, because it's slow and we don't need it each run
+	res.median = vul__benchmark_median( times, 0, count - 1 );
+
+	vul_timer_destroy( clk );
+
+	return res;
+}
+
+/**
+ * Runs the given function, calculating mean, median and
+ * std_deviation over the runs, until the given percentage of samples (ci) is expected
+ * to lie in the interval mean +- error * mean.
+ * It will run at least min_iter iterations, and at most max_iter.
+ */
+vul_benchmark_result vul_benchmark_micros_confidence( f32_t ci, f32_t error, ui32_t min_iter, ui32_t max_iter,
+																		void ( *function )( void *data ), void *func_data )
+{
+	ui32_t iter, count;
+	ui64_t *times;
+	vul_timer_t *clk;
+	vul_benchmark_result res;
+
+	times = 0;
+	iter = 0;
+	count = min_iter;
+	clk = vul_timer_create( );
+
+	while( count <= max_iter ) {
+		// (re)allocate the times array, maintaining the values we already have
+		if( times == NULL ) {
+			times = ( ui64_t* )malloc( sizeof( ui64_t ) * count );
+		} else {
+			times = ( ui64_t )realloc( times, sizeof( ui64_t ) * count );
+		}
+		// Run the benchmark
+		while( iter < count ) {
+			vul_timer_reset( clk );
+			function( func_data );
+			times[ iter++ ] = vul_timer_get_micros( clk );
+		}
+		
+		// Calculate important values to determine if finished
+		res.mean = vul__benchmark_mean( times, 0, count - 1 );
+		res.std_deviation = vul__benchmark_standard_deviation( times, 0, count - 1, res.mean );
+		res.iterations = count;
+
+		// Calculate teh size of error relative to the std.dev.
+		f64_t z = error / res.std_deviation;
+		// The percentage of samples expected to be in the CI is given as erf(z/sqrt(2))
+		f64_t eci = erf( z / sqrt( 2.f ) );
+		// If we have the desired precision, break
+		if( eci <= ci ) {
+			break;
+		}
+		count *= 2;
+		if( count > max_iter ) {
+			count = max_iter;
+		}
+	}
+	// Calculate the median after, because it's slow and we don't need it each run
+	res.median = vul__benchmark_median( times, 0, count - 1 );
+
+	vul_timer_destroy( clk );
+
+	return res;
+}
 typedef struct vul_benchmark_histogram {
 	uint32_t *buckets, bucket_count, bucket_max;
 	uint64_t smallest, largest;

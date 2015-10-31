@@ -197,18 +197,18 @@ namespace vul {
 		Matrix< T, 4, 4 > m;
 		T d[ 4 ][ 4 ];
 
-		d[ 0 ][ 0 ] = a.mat( 0, 0 );
-		d[ 1 ][ 0 ] = a.mat( 1, 0 );
-		d[ 2 ][ 0 ] = a.mat( 2, 0 );
-		d[ 3 ][ 0 ] = a.vec[ 0 ];
-		d[ 0 ][ 1 ] = a.mat( 0, 1 );
-		d[ 1 ][ 1 ] = a.mat( 1, 1 );
-		d[ 2 ][ 1 ] = a.mat( 2, 1 );
-		d[ 3 ][ 1 ] = a.vec[ 1 ];
-		d[ 0 ][ 2 ] = a.mat( 0, 2 );
-		d[ 1 ][ 2 ] = a.mat( 1, 2 );
-		d[ 2 ][ 2 ] = a.mat( 2, 2 );
-		d[ 3 ][ 2 ] = a.vec[ 2 ];
+		d[ 0 ][ 0 ] = a.mat.data[ 0 ][ 0 ];
+		d[ 1 ][ 0 ] = a.mat.data[ 1 ][ 0 ];
+		d[ 2 ][ 0 ] = a.mat.data[ 2 ][ 0 ];
+		d[ 3 ][ 0 ] = a.vec.data[ 0 ];
+		d[ 0 ][ 1 ] = a.mat.data[ 0 ][ 1 ];
+		d[ 1 ][ 1 ] = a.mat.data[ 1 ][ 1 ];
+		d[ 2 ][ 1 ] = a.mat.data[ 2 ][ 1 ];
+		d[ 3 ][ 1 ] = a.vec.data[ 1 ];
+		d[ 0 ][ 2 ] = a.mat.data[ 0 ][ 2 ];
+		d[ 1 ][ 2 ] = a.mat.data[ 1 ][ 2 ];
+		d[ 2 ][ 2 ] = a.mat.data[ 2 ][ 2 ];
+		d[ 3 ][ 2 ] = a.vec.data[ 2 ];
 		d[ 0 ][ 3 ] = static_cast< T >( 0.f );
 		d[ 1 ][ 3 ] = static_cast< T >( 0.f );
 		d[ 2 ][ 3 ] = static_cast< T >( 0.f );
@@ -234,7 +234,7 @@ namespace vul {
 		// Multiply in scale
 		for( i = 0; i < 3; ++i ) {
 			for( j = 0; j < 3; ++j ) {
-				a.mat( i, j ) = a.mat( i, j ) * scale[ j ];
+				a.mat.data[ i ][ j ] = a.mat.data[ i ][ j ] * scale.data[ j ];
 			}
 		}
 

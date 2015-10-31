@@ -497,7 +497,7 @@ namespace vul {
 		
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				r.data[ i ][ j ] = m( i, j );
+				r.data[ i ][ j ] = m.data[ i ][ j ];
 			}
 		}
 
@@ -525,10 +525,10 @@ namespace vul {
 	{
 		Matrix< T, 2, 2 > m;
 
-		m( 0, 0 ) = c1r1;
-		m( 0, 1 ) = c1r2;
-		m( 1, 0 ) = c2r1;
-		m( 1, 1 ) = c2r2;
+		m.data[ 0 ][ 0 ] = c1r1;
+		m.data[ 0 ][ 1 ] = c1r2;
+		m.data[ 1 ][ 0 ] = c2r1;
+		m.data[ 1 ][ 1 ] = c2r2;
 
 		return m;
 	}
@@ -539,15 +539,15 @@ namespace vul {
 	{
 		Matrix< T, 3, 3 > m;
 
-		m( 0, 0 ) = c1r1;
-		m( 0, 1 ) = c1r2;
-		m( 0, 2 ) = c1r3;
-		m( 1, 0 ) = c2r1;
-		m( 1, 1 ) = c2r2;
-		m( 1, 2 ) = c2r3;
-		m( 2, 0 ) = c3r1;
-		m( 2, 1 ) = c3r2;
-		m( 2, 2 ) = c3r3;
+		m.data[ 0 ][ 0 ] = c1r1;
+		m.data[ 0 ][ 1 ] = c1r2;
+		m.data[ 0 ][ 2 ] = c1r3;
+		m.data[ 1 ][ 0 ] = c2r1;
+		m.data[ 1 ][ 1 ] = c2r2;
+		m.data[ 1 ][ 2 ] = c2r3;
+		m.data[ 2 ][ 0 ] = c3r1;
+		m.data[ 2 ][ 1 ] = c3r2;
+		m.data[ 2 ][ 2 ] = c3r3;
 
 		return m;
 	}
@@ -559,22 +559,22 @@ namespace vul {
 	{
 		Matrix< T, 4, 4 > m;
 
-		m( 0, 0 ) = c1r1;
-		m( 0, 1 ) = c1r2;
-		m( 0, 2 ) = c1r3;
-		m( 0, 3 ) = c1r4;
-		m( 1, 0 ) = c2r1;
-		m( 1, 1 ) = c2r2;
-		m( 1, 2 ) = c2r3;
-		m( 1, 3 ) = c2r4;
-		m( 2, 0 ) = c3r1;
-		m( 2, 1 ) = c3r2;
-		m( 2, 2 ) = c3r3;
-		m( 2, 3 ) = c3r4;
-		m( 3, 0 ) = c4r1;
-		m( 3, 1 ) = c4r2;
-		m( 3, 2 ) = c4r3;
-		m( 3, 3 ) = c4r4;
+		m.data[ 0 ][ 0 ] = c1r1;
+		m.data[ 0 ][ 1 ] = c1r2;
+		m.data[ 0 ][ 2 ] = c1r3;
+		m.data[ 0 ][ 3 ] = c1r4;
+		m.data[ 1 ][ 0 ] = c2r1;
+		m.data[ 1 ][ 1 ] = c2r2;
+		m.data[ 1 ][ 2 ] = c2r3;
+		m.data[ 1 ][ 3 ] = c2r4;
+		m.data[ 2 ][ 0 ] = c3r1;
+		m.data[ 2 ][ 1 ] = c3r2;
+		m.data[ 2 ][ 2 ] = c3r3;
+		m.data[ 2 ][ 3 ] = c3r4;
+		m.data[ 3 ][ 0 ] = c4r1;
+		m.data[ 3 ][ 1 ] = c4r2;
+		m.data[ 3 ][ 2 ] = c4r3;
+		m.data[ 3 ][ 3 ] = c4r4;
 
 		return m;
 	}
@@ -614,10 +614,10 @@ namespace vul {
 	{
 		Matrix< T, 2, 2 > m;
 
-		m( 0, 0 ) = c1[ 0 ];
-		m( 0, 1 ) = c1[ 1 ];
-		m( 1, 0 ) = c2[ 0 ];
-		m( 1, 1 ) = c2[ 1 ];
+		m.data[ 0 ][ 0 ] = c1.data[ 0 ];
+		m.data[ 0 ][ 1 ] = c1.data[ 1 ];
+		m.data[ 1 ][ 0 ] = c2.data[ 0 ];
+		m.data[ 1 ][ 1 ] = c2.data[ 1 ];
 
 		return m;
 	}
@@ -628,15 +628,15 @@ namespace vul {
 	{
 		Matrix< T, 3, 3 > m;
 
-		m( 0, 0 ) = c1[ 0 ];
-		m( 0, 1 ) = c1[ 1 ];
-		m( 0, 2 ) = c1[ 2 ];
-		m( 1, 0 ) = c2[ 0 ];
-		m( 1, 1 ) = c2[ 1 ];
-		m( 1, 2 ) = c2[ 2 ];
-		m( 2, 0 ) = c3[ 0 ];
-		m( 2, 1 ) = c3[ 1 ];
-		m( 2, 2 ) = c3[ 2 ];
+		m.data[ 0 ][ 0 ] = c1.data[ 0 ];
+		m.data[ 0 ][ 1 ] = c1.data[ 1 ];
+		m.data[ 0 ][ 2 ] = c1.data[ 2 ];
+		m.data[ 1 ][ 0 ] = c2.data[ 0 ];
+		m.data[ 1 ][ 1 ] = c2.data[ 1 ];
+		m.data[ 1 ][ 2 ] = c2.data[ 2 ];
+		m.data[ 2 ][ 0 ] = c3.data[ 0 ];
+		m.data[ 2 ][ 1 ] = c3.data[ 1 ];
+		m.data[ 2 ][ 2 ] = c3.data[ 2 ];
 
 		return m;
 	}
@@ -649,22 +649,22 @@ namespace vul {
 		Matrix< T, 4, 4 > m;
 
 		
-		m( 0, 0 ) = c1[ 0 ];
-		m( 0, 1 ) = c1[ 1 ];
-		m( 0, 2 ) = c1[ 2 ];
-		m( 0, 3 ) = c1[ 3 ];
-		m( 1, 0 ) = c2[ 0 ];
-		m( 1, 1 ) = c2[ 1 ];
-		m( 1, 2 ) = c2[ 2 ];
-		m( 1, 3 ) = c2[ 3 ];
-		m( 2, 0 ) = c3[ 0 ];
-		m( 2, 1 ) = c3[ 1 ];
-		m( 2, 2 ) = c3[ 2 ];
-		m( 2, 3 ) = c3[ 3 ];
-		m( 3, 0 ) = c4[ 0 ];
-		m( 3, 1 ) = c4[ 1 ];
-		m( 3, 2 ) = c4[ 2 ];
-		m( 3, 3 ) = c4[ 3 ];
+		m.data[ 0 ][ 0 ] = c1.data[ 0 ];
+		m.data[ 0 ][ 1 ] = c1.data[ 1 ];
+		m.data[ 0 ][ 2 ] = c1.data[ 2 ];
+		m.data[ 0 ][ 3 ] = c1.data[ 3 ];
+		m.data[ 1 ][ 0 ] = c2.data[ 0 ];
+		m.data[ 1 ][ 1 ] = c2.data[ 1 ];
+		m.data[ 1 ][ 2 ] = c2.data[ 2 ];
+		m.data[ 1 ][ 3 ] = c2.data[ 3 ];
+		m.data[ 2 ][ 0 ] = c3.data[ 0 ];
+		m.data[ 2 ][ 1 ] = c3.data[ 1 ];
+		m.data[ 2 ][ 2 ] = c3.data[ 2 ];
+		m.data[ 2 ][ 3 ] = c3.data[ 3 ];
+		m.data[ 3 ][ 0 ] = c4.data[ 0 ];
+		m.data[ 3 ][ 1 ] = c4.data[ 1 ];
+		m.data[ 3 ][ 2 ] = c4.data[ 2 ];
+		m.data[ 3 ][ 3 ] = c4.data[ 3 ];
 
 		return m;
 	}
@@ -680,7 +680,7 @@ namespace vul {
 		m = makeMatrix< T, n, n >( static_cast< T >( 0.f ) );
 #endif
 		for( i = 0; i < n; ++i ) {
-			m( i, i ) = static_cast< T >( 1 );
+			m.data[ i ][ i ] = static_cast< T >( 1 );
 		}
 
 		return m;
@@ -693,7 +693,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = r[ j ][ i ];
+				m.data[ i ][ j ] = r.data[ j ][ i ];
 			}
 		}
 
@@ -707,7 +707,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = c[ i ][ j ];
+				m.data[ i ][ j ] = c.data[ i ][ j ];
 			}
 		}
 
@@ -723,7 +723,7 @@ namespace vul {
 
 		for( i = 0; i < coln; ++i ) {
 			for( j = 0; j < rown; ++j ) {
-				m( i, j ) = mat( i, j );
+				m.data[ i ][ j ] = mat.data[ i ][ j ];
 			}
 		}
 
@@ -738,7 +738,7 @@ namespace vul {
 
 		for( i = 0; i < srcc; ++i ) {
 			for( j = 0; j < srcr; ++j ) {
-				(*dst)( i, j ) = src( i, j );
+				dst->data[ i ][ j ] = src.data[ i ][ j ];
 			}
 		}
 	}
@@ -751,7 +751,7 @@ namespace vul {
 
 		for( i = 0; i < srcc; ++i ) {
 			for( j = 0; j < srcr; ++j ) {
-				(*dst)( i + firstcol, j + firstrow ) = src( i, j );
+				dst->data[ i + firstcol ][ j + firstrow ] = src.data[ i ][ j ];
 			}
 		}
 	}
@@ -764,7 +764,7 @@ namespace vul {
 		
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				data[ i ][ j ] = rhs( i, j );
+				data[ i ][ j ] = rhs.data[ i ][ j ];
 			}
 		}
 
@@ -830,7 +830,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				data[ i ][ j ] += rhs( i, j );
+				data[ i ][ j ] += rhs.data[ i ][ j ];
 			}
 		}
 
@@ -843,7 +843,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				data[ i ][ j ] -= rhs( i, j );
+				data[ i ][ j ] -= rhs.data[ i ][ j ];
 			}
 		}
 
@@ -889,7 +889,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = a( i, j ) == b( i, j );
+				m.data[ i ][ j ] = a.data[ i ][ j ] == b.data[ i ][ j ];
 			}
 		}
 
@@ -903,7 +903,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = a( i, j ) != b( i, j );
+				m.data[ i ][ j ] = a.data[ i ][ j ] != b.data[ i ][ j ];
 			}
 		}
 
@@ -917,7 +917,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				if ( !mat( i, j ) ) {
+				if ( !mat.data[ i ][ j ] ) {
 					return false;
 				}
 			}
@@ -932,7 +932,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				if ( mat( i, j ) ) {
+				if ( mat.data[ i ][ j ] ) {
 					return true;
 				}
 			}
@@ -947,8 +947,8 @@ namespace vul {
 		
 		for( j = 0; j < rows; ++j ) {
 			for( i = 0; i < cols; ++i ) {
-				if ( mat( i, j ) ) {
-					return mat( i, j );
+				if ( mat.data[ i ][ j ] ) {
+					return mat.data[ i ][ j ];
 				}
 			}
 		}
@@ -964,7 +964,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = mat( i, j ) + scalar;
+				m.data[ i ][ j ] = mat.data[ i ][ j ] + scalar;
 			}
 		}
 
@@ -978,7 +978,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = mat( i, j ) - scalar;
+				m.data[ i ][ j ] = mat.data[ i ][ j ] - scalar;
 			}
 		}
 
@@ -992,7 +992,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = mat( i, j ) * scalar;
+				m.data[ i ][ j ] = mat.data[ i ][ j ] * scalar;
 			}
 		}
 
@@ -1006,7 +1006,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = mat( i, j ) / scalar;
+				m.data[ i ][ j ] = mat.data[ i ][ j ] / scalar;
 			}
 		}
 
@@ -1021,7 +1021,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = a( i, j ) + b( i, j );
+				m.data[ i ][ j ] = a.data[ i ][ j ] + b.data[ i ][ j ];
 			}
 		}
 
@@ -1035,7 +1035,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = a( i, j ) - b( i, j );
+				m.data[ i ][ j ] = a.data[ i ][ j ] - b.data[ i ][ j ];
 			}
 		}
 
@@ -1054,9 +1054,9 @@ namespace vul {
 			for( j = 0; j < rowb; ++j ) {
 				sum = static_cast< T >( 0.f );
 				for( k = 0; k < shared; ++k ) {
-					sum += a( i, k ) * b( k, j );
+					sum += a.data[ i ][ k ] * b.data[ k ][ j ];
 				}
-				m( i, j ) = sum;
+				m.data[ i ][ j ] = sum;
 			}
 		}
 
@@ -1071,7 +1071,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = a( i, j ) < b ? a( i, j ) : b;
+				m.data[ i ][ j ] = a.data[ i ][ j ] < b ? a.data[ i ][ j ] : b;
 			}
 		}
 
@@ -1085,7 +1085,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = a( i, j ) > b ? a( i, j ) : b;
+				m.data[ i ][ j ] = a.data[ i ][ j ] > b ? a.data[ i ][ j ] : b;
 			}
 		}
 
@@ -1099,7 +1099,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = a( i, j ) >= 0 ? a( i, j ) : -a( i, j );
+				m.data[ i ][ j ] = a.data[ i ][ j ] >= 0 ? a.data[ i ][ j ] : -a.data[ i ][ j ];
 			}
 		}
 
@@ -1113,9 +1113,9 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = a( i, j ) < mini ? mini
-							 : a( i, j ) > maxi ? maxi
-							 : a( i, j );
+				m.data[ i ][ j ] = a.data[ i ][ j ] < mini ? mini
+								 : a.data[ i ][ j ] > maxi ? maxi
+								 : a.data[ i ][ j ];
 			}
 		}
 
@@ -1129,9 +1129,9 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = a( i, j ) < static_cast< T >( 0.f ) ? static_cast< T >( 0.f )
-							 : a( i, j ) > static_cast< T >( 1.f ) ? static_cast< T >( 1.f )
-							 : a( i, j );
+				m.data[ i ][ j ] = a.data[ i ][ j ] < static_cast< T >( 0.f ) ? static_cast< T >( 0.f )
+								 : a.data[ i ][ j ] > static_cast< T >( 1.f ) ? static_cast< T >( 1.f )
+								 : a.data[ i ][ j ];
 			}
 		}
 
@@ -1147,7 +1147,7 @@ namespace vul {
 		t1 = static_cast< T >( 1.f ) - t;
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( i, j ) = ( mini( i, j ) * t ) + ( maxi( i, j ) * t1 );
+				m.data[ i ][ j ] = ( mini.data[ i ][ j ] * t ) + ( maxi.data[ i ][ j ] * t1 );
 			}
 		}
 
@@ -1161,7 +1161,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				mini = a( i, j ) < mini ? a( i, j ) :  mini;
+				mini = a.data[ i ][ j ] < mini ? a.data[ i ][ j ] :  mini;
 			}
 		}
 
@@ -1175,7 +1175,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				maxi = a( i, j ) > maxi ? a( i, j ) :  maxi;
+				maxi = a.data[ i ][ j ] > maxi ? a.data[ i ][ j ] :  maxi;
 			}
 		}
 
@@ -1199,7 +1199,7 @@ namespace vul {
 #endif
 		for( j = 0; j < rows; ++j ) {
 			for( i = 0; i < cols; ++i ) {
-				v[ j ] += mat( i, j ) * vec[ i ];
+				v.data[ j ] += mat.data[ i ][ j ] * vec.data[ i ];
 			}
 		}
 
@@ -1218,7 +1218,7 @@ namespace vul {
 #endif
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				v[ i ] += mat( i, j ) * vec[ j ];
+				v.data[ i ] += mat.data[ i ][ j ] * vec.data[ j ];
 			}
 		}
 
@@ -1237,7 +1237,7 @@ namespace vul {
 #endif
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				p[ j ] += mat( i, j ) * pt[ i ];
+				p.data[ j ] += mat.data[ i ][ j ] * pt.data[ i ];
 			}
 		}
 
@@ -1256,7 +1256,7 @@ namespace vul {
 #endif
 		for( j = 0; j < rows; ++j ) {
 			for( i = 0; i < cols; ++i ) {
-				p[ i ] += mat( i, j ) * pt[ j ];
+				p.data[ i ] += mat.data[ i ][ j ] * pt.data[ j ];
 			}
 		}
 
@@ -1284,21 +1284,20 @@ namespace vul {
 						if ( j == r ) {
 							continue;
 						}
-						m( a, b ) = mat( i, j );
+						m.data[ a ][ b ] = mat.data[ i ][ j ];
 						++b;
 					}
 					++a;
 				}
-				adjugate( r, c ) = pow( -1.f, c + r ) * determinant( m );
+				adjugate.data[ r ][ c ] = pow( -1.f, c + r ) * determinant( m );
 			}
 			// Test if determinant is zero here on first iteration; since we avoid doing double work.
 			if ( c == 0 ) {
 				det = 0;
 				for( r = 0; r < n; ++r ) {
-					det += mat( c, r ) * adjugate( r, c );
+					det += mat( c, r ) * adjugate.data[ r ][ c ];
 				}
-				assert( det != 0 
-					&& "vul_matrix.inverse: Determinant is zero, inverse is not defined!" );
+				assert( det != 0 && "vul::Matrix.inverse(): Determinant is zero, inverse is not defined!" );
 			}
 		}
 		
@@ -1312,7 +1311,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m( j, i ) = mat( i, j );
+				m.data[ j ][ i ] = mat.data[ i ][ j ];
 			}
 		}
 
@@ -1322,8 +1321,8 @@ namespace vul {
 	template< typename T >
 	f32_t determinant( const Matrix< T, 2, 2 > &mat )
 	{
-		return ( f32_t )mat( 0, 0 ) * ( f32_t )mat( 1, 1 )
-			   - ( f32_t )mat( 0, 1 ) * ( f32_t )mat( 1, 0 );
+		return ( f32_t )mat.data[ 0 ][ 0 ] * ( f32_t )mat.data[ 1 ][ 1 ]
+			 - ( f32_t )mat.data[ 0 ][ 1 ] * ( f32_t )mat.data[ 1 ][ 0 ];
 	}
 	template< typename T, i32_t n >
 	f32_t determinant( const Matrix< T, n, n > &mat )
@@ -1346,12 +1345,12 @@ namespace vul {
 						if ( j == k ) {
 							continue;
 						}
-						m( a, b ) = mat( i, j );
+						m.data[ a ][ b ] = mat.data[ i ][ j ];
 						++b;
 					}
 					++a;
 				}
-				det += pow( -1.f, zero.index + k ) * mat( zero.index, k ) * determinant( m );
+				det += pow( -1.f, zero.index + k ) * mat.data[ zero.index ][ k ] * determinant( m );
 			}
 		} else { // VUL_MATRIX_ROW
 			for( k = 0; k < n; ++k ) {
@@ -1363,12 +1362,12 @@ namespace vul {
 						if ( i == k ) {
 							continue;
 						}
-						m( a, b ) = mat( i, j );
+						m.data[ a ][ b ] = mat.data[ i ][ j ];
 						++a;
 					}
 					 ++b;
 				}
-				det += pow( -1.f, zero.index + k ) * mat( k, zero.index ) * determinant( m );
+				det += pow( -1.f, zero.index + k ) * mat.data[ k ][ zero.index ] * determinant( m );
 			}
 		}
 
@@ -1382,7 +1381,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < rows; ++i ) {
-			v[ i ] = mat( n, i );
+			v.data[ i ] = mat.data[ n ][ i ];
 		}
 
 		return v;
@@ -1394,14 +1393,17 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < cols; ++i ) {
-			v[ i ] = mat( i, n );
+			v.data[ i ] = mat.data[ i ][ n ];
 		}
 
 		return v;
 	}
 
-	// Helper function to speed up determinant calculation
-	template< typename T, i32_t cols, i32_t rows > // Helper function. Counts the number of zeros in each column, returning a the index of the column with most zeroes
+	// Helper function to speed up determinant calculation for large matrices
+	// Counts the number of zeros in each column & row, returning a the index 
+	// of the column or row awith most zeroes.
+	// If the matrix is small (cols and rows <= 4), it just return the first column
+	template< typename T, i32_t cols, i32_t rows > 
 	vul_matrix_zero_helper vul_matrix_find_most_zero( const Matrix< T, cols, rows > &mat )
 	{
 		i32_t i, j, c;
@@ -1410,11 +1412,17 @@ namespace vul {
 		r.count = std::numeric_limits< i32_t >::max( );
 		r.index = 0;
 
+		// Early out for small matrices (just first column)
+		if( cols <= 4 && rows <= 4 ) {
+			r.type = VUL_MATRIX_COLUMN;
+			return r;
+		}
+
 		// Columns
 		for( i = 0; i < cols; ++i ) {
 			c = 0;
 			for( j = 0; j < rows; ++j ) {
-				c += mat( i, j ) != 0 ? 0 : 1;
+				c += mat.data[ i ][ j ] != 0 ? 0 : 1;
 			}
 			if ( c < r.count ) {
 				r.count = c;
@@ -1426,7 +1434,7 @@ namespace vul {
 		for( j = 0; j < rows; ++j ) {
 			c = 0;
 			for( i = 0; i < cols; ++i ) {
-				c += mat( i, j ) != 0 ? 0 : 1;
+				c += mat.data[ i ][ j ] != 0 ? 0 : 1;
 			}
 			if ( c < r.count ) {
 				r.count = c;

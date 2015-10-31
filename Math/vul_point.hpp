@@ -294,7 +294,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			p.data[ i ] = vec[ i ];
+			p.data[ i ] = vec.data[ i ];
 		}
 
 		return p;
@@ -330,8 +330,8 @@ namespace vul {
 	{
 		Point< T, 2 > p;
 
-		p[ 0 ] = x;
-		p[ 1 ] = y;
+		p.data[ 0 ] = x;
+		p.data[ 1 ] = y;
 
 		return p;
 	}
@@ -340,9 +340,9 @@ namespace vul {
 	{
 		Point< T, 3 > p;
 
-		p[ 0 ] = x;
-		p[ 1 ] = y;
-		p[ 2 ] = z;
+		p.data[ 0 ] = x;
+		p.data[ 1 ] = y;
+		p.data[ 2 ] = z;
 
 		return p;
 	}
@@ -351,10 +351,10 @@ namespace vul {
 	{
 		Point< T, 4 > p;
 
-		p[ 0 ] = x;
-		p[ 1 ] = y;
-		p[ 2 ] = z;
-		p[ 3 ] = w;
+		p.data[ 0 ] = x;
+		p.data[ 1 ] = y;
+		p.data[ 2 ] = z;
+		p.data[ 3 ] = w;
 
 		return p;
 	}
@@ -436,7 +436,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = a[ i ] == b[ i ];
+			v.data[ i ] = a.data[ i ] == b.data[ i ];
 		}
 
 		return v;
@@ -448,7 +448,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = a[ i ] != b[ i ];
+			v.data[ i ] = a.data[ i ] != b.data[ i ];
 		}
 
 		return v;
@@ -461,7 +461,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			p[ i ] = a[ i ] + b[ i ];
+			p.data[ i ] = a.data[ i ] + b.data[ i ];
 		}
 
 		return p;
@@ -473,7 +473,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = a[ i ] - b[ i ];
+			v.data[ i ] = a.data[ i ] - b.data[ i ];
 		}
 
 		return v;
@@ -486,7 +486,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = a[ i ] < b ? a[ i ] : b;
+			v.data[ i ] = a.data[ i ] < b ? a.data[ i ] : b;
 		}
 
 		return v;
@@ -498,7 +498,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = a[ i ] > b ? a[ i ] : b;
+			v.data[ i ] = a.data[ i ] > b ? a.data[ i ] : b;
 		}
 
 		return v;
@@ -510,7 +510,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = a[ i ] < b[ i ] ? a[ i ] : b[ i ];
+			v.data[ i ] = a.data[ i ] < b.data[ i ] ? a.data[ i ] : b.data[ i ];
 		}
 
 		return v;
@@ -522,7 +522,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = a[ i ] > b[ i ] ? a[ i ] : b[ i ];
+			v.data[ i ] = a.data[ i ] > b.data[ i ] ? a.data[ i ] : b.data[ i ];
 		}
 
 		return v;
@@ -534,7 +534,7 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = a[ i ] >= 0 ? a[ i ] : -a[ i ];
+			v.data[ i ] = a.data[ i ] >= 0 ? a.data[ i ] : -a.data[ i ];
 		}
 
 		return v;
@@ -546,9 +546,9 @@ namespace vul {
 		i32_t i;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = a[ i ] < mini ? mini
-					 : a[ i ] > maxi ? maxi
-					 : a[ i ];
+			v.data[ i ] = a.data[ i ] < mini ? mini
+						: a.data[ i ] > maxi ? maxi
+						: a.data[ i ];
 		}
 
 		return v;
@@ -563,9 +563,9 @@ namespace vul {
 		t0 = static_cast< T >( 0.f );
 		t1 = static_cast< T >( 1.f );
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = a[ i ] < t0 ? t0
-					 : a[ i ] > t1 ? t1
-					 : a[ i ];
+			v.data[ i ] = a.data[ i ] < t0 ? t0
+						: a.data[ i ] > t1 ? t1
+						: a.data[ i ];
 		}
 
 		return v;
@@ -580,7 +580,7 @@ namespace vul {
 		t1 = static_cast< T >( 1.f ) - t;
 
 		for( i = 0; i < n; ++i ) {
-			v[ i ] = ( mini[ i ] * t ) + ( maxi[ i ] * t1 );
+			v.data[ i ] = ( mini.data[ i ] * t ) + ( maxi.data[ i ] * t1 );
 		}
 
 		return v;
@@ -593,7 +593,7 @@ namespace vul {
 
 		m = std::numeric_limits< T >::max( );
 		for( i = 0; i < n; ++i ) {
-			m = a[ i ] < m ? a[ i ] : m;
+			m = a.data[ i ] < m ? a.data[ i ] : m;
 		}
 
 		return m;
@@ -606,7 +606,7 @@ namespace vul {
 
 		m = std::numeric_limits< T >::min( );
 		for( i = 0; i < n; ++i ) {
-			m = a[ i ] > m ? a[ i ] : m;
+			m = a.data[ i ] > m ? a.data[ i ] : m;
 		}
 
 		return m;

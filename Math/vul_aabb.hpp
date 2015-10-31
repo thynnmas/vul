@@ -355,7 +355,7 @@ namespace vul {
 		{
 			for( j = 0; j < n; ++j )
 			{
-				corner[ j ] = ( ( i & ( 1 << j ) ) != 0 ) ? aabb._max[ j ] : aabb._min[ j ];
+				corner.data[ j ] = ( ( i & ( 1 << j ) ) != 0 ) ? aabb._max.data[ j ] : aabb._min.data[ j ];
 			}
 			corner = ( a * corner ) + a.vec;
 			newmin = min( newmin, corner );
@@ -432,7 +432,7 @@ namespace vul {
 		for( i = 0; i < n * 2; ++i ) {
 			p = truncate< T, n, n + 1 >( planes[ i ] );
 			// This isn't really optimized, for that you'd use the SIMD versions
-			if( dot( c, p ) + dot( e, abs( p ) ) > -planes[ i ][ n ] ) {
+			if( dot( c, p ) + dot( e, abs( p ) ) > -planes[ i ].data[ n ] ) {
 				return true;
 			}
 		}
@@ -454,12 +454,12 @@ namespace vul {
 		// Fill the matrix from the Affine
 		for( i = 0; i < 3; ++i ) {
 			for( j = 0;j < 3; ++j ) {
-				mat[ i ][ j ] = _mm_set1_ps( trans.mat( j, i ) );
+				mat[ i ][ j ] = _mm_set1_ps( trans.mat.data[ j ][ i ] );
 			}
 		}
-		mat[ 3 ][ 0 ] = _mm_set1_ps( trans.vec[ 0 ] );
-		mat[ 3 ][ 1 ] = _mm_set1_ps( trans.vec[ 1 ] );
-		mat[ 3 ][ 2 ] = _mm_set1_ps( trans.vec[ 2 ] );
+		mat[ 3 ][ 0 ] = _mm_set1_ps( trans.vec.data[ 0 ] );
+		mat[ 3 ][ 1 ] = _mm_set1_ps( trans.vec.data[ 1 ] );
+		mat[ 3 ][ 2 ] = _mm_set1_ps( trans.vec.data[ 2 ] );
 
 		// Tranform
 		simdCount = ( count + 3 ) / 4;
@@ -475,9 +475,9 @@ namespace vul {
 			for( j = 0; j < 8; ++j )
 			{
 				const AABB< __m128, 3 > bb = in[ i ];
-				__m128 xCorners = ( ( j & 1 ) != 0 ) ? bb._max[ 0 ] : bb._min[ 0 ];
-				__m128 yCorners = ( ( j & 2 ) != 0 ) ? bb._max[ 1 ] : bb._min[ 1 ];
-				__m128 zCorners = ( ( j & 4 ) != 0 ) ? bb._max[ 2 ] : bb._min[ 2 ];
+				__m128 xCorners = ( ( j & 1 ) != 0 ) ? bb._max.data[ 0 ] : bb._min.data[ 0 ];
+				__m128 yCorners = ( ( j & 2 ) != 0 ) ? bb._max.data[ 1 ] : bb._min.data[ 1 ];
+				__m128 zCorners = ( ( j & 4 ) != 0 ) ? bb._max.data[ 2 ] : bb._min.data[ 2 ];
 
 				__m128 xCornerTrans = _mm_add_ps( _mm_add_ps( _mm_mul_ps( xCorners, mat[ 0 ][ 0 ] ),
 															  _mm_mul_ps( yCorners, mat[ 1 ][ 0 ] ) ),
@@ -501,12 +501,12 @@ namespace vul {
 			}
 
 			AABB< __m128, 3 > *bb = &out[ i ];
-			bb->_min[ 0 ] = xNewMinis;
-			bb->_max[ 0 ] = xNewMaxes;
-			bb->_min[ 1 ] = yNewMinis;
-			bb->_max[ 1 ] = yNewMaxes;
-			bb->_min[ 2 ] = zNewMinis;
-			bb->_max[ 2 ] = zNewMaxes;
+			bb->_min.data[ 0 ] = xNewMinis;
+			bb->_max.data[ 0 ] = xNewMaxes;
+			bb->_min.data[ 1 ] = yNewMinis;
+			bb->_max.data[ 1 ] = yNewMaxes;
+			bb->_min.data[ 2 ] = zNewMinis;
+			bb->_max.data[ 2 ] = zNewMaxes;
 		}
 	}
 	void transform3D( AABB< __m128d, 3 > *out, const AABB< __m128d, 3 > *in, const Affine< f64_t, 3 > &trans, ui32_t count )
@@ -517,12 +517,12 @@ namespace vul {
 		// Fill the matrix from the Affine
 		for( i = 0; i < 3; ++i ) {
 			for( j = 0;j < 3; ++j ) {
-				mat[ i ][ j ] = _mm_set1_pd( trans.mat( j, i ) );
+				mat[ i ][ j ] = _mm_set1_pd( trans.mat.data[ j ][ i ] );
 			}
 		}
-		mat[ 3 ][ 0 ] = _mm_set1_pd( trans.vec[ 0 ] );
-		mat[ 3 ][ 1 ] = _mm_set1_pd( trans.vec[ 1 ] );
-		mat[ 3 ][ 2 ] = _mm_set1_pd( trans.vec[ 2 ] );
+		mat[ 3 ][ 0 ] = _mm_set1_pd( trans.vec.data[ 0 ] );
+		mat[ 3 ][ 1 ] = _mm_set1_pd( trans.vec.data[ 1 ] );
+		mat[ 3 ][ 2 ] = _mm_set1_pd( trans.vec.data[ 2 ] );
 
 		// Tranform
 		simdCount = ( count + 1 ) / 2;
@@ -538,9 +538,9 @@ namespace vul {
 			for( j = 0; j < 8; ++j )
 			{
 				const AABB< __m128d, 3 > bb = in[ i ];
-				__m128d xCorners = ( ( j & 1 ) != 0 ) ? bb._max[ 0 ] : bb._min[ 0 ];
-				__m128d yCorners = ( ( j & 2 ) != 0 ) ? bb._max[ 1 ] : bb._min[ 1 ];
-				__m128d zCorners = ( ( j & 4 ) != 0 ) ? bb._max[ 2 ] : bb._min[ 2 ];
+				__m128d xCorners = ( ( j & 1 ) != 0 ) ? bb._max.data[ 0 ] : bb._min.data[ 0 ];
+				__m128d yCorners = ( ( j & 2 ) != 0 ) ? bb._max.data[ 1 ] : bb._min.data[ 1 ];
+				__m128d zCorners = ( ( j & 4 ) != 0 ) ? bb._max.data[ 2 ] : bb._min.data[ 2 ];
 
 				
 				__m128d xCornerTrans = _mm_add_pd( _mm_add_pd( _mm_mul_pd( xCorners, mat[ 0 ][ 0 ] ),
@@ -565,12 +565,12 @@ namespace vul {
 			}
 
 			AABB< __m128d, 3 > *bb = &out[ i ];
-			bb->_min[ 0 ] = xNewMinis;
-			bb->_max[ 0 ] = xNewMaxes;
-			bb->_min[ 1 ] = yNewMinis;
-			bb->_max[ 1 ] = yNewMaxes;
-			bb->_min[ 2 ] = zNewMinis;
-			bb->_max[ 2 ] = zNewMaxes;
+			bb->_min.data[ 0 ] = xNewMinis;
+			bb->_max.data[ 0 ] = xNewMaxes;
+			bb->_min.data[ 1 ] = yNewMinis;
+			bb->_max.data[ 1 ] = yNewMaxes;
+			bb->_min.data[ 2 ] = zNewMinis;
+			bb->_max.data[ 2 ] = zNewMaxes;
 		}
 	}
 #endif // VUL_AOSOA_SSE
@@ -583,12 +583,12 @@ namespace vul {
 		// Fill the matrix from the Affine
 		for( i = 0; i < 3; ++i ) {
 			for( j = 0;j < 3; ++j ) {
-				mat[ i ][ j ] = _mm256_set1_ps( trans.mat( j, i ) );
+				mat[ i ][ j ] = _mm256_set1_ps( trans.mat.data[ j ][ i ] );
 			}
 		}
-		mat[ 3 ][ 0 ] = _mm256_set1_ps( trans.vec[ 0 ] );
-		mat[ 3 ][ 1 ] = _mm256_set1_ps( trans.vec[ 1 ] );
-		mat[ 3 ][ 2 ] = _mm256_set1_ps( trans.vec[ 2 ] );
+		mat[ 3 ][ 0 ] = _mm256_set1_ps( trans.vec.data[ 0 ] );
+		mat[ 3 ][ 1 ] = _mm256_set1_ps( trans.vec.data[ 1 ] );
+		mat[ 3 ][ 2 ] = _mm256_set1_ps( trans.vec.data[ 2 ] );
 
 		// Tranform
 		simdCount = ( count + 7 ) / 8;
@@ -604,9 +604,9 @@ namespace vul {
 			for( j = 0; j < 8; ++j )
 			{
 				const AABB< __m256, 3 > bb = in[ i ];
-				__m256 xCorners = ( ( j & 1 ) != 0 ) ? bb._max[ 0 ] : bb._min[ 0 ];
-				__m256 yCorners = ( ( j & 2 ) != 0 ) ? bb._max[ 1 ] : bb._min[ 1 ];
-				__m256 zCorners = ( ( j & 4 ) != 0 ) ? bb._max[ 2 ] : bb._min[ 2 ];
+				__m256 xCorners = ( ( j & 1 ) != 0 ) ? bb._max.data[ 0 ] : bb._min.data[ 0 ];
+				__m256 yCorners = ( ( j & 2 ) != 0 ) ? bb._max.data[ 1 ] : bb._min.data[ 1 ];
+				__m256 zCorners = ( ( j & 4 ) != 0 ) ? bb._max.data[ 2 ] : bb._min.data[ 2 ];
 
 				
 				__m256 xCornerTrans = _mm256_add_ps( _mm256_add_ps( _mm256_mul_ps( xCorners, mat[ 0 ][ 0 ] ),
@@ -631,12 +631,12 @@ namespace vul {
 			}
 
 			AABB< __m256, 3 > *bb = &out[ i ];
-			bb->_min[ 0 ] = xNewMinis;
-			bb->_max[ 0 ] = xNewMaxes;
-			bb->_min[ 1 ] = yNewMinis;
-			bb->_max[ 1 ] = yNewMaxes;
-			bb->_min[ 2 ] = zNewMinis;
-			bb->_max[ 2 ] = zNewMaxes;
+			bb->_min.data[ 0 ] = xNewMinis;
+			bb->_max.data[ 0 ] = xNewMaxes;
+			bb->_min.data[ 1 ] = yNewMinis;
+			bb->_max.data[ 1 ] = yNewMaxes;
+			bb->_min.data[ 2 ] = zNewMinis;
+			bb->_max.data[ 2 ] = zNewMaxes;
 		}
 	}
 	void transform3D( AABB< __m256d, 3 > *out, const AABB< __m256d, 3 > *in, const Affine< f64_t, 3 > &trans, ui32_t count )
@@ -647,12 +647,12 @@ namespace vul {
 		// Fill the matrix from the Affine
 		for( i = 0; i < 3; ++i ) {
 			for( j = 0;j < 3; ++j ) {
-				mat[ i ][ j ] = _mm256_set1_pd( trans.mat( j, i ) );
+				mat[ i ][ j ] = _mm256_set1_pd( trans.mat.data[ j ][ i ] );
 			}
 		}
-		mat[ 3 ][ 0 ] = _mm256_set1_pd( trans.vec[ 0 ] );
-		mat[ 3 ][ 1 ] = _mm256_set1_pd( trans.vec[ 1 ] );
-		mat[ 3 ][ 2 ] = _mm256_set1_pd( trans.vec[ 2 ] );
+		mat[ 3 ][ 0 ] = _mm256_set1_pd( trans.vec.data[ 0 ] );
+		mat[ 3 ][ 1 ] = _mm256_set1_pd( trans.vec.data[ 1 ] );
+		mat[ 3 ][ 2 ] = _mm256_set1_pd( trans.vec.data[ 2 ] );
 
 		// Tranform
 		simdCount = ( count + 3) / 4;
@@ -668,9 +668,9 @@ namespace vul {
 			for( j = 0; j < 8; ++j )
 			{
 				const AABB< __m256d, 3 > bb = in[ i ];
-				__m256d xCorners = ( ( j & 1 ) != 0 ) ? bb._max[ 0 ] : bb._min[ 0 ];
-				__m256d yCorners = ( ( j & 2 ) != 0 ) ? bb._max[ 1 ] : bb._min[ 1 ];
-				__m256d zCorners = ( ( j & 4 ) != 0 ) ? bb._max[ 2 ] : bb._min[ 2 ];
+				__m256d xCorners = ( ( j & 1 ) != 0 ) ? bb._max.data[ 0 ] : bb._min.data[ 0 ];
+				__m256d yCorners = ( ( j & 2 ) != 0 ) ? bb._max.data[ 1 ] : bb._min.data[ 1 ];
+				__m256d zCorners = ( ( j & 4 ) != 0 ) ? bb._max.data[ 2 ] : bb._min.data[ 2 ];
 
 				__m256d xCornerTrans = _mm256_add_pd( _mm256_add_pd( _mm256_mul_pd( xCorners, mat[ 0 ][ 0 ] ),
 																	 _mm256_mul_pd( yCorners, mat[ 1 ][ 0 ] ) ),
@@ -694,12 +694,12 @@ namespace vul {
 			}
 
 			AABB< __m256d, 3 > *bb = &out[ i ];
-			bb->_min[ 0 ] = xNewMinis;
-			bb->_max[ 0 ] = xNewMaxes;
-			bb->_min[ 1 ] = yNewMinis;
-			bb->_max[ 1 ] = yNewMaxes;
-			bb->_min[ 2 ] = zNewMinis;
-			bb->_max[ 2 ] = zNewMaxes;
+			bb->_min.data[ 0 ] = xNewMinis;
+			bb->_max.data[ 0 ] = xNewMaxes;
+			bb->_min.data[ 1 ] = yNewMinis;
+			bb->_max.data[ 1 ] = yNewMaxes;
+			bb->_min.data[ 2 ] = zNewMinis;
+			bb->_max.data[ 2 ] = zNewMaxes;
 		}
 	}
 #endif // VUL_AOSOA_AVX
@@ -712,12 +712,12 @@ namespace vul {
 		// Fill the matrix from the Affine
 		for( i = 0; i < 3; ++i ) {
 			for( j = 0;j < 3; ++j ) {
-				mat[ i ][ j ] = vdupq_n_f32( trans.mat( j, i ) );
+				mat[ i ][ j ] = vdupq_n_f32( trans.mat.data[ j ][ i ] );
 			}
 		}
-		mat[ 3 ][ 0 ] = vdupq_n_f32( trans.vec[ 0 ] );
-		mat[ 3 ][ 1 ] = vdupq_n_f32( trans.vec[ 1 ] );
-		mat[ 3 ][ 2 ] = vdupq_n_f32( trans.vec[ 2 ] );
+		mat[ 3 ][ 0 ] = vdupq_n_f32( trans.vec.data[ 0 ] );
+		mat[ 3 ][ 1 ] = vdupq_n_f32( trans.vec.data[ 1 ] );
+		mat[ 3 ][ 2 ] = vdupq_n_f32( trans.vec.data[ 2 ] );
 
 		// Tranform
 		simdCount = ( count + 3 ) / 4;
@@ -733,9 +733,9 @@ namespace vul {
 			for( j = 0; j < 8; ++j )
 			{
 				const AABB< float32x4_t, 3 > bb = in[ i ];
-				float32x4_t xCorners = ( ( j & 1 ) != 0 ) ? bb._max[ 0 ] : bb._min[ 0 ];
-				float32x4_t yCorners = ( ( j & 2 ) != 0 ) ? bb._max[ 1 ] : bb._min[ 1 ];
-				float32x4_t zCorners = ( ( j & 4 ) != 0 ) ? bb._max[ 2 ] : bb._min[ 2 ];
+				float32x4_t xCorners = ( ( j & 1 ) != 0 ) ? bb._max.data[ 0 ] : bb._min.data[ 0 ];
+				float32x4_t yCorners = ( ( j & 2 ) != 0 ) ? bb._max.data[ 1 ] : bb._min.data[ 1 ];
+				float32x4_t zCorners = ( ( j & 4 ) != 0 ) ? bb._max.data[ 2 ] : bb._min.data[ 2 ];
 
 				float32x4_t xCornerTrans = vaddq_f32( vaddq_f32( vmulq_f32( xCorners, mat[ 0 ][ 0 ] ),
 																 vmulq_f32( yCorners, mat[ 1 ][ 0 ] ) ),
@@ -759,12 +759,12 @@ namespace vul {
 			}
 
 			AABB< float32x4_t, 3 > *bb = &out[ i ];
-			bb->_min[ 0 ] = xNewMinis;
-			bb->_max[ 0 ] = xNewMaxes;
-			bb->_min[ 1 ] = yNewMinis;
-			bb->_max[ 1 ] = yNewMaxes;
-			bb->_min[ 2 ] = zNewMinis;
-			bb->_max[ 2 ] = zNewMaxes;
+			bb->_min.data[ 0 ] = xNewMinis;
+			bb->_max.data[ 0 ] = xNewMaxes;
+			bb->_min.data[ 1 ] = yNewMinis;
+			bb->_max.data[ 1 ] = yNewMaxes;
+			bb->_min.data[ 2 ] = zNewMinis;
+			bb->_max.data[ 2 ] = zNewMaxes;
 		}
 	}
 #endif // VUL_AOSOA_NEON
@@ -783,10 +783,10 @@ namespace vul {
 		signBit = _mm_set1_ps( 0x80000000 );
 
 		for( ui32_t j = 0; j < 6; ++j ) {
-			p[ j ][ 0 ] = _mm_set1_ps( planes[ j ][ 0 ] );
-			p[ j ][ 1 ] = _mm_set1_ps( planes[ j ][ 1 ] );
-			p[ j ][ 2 ] = _mm_set1_ps( planes[ j ][ 2 ] );
-			p[ j ][ 3 ] = _mm_set1_ps( -planes[ j ][ 3 ] );
+			p[ j ][ 0 ] = _mm_set1_ps( planes[ j ].data[ 0 ] );
+			p[ j ][ 1 ] = _mm_set1_ps( planes[ j ].data[ 1 ] );
+			p[ j ][ 2 ] = _mm_set1_ps( planes[ j ].data[ 2 ] );
+			p[ j ][ 3 ] = _mm_set1_ps( -planes[ j ].data[ 3 ] );
 		}
 		
 		simdCount = ( count + 3 ) / 4;
@@ -850,10 +850,10 @@ namespace vul {
 		signBit = _mm_set1_pd( 0x80000000 );
 
 		for( ui32_t j = 0; j < 6; ++j ) {
-			p[ j ][ 0 ] = _mm_set1_pd( planes[ j ][ 0 ] );
-			p[ j ][ 1 ] = _mm_set1_pd( planes[ j ][ 1 ] );
-			p[ j ][ 2 ] = _mm_set1_pd( planes[ j ][ 2 ] );
-			p[ j ][ 3 ] = _mm_set1_pd( -planes[ j ][ 3 ] );
+			p[ j ][ 0 ] = _mm_set1_pd( planes[ j ].data[ 0 ] );
+			p[ j ][ 1 ] = _mm_set1_pd( planes[ j ].data[ 1 ] );
+			p[ j ][ 2 ] = _mm_set1_pd( planes[ j ].data[ 2 ] );
+			p[ j ][ 3 ] = _mm_set1_pd( -planes[ j ].data[ 3 ] );
 		}
 
 		simdCount = ( count + 1 ) / 2;
@@ -926,10 +926,10 @@ namespace vul {
 		signBit = _mm256_set1_ps( 0x80000000 );
 
 		for( ui32_t j = 0; j < 6; ++j ) {
-			p[ j ][ 0 ] = _mm256_set1_ps( planes[ j ][ 0 ] );
-			p[ j ][ 1 ] = _mm256_set1_ps( planes[ j ][ 1 ] );
-			p[ j ][ 2 ] = _mm256_set1_ps( planes[ j ][ 2 ] );
-			p[ j ][ 3 ] = _mm256_set1_ps( -planes[ j ][ 3 ] );
+			p[ j ][ 0 ] = _mm256_set1_ps( planes[ j ].data[ 0 ] );
+			p[ j ][ 1 ] = _mm256_set1_ps( planes[ j ].data[ 1 ] );
+			p[ j ][ 2 ] = _mm256_set1_ps( planes[ j ].data[ 2 ] );
+			p[ j ][ 3 ] = _mm256_set1_ps( -planes[ j ].data[ 3 ] );
 		}
 
 		simdCount = ( count + 7 ) / 8;
@@ -998,10 +998,10 @@ namespace vul {
 		signBit = _mm256_set1_pd( 0x80000000 );
 
 		for( ui32_t j = 0; j < 6; ++j ) {
-			p[ j ][ 0 ] = _mm256_set1_pd( planes[ j ][ 0 ] );
-			p[ j ][ 1 ] = _mm256_set1_pd( planes[ j ][ 1 ] );
-			p[ j ][ 2 ] = _mm256_set1_pd( planes[ j ][ 2 ] );
-			p[ j ][ 3 ] = _mm256_set1_pd( -planes[ j ][ 3 ] );
+			p[ j ][ 0 ] = _mm256_set1_pd( planes[ j ].data[ 0 ] );
+			p[ j ][ 1 ] = _mm256_set1_pd( planes[ j ].data[ 1 ] );
+			p[ j ][ 2 ] = _mm256_set1_pd( planes[ j ].data[ 2 ] );
+			p[ j ][ 3 ] = _mm256_set1_pd( -planes[ j ].data[ 3 ] );
 		}
 
 		simdCount = ( count + 3 ) / 4;
@@ -1072,10 +1072,10 @@ namespace vul {
 		signBit = _mm_set1_ps( 0x80000000 );
 
 		for( ui32_t j = 0; j < 6; ++j ) {
-			p[ j ][ 0 ] = vdupq_n_f32( planes[ j ][ 0 ] );
-			p[ j ][ 1 ] = vdupq_n_f32( planes[ j ][ 1 ] );
-			p[ j ][ 2 ] = vdupq_n_f32( planes[ j ][ 2 ] );
-			p[ j ][ 3 ] = vdupq_n_f32( -planes[ j ][ 3 ] );
+			p[ j ][ 0 ] = vdupq_n_f32( planes[ j ].data[ 0 ] );
+			p[ j ][ 1 ] = vdupq_n_f32( planes[ j ].data[ 1 ] );
+			p[ j ][ 2 ] = vdupq_n_f32( planes[ j ].data[ 2 ] );
+			p[ j ][ 3 ] = vdupq_n_f32( -planes[ j ].data[ 3 ] );
 		}
 
 		simdCount = ( count + 3 ) / 4;

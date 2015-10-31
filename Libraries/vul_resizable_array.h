@@ -603,7 +603,7 @@ unsigned int vul_vector_find_val( vul_vector_t *vec, void *item )
 			return i;
 		}
 	}
-	return vec->size;
+	return -1;
 }
 #endif
 		

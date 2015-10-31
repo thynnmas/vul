@@ -270,7 +270,7 @@ void vul_queue_destroy( vul_queue_t *q )
 		if( q->first_root ) {
 			vul_list_destroy( q->first_root, q->deallocator );
 		}
+		q->deallocator( q );
 	}
-	q->deallocator( q );
 }
 #endif

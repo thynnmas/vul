@@ -436,14 +436,16 @@ namespace vul {
 	Quaternion< T > makeQuatFromAxisAngle( const Vector< T, 3 > &axis, T angleRadians )
 	{
 		Quaternion< T > q;
+		Vector< T, 3 > a;
 		T sina, halfAngle;
 
 		halfAngle = angleRadians / static_cast< T >( 2.f );
-		
+		a = normalize( axis );
+
 		sina = sin( halfAngle );
-		q[ 0 ] = axis[ 0 ] * sina;
-		q[ 1 ] = axis[ 1 ] * sina;
-		q[ 2 ] = axis[ 2 ] * sina;
+		q[ 0 ] = a[ 0 ] * sina;
+		q[ 1 ] = a[ 1 ] * sina;
+		q[ 2 ] = a[ 2 ] * sina;
 		q[ 3 ] = cos( halfAngle );	
 
 		return q;
@@ -541,7 +543,7 @@ namespace vul {
 
 		m = makeMatrix33FromColumns( b, t, n );
 
-		scale = determinant( m ) < zero ? one : -one;
+		scale = determinant( m ) < zero ? -one : one;
 		m( 2, 0 ) *= scale;
 		m( 2, 1 ) *= scale;
 		m( 2, 2 ) *= scale;
@@ -569,16 +571,30 @@ namespace vul {
 		return q;
 	}
 	template< typename T >
-	Matrix< T, 3, 3 > makeTangentFrame( const Quaternion< T > &quat )
+	Matrix< T, 3, 3 > makeTangentFrame( const Quaternion< T > &q )
 	{
 		Matrix< T, 3, 3 > m;
-		T f;
+		Vector< T, 3 > n;
+		T f, one, two;
 
-		f = ( quat.w < T( 0.f ) ? T( -1.f ) : T( 1.f ) );
-		m = makeMatrix( quat );
-		m( 2, 0 ) *= f;
-		m( 2, 1 ) *= f;
-		m( 2, 2 ) *= f;
+		one = static_cast< T >( 1.f );
+		two = static_cast< T >( 2.f );
+
+		f = ( q.w < T( 0.f ) ? T( -1.f ) : T( 1.f ) );
+		
+		m( 0, 0 ) = one - two * ( q[ 1 ] * q[ 1 ] + q[ 2 ] * q[ 2 ] );
+		m( 0, 1 ) = two * ( q[ 0 ] * q[ 1 ] + q[ 2 ] * q[ 3 ] );
+		m( 0, 2 ) = two * ( q[ 0 ] * q[ 2 ] - q[ 1 ] * q[ 3 ] );
+
+		m( 1, 0 ) = two * ( q[ 0 ] * q[ 1 ] - q[ 2 ] * q[ 3 ] );
+		m( 1, 1 ) = one - two * ( q[ 0 ] * q[ 0 ] + q[ 2 ] * q[ 2 ] );
+		m( 1, 2 ) = two * ( q[ 1 ] * q[ 2 ] + q[ 0 ] * q[ 3 ] );
+
+		n = cross( column( m, 1 ), column( m, 0 ) );
+
+		m( 2, 0 ) = n[ 0 ] * f;
+		m( 2, 1 ) = n[ 1 ] * f;
+		m( 2, 2 ) = n[ 2 ] * f;
 
 		return m;
 	}
@@ -792,15 +808,15 @@ namespace vul {
 		zw = q[ 2 ] * q[ 3 ];
 
 		m( 0, 0 ) = one - two * ( y2 + z2 );
-		m( 0, 1 ) = two * ( xy - zw );
-		m( 0, 2 ) = two * ( xz + yw );
+		m( 0, 1 ) = two * ( xy + zw );
+		m( 0, 2 ) = two * ( xz - yw );
 
-		m( 1, 0 ) = two * ( xy + zw );
+		m( 1, 0 ) = two * ( xy - zw );
 		m( 1, 1 ) = one - two * ( x2 + z2 );
-		m( 1, 2 ) = two * ( yz - xw );
+		m( 1, 2 ) = two * ( yz + xw );
 
-		m( 2, 0 ) = two * ( xz - yw );
-		m( 2, 1 ) = two * ( yz + xw );
+		m( 2, 0 ) = two * ( xz + yw );
+		m( 2, 1 ) = two * ( yz - xw );
 		m( 2, 2 ) = one - two * ( x2 + y2 );
 
 		return m;

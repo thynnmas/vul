@@ -361,10 +361,19 @@ vul_file_t *vul_file_open( char *filename, char *mode, void* ( *allocator )( siz
 #ifdef VUL_WINDOWS
 	// try multiple times to make a temp file... just in
 	// case some other process makes the name first
+	f->file = NULL;
 	for( j = 0; j < 32; ++j ) {
-		strcpy( temp_full + p, "vtmpXXXXXX" );
+		// windows _mktemp sucks, so add a small random prefix ourselves
+		char name[ 15 ], c1, c2, c3;
+		int r = rand() % RAND_MAX;
+		c1 = 'a' + ( r & 0xf );
+		c2 = 'a' + ( ( r & 0xf0 ) >> 4 );
+		c3 = 'a' + ( ( r & 0xf00 ) >> 8 );
+		sprintf( name, "vtmp%c%c%cXXXXXX", c1, c2, c3 );
+		name[ 14 ] = 0;
+		strcpy( temp_full + p, name );
 		if( _mktemp( temp_full ) == NULL ) {
-			return 0;
+			continue;
 		}
 
 		f->file = fopen( temp_full, mode );
@@ -374,7 +383,7 @@ vul_file_t *vul_file_open( char *filename, char *mode, void* ( *allocator )( siz
 	}
 #else
 	{
-		strcpy( temp_full + p, "stmpXXXXXX" );
+		strcpy( temp_full + p, "vtmpXXXXXX" );
 		int fd = mkstemp( temp_full );
 		if( fd == -1 ) return NULL;
 		f->file = fdopen( fd, mode );
@@ -436,8 +445,10 @@ int vul_file_close( vul_file_t *f, vul_file_keep keep, void (*deallcator)( void*
 			keep = vul_file_keep_no;
 		} else {
 #ifdef VUL_WINDOWS
-			if( !_wrename( vul_wchar_from_utf8_large( f->tmp_path ),
-						   vul_wchar_from_utf8_small( f->path ) ) ) {
+			vul_wchar btmp[ 4096 ], bp[ 4096 ];
+			vul__wchar_from_utf8( btmp, f->tmp_path, 4096 );
+			vul__wchar_from_utf8( bp, f->path, 4096 );
+			if( !_wrename( btmp, bp ) ) {
 #else
 			if( !rename( f->tmp_path, f->path ) ) {
 #endif

@@ -350,10 +350,10 @@ namespace vul {
 	template< typename T >
 	Quaternion< T >::Quaternion( const Quaternion< T > &rhs )
 	{
-		data[ 0 ] = rhs[ 0 ];
-		data[ 1 ] = rhs[ 1 ];
-		data[ 2 ] = rhs[ 2 ];
-		data[ 3 ] = rhs[ 3 ];
+		data[ 0 ] = rhs.x;
+		data[ 1 ] = rhs.y;
+		data[ 2 ] = rhs.z;
+		data[ 3 ] = rhs.w;
 	}
 #else
 	template< typename T >
@@ -361,8 +361,8 @@ namespace vul {
 	{
 		Quaternion< T > q;
 
-		q[ 0 ] = q[ 1 ] = q[ 2 ] = static_cast< T >( 0.f );
-		q[ 3 ] = static_cast< T >( 1.f );
+		q.x = q.y = q.z = static_cast< T >( 0.f );
+		q.w = static_cast< T >( 1.f );
 
 		return q;
 	}
@@ -372,10 +372,10 @@ namespace vul {
 	{
 		Quaternion< T > q;
 
-		q[ 0 ] = x;
-		q[ 1 ] = y;
-		q[ 2 ] = z;
-		q[ 3 ] = w;
+		q.x = x;
+		q.y = y;
+		q.z = z;
+		q.w = w;
 
 		return q;
 	}
@@ -385,10 +385,10 @@ namespace vul {
 	{
 		Quaternion< T > q;
 		
-		q[ 0 ] = xyz[ 0 ];
-		q[ 1 ] = xyz[ 1 ];
-		q[ 2 ] = xyz[ 2 ];
-		q[ 3 ] = w;
+		q.x = xyz[ 0 ];
+		q.y = xyz[ 1 ];
+		q.z = xyz[ 2 ];
+		q.w = w;
 
 		return q;
 	}
@@ -398,10 +398,10 @@ namespace vul {
 	{
 		Quaternion< T > q;
 
-		q[ 0 ] = a[ 0 ];
-		q[ 1 ] = a[ 1 ];
-		q[ 2 ] = a[ 2 ];
-		q[ 3 ] = a[ 3 ];
+		q.x = a[ 0 ];
+		q.y = a[ 1 ];
+		q.z = a[ 2 ];
+		q.w = a[ 3 ];
 
 		return q;
 	}
@@ -410,11 +410,11 @@ namespace vul {
 	Quaternion< T > makeQuat( f32_t (& a)[ 4 ] )
 	{
 		Quaternion< T > q;
-
-		q[ 0 ] = static_cast< T >( a[ 0 ] );
-		q[ 1 ] = static_cast< T >( a[ 1 ] );
-		q[ 2 ] = static_cast< T >( a[ 2 ] );
-		q[ 3 ] = static_cast< T >( a[ 3 ] );
+		
+		q.x = static_cast< T >( a[ 0 ] );
+		q.y = static_cast< T >( a[ 1 ] );
+		q.z = static_cast< T >( a[ 2 ] );
+		q.w = static_cast< T >( a[ 3 ] );
 
 		return q;
 	}
@@ -424,10 +424,10 @@ namespace vul {
 	{
 		Quaternion< T > q;
 
-		q[ 0 ] = static_cast< T >( a[ 0 ] );
-		q[ 1 ] = static_cast< T >( a[ 1 ] );
-		q[ 2 ] = static_cast< T >( a[ 2 ] );
-		q[ 3 ] = static_cast< T >( a[ 3 ] );
+		q.x = static_cast< T >( a[ 0 ] );
+		q.y = static_cast< T >( a[ 1 ] );
+		q.z = static_cast< T >( a[ 2 ] );
+		q.w = static_cast< T >( a[ 3 ] );
 
 		return q;
 	}
@@ -443,10 +443,10 @@ namespace vul {
 		a = normalize( axis );
 
 		sina = sin( halfAngle );
-		q[ 0 ] = a[ 0 ] * sina;
-		q[ 1 ] = a[ 1 ] * sina;
-		q[ 2 ] = a[ 2 ] * sina;
-		q[ 3 ] = cos( halfAngle );	
+		q.x = a[ 0 ] * sina;
+		q.y = a[ 1 ] * sina;
+		q.z = a[ 2 ] * sina;
+		q.w = cos( halfAngle );	
 
 		return q;
 	}
@@ -515,7 +515,7 @@ namespace vul {
 	{
 		Quaternion< T > q;
 
-		q[ 0 ] = q[ 1 ] = q[ 2 ] = q[ 3 ] = static_cast< T >( 0.f );
+		q.x = q.y = q.z = q.w = static_cast< T >( 0.f );
 
 		return q;
 	}
@@ -524,8 +524,8 @@ namespace vul {
 	{
 		Quaternion< T > q;
 
-		q[ 0 ] = q[ 1 ] = q[ 2 ] = static_cast< T >( 0.f );
-		q[ 3 ] = static_cast< T >( 1.f );
+		q.x = q.y = q.z = static_cast< T >( 0.f );
+		q.w = static_cast< T >( 1.f );
 
 		return q;
 	}
@@ -582,13 +582,13 @@ namespace vul {
 
 		f = ( q.w < T( 0.f ) ? T( -1.f ) : T( 1.f ) );
 		
-		m( 0, 0 ) = one - two * ( q[ 1 ] * q[ 1 ] + q[ 2 ] * q[ 2 ] );
-		m( 0, 1 ) = two * ( q[ 0 ] * q[ 1 ] + q[ 2 ] * q[ 3 ] );
-		m( 0, 2 ) = two * ( q[ 0 ] * q[ 2 ] - q[ 1 ] * q[ 3 ] );
+		m( 0, 0 ) = one - two * ( q.y * q.y + q.z * q.z );
+		m( 0, 1 ) = two * ( q.x * q.y + q.z * q.w );
+		m( 0, 2 ) = two * ( q.x * q.z - q.y * q.w );
 
-		m( 1, 0 ) = two * ( q[ 0 ] * q[ 1 ] - q[ 2 ] * q[ 3 ] );
-		m( 1, 1 ) = one - two * ( q[ 0 ] * q[ 0 ] + q[ 2 ] * q[ 2 ] );
-		m( 1, 2 ) = two * ( q[ 1 ] * q[ 2 ] + q[ 0 ] * q[ 3 ] );
+		m( 1, 0 ) = two * ( q.x * q.y - q.z * q.w );
+		m( 1, 1 ) = one - two * ( q.x * q.x + q.z * q.z );
+		m( 1, 2 ) = two * ( q.y * q.z + q.x * q.w );
 
 		n = cross( column( m, 1 ), column( m, 0 ) );
 
@@ -603,28 +603,28 @@ namespace vul {
 	template< typename T >
 	Quaternion< T > &Quaternion< T >::operator=( const Quaternion< T > &rhs )
 	{
-		data[ 0 ] = rhs[ 0 ];
-		data[ 1 ] = rhs[ 1 ];
-		data[ 2 ] = rhs[ 2 ];
-		data[ 3 ] = rhs[ 3 ];
+		data[ 0 ] = rhs.x;
+		data[ 1 ] = rhs.y;
+		data[ 2 ] = rhs.z;
+		data[ 3 ] = rhs.w;
 		return *this;
 	}
 	template< typename T >
 	Quaternion< T > &Quaternion< T >::operator+=( const Quaternion< T > &rhs )
 	{
-		data[ 0 ] += rhs[ 0 ];
-		data[ 1 ] += rhs[ 1 ];
-		data[ 2 ] += rhs[ 2 ];
-		data[ 3 ] += rhs[ 3 ];
+		data[ 0 ] += rhs.x;
+		data[ 1 ] += rhs.y;
+		data[ 2 ] += rhs.z;
+		data[ 3 ] += rhs.w;
 		return *this;
 	}	
 	template< typename T >
 	Quaternion< T > &Quaternion< T >::operator-=( const Quaternion< T > &rhs )
 	{
-		data[ 0 ] -= rhs[ 0 ];
-		data[ 1 ] -= rhs[ 1 ];
-		data[ 2 ] -= rhs[ 2 ];
-		data[ 3 ] -= rhs[ 3 ];
+		data[ 0 ] -= rhs.x;
+		data[ 1 ] -= rhs.y;
+		data[ 2 ] -= rhs.z;
+		data[ 3 ] -= rhs.w;
 		return *this;
 	}
 
@@ -649,11 +649,11 @@ namespace vul {
 				z = data[ 2 ],
 				w = data[ 3 ];
 
-		data[ 0 ] = w * rhs[ 0 ] + rhs[ 3 ] * x + y * rhs[ 2 ] - z * rhs[ 1 ];
-		data[ 1 ] = w * rhs[ 1 ] + rhs[ 3 ] * y + z * rhs[ 0 ] - x * rhs[ 2 ];
-		data[ 2 ] = w * rhs[ 2 ] + rhs[ 3 ] * z + x * rhs[ 1 ] - y * rhs[ 0 ];
+		data[ 0 ] = w * rhs.x + rhs.w * x + y * rhs.z - z * rhs.y;
+		data[ 1 ] = w * rhs.y + rhs.w * y + z * rhs.x - x * rhs.z;
+		data[ 2 ] = w * rhs.z + rhs.w * z + x * rhs.y - y * rhs.x;
 
-		data[ 3 ] = w * rhs[ 3 ] - x * rhs[ 0 ] - y * rhs[ 1 ] - z * rhs[ 2 ];
+		data[ 3 ] = w * rhs.w - x * rhs.x - y * rhs.y - z * rhs.z;
 
 		return *this;
 	}
@@ -676,10 +676,10 @@ namespace vul {
 	{
 		Quaternion< T > q;
 		
-		q[ 0 ] = a[ 0 ] + b[ 0 ];
-		q[ 1 ] = a[ 1 ] + b[ 1 ];
-		q[ 2 ] = a[ 2 ] + b[ 2 ];
-		q[ 3 ] = a[ 3 ] + b[ 3 ];
+		q.x = a.x + b.x;
+		q.y = a.y + b.y;
+		q.z = a.z + b.z;
+		q.w = a.w + b.w;
 
 		return q;
 	}
@@ -688,10 +688,10 @@ namespace vul {
 	{
 		Quaternion< T > q;
 		
-		q[ 0 ] = a[ 0 ] - b[ 0 ];
-		q[ 1 ] = a[ 1 ] - b[ 1 ];
-		q[ 2 ] = a[ 2 ] - b[ 2 ];
-		q[ 3 ] = a[ 3 ] - b[ 3 ];
+		q.x = a.x - b.x;
+		q.y = a.y - b.y;
+		q.z = a.z - b.z;
+		q.w = a.w - b.w;
 
 		return q;
 	}
@@ -700,10 +700,10 @@ namespace vul {
 		{
 		Quaternion< T > r;
 		
-		r[ 0 ] = q[ 0 ] * scalar;
-		r[ 1 ] = q[ 1 ] * scalar;
-		r[ 2 ] = q[ 2 ] * scalar;
-		r[ 3 ] = q[ 3 ] * scalar;
+		r.x = q.x * scalar;
+		r.y = q.y * scalar;
+		r.z = q.z * scalar;
+		r.w = q.w * scalar;
 
 		return r;
 	}
@@ -716,11 +716,11 @@ namespace vul {
 	{
 		Quaternion< T > q;
 		
-		q[ 0 ] = a[ 3 ] * b[ 0 ] + b[ 3 ] * a[ 0 ] + a[ 1 ] * b[ 2 ] - a[ 2 ] * b[ 1 ];
-		q[ 1 ] = a[ 3 ] * b[ 1 ] + b[ 3 ] * a[ 1 ] + a[ 2 ] * b[ 0 ] - a[ 0 ] * b[ 2 ];
-		q[ 2 ] = a[ 3 ] * b[ 2 ] + b[ 3 ] * a[ 2 ] + a[ 0 ] * b[ 1 ] - a[ 1 ] * b[ 0 ];
+		q.x = a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y;
+		q.y = a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x;
+		q.z = a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w;
 
-		q[ 3 ] = a[ 3 ] * b[ 3 ] - a[ 0 ] * b[ 0 ] - a[ 1 ] * b[ 1 ] - a[ 2 ] * b[ 2 ];
+		q.w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;
 
 		return q;
 	}
@@ -754,11 +754,11 @@ namespace vul {
 		Quaternion< T > r;
 		
 		// Negate the direction
-		r[ 0 ] = -q[ 0 ];
-		r[ 1 ] = -q[ 1 ];
-		r[ 2 ] = -q[ 2 ];
+		r.x = -q.x;
+		r.y = -q.y;
+		r.z = -q.z;
 		// Maintain angle
-		r[ 3 ] = q[ 3 ];
+		r.w = q.w;
 
 		return r;
 	}
@@ -767,10 +767,10 @@ namespace vul {
 	{
 		Vector< bool, 4 > v;
 		
-		v[ 0 ] = a[ 0 ] == b[ 0 ];
-		v[ 1 ] = a[ 1 ] == b[ 1 ];
-		v[ 2 ] = a[ 2 ] == b[ 2 ];
-		v[ 3 ] = a[ 3 ] == b[ 3 ];
+		v.x = a.x == b.x;
+		v.y = a.y == b.y;
+		v.z = a.z == b.z;
+		v.w = a.w == b.w;
 
 		return v;
 	}
@@ -779,10 +779,10 @@ namespace vul {
 	{
 		Vector< bool, 4 > v;
 		
-		v[ 0 ] = a[ 0 ] != b[ 0 ];
-		v[ 1 ] = a[ 1 ] != b[ 1 ];
-		v[ 2 ] = a[ 2 ] != b[ 2 ];
-		v[ 3 ] = a[ 3 ] != b[ 3 ];
+		v.x = a.x != b.x;
+		v.y = a.y != b.y;
+		v.z = a.z != b.z;
+		v.w = a.w != b.w;
 
 		return v;
 	}
@@ -797,15 +797,15 @@ namespace vul {
 
 		one = static_cast< T >( 1.f );
 		two = static_cast< T >( 2.f );
-		x2 = q[ 0 ] * q[ 0 ];
-		y2 = q[ 1 ] * q[ 1 ];
-		z2 = q[ 2 ] * q[ 2 ];
-		xy = q[ 0 ] * q[ 1 ];
-		xz = q[ 0 ] * q[ 2 ];
-		xw = q[ 0 ] * q[ 3 ];
-		yz = q[ 1 ] * q[ 2 ];
-		yw = q[ 1 ] * q[ 3 ];
-		zw = q[ 2 ] * q[ 3 ];
+		x2 = q.x * q.x;
+		y2 = q.y * q.y;
+		z2 = q.z * q.z;
+		xy = q.x * q.y;
+		xz = q.x * q.z;
+		xw = q.x * q.w;
+		yz = q.y * q.z;
+		yw = q.y * q.w;
+		zw = q.z * q.w;
 
 		m( 0, 0 ) = one - two * ( y2 + z2 );
 		m( 0, 1 ) = two * ( xy + zw );
@@ -845,10 +845,10 @@ namespace vul {
 	template< typename T >
 	T norm( const Quaternion< T > &q )
 	{
-		T res = q[ 0 ] * q[ 0 ]
-			  + q[ 1 ] * q[ 1 ]
-			  + q[ 2 ] * q[ 2 ]
-			  + q[ 3 ] * q[ 3 ];
+		T res = q.x * q.x
+			  + q.y * q.y
+			  + q.z * q.z
+			  + q.w * q.w;
 		return static_cast< T >( sqrt( ( f32_t )res ) );
 	}
 	template< typename T >
@@ -863,10 +863,10 @@ namespace vul {
 	template< typename T >
 	T dot( const Quaternion< T > &a, const Quaternion< T > &b  )
 	{
-		return a[ 0 ] * b[ 0 ]
-			 + a[ 1 ] * b[ 1 ]
-			 + a[ 2 ] * b[ 2 ]
-			 + a[ 3 ] * b[ 3 ];
+		return a.x * b.x
+			 + a.y * b.y
+			 + a.z * b.z
+			 + a.w * b.w;
 	}
 	template< typename T >
 	Quaternion< T > inverse( const Quaternion< T > &q )
@@ -880,10 +880,10 @@ namespace vul {
 		assert( len > static_cast< T >( 0.f ) );
 
 		invLen = static_cast< T >( 1.f ) / len;
-		r[ 0 ] = -q[ 0 ] * invLen;
-		r[ 1 ] = -q[ 1 ] * invLen;
-		r[ 2 ] = -q[ 2 ] * invLen;
-		r[ 3 ] = q[ 3 ] * invLen;
+		r.x = -q.x * invLen;
+		r.y = -q.y * invLen;
+		r.z = -q.z * invLen;
+		r.w = q.w * invLen;
 		return r;
 	}
 	template< typename T >
@@ -891,10 +891,10 @@ namespace vul {
 	{
 		Quaternion< T > r;
 		
-		r[ 0 ] = -q[ 0 ]; // Invert axis
-		r[ 1 ] = -q[ 1 ]; 
-		r[ 2 ] = -q[ 2 ];
-		r[ 3 ] =  q[ 3 ]; // Keep w
+		r.x = -q.x; // Invert axis
+		r.y = -q.y; 
+		r.z = -q.z;
+		r.w =  q.w; // Keep w
 
 		return r;
 	}
@@ -980,35 +980,35 @@ namespace vul {
 		two = static_cast< T >( 2.f );
 		
 		if( dimension == 0 ) {	
-			y2 = q[ 1 ] * q[ 1 ];
-			z2 = q[ 2 ] * q[ 2 ];
-			xy = q[ 0 ] * q[ 1 ];
-			xz = q[ 0 ] * q[ 2 ];
-			yw = q[ 1 ] * q[ 3 ];
-			zw = q[ 2 ] * q[ 3 ];
-			ret[ 0 ] = one - two * ( y2 + z2 );
-			ret[ 1 ] = two * ( xy + zw );
-			ret[ 2 ] = two * ( xz - yw );
+			y2 = q.y * q.y;
+			z2 = q.z * q.z;
+			xy = q.x * q.y;
+			xz = q.x * q.z;
+			yw = q.y * q.w;
+			zw = q.z * q.w;
+			ret.x = one - two * ( y2 + z2 );
+			ret.y = two * ( xy + zw );
+			ret.z = two * ( xz - yw );
 		} else if( dimension == 1 ) {		
-			x2 = q[ 0 ] * q[ 0 ];
-			z2 = q[ 2 ] * q[ 2 ];
-			xy = q[ 0 ] * q[ 1 ];
-			xw = q[ 0 ] * q[ 3 ];
-			yz = q[ 1 ] * q[ 2 ];
-			zw = q[ 2 ] * q[ 3 ];	
-			ret[ 0 ] = two * ( xy - zw );
-			ret[ 1 ] = one - two * ( x2 + z2 );
-			ret[ 2 ] = two * ( yz - xw );
+			x2 = q.x * q.x;
+			z2 = q.z * q.z;
+			xy = q.x * q.y;
+			xw = q.x * q.w;
+			yz = q.y * q.z;
+			zw = q.z * q.w;	
+			ret.x = two * ( xy - zw );
+			ret.y = one - two * ( x2 + z2 );
+			ret.z = two * ( yz - xw );
 		} else if( dimension == 2 ) {
-			x2 = q[ 0 ] * q[ 0 ];
-			y2 = q[ 1 ] * q[ 1 ];
-			xz = q[ 0 ] * q[ 2 ];
-			xw = q[ 0 ] * q[ 3 ];
-			yz = q[ 1 ] * q[ 2 ];
-			yw = q[ 1 ] * q[ 3 ];
-			ret[ 0 ] = two * ( xz + yw );
-			ret[ 1 ] = two * ( yz - xw );
-			ret[ 2 ] = one - two * ( x2 + y2 );
+			x2 = q.x * q.x;
+			y2 = q.y * q.y;
+			xz = q.x * q.z;
+			xw = q.x * q.w;
+			yz = q.y * q.z;
+			yw = q.y * q.w;
+			ret.x = two * ( xz + yw );
+			ret.y = two * ( yz - xw );
+			ret.z = one - two * ( x2 + y2 );
 		}
 
 		return normalize( ret );

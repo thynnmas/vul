@@ -693,7 +693,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m.data[ i ][ j ] = r.data[ j ][ i ];
+				m.data[ i ][ j ] = r[ j ].data[ i ];
 			}
 		}
 
@@ -707,7 +707,7 @@ namespace vul {
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m.data[ i ][ j ] = c.data[ i ][ j ];
+				m.data[ i ][ j ] = c[ i ].data[ j ];
 			}
 		}
 

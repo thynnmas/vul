@@ -767,10 +767,10 @@ namespace vul {
 	{
 		Vector< bool, 4 > v;
 		
-		v.x = a.x == b.x;
-		v.y = a.y == b.y;
-		v.z = a.z == b.z;
-		v.w = a.w == b.w;
+		v.data[ 0 ] = a.x == b.x;
+		v.data[ 1 ] = a.y == b.y;
+		v.data[ 2 ] = a.z == b.z;
+		v.data[ 3 ] = a.w == b.w;
 
 		return v;
 	}
@@ -779,10 +779,10 @@ namespace vul {
 	{
 		Vector< bool, 4 > v;
 		
-		v.x = a.x != b.x;
-		v.y = a.y != b.y;
-		v.z = a.z != b.z;
-		v.w = a.w != b.w;
+		v.data[ 0 ] = a.x != b.x;
+		v.data[ 1 ] = a.y != b.y;
+		v.data[ 2 ] = a.z != b.z;
+		v.data[ 3 ] = a.w != b.w;
 
 		return v;
 	}

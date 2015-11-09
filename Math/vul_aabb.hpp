@@ -1063,13 +1063,13 @@ namespace vul {
 		float32x4_t c[ 3 ];
 		float32x4_t e[ 3 ];
 		float32x4_t p[ 6 ][ 4 ]; // [ plane_nr ][ coordinate ]
-		float32x4_t signFlip[ 3 ], signBit;
+		int32x4_t signFlip[ 3 ], signBit;
 		float32x4_t t0[ 3 ];
 		float32x4_t t1[ 3 ];
 		uint32x4_t res;
 		ui32_t simdCount;
 
-		signBit = _mm_set1_ps( 0x80000000 );
+		signBit = vdupq_n_s32( 0x80000000 );
 
 		for( ui32_t j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = vdupq_n_f32( planes[ j ].data[ 0 ] );
@@ -1090,24 +1090,24 @@ namespace vul {
 
 			out[ i ] = 0x00000000;
 			for( ui32_t j = 0; j < 6; ++j ) {
-				signFlip[ 0 ] = vandq_f32( p[ j ][ 0 ], signBit );
-				signFlip[ 1 ] = vandq_f32( p[ j ][ 1 ], signBit );
-				signFlip[ 2 ] = vandq_f32( p[ j ][ 2 ], signBit );
+				signFlip[ 0 ] = vandq_s32( *( ( int32x4_t* )&p[ j ][ 0 ]), signBit );
+				signFlip[ 1 ] = vandq_s32( *( ( int32x4_t* )&p[ j ][ 1 ]), signBit );
+				signFlip[ 2 ] = vandq_s32( *( ( int32x4_t* )&p[ j ][ 2 ]), signBit );
 
 				// t0 = xor( e, signFlip )
-				t0[ 0 ] = vxorq_f32( e[ 0 ], signFlip[ 0 ] );
-				t0[ 1 ] = vxorq_f32( e[ 1 ], signFlip[ 1 ] );
-				t0[ 2 ] = vxorq_f32( e[ 2 ], signFlip[ 2 ] );
+				signFlip[ 0 ] = veorq_s32( e[ 0 ], signFlip[ 0 ] );
+				signFlip[ 1 ] = veorq_s32( e[ 1 ], signFlip[ 1 ] );
+				signFlip[ 2 ] = veorq_s32( e[ 2 ], signFlip[ 2 ] );
 
 				// t1 = c + t0
-				t1[ 0 ] = vaddq_f32( c[ 0 ], t0[ 0 ] );
-				t1[ 1 ] = vaddq_f32( c[ 1 ], t0[ 1 ] );
-				t1[ 2 ] = vaddq_f32( c[ 2 ], t0[ 2 ] );
+				t1[ 0 ] = vaddq_f32( c[ 0 ], *( ( float32x4_t* )&signFlip[ 0 ] ) );
+				t1[ 1 ] = vaddq_f32( c[ 1 ], *( ( float32x4_t* )&signFlip[ 1 ] ) );
+				t1[ 2 ] = vaddq_f32( c[ 2 ], *( ( float32x4_t* )&signFlip[ 2 ] ) );
 
 				// t2 = dot ( t1, plane.xyz )
-				t0[ 0 ] = vmul1_f32( t1[ 0 ], p[ j ][ 0 ] );
-				t0[ 1 ] = vmul1_f32( t1[ 1 ], p[ j ][ 1 ] );
-				t0[ 2 ] = vmul1_f32( t1[ 2 ], p[ j ][ 2 ] );
+				t0[ 0 ] = vmulq_f32( t1[ 0 ], p[ j ][ 0 ] );
+				t0[ 1 ] = vmulq_f32( t1[ 1 ], p[ j ][ 1 ] );
+				t0[ 2 ] = vmulq_f32( t1[ 2 ], p[ j ][ 2 ] );
 				t1[ 0 ] = vaddq_f32( t0[ 0 ], t0[ 1 ] );
 				t1[ 1 ] = vaddq_f32( t1[ 0 ], t0[ 2 ] );
 

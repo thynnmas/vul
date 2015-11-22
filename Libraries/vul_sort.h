@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
  *
  * This file contains a collection of sorting algorithms for the data structures
  * included in vul.
@@ -13,7 +13,7 @@
  * @TODO: Heap sort
  * @TODO: Radix sort
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -81,7 +81,7 @@ void vul_sort_vector_shell( vul_vector_t *list, int (*comparator)( const void *a
 {
 	void *temp, *left, *right, *item;
 	int gap, gi, i, j;
-	int gaps[ ] = { 701, 301, 132, 67, 23, 10, 4, 1 };
+	int gaps[ ] = { 4071001, 1170001, 237001, 67001, 17001, 5001, 1701, 701, 301, 132, 67, 23, 10, 4, 1 }; // @TODO(thynn): Larger numbers!
 	
 	// Check range
 	assert( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_shell: Range check failed" );
@@ -939,8 +939,6 @@ static void vul__sort_force_merge_collapse( vul_vector_t *list, int (*comparator
  * Uses a variation of timsort (http://bugs.python.org/file4451/timsort.txt) dubbed thynnsort.
  * @NOTE: Since shell sort is unstable, this is an unstable sort. Probably want a normal TimSort
  * version around that IS stable!
- * Read more about thynnsort here: [@TODO: Blogpost about thynnsort]
- * @TODO: Possibly have a look at whether this is too similar to openjdk implementation (which is GPL)?
  */
 #ifndef VUL_DEFINE
 void vul_sort_vector_thynn( vul_vector_t *list, int (*comparator)( const void *a, const void *b ), int low, int high );

@@ -31,38 +31,19 @@ int comp( const void *a, const void *b ) {
 #define SIZE_4 10000
 #define SIZE_5 100000
 #define SIZE_6 1000000
+#define SIZE_7 10000000
 
 void bench_sorts( )
 {
 	vul_timer_t clock;
 	unsigned long long itime, stime, qtime, ttime;
-	int *inta, *intb, *intc, *intd, *inte, *intf;
+	int *inta;
 
 	srand( time( NULL ) );
 	
-	inta = ( int* )malloc( sizeof( int ) * SIZE_1 );
-	for( int i = 0; i < SIZE_1; ++i ) {
+	inta = ( int* )malloc( sizeof( int ) * SIZE_7 );
+	for( int i = 0; i < SIZE_7; ++i ) {
 		inta[ i ] = ( rand( ) % RAND_MAX );
-	}
-	intb = ( int* )malloc( sizeof( int ) * SIZE_2 );
-	for( int i = 0; i < SIZE_2; ++i ) {
-		intb[ i ] = rand( ) % RAND_MAX;
-	}
-	intc = ( int* )malloc( sizeof( int ) * SIZE_3 );
-	for( int i = 0; i < SIZE_3; ++i ) {
-		intc[ i ] = rand( ) % RAND_MAX;
-	}
-	intd = ( int* )malloc( sizeof( int ) * SIZE_4 );
-	for( int i = 0; i < SIZE_4; ++i ) {
-		intd[ i ] = rand( ) % RAND_MAX;
-	}
-	inte = ( int* )malloc( sizeof( int ) * SIZE_5 );
-	for( int i = 0; i < SIZE_5; ++i ) {
-		inte[ i ] = rand( ) % RAND_MAX;
-	}
-	intf = ( int* )malloc( sizeof( int ) * SIZE_6 );
-	for( int i = 0; i < SIZE_6; ++i ) {
-		intf[ i ] = rand( ) % RAND_MAX;
 	}
 	
 	vul_vector_t *insertiona = vul_vector_create( sizeof( int ), SIZE_1, malloc, free, realloc );
@@ -75,41 +56,47 @@ void bench_sorts( )
 	vul_vector_t *shelld = vul_vector_create( sizeof( int ), SIZE_4, malloc, free, realloc );
 	vul_vector_t *shelle = vul_vector_create( sizeof( int ), SIZE_5, malloc, free, realloc );
 	vul_vector_t *shellf = vul_vector_create( sizeof( int ), SIZE_6, malloc, free, realloc );
+	vul_vector_t *shellg = vul_vector_create( sizeof( int ), SIZE_7, malloc, free, realloc );
 	vul_vector_t *quicka = vul_vector_create( sizeof( int ), SIZE_1, malloc, free, realloc );
 	vul_vector_t *quickb = vul_vector_create( sizeof( int ), SIZE_2, malloc, free, realloc );
 	vul_vector_t *quickc = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
 	vul_vector_t *quickd = vul_vector_create( sizeof( int ), SIZE_4, malloc, free, realloc );
 	vul_vector_t *quicke = vul_vector_create( sizeof( int ), SIZE_5, malloc, free, realloc );
 	vul_vector_t *quickf = vul_vector_create( sizeof( int ), SIZE_6, malloc, free, realloc );
+	vul_vector_t *quickg = vul_vector_create( sizeof( int ), SIZE_7, malloc, free, realloc );
 	vul_vector_t *thynna = vul_vector_create( sizeof( int ), SIZE_1, malloc, free, realloc );
 	vul_vector_t *thynnb = vul_vector_create( sizeof( int ), SIZE_2, malloc, free, realloc );
 	vul_vector_t *thynnc = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
 	vul_vector_t *thynnd = vul_vector_create( sizeof( int ), SIZE_4, malloc, free, realloc );
 	vul_vector_t *thynne = vul_vector_create( sizeof( int ), SIZE_5, malloc, free, realloc );
 	vul_vector_t *thynnf = vul_vector_create( sizeof( int ), SIZE_6, malloc, free, realloc );
+	vul_vector_t *thynng = vul_vector_create( sizeof( int ), SIZE_7, malloc, free, realloc );
 	
 	vul_vector_copy( shella, 0, inta, SIZE_1 );
-	vul_vector_copy( shellb, 0, intb, SIZE_2 );
-	vul_vector_copy( shellc, 0, intc, SIZE_3 );
-	vul_vector_copy( shelld, 0, intd, SIZE_4 );
-	vul_vector_copy( shelle, 0, inte, SIZE_5 );
-	vul_vector_copy( shellf, 0, intf, SIZE_6 );
+	vul_vector_copy( shellb, 0, inta, SIZE_2 );
+	vul_vector_copy( shellc, 0, inta, SIZE_3 );
+	vul_vector_copy( shelld, 0, inta, SIZE_4 );
+	vul_vector_copy( shelle, 0, inta, SIZE_5 );
+	vul_vector_copy( shellf, 0, inta, SIZE_6 );
+	vul_vector_copy( shellg, 0, inta, SIZE_7 );
 	vul_vector_copy( insertiona, 0, inta, SIZE_1 );
-	vul_vector_copy( insertionb, 0, intb, SIZE_2 );
-	vul_vector_copy( insertionc, 0, intc, SIZE_3 );
-	vul_vector_copy( insertiond, 0, intd, SIZE_4 );
+	vul_vector_copy( insertionb, 0, inta, SIZE_2 );
+	vul_vector_copy( insertionc, 0, inta, SIZE_3 );
+	vul_vector_copy( insertiond, 0, inta, SIZE_4 );
 	vul_vector_copy( quicka, 0, inta, SIZE_1 );
-	vul_vector_copy( quickb, 0, intb, SIZE_2 );
-	vul_vector_copy( quickc, 0, intc, SIZE_3 );
-	vul_vector_copy( quickd, 0, intd, SIZE_4 );
-	vul_vector_copy( quicke, 0, inte, SIZE_5 );
-	vul_vector_copy( quickf, 0, intf, SIZE_6 );
+	vul_vector_copy( quickb, 0, inta, SIZE_2 );
+	vul_vector_copy( quickc, 0, inta, SIZE_3 );
+	vul_vector_copy( quickd, 0, inta, SIZE_4 );
+	vul_vector_copy( quicke, 0, inta, SIZE_5 );
+	vul_vector_copy( quickf, 0, inta, SIZE_6 );
+	vul_vector_copy( quickg, 0, inta, SIZE_7 );
 	vul_vector_copy( thynna, 0, inta, SIZE_1 );
-	vul_vector_copy( thynnb, 0, intb, SIZE_2 );
-	vul_vector_copy( thynnc, 0, intc, SIZE_3 );
-	vul_vector_copy( thynnd, 0, intd, SIZE_4 );
-	vul_vector_copy( thynne, 0, inte, SIZE_5 );
-	vul_vector_copy( thynnf, 0, intf, SIZE_6 );
+	vul_vector_copy( thynnb, 0, inta, SIZE_2 );
+	vul_vector_copy( thynnc, 0, inta, SIZE_3 );
+	vul_vector_copy( thynnd, 0, inta, SIZE_4 );
+	vul_vector_copy( thynne, 0, inta, SIZE_5 );
+	vul_vector_copy( thynnf, 0, inta, SIZE_6 );
+	vul_vector_copy( thynng, 0, inta, SIZE_7 );
 	
 
 	printf( "Sort\t|\tInsert\t\t|\tShell\t\t|\tQuick\t\t|\tThynn\n" );
@@ -199,7 +186,7 @@ void bench_sorts( )
 	vul_timer_reset( &clock );
 	vul_sort_vector_thynn( thynne, &comp, 0, SIZE_5 - 1 );
 	ttime = vul_timer_get_micros( &clock );
-	printf( "%d\t|\t%llu.%04llums\t|\t%llu.%04llums\t|\t%llu.%04llums\t|\t%llu.%04llums\n",
+	printf( "%d\t|\t\t\t|\t%llu.%04llums\t|\t%llu.%04llums\t|\t%llu.%04llums\t\n",
 					SIZE_5,
 					stime / 1000LL, stime % 1000LL,
 					qtime / 1000LL, qtime % 1000LL,
@@ -214,19 +201,29 @@ void bench_sorts( )
 	vul_timer_reset( &clock );
 	vul_sort_vector_thynn( thynnf, &comp, 0, SIZE_6 - 1 );
 	ttime = vul_timer_get_micros( &clock );
-	printf( "%d\t|\t%llu.%04llums\t|\t%llu.%04llums\t|\t%llu.%04llums\t|\t%llu.%04llums\n",
+	printf( "%d\t|\t\t\t|\t%llu.%04llums\t|\t%llu.%04llums\t|\t%llu.%04llums\t\n",
 					SIZE_6,
 					stime / 1000LL, stime % 1000LL,
 					qtime / 1000LL, qtime % 1000LL,
 					ttime / 1000LL, ttime % 1000LL );
 
-	free( inta );
-	free( intb );
-	free( intc );
-	free( intd );
-	free( inte );
-	free( intf );
+	vul_timer_reset( &clock );
+	vul_sort_vector_shell( shellg, &comp, 0, SIZE_7 - 1 );
+	stime = vul_timer_get_micros( &clock );
+	vul_timer_reset( &clock );
+	vul_sort_vector_quick( quickg, &comp, 0, SIZE_7 - 1 );
+	qtime = vul_timer_get_micros( &clock );
+	vul_timer_reset( &clock );
+	vul_sort_vector_thynn( thynng, &comp, 0, SIZE_7 - 1 );
+	ttime = vul_timer_get_micros( &clock );
+	printf( "%d\t|\t\t\t|\t%llu.%04llus\t|\t%llu.%04llus\t|\t%llu.%04llus\t\n",
+					SIZE_6,
+					stime / 1000000LL, stime % 1000000LL,
+					qtime / 1000000LL, qtime % 1000000LL,
+					ttime / 1000000LL, ttime % 1000000LL );
 
+	free( inta );
+	
 	printf( "Done" );
 }
 
@@ -362,7 +359,7 @@ int main( int argv, char **argc )
 
 	//vul_test_gl( );
 
-	//vul_test_astar( );
+	vul_test_astar( );
 
 	vul_test_csp( );
 		

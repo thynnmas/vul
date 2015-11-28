@@ -1,12 +1,12 @@
 /*
-* Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+* Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
 *
 * This file describes a vector class that never moves elements upon
 * resize. It is implemented as an series of exponentially growing buffers
 * into which pointers will remain constant. @NOTE: Functionality is
 * currently somewhat limited as it's use is quite specific atm.
 *
-* ¹ If public domain is not legally valid in your legal jurisdiction
+* ? If public domain is not legally valid in your legal jurisdiction
 *   the MIT licence applies (see the LICENCE file)
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -73,6 +73,8 @@ vul_svector_t *vul_svector_create( ui32_t element_size,
 								   void( *deallocator )( void *ptr ) )
 {
 	vul_svector_t *ret;
+
+	assert( buffer_base_size != 0 );
 
 	ret = ( vul_svector_t* )allocator( sizeof( vul_svector_t ) );
 	assert( ret );

@@ -43,12 +43,13 @@
 #include "Tests/test_point.hpp"
 #include "Tests/test_quaternion.hpp"
 #include "Tests/test_vector.hpp"
+#include "Tests/test_linear.hpp"
 
 using namespace vul;
 using namespace vul_test;
 
 int main( int argc, char **argv )
-{
+{/*
 	TestAABB::test( );
 	TestAffine::test( );
 #if defined( VUL_AOSOA_SSE ) || defined( VUL_AOSOA_AVX ) || defined( VUL_AOSOA_NEON )
@@ -59,7 +60,8 @@ int main( int argc, char **argv )
 	TestMatrix::test( );
 	TestPoint::test( );
 	TestQuaternion::test( );
-	TestVector::test( );
+	TestVector::test( );*/
+	TestLinear::test( );
 
 	printf( "Done, no errors.\n" );
 	

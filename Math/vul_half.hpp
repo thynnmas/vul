@@ -116,9 +116,7 @@ namespace vul {
 	half operator+( half a );
 #endif
 	half operator-( half a );
-
-	half abs( half a );
-
+	
 	// Mass conversion functions. These use 4-wide SSE if VUL_HALF_SSE are defined.
 	void vul_single_to_half_array( half *out, float *in, unsigned int count );
 	void vul_half_to_single_array( float *out, half *in, unsigned int count );
@@ -500,15 +498,6 @@ namespace vul {
 
 		return r;
 	}
-	
-	half abs( half a )
-	{
-		half r;
-		
-		r.data = a.data & 0x7fff;
-
-		return r;
-	}
 
 	// Mass conversion functions
 	void vul_single_to_half_array( half *out, float *in, unsigned int count )
@@ -645,6 +634,16 @@ namespace vul {
 	//
 
 namespace std {
+		
+	vul::half abs( vul::half a )
+	{
+		vul::half r;
+		
+		r.data = a.data & 0x7fff;
+
+		return r;
+	}
+
 	template< >
 	class numeric_limits< vul::half > : public numeric_limits< float >
 	{

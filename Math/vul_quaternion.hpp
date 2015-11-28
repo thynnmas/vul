@@ -986,9 +986,9 @@ namespace vul {
 			xz = q.x * q.z;
 			yw = q.y * q.w;
 			zw = q.z * q.w;
-			ret.x = one - two * ( y2 + z2 );
-			ret.y = two * ( xy + zw );
-			ret.z = two * ( xz - yw );
+			ret.data[ 0 ] = one - two * ( y2 + z2 );
+			ret.data[ 1 ] = two * ( xy + zw );
+			ret.data[ 2 ] = two * ( xz - yw );
 		} else if( dimension == 1 ) {		
 			x2 = q.x * q.x;
 			z2 = q.z * q.z;
@@ -996,9 +996,9 @@ namespace vul {
 			xw = q.x * q.w;
 			yz = q.y * q.z;
 			zw = q.z * q.w;	
-			ret.x = two * ( xy - zw );
-			ret.y = one - two * ( x2 + z2 );
-			ret.z = two * ( yz - xw );
+			ret.data[ 0 ] = two * ( xy - zw );
+			ret.data[ 1 ] = one - two * ( x2 + z2 );
+			ret.data[ 2 ] = two * ( yz - xw );
 		} else if( dimension == 2 ) {
 			x2 = q.x * q.x;
 			y2 = q.y * q.y;
@@ -1006,9 +1006,9 @@ namespace vul {
 			xw = q.x * q.w;
 			yz = q.y * q.z;
 			yw = q.y * q.w;
-			ret.x = two * ( xz + yw );
-			ret.y = two * ( yz - xw );
-			ret.z = one - two * ( x2 + y2 );
+			ret.data[ 0 ] = two * ( xz + yw );
+			ret.data[ 1 ] = two * ( yz - xw );
+			ret.data[ 2 ] = one - two * ( x2 + y2 );
 		}
 
 		return normalize( ret );

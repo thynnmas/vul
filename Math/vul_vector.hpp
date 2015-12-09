@@ -124,9 +124,9 @@ namespace vul {
 		const Matrix< T, n, 1 > &as_row( ) const;
 	};
 	
-	/*
+
 	// @TODO: Specializations for 2, 3, 4
-	template < typename T >
+	/*template < typename T >
 	struct Vector< T, 2 > { 
 		union { 
 			T data[ 2 ]; 

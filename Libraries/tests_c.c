@@ -1,23 +1,13 @@
 #ifdef VUL_TEST_C
 
-#include "Tests/test_gl.h" // This doesn't appear to work yet...
-#include "Tests/test_astar.h"
-#include "Tests/test_csp.h"
+#define VUL_DEFINE
+//#include "Tests/test_gl.h" // This doesn't appear to work yet...
+//#include "Tests/test_astar.h"
+//#include "Tests/test_csp.h"
+#include "Tests/test_linear_solvers.h"
 
 #include <stdio.h>
-
-#define VUL_DEFINE
-#include "vul_resizable_array.h"
-#include "vul_stable_array.h"
-#include "vul_queue.h"
-#include "vul_priority_heap.h"
-#include "vul_linked_list.h"
-#include "vul_stack.h"
-#include "vul_astar.h"
-#include "vul_csp.h"
-#include "vul_sort.h"
-#include "vul_timer.h"
-
+/*
 int comp( const void *a, const void *b ) {
 	int ia, ib;
 	memcpy( &ia, a, sizeof( int ) );
@@ -348,7 +338,7 @@ void test_compression_rle( )
 	printf( "In:  %s\n", strin );
 	printf( "Out: %s\n", (char*)out );
 	printf( "compare: %d\n", strcmp(strin, ( char* )out ) );
-}
+}*/
 
 int main( int argv, char **argc )
 {
@@ -364,7 +354,9 @@ int main( int argv, char **argc )
 
 	//vul_test_astar( );
 
-	vul_test_csp( );
+	//vul_test_csp( );
+
+	vul_test_linear_solvers( );
 		
 	printf( "Done, no errors.\n" );
 

@@ -332,7 +332,7 @@ void astar_grid_visualize( vul_astar_graph_t *graph, vul_astar_node_t *start, vu
 	}
 	vul_astar_path_finalize( path_root );
 
-	printf( "Current node: %x (%d, %d), path length %d\n", current,
+	printf( "Current node: %p (%d, %d), path length %d\n", current,
 			current_data->x, current_data->y, len );
 }
 

@@ -569,6 +569,4 @@ void vul_test_csp( )
 	}
 
 	csp_graph_finalize_astar( &graph );
-
-	return 0;
 }

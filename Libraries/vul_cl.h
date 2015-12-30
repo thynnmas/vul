@@ -26,7 +26,7 @@
 #endif
 #include <string.h>
 
-#include "vul_resizable_array.h"
+#include "vul_stable_array.h"
 
 /**
  * This must be included prior to this file, but may have to be included in a
@@ -68,8 +68,8 @@ typedef struct vul__cl_context {
 	cl_device_id *device_list;
 	cl_command_queue *queue_list;	
 	
-	vul_vector_t *programs; // List of all programs built in this context
-	vul_vector_t *buffers;  // List of all buffers allocated in this context
+	vul_svector_t *programs; // List of all programs built in this context
+	vul_svector_t *buffers;  // List of all buffers allocated in this context
 } vul__cl_context;
 
 static size_t vul__cl_context_count = 0;
@@ -86,7 +86,7 @@ typedef struct vul_cl_program {
 		char *source;			// The full source if of source type
 		unsigned char *binary;			// The full binary if of binary type
 	};
-	vul_vector_t *kernels;		// List of all kernels belonging to this program
+	vul_svector_t *kernels;		// List of all kernels belonging to this program
 } vul_cl_program;
 
 /**
@@ -96,7 +96,7 @@ typedef struct vul_cl_kernel {
 	cl_kernel kernel;
 	vul_cl_program *program;
 	char *entry_point;
-	vul_vector_t *arguments;
+	vul_svector_t *arguments;
 } vul_cl_kernel;
 
 /**
@@ -125,6 +125,78 @@ typedef struct vul_cl_buffer {
 	cl_mem_flags flags;
 } vul_cl_buffer;
 
+/**
+ * Returns a string describing the given error code
+ */
+const char *vul_cl_get_error_string( cl_int err )
+{
+	const char *str = "Unknown error";
+	switch( err ) {
+		case CL_SUCCESS:												str = "Success";									break;
+		case CL_DEVICE_NOT_FOUND:									str = "Device not found";						break;
+		case CL_DEVICE_NOT_AVAILABLE:								str = "Device not available";					break;
+		case CL_COMPILER_NOT_AVAILABLE:							str = "Compiler not available";				break;
+		case CL_MEM_OBJECT_ALLOCATION_FAILURE:					str = "Mem object allocation failure";		break;
+		case CL_OUT_OF_RESOURCES:									str = "Out of resources";						break;
+		case CL_OUT_OF_HOST_MEMORY:								str = "Out of host memory";					break;
+		case CL_PROFILING_INFO_NOT_AVAILABLE:					str = "Profiling info not available";		break;
+		case CL_MEM_COPY_OVERLAP:									str = "Memcopy overlaps";						break;
+		case CL_IMAGE_FORMAT_MISMATCH:							str = "Image format mismatch";				break;
+		case CL_IMAGE_FORMAT_NOT_SUPPORTED:						str = "Image format not supported";			break;
+		case CL_BUILD_PROGRAM_FAILURE:							str = "Build program failure";				break;
+		case CL_MAP_FAILURE:											str = "Map failure";								break;
+		case CL_MISALIGNED_SUB_BUFFER_OFFSET:					str = "Misaligned sub buffer offset";		break;
+		case CL_EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST: str = "Exec status error for wait list event";	break;
+	
+		case CL_INVALID_VALUE:										str = "Invalid value";							break;
+		case CL_INVALID_DEVICE_TYPE:								str = "Invalid device type";					break;
+		case CL_INVALID_PLATFORM:									str = "Invalid platform";						break;
+		case CL_INVALID_DEVICE:										str = "Invalid device";							break;
+		case CL_INVALID_CONTEXT:									str = "Invalid context";						break;
+		case CL_INVALID_QUEUE_PROPERTIES:						str = "Invalid queue properties";			break;
+		case CL_INVALID_COMMAND_QUEUE:							str = "Invalid command queue";				break;
+		case CL_INVALID_HOST_PTR:									str = "Invalid host pointer";					break;
+		case CL_INVALID_MEM_OBJECT:								str = "Invalid mem object";					break;
+		case CL_INVALID_IMAGE_FORMAT_DESCRIPTOR:				str = "Invalid image format descriptor";	break;
+		case CL_INVALID_IMAGE_SIZE:								str = "Invalid image size";					break;
+		case CL_INVALID_SAMPLER:									str = "Invalid sampler";						break;
+		case CL_INVALID_BINARY:										str = "Invalid binary";							break;
+		case CL_INVALID_BUILD_OPTIONS:							str = "Invalid build options";				break;
+		case CL_INVALID_PROGRAM:									str = "Invalid program";						break;
+		case CL_INVALID_PROGRAM_EXECUTABLE:						str = "Invalid program executable";			break;
+		case CL_INVALID_KERNEL_NAME:								str = "Invalid kernel name";					break;
+		case CL_INVALID_KERNEL_DEFINITION:						str = "Invalid kernel definition";			break;
+		case CL_INVALID_KERNEL:										str = "Invalid kernel";							break;
+		case CL_INVALID_ARG_INDEX:									str = "Invalid argument index";				break;
+		case CL_INVALID_ARG_VALUE:									str = "Invalid argument value";				break;
+		case CL_INVALID_ARG_SIZE:									str = "Invalid argument size";				break;
+		case CL_INVALID_KERNEL_ARGS:								str = "Invalid kernel arguments";			break;
+		case CL_INVALID_WORK_DIMENSION:							str = "Invalid work dimenstion";				break;
+		case CL_INVALID_WORK_GROUP_SIZE:							str = "Invalid work group size";				break;
+		case CL_INVALID_WORK_ITEM_SIZE:							str = "Invalid work item size";				break;
+		case CL_INVALID_GLOBAL_OFFSET:							str = "Invalid global offset";				break;
+		case CL_INVALID_EVENT_WAIT_LIST:							str = "Invalid event wait list";				break;
+		case CL_INVALID_EVENT:										str = "Invalid event";							break;
+		case CL_INVALID_OPERATION:									str = "Invalid operation";						break;
+		case CL_INVALID_GL_OBJECT:									str = "Invalid OpenGL object";				break;
+		case CL_INVALID_BUFFER_SIZE:								str = "Invalid buffer size";					break;
+		case CL_INVALID_MIP_LEVEL:									str = "Invalid MIP level";						break;
+		case CL_INVALID_GLOBAL_WORK_SIZE:						str = "Invalid global work size";			break;
+		case CL_INVALID_PROPERTY:									str = "Invalid property";						break;
+	}
+	return str;
+}
+
+#define vul_cl_check( err ) {\
+	const char *estr;\
+	if( err != CL_SUCCESS ) {\
+		estr = vul_cl_get_error_string( err );\
+		fprintf( stderr, "[%s:%d] OpenCL error: '%s' (%d).\n", __FILE__, __LINE__, estr, err );\
+		assert(0);\
+	}\
+}
+// @TODO(thynn): Make sure we don't assert in release builds...
+	
 /**
  * Creates the OpenCL context, sets up all available devices and
  * creates command queues for them all.
@@ -224,10 +296,10 @@ void vul_cl_setup( cl_context_properties *context_properties,
 		}
 		
 		// Create program list
-		context->programs = vul_vector_create( sizeof( vul_cl_program ), 0 );
+		context->programs = vul_svector_create( sizeof( vul_cl_program ), 8, malloc, free );
 		
 		// Create buffer list
-		context->buffers = vul_vector_create( sizeof( vul_cl_buffer ), 0 );
+		context->buffers = vul_svector_create( sizeof( vul_cl_buffer ), 8, malloc, free );
 	}
 
 	free( platforms );
@@ -239,7 +311,7 @@ void vul_cl_setup( cl_context_properties *context_properties,
  */
 void vul_cl_cleanup( )
 {
-	size_t i;
+	size_t i, k, l, size, size2;
 	cl_uint j;
 	vul__cl_context *context;
 
@@ -273,11 +345,12 @@ void vul_cl_cleanup( )
 		}
 
 		// Destroy all programs, and all kernels in those programs
-		vul_foreach( vul_cl_program, context->programs ) {
-			vul_cl_kernel *it2;
-			for( it2 = ( vul_cl_kernel* )vul_vector_begin( it->kernels );
-				 it2 != ( vul_cl_kernel* )vul_vector_end( it->kernels );
-				 ++it2 ) {
+		size = vul_svector_size( context->programs );
+		for( k = 0; k < size; ++k ) {
+			vul_cl_program *it = ( vul_cl_program* )vul_svector_get( context->programs, k );
+			size2 = vul_svector_size( it->kernels );
+			for( l = 0; l < size2; ++l ) {
+				vul_cl_kernel *it2  = ( vul_cl_kernel* )vul_svector_get( it->kernels, l );
 				// Release the kernels and free the entry point string
 				if( it2->kernel ) {
 					clReleaseKernel( it2->kernel );
@@ -286,10 +359,10 @@ void vul_cl_cleanup( )
 					free( it2->entry_point );
 				}
 				// Empty the argument list
-				vul_vector_destroy( it2->arguments );
+				vul_svector_destroy( it2->arguments );
 			}
 			// Destroy the kernel list
-			vul_vector_destroy( it->kernels );
+			vul_svector_destroy( it->kernels );
 			it->kernels = NULL;
 			// Release the program
 			clReleaseProgram( it->program );
@@ -307,18 +380,20 @@ void vul_cl_cleanup( )
 			}
 		}
 		// Destroy the program list
-		vul_vector_destroy( context->programs );
+		vul_svector_destroy( context->programs );
 		context->programs = NULL;
 
 		// Destroy all the buffers
-		vul_foreach( vul_cl_buffer, context->buffers ) {
+		size = vul_svector_size( context->buffers );
+		for( k = 0; k < size; ++k ) {
+			vul_cl_buffer *it = ( vul_cl_buffer* )vul_svector_get( context->buffers, k );
 			if( it->buffer != 0 ) {
 				clReleaseMemObject( it->buffer );
 				it->buffer = 0;
 			}
 		}
 		// Destroy the buffer list
-		vul_vector_destroy( context->buffers );
+		vul_svector_destroy( context->buffers );
 		
 		// Free the context
 		free( context );
@@ -385,12 +460,12 @@ vul_cl_program *vul_cl_create_program( cl_platform_id platform_id,
 	assert( platform_index < vul__cl_context_count );
 
 	// Create the return object
-	ret = ( vul_cl_program* )vul_vector_add_empty( vul__cl_contexts[ platform_index ]->programs );
+	ret = ( vul_cl_program* )vul_svector_append_empty( vul__cl_contexts[ platform_index ]->programs );
 	assert( ret );
 	ret->context = vul__cl_contexts[ platform_index ];
 	ret->type = is_binary ? VUL__CL_KERNEL_BINARY : VUL__CL_KERNEL_SOURCE;
 	// Create kernel list
-	ret->kernels = vul_vector_create( sizeof( vul_cl_kernel ), 0 );
+	ret->kernels = vul_svector_create( sizeof( vul_cl_kernel ), 8, malloc, free );
 
 	// Read the suorce / binary
 	f = fopen( file_path, "r" );
@@ -479,7 +554,7 @@ vul_cl_kernel *vul_cl_create_kernel( vul_cl_program *program, const char *entry_
 	size_t len;
 	cl_int err;
 	
-	ret = ( vul_cl_kernel* )vul_vector_add_empty( program->kernels );
+	ret = ( vul_cl_kernel* )vul_svector_append_empty( program->kernels );
 	assert( ret );
 
 	len = strlen( entry_point );
@@ -492,7 +567,7 @@ vul_cl_kernel *vul_cl_create_kernel( vul_cl_program *program, const char *entry_
 	ret->kernel = clCreateKernel( program->program, ret->entry_point, &err );
 	assert( ret->kernel && err == CL_SUCCESS );
 
-	ret->arguments = vul_vector_create( sizeof( vul_cl_kernel_argument ), 0 );
+	ret->arguments = vul_svector_create( sizeof( vul_cl_kernel_argument ), 8, malloc, free );
 
 	return ret;
 }
@@ -504,7 +579,7 @@ void vul_cl_kernel_add_argument( vul_cl_kernel *kernel, size_t data_size, const 
 {
 	vul_cl_kernel_argument *arg;
 	
-	arg = ( vul_cl_kernel_argument* )vul_vector_add_empty( kernel->arguments );
+	arg = ( vul_cl_kernel_argument* )vul_svector_append_empty( kernel->arguments );
 	arg->content = data_ptr;
 	arg->size = data_size;
 }
@@ -534,22 +609,24 @@ vul_cl_buffer *vul_cl_create_buffer( cl_platform_id platform_id, cl_mem_flags fl
 	assert( j < vul__cl_context_count );
 
 	// Create the return object
-	ret = ( vul_cl_buffer* )vul_vector_add_empty( vul__cl_contexts[ platform_index ]->buffers );
+	ret = ( vul_cl_buffer* )vul_svector_append_empty( vul__cl_contexts[ platform_index ]->buffers );
 	ret->context = vul__cl_contexts[ platform_index ];
 	ret->type = VUL__CL_BUFFER_HOST;
 	ret->flags = flags;
 	ret->gl_buffer = 0u;
 	ret->host_ptr = host_ptr;
+	ret->size = size;
 	ret->buffer = clCreateBuffer( vul__cl_contexts[ platform_index ]->context,
 								  flags,
 								  size,
 								  host_ptr,
 								  &err );
 	if( !ret->buffer || err != CL_SUCCESS ) {
+		printf("CL error in buffer creation %d\n", err);
 		ret->buffer = 0;
 		// We failed, remove it from the reference list
-		vul_vector_remove_cascade( vul__cl_contexts[ platform_index ]->buffers, 
-								   vul_vector_size( vul__cl_contexts[ platform_index ]->buffers ) - 1 );
+		vul_svector_remove_swap( vul__cl_contexts[ platform_index ]->buffers, 
+										 vul_svector_size( vul__cl_contexts[ platform_index ]->buffers ) - 1 );
 		return NULL;
 	}
 
@@ -581,12 +658,12 @@ vul_cl_buffer *vul_cl_create_gl_buffer( cl_platform_id platform_id, cl_mem_flags
 	assert( j < vul__cl_context_count );
 
 	// Create the return object
-	ret = ( vul_cl_buffer* )vul_vector_add_empty( vul__cl_contexts[ platform_index ]->buffers );
+	ret = ( vul_cl_buffer* )vul_svector_append_empty( vul__cl_contexts[ platform_index ]->buffers );
 	ret->context = vul__cl_contexts[ platform_index ];
 	ret->type = VUL__CL_BUFFER_OPENGL;
 	ret->flags = flags;
 	ret->gl_buffer = gl_buffer;
-	ret->host_ptr = NULL;
+	ret->host_ptr = NULL; // @TODO(thynn): Find and set ret->size
 	ret->buffer = clCreateFromGLBuffer( vul__cl_contexts[ platform_index ]->context,
 								  flags,
 								  gl_buffer,
@@ -594,8 +671,8 @@ vul_cl_buffer *vul_cl_create_gl_buffer( cl_platform_id platform_id, cl_mem_flags
 	if( !ret->buffer || err != CL_SUCCESS ) {
 		ret->buffer = 0;
 		// We failed, remove it from the reference list
-		vul_vector_remove_cascade( vul__cl_contexts[ platform_index ]->buffers, 
-								   vul_vector_size( vul__cl_contexts[ platform_index ]->buffers ) - 1 );
+		vul_svector_remove_swap( vul__cl_contexts[ platform_index ]->buffers, 
+										 vul_svector_size( vul__cl_contexts[ platform_index ]->buffers ) - 1 );
 		return NULL;
 	}
 
@@ -611,7 +688,7 @@ vul_cl_buffer *vul_cl_create_gl_buffer( cl_platform_id platform_id, cl_mem_flags
  * for when waiting for this write is desired.
  * Returns 0 if successful, !0 otherwise.
  */
-int vul_cl_write_buffer( size_t queue_index, 
+int vul_cl_write_buffer( size_t device_index, 
 								 vul_cl_buffer *buffer, 
 								 void *host_ptr, 
 								 size_t offset, 
@@ -625,9 +702,10 @@ int vul_cl_write_buffer( size_t queue_index,
 
 	assert( buffer );
 	assert( buffer->type == VUL__CL_BUFFER_HOST );
-	assert( queue_index < buffer->context->device_count );
+	assert( device_index < buffer->context->device_count );
+	assert( buffer->context->queue_list[ device_index ] );
 
-	err = clEnqueueWriteBuffer( buffer->context->queue_list[ queue_index ],
+	err = clEnqueueWriteBuffer( buffer->context->queue_list[ device_index ],
 								buffer->buffer, 
 								blocking_write ? CL_TRUE : CL_FALSE, 
 								offset,
@@ -636,10 +714,7 @@ int vul_cl_write_buffer( size_t queue_index,
 								event_wait_list_size, 
 								event_wait_list,
 								wait_event );
-	if ( err != CL_SUCCESS ) {
-		return -1;
-	}
-	return 0;
+	return err;
 }
 
 /**
@@ -680,10 +755,7 @@ int vul_cl_copy_buffer( size_t queue_index,
 								event_wait_list_size, 
 								event_wait_list,
 								wait_event );
-	if ( err != CL_SUCCESS ) {
-		return -1;
-	}
-	return 0;
+	return err;
 }
 
 /**
@@ -695,7 +767,7 @@ int vul_cl_copy_buffer( size_t queue_index,
  * for when waiting for this read is desired.
  * Returns 0 if successful, !0 otherwise.
  */
-int vul_cl_read_buffer( size_t queue_index, 
+int vul_cl_read_buffer( size_t device_index, 
 								vul_cl_buffer *buffer, 
 								void *host_ptr, 
 								size_t offset,
@@ -709,9 +781,9 @@ int vul_cl_read_buffer( size_t queue_index,
 
 	assert( buffer );
 	assert( host_ptr );
-	assert( queue_index < buffer->context->device_count );
+	assert( device_index < buffer->context->device_count );
 
-	err = clEnqueueReadBuffer( buffer->context->queue_list[ queue_index ],
+	err = clEnqueueReadBuffer( buffer->context->queue_list[ device_index ],
 								buffer->buffer, 
 								blocking_read,
 								offset,
@@ -720,10 +792,7 @@ int vul_cl_read_buffer( size_t queue_index,
 								event_wait_list_size, 
 								event_wait_list,
 								wait_event );
-	if ( err != CL_SUCCESS ) {
-		return -1;
-	}
-	return 0;
+	return err;
 }
 
 /** 
@@ -750,7 +819,7 @@ int vul_cl_resize_buffer( vul_cl_buffer *buffer, size_t new_size, void *host_ptr
 									 host_ptr,
 									 &err );
 	if( !buffer->buffer || err != CL_SUCCESS ) {
-		return -1;
+		return err == CL_SUCCESS ? -1000 : err;
 	}
 	return 0;
 }
@@ -774,17 +843,18 @@ cl_int vul_cl_call_kernel( vul_cl_kernel *kernel,
 									cl_event *wait_event )
 {
 	cl_int err;
-	cl_uint i;
+	cl_uint i, size;
 
 	assert( kernel );
 	assert( kernel->program );
 	assert( kernel->program->context );
 	assert( device_index < kernel->program->context->device_count );
 
-	i = 0;
 	err = 0;
 	// Upload all arguments
-	vul_foreach( vul_cl_kernel_argument, kernel->arguments ) {
+	size = vul_svector_size( kernel->arguments );
+	for( i = 0; i < size; ++i ) {
+		vul_cl_kernel_argument *it = ( vul_cl_kernel_argument* )vul_svector_get( kernel->arguments, i );
 		err |= clSetKernelArg( kernel->kernel, i++, it->size, it->content );
 	}
 	if( err != CL_SUCCESS ) {
@@ -848,8 +918,8 @@ cl_platform_id vul_cl_get_platform_by_vendor_string( const char *vendor_string )
 	for( i = 0; i < vul__cl_context_count; ++i ) {
 		err = clGetPlatformInfo( vul__cl_contexts[ i ]->platform,
 								 CL_PLATFORM_VENDOR,
-								 NULL,
 								 0,
+								 NULL,
 								 &size );
 		name = ( char* )malloc( sizeof( char ) * size );
 		err = clGetPlatformInfo( vul__cl_contexts[ i ]->platform,
@@ -878,12 +948,13 @@ cl_platform_id vul_cl_get_platform_by_context_index( ui32_t index )
 /**
  * Prints all platforms found
  */
-void vul_cl_print_platform_vendor_strings( )
+void vul_cl_print_platform_info( )
 {
 	cl_int err;
-	ui32_t i;
+	ui32_t i, j;
 	size_t size;
 	char *name;
+	ui64_t type;
 
 	for( i = 0; i < vul__cl_context_count; ++i ) {
 		if( !vul__cl_contexts[ i ]  ) {
@@ -891,8 +962,8 @@ void vul_cl_print_platform_vendor_strings( )
 		}
 		err = clGetPlatformInfo( vul__cl_contexts[ i ]->platform,
 								 CL_PLATFORM_VENDOR,
-								 NULL,
 								 0,
+								 NULL,
 								 &size );
 		name = ( char* )malloc( sizeof( char ) * size );
 		err = clGetPlatformInfo( vul__cl_contexts[ i ]->platform,
@@ -901,9 +972,41 @@ void vul_cl_print_platform_vendor_strings( )
 								 name,
 								 NULL );
 		printf( "Platform %d: %s\n", i, name );
+		free( name );
+		for( j = 0; j < vul__cl_contexts[ i ]->device_count; ++j ) {
+			if( !vul__cl_contexts[ i ]->device_list[ j ] ) {
+				continue;
+			}
+
+			err = clGetDeviceInfo( vul__cl_contexts[ i ]->device_list[ i ],
+										  CL_DEVICE_NAME,
+										  0,
+										  NULL,
+										  &size );
+			name = ( char* )malloc( sizeof( char ) * size );
+			err = clGetDeviceInfo( vul__cl_contexts[ i ]->device_list[ i ],
+										  CL_DEVICE_NAME,
+										  size,
+										  name,
+										  NULL );
+			err = clGetDeviceInfo( vul__cl_contexts[ i ]->device_list[ i ],
+										  CL_DEVICE_TYPE,
+										  sizeof( type ),
+										  &type,
+										  NULL );
+			const char *typename;
+			switch(type) {
+				case CL_DEVICE_TYPE_CPU: typename = "CPU"; break;
+				case CL_DEVICE_TYPE_GPU: typename = "GPU"; break;
+				case CL_DEVICE_TYPE_ACCELERATOR: typename = "Accelerator"; break;
+				case CL_DEVICE_TYPE_DEFAULT: typename = "Default"; break;
+				default: typename = "Unknown device type"; break;
+			}
+			printf( "\tDevice %d: %s - %s\n", j, name, typename );
+			free( name );
+		}
 	}
 }
-
 
 // @TODO: Useful auxilliary functions, like "do_we_support_this_extesion_on_given_device"
 // or "type_of_given_device" to find the best devices for a certain thing.

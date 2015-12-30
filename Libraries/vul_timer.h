@@ -249,7 +249,7 @@ ui64_t vul_timer_get_micros( vul_timer_t *c )
 	struct timespec now;
 	clock_gettime( CLOCK_REALTIME, &now );
 	return ( ( now.tv_sec - c->start.tv_sec ) * 1000000 )
-		+ ( now.tv_nsec - c->start.tv_nsec ) / 1000;
+		   + ( now.tv_nsec - c->start.tv_nsec ) / 1000;
 #elif defined( VUL_OSX )
 	uint64_t end = mach_absolute_time( );
 	uint64_t elapsed = end - c->start;

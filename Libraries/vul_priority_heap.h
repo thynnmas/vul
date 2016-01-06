@@ -1,5 +1,5 @@
 /*
-* Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
 *
 * This file describes a generic priority queue, implemented as a
 * fibonacci heap.
@@ -27,7 +27,7 @@
 /**
 * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!
 */
-#define VUL_DEFINE
+//#define VUL_DEFINE
 
 /**
  * The internal node representation.
@@ -158,7 +158,7 @@ static vul__fheap_element_t *vul__fheap_dequeue_min( vul_priority_heap_t *heap )
 	/* Count tovisit and calculate tree sizes */
 	vul__fheap_element_t *current = heap->min_element;
 	ui32_t tovisitsize = current == NULL ? 0 : 1;
-	ui32_t treesize = log2( heap->size ) + 1; // The guaranteed upper bound on degree is log( n )
+	ui32_t treesize = ( ui32_t )log2( heap->size ) + 1; // The guaranteed upper bound on degree is log( n )
 	vul__fheap_element_t *first = current;
 	while( current->next != first ) {
 		++tovisitsize;

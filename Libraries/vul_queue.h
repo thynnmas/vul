@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
  *
  * This file describes a queue constructed by dynamically allocated and
  * freed arrays linked together in a list. The size of each block, in bytes

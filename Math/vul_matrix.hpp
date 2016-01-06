@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
  *
  * A matrix math library for generic matrices. Format inspired by 
  * http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/

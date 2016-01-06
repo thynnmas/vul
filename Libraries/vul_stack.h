@@ -1,5 +1,5 @@
 /*
-* Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
 *
 * This file describes a thin wrapper around the stable array
 * providing stack behavior.

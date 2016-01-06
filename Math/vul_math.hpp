@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
  *
  * A scalar linear math library containing Vectors, Matrices, Points, Quaternions, AABBs
  * general affine transformations as well as fixed and half precision floating point types.

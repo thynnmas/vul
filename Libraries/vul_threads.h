@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
  *
  * This file contains a platform agnostic layer/defines for threading.
  * It wraps win32 threads and pthreads and supplies some defines to

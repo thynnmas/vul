@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
  *
  * This file contains tests for the Affine struct in vul_affine.hpp
  * 

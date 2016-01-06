@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * An AABB struct that works in unlimited dimensions.
  * 

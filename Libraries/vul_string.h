@@ -1,5 +1,5 @@
 /*
-* Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
 *
 * This file contains useful string-handling functions. The UTF-8 handling
 * is from stb.h, while the search/pattern matching is our own.

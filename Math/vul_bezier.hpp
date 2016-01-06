@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * Bezier curves. We support linear, quadratic and cubic bezier curves of
  * all data types that can be cast to/from floats. This file supplies

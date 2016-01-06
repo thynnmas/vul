@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
  *
  * A vector math library for generic points. These are similar to the vectors
  * in vul_vector.h, but only define operations defined on points. Explicit

@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file includes an abstraction of mmap and a bunch of file handling functions
  * from stb.h (since including only those from stb.h without the rest of the file 

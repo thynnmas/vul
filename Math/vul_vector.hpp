@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
  *
  * This file describes generic vectors. Specializations for 2, 3 & 4 vectors of 
  * all reasonable float, fixed, int and uint types (not 128bit) are made.

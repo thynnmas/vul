@@ -1,5 +1,5 @@
 /*
-* Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
+* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
 *
 * This file describes a vector class that never moves elements upon
 * resize. It is implemented as an series of exponentially growing buffers

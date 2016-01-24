@@ -465,48 +465,43 @@ namespace vul {
 	{
 
 		Quaternion< T > q;
-		T s, t, is;
-		T zero, one, two, p25, eps;
+		T t;
+		T zero, one, pf;
 
 		zero = static_cast< T >( 0.f );
 		one = static_cast< T >( 1.f );
-		two = static_cast< T >( 2.f );
-		p25 = static_cast< T >( 0.25f );
-		eps = static_cast< T >( 1e-7 );
+		pf = static_cast< T >( 0.5f );
 
-		// @TODO(thynn): Optimize this, there's a few operations to get rid of here (MADD all things!)
-		// @TODO(thynn): Better form: https://d3cw3dd2w32x2b.cloudfront.net/wp-content/uploads/2015/01/matrix-to-quat.pdf
-		t = one + mat( 0, 0 ) + mat( 1, 1 ) + mat( 2, 2 );
-		if( t > eps ) {
-			s = sqrt( t ) * two;
-			is = one / s;
-			q.x = ( mat( 2, 1 ) - mat( 1, 2 ) ) * is;
-			q.y = ( mat( 0, 2 ) - mat( 2, 0 ) ) * is;
-			q.z = ( mat( 1, 0 ) - mat( 0, 1 ) ) * is;
-			q.w = p25 * s;
-		} else if ( mat( 0, 0 ) > mat( 1, 1 ) && mat( 0, 0 ) > mat( 2, 2 ) )  {
-			s = sqrt( one + mat( 0, 0 ) - mat( 1, 1 ) - mat( 2, 2 ) ) * two;
-			is = one / s;
-			q.x = p25 * s;
-			q.y = ( mat( 1, 0 ) + mat( 0, 1 ) ) * is;
-			q.z = ( mat( 0, 2 ) + mat( 2, 0 ) ) * is;
-			q.w = ( mat( 2, 1 ) - mat( 1, 2 ) ) * is;
-		} else if( mat( 1, 1 ) > mat( 2, 2 ) ) {
-			s = sqrt( one + mat( 1, 1 ) - mat( 0, 0 ) - mat( 2, 2 ) ) * two;
-			is = one / s;
-			q.x = ( mat( 1, 0 ) + mat( 0, 1 ) ) * is;
-			q.y = p25 * s;
-			q.z = ( mat( 2, 1 ) + mat( 1, 2 ) ) * is;
-			q.w = ( mat( 0, 2 ) - mat( 2, 0 ) ) * is;
+		if( mat( 2, 2 ) < zero ) {
+			if( mat( 0, 0 ) > mat( 1, 1 ) ) {
+				t = one + mat( 0, 0 ) - mat( 1, 1 ) - mat( 2, 2 );
+				q.x = t;
+				q.y = mat( 1, 0 ) + mat( 0, 1 );
+				q.z = mat( 0, 2 ) + mat( 2, 0 );
+				q.w = mat( 2, 1 ) - mat( 1, 2 );
+			} else {
+				t = one - mat( 0, 0 ) + mat( 1, 1 ) - mat( 2, 2 );
+				q.x = mat( 1, 0 ) + mat( 0, 1 );
+				q.y = t;
+				q.z = mat( 2, 1 ) + mat( 1, 2 );
+				q.w = mat( 0, 2 ) - mat( 2, 0 );
+			}
 		} else {
-			s = sqrt( one + mat( 2, 2 ) - mat( 0, 0 ) - mat( 1, 1 ) ) * two;
-			is = one / s;
-			q.x = ( mat( 0, 2 ) + mat( 2, 0 ) ) * is;
-			q.y = ( mat( 2, 1 ) + mat( 1, 2 ) ) * is;
-			q.z = p25 * s;
-			q.w = ( mat( 1, 0 ) - mat( 0, 1 ) ) * is;
+			if( mat( 0, 0 ) < -mat( 1, 1 ) ) {
+				t = one - mat( 0, 0 ) - mat( 1, 1 ) + mat( 2, 2 );
+				q.x = mat( 0, 2 ) + mat( 2, 0 );
+				q.y = mat( 2, 1 ) + mat( 1, 2 );
+				q.z = t;
+				q.w = mat( 1, 0 ) - mat( 0, 1 );
+			} else {
+				t = one + mat( 0, 0 ) + mat( 1, 1 ) + mat( 2, 2 );
+				q.x = mat( 2, 1 ) - mat( 1, 2 );
+				q.y = mat( 0, 2 ) - mat( 2, 0 );
+				q.z = mat( 1, 0 ) - mat( 0, 1 );
+				q.w = t;
+			}
 		}
-
+		q *= pf / sqrt( t );
 		return q;
 	}
 	// Special cases
@@ -541,11 +536,11 @@ namespace vul {
 		zero = static_cast< T >( 0.f );
 		one = static_cast< T >( 1.f );
 
-		m = makeMatrix33FromColumns( b, t, n );
+		m = transpose( makeMatrix33FromColumns( b, t, n ) );
 
 		scale = determinant( m ) < zero ? -one : one;
-		m( 2, 0 ) *= scale;
-		m( 2, 1 ) *= scale;
+		m( 0, 2 ) *= scale;
+		m( 1, 2 ) *= scale;
 		m( 2, 2 ) *= scale;
 		
 		q = normalize( makeQuatFromMatrix( m ) );
@@ -590,7 +585,7 @@ namespace vul {
 		m( 1, 1 ) = one - two * ( q.x * q.x + q.z * q.z );
 		m( 1, 2 ) = two * ( q.y * q.z + q.x * q.w );
 
-		n = cross( column( m, 1 ), column( m, 0 ) );
+		n = cross( column( m, 0 ), column( m, 1 ) );
 
 		m( 2, 0 ) = n[ 0 ] * f;
 		m( 2, 1 ) = n[ 1 ] * f;

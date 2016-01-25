@@ -61,7 +61,7 @@
 #define VUL_LINEAR_SOLVERS_FREE free
 #else
 	#ifndef VUL_LINEAR_SOLVERS_FREE
-		vul_optimize.h: You must also specify a deallocation function to go with VUL_LINEAR_SOLVERS_ALLOC
+		vul_linear_solvers.h: You must also specify a deallocation function to go with VUL_LINEAR_SOLVERS_ALLOC
 	#endif
 #endif
 
@@ -85,14 +85,14 @@
 #define VECTOR_OP DECLARE_VECTOR_OP
 #endif
 
-VECTOR_OP( vulo__vadd, + )
-VECTOR_OP( vulo__vsub, - )
-VECTOR_OP( vulo__vmul, * )
+VECTOR_OP( vull__vadd, + )
+VECTOR_OP( vull__vsub, - )
+VECTOR_OP( vull__vmul, * )
 
 #ifndef VUL_DEFINE
-void vulo__vmul_sub( float *out, float *a, float x, float *b, int n );
+void vull__vmul_sub( float *out, float *a, float x, float *b, int n );
 #else
-void vulo__vmul_sub( float *out, float *a, float x, float *b, int n )
+void vull__vmul_sub( float *out, float *a, float x, float *b, int n )
 {
 	int i;
 	for( i = 0; i < n; ++i ) {
@@ -102,9 +102,9 @@ void vulo__vmul_sub( float *out, float *a, float x, float *b, int n )
 #endif
 
 #ifndef VUL_DEFINE
-void vulo__vmul_add( float *out, float *a, float x, float *b, int n );
+void vull__vmul_add( float *out, float *a, float x, float *b, int n );
 #else
-void vulo__vmul_add( float *out, float *a, float x, float *b, int n )
+void vull__vmul_add( float *out, float *a, float x, float *b, int n )
 {
 	int i;
 	for( i = 0; i < n; ++i ) {
@@ -115,9 +115,9 @@ void vulo__vmul_add( float *out, float *a, float x, float *b, int n )
 		
 
 #ifndef VUL_DEFINE
-void vulo__vcopy( float *out, float *x, int n );
+void vull__vcopy( float *out, float *x, int n );
 #else
-void vulo__vcopy( float *out, float *x, int n )
+void vull__vcopy( float *out, float *x, int n )
 {
 	int i;
 	for( i = 0; i < n; ++i ) {
@@ -128,9 +128,9 @@ void vulo__vcopy( float *out, float *x, int n )
 
 
 #ifndef VUL_DEFINE
-float vulo__dot( float *a, float *b, int n );
+float vull__dot( float *a, float *b, int n );
 #else
-float vulo__dot( float *a, float *b, int n )
+float vull__dot( float *a, float *b, int n )
 {
 	float f;
 	int i;
@@ -144,9 +144,9 @@ float vulo__dot( float *a, float *b, int n )
 #endif
 
 #ifndef VUL_DEFINE
-void vulo__mmul( float *out, float *A, float *x, int n );
+void vull__mmul( float *out, float *A, float *x, int n );
 #else
-void vulo__mmul( float *out, float *A, float *x, int n )
+void vull__mmul( float *out, float *A, float *x, int n )
 {
 	int r, c;
 	for( r = 0; r < n; ++r ) {
@@ -159,9 +159,9 @@ void vulo__mmul( float *out, float *A, float *x, int n )
 #endif
 
 #ifndef VUL_DEFINE
-void vulo__mmul_add( float *out, float *A, float *x, float *b, int n );
+void vull__mmul_add( float *out, float *A, float *x, float *b, int n );
 #else
-void vulo__mmul_add( float *out, float *A, float *x, float *b, int n )
+void vull__mmul_add( float *out, float *A, float *x, float *b, int n )
 {
 	int r, c;
 	for( r = 0; r < n; ++r ) {
@@ -174,9 +174,9 @@ void vulo__mmul_add( float *out, float *A, float *x, float *b, int n )
 #endif
 
 #ifndef VUL_DEFINE
-void vulo__forward_substitute( float *out, float *A, float *b, int n );
+void vull__forward_substitute( float *out, float *A, float *b, int n );
 #else
-void vulo__forward_substitute( float *out, float *A, float *b, int n )
+void vull__forward_substitute( float *out, float *A, float *b, int n )
 {
 	int r, c;
 
@@ -191,9 +191,9 @@ void vulo__forward_substitute( float *out, float *A, float *b, int n )
 #endif
 
 #ifndef VUL_DEFINE
-void vulo__backward_substitute( float *out, float *A, float *b, int n );
+void vull__backward_substitute( float *out, float *A, float *b, int n );
 #else
-void vulo__backward_substitute( float *out, float *A, float *b, int n )
+void vull__backward_substitute( float *out, float *A, float *b, int n )
 {
 	int r, c;
 
@@ -237,20 +237,20 @@ void vul_solve_conjugate_gradient_dense( float *out,
 	Ap = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * n );
 	
 	x = out;
-	vulo__vcopy( out, initial_guess, n );
-	vulo__mmul( r, A, x, n );
-	vulo__vsub( r, r, b, n );
-	vulo__vcopy( p, r, n );
+	vull__vcopy( out, initial_guess, n );
+	vull__mmul( r, A, x, n );
+	vull__vsub( r, r, b, n );
+	vull__vcopy( p, r, n );
 
-	rd = vulo__dot( r, r, n );
+	rd = vull__dot( r, r, n );
 	for( i = 0; i < max_iterations; ++i ) {
-		vulo__mmul( Ap, A, p, n );
-		alpha = rd / vulo__dot( p, Ap, n );
+		vull__mmul( Ap, A, p, n );
+		alpha = rd / vull__dot( p, Ap, n );
 		for( j = 0; j < n; ++j ) {
 			x[ j ] -= p[ j ] * alpha;
 			r[ j ] -= Ap[ j ] * alpha;
 		}
-		rd2 = vulo__dot( r, r, n );
+		rd2 = vull__dot( r, r, n );
 		if( fabsf( rd2 - rd ) < tolerance * n ) {
 			break;
 		}
@@ -345,10 +345,10 @@ void vul_solve_lu_decomposition_dense( float *out,
 		}
 	
 	/* Calculate initial residual */
-	vulo__vcopy( x, initial_guess, n );
-	vulo__mmul( r, A, x, n );
-	vulo__vsub( r, b, r, n );
-	rd = vulo__dot( r, r, n );
+	vull__vcopy( x, initial_guess, n );
+	vull__mmul( r, A, x, n );
+	vull__vsub( r, b, r, n );
+	rd = vull__dot( r, r, n );
 
 	for( k = 0; k < max_iterations; ++k ) {
 		/* Solve Ly = r (solve for the residual error, not b)*/
@@ -366,18 +366,18 @@ void vul_solve_lu_decomposition_dense( float *out,
 			r[ i ] = sum;
 		}
 		/* Solve Ue = y (reuse r as e) */
-		vulo__backward_substitute( r, LU, r, n );
+		vull__backward_substitute( r, LU, r, n );
 
 		/* Subtract the error from the old solution */
-		vulo__vsub( x, x, r, n );
+		vull__vsub( x, x, r, n );
 
 		/* Break if within tolerance */
-		rd2 = vulo__dot( r, r, n );
+		rd2 = vull__dot( r, r, n );
 		if( fabs( rd2 - rd ) < tolerance * n ) {
 			break;
 		}
-		vulo__mmul( r, A, x, n );
-		vulo__vsub( r, r, b, n );
+		vull__mmul( r, A, x, n );
+		vull__vsub( r, r, b, n );
 		rd = rd2;
 	}
 	
@@ -441,10 +441,10 @@ void vul_solve_cholesky_decomposition_dense( float *out,
 	}
 	
 	/* Calculate initial residual */
-	vulo__vcopy( x, initial_guess, n );
-	vulo__mmul( r, A, x, n );
-	vulo__vsub( r, r, b, n );
-	rd = vulo__dot( r, r, n );
+	vull__vcopy( x, initial_guess, n );
+	vull__mmul( r, A, x, n );
+	vull__vsub( r, r, b, n );
+	rd = vull__dot( r, r, n );
 
 	for( k = 0; k < max_iterations; ++k ) {
 		/* Solve Ly = r (solve for the residual error, not b)*/
@@ -465,12 +465,12 @@ void vul_solve_cholesky_decomposition_dense( float *out,
 		}
 		
 		/* Subtract the error from the old solution */
-		vulo__vsub( x, x, r, n );
+		vull__vsub( x, x, r, n );
 
 		/* Break if within tolerance */
-		vulo__mmul( r, A, x, n );
-		vulo__vsub( r, r, b, n );
-		rd2 = vulo__dot( r, r, n );
+		vull__mmul( r, A, x, n );
+		vull__vsub( r, r, b, n );
+		rd2 = vull__dot( r, r, n );
 		if( fabs( rd2 - rd ) < tolerance * n ) {
 			break;
 		}
@@ -557,10 +557,10 @@ void vul_solve_qr_decomposition_dense( float *out,
 
 	
 	/* Calculate initial residual */
-	vulo__vcopy( x, initial_guess, n );
-	vulo__mmul( r, A, x, n );
-	vulo__vsub( r, b, r, n );
-	rd = vulo__dot( r, r, n );
+	vull__vcopy( x, initial_guess, n );
+	vull__mmul( r, A, x, n );
+	vull__vsub( r, b, r, n );
+	rd = vull__dot( r, r, n );
 
 	for( k = 0; k < max_iterations; ++k ) {
 		/* Form Q^T * b in y */
@@ -585,10 +585,10 @@ void vul_solve_qr_decomposition_dense( float *out,
 			}
 		
 		/* Subtract the error from the old solution */
-		vulo__vsub( x, x, r, n );
+		vull__vsub( x, x, r, n );
 
 		/* Break if within tolerance */
-		rd2 = vulo__dot( r, r, n );
+		rd2 = vull__dot( r, r, n );
 		if( fabs( rd2 - rd ) < tolerance * n ) {
 			break;
 		}
@@ -629,10 +629,10 @@ void vul_solve_successive_over_relaxation_dense( float *out,
 		
 	x = out;
 	/* Calculate initial residual */
-	vulo__vcopy( x, initial_guess, n );
-	vulo__mmul( r, A, x, n );
-	vulo__vsub( r, r, b, n );
-	rd = vulo__dot( r, r, n );
+	vull__vcopy( x, initial_guess, n );
+	vull__mmul( r, A, x, n );
+	vull__vsub( r, r, b, n );
+	rd = vull__dot( r, r, n );
 		
 	for( k = 0; k < max_iterations; ++k ) {
 		/* Relax */
@@ -647,9 +647,9 @@ void vul_solve_successive_over_relaxation_dense( float *out,
 					+ ( relaxation_factor / IDX( A, i, i, n ) ) * ( b[ i ] - omega );
 		}
 		/* Check for convergence */
-		vulo__mmul( r, A, x, n );
-		vulo__vsub( r, r, b, n );
-		rd2 = vulo__dot( r, r, n );
+		vull__mmul( r, A, x, n );
+		vull__vsub( r, r, b, n );
+		rd2 = vull__dot( r, r, n );
 		if( fabs( rd2 - rd ) < tolerance * n ) {
 			break;
 		}

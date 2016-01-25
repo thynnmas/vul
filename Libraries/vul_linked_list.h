@@ -114,7 +114,6 @@ void vul_list_remove( vul_list_element_t *e, void ( *deallocator )( void *ptr ) 
  * a new element with the given data. If the given data is smaller than the entire list,
  * we return NULL.
  */
-
 #ifndef VUL_DEFINE
 vul_list_element_t *vul_list_find( vul_list_element_t *head, void *data, int (*comparator)( void *a, void *b ) );
 #else
@@ -130,6 +129,25 @@ vul_list_element_t *vul_list_find( vul_list_element_t *head, void *data, int (*c
 
 	while( head->next != NULL // Return last element of the list if data is bigger than all elements, not null
 		   && comparator( data, head->next->data ) >= 0 )	// And keep moving while data is bigger than or equal to the next element.
+	{
+		head = head->next;
+	}
+	return head;
+}
+#endif
+
+/**
+ * Finds the first element in the list that is equal to the given data or NULL if not found.
+ */
+#ifndef VUL_DEFINE
+vul_list_element_t *vul_list_find_first( vul_list_element_t *head, void *data, int (*comparator)( void *a, void *b ) );
+#else
+vul_list_element_t *vul_list_find_first( vul_list_element_t *head, void *data, int (*comparator)( void *a, void *b ) )
+{
+	assert( head != NULL );
+	
+	while( head->next != NULL // Return last element of the list if data is bigger than all elements, not null
+		   && comparator( data, head->next->data ) != 0 )	// And keep moving while data is bigger than or equal to the next element.
 	{
 		head = head->next;
 	}

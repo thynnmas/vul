@@ -8,11 +8,16 @@
  * If VUL_HALF_AVX is defined, the SSE instructions _mm_cvtph_ps & _mm_vctps_ph
  * are used for single/half conversions.
  * Otherwise, a slower runtime calculation is done.
+ *
  * 
  * @TODO: Implement table and SSE versions!
  * @TODO: Convert directly to/from double and fixed formats.
  * @TODO: Test if working in half format the whole way is faster (for ops)
  * @TODO: See ryg for potentially faster versions: https://fgiesen.wordpress.com/2012/03/28/half-to-float-done-quic/
+ *        Actually, for ryg versions, just look at ALL OF THESE https://gist.github.com/rygorous/2156668
+ *        with comment '@rygorous The actual funcs you want are "float_to_half_fast3_rtne" (with RTNE),  
+ *        "float_to_half_fast3" (aforementioned biased rounding), and the SSE2 intrinsic equivalents 
+ *        "float_to_half_rtne_SSE2" and "float_to_half_SSE2".'
  *
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)

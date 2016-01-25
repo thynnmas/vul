@@ -574,8 +574,8 @@ unsigned int vul_vector_find( vul_vector_t *vec, void *item )
 
 	assert( vec != NULL );
 
-	for( i = 0; i < vec->size; i += vec->element_size ) {
-		if( &vec->list[ i ] == item ) {
+	for( i = 0; i < vec->size; ++i ) {
+		if( &vec->list[ i * vec->element_size ] == item ) {
 			return i;
 		}
 	}
@@ -598,8 +598,8 @@ unsigned int vul_vector_find_val( vul_vector_t *vec, void *item )
 
 	assert( vec != NULL );
 
-	for( i = 0; i < vec->size; i += vec->element_size ) {
-		if( memcmp( &vec->list[ i ], item, vec->element_size ) == 0 ) {
+	for( i = 0; i < vec->size; ++i ) {
+		if( memcmp( &vec->list[ i * vec->element_size ], item, vec->element_size ) == 0 ) {
 			return i;
 		}
 	}
@@ -607,6 +607,28 @@ unsigned int vul_vector_find_val( vul_vector_t *vec, void *item )
 }
 #endif
 		
+/**
+* Finds the index of the given item, or -1 if not found.
+* This uses a given comparator to compare the items
+*/
+#ifndef VUL_DEFINE
+unsigned int vul_vector_find_comparator( vul_vector_t *vec, void *item, int ( *comparator )( void* a, void *b ) );
+#else
+unsigned int vul_vector_find_comparator( vul_vector_t *vec, void *item, int ( *comparator )( void* a, void *b ) )
+{
+	unsigned int i;
+
+	assert( vec != NULL );
+
+	for( i = 0; i < vec->size; ++i ) {
+		if( comparator( &vec->list[ i * vec->element_size ], item ) == 0 ) {
+			return i;
+		}
+	}
+	return -1;
+}
+#endif
+
 /**
 * Shrinks the vector to fit the current size.
 */

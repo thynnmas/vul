@@ -3,7 +3,7 @@
  *
  * This file contains tests for the linear solvers in vul_linear.hpp
  * It compares results against expected results based on offline math,
- * as well as reference implementations (ceres, eigen).
+ * @TODO(thynn): as well as reference implementations (ceres, eigen).
  * 
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)

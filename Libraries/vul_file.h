@@ -49,9 +49,9 @@
 
 #ifdef VUL_WINDOWS
 #define VUL_MMAP_PROT_NONE 0
-#define VUL_MMAP_PROT_READ FILE_MAP_READ
-#define VUL_MMAP_PROT_WRITE FILE_MAP_WRITE
-#define VUL_MMAP_PROT_EXEC FILE_MAP_EXECUTE
+#define VUL_MMAP_PROT_READ 1
+#define VUL_MMAP_PROT_WRITE 2
+#define VUL_MMAP_PROT_EXEC 4
 #else
 #define VUL_MMAP_PROT_NONE 0
 #define VUL_MMAP_PROT_READ 1
@@ -68,6 +68,7 @@ typedef struct vul_mmap_file_t {
 	void *map;
 	size_t length;
 #ifdef VUL_WINDOWS
+	HANDLE hMapping;
 	HANDLE hFile;
 #else
 	int fd;
@@ -95,22 +96,35 @@ vul_mmap_file_t vul_mmap_file( const char *path, void *base_addr, int prot, int 
 	vul_mmap_file_t ret;
 
 #ifdef VUL_WINDOWS
-	ret.hFile = OpenFileMapping( ( DWORD )base_addr, TRUE, path );
-
+	DWORD mode = GENERIC_READ 
+			   | ( ( prot & VUL_MMAP_PROT_WRITE ) ? GENERIC_WRITE : 0 )
+			   | ( ( prot & VUL_MMAP_PROT_EXEC )  ? GENERIC_EXECUTE : 0 );
+	DWORD pmode = PAGE_READONLY;
+	if( prot & VUL_MMAP_PROT_WRITE ) pmode = PAGE_READWRITE;
+	if( prot & VUL_MMAP_PROT_EXEC ) {
+		if( pmode == PAGE_READWRITE ) {
+			pmode = PAGE_EXECUTE_READWRITE;
+		} else {
+			pmode = PAGE_EXECUTE_READ;
+		}
+	}
+	ret.hFile = CreateFile( path, mode, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+	ret.hMapping = CreateFileMapping( ret.hFile, NULL, pmode, 0, 0, NULL );
+	
 	if( map_length == -1 ) {
 		map_length = GetFileSize( ret.hFile, NULL );
 	}
 
 	ui64_t ofs_high = ( ui64_t )file_offset;
 	if( base_addr ) {
-		ret.map = MapViewOfFileEx( ret.hFile,
+		ret.map = MapViewOfFileEx( ret.hMapping,
 									prot,
 									ofs_high >> 32,
 									file_offset & 0xffffffff,
 									map_length,
 									base_addr );
 	} else {
-		ret.map = MapViewOfFileEx( ret.hFile,
+		ret.map = MapViewOfFileEx( ret.hMapping,
 								   prot,
 								   ofs_high >> 32,
 								   file_offset & 0xffffffff,
@@ -125,8 +139,8 @@ vul_mmap_file_t vul_mmap_file( const char *path, void *base_addr, int prot, int 
 		map_length = ( size_t )sb.st_size;
 	}
 	ret.map = mmap( base_addr, map_length, prot, flags, ret.fd, file_offset );
-	ret.length = map_length;
 #endif
+	ret.length = map_length;
 
 	return ret;
 }

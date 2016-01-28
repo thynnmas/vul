@@ -472,7 +472,12 @@ namespace vul {
 	 * Returns the largest component.
 	 */
 	template< typename T, i32_t n >
-	T maxComponent( const Vector< T, n > &a );
+	T maxComponent( const Vector< T, n > &a );		
+	/**
+	 * Cast to a shorter version of itself 
+	 */
+	template< typename T, i32_t n_new, i32_t n_old >
+	const Vector< T, n_new > &truncate_cast( const Vector< T, n_old > &v );
 	
 	//---------------------------
 	// Definitions
@@ -1319,7 +1324,13 @@ namespace vul {
 
 		return m;
 	}
-
+	
+	template< typename T, i32_t n_new, i32_t n_old >
+	const Vector< T, n_new > &truncate_cast( const Vector< T, n_old > &v )
+	{
+		assert( n_new <= n_old );
+		return reinterpret_cast< const Vector< T, n_new > & >( v.data );
+	}
 }
 
 #endif

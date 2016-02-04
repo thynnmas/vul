@@ -143,7 +143,7 @@ int vul_socket_init( )
 {
 #ifdef VUL_WINDOWS
 	WSADATA wsa;
-	s32 res;
+	int res;
 
 	res = WSAStartup( MAKEWORD(2, 2), &wsa );
 	return res;

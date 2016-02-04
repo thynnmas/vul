@@ -39,7 +39,7 @@
 #include <string.h>
 
 #include "vul_types.h"
-#ifndef VUL_DEFINE
+#ifndef VUL_LINKED_LIST_H
 	#include "vul_linked_list.h"
 #endif
 

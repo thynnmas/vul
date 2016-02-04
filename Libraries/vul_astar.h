@@ -58,13 +58,13 @@ typedef enum vul__astar_node_state {
 * to trace back the path we find during search, and its state.
 * It also contains implementation specific data, which must be defined later.
 */
-typedef struct vul_astar_node_t {
+typedef struct vul_astar_node {
 	void *user_data;
-	f64_t f_cost;
-	f64_t g_cost;
+	f64 f_cost;
+	f64 g_cost;
 	vul__astar_node_state state;
-	struct vul_astar_node_t *path_parent;
-} vul_astar_node_t;
+	struct vul_astar_node *path_parent;
+} vul_astar_node;
 
 /*
 * The graph representation is problem specific, but we move this to the
@@ -72,18 +72,18 @@ typedef struct vul_astar_node_t {
 * finding a node by a given vul_astar_location, and finding the neighbors of
 * a given node. Both of these operations should be fast, so TODO: Use a map!
 */
-typedef struct vul_astar_graph_t {
+typedef struct vul_astar_graph {
 	void *user_data;
-	vul_svector_t *nodes;
-} vul_astar_graph_t;
+	vul_svector *nodes;
+} vul_astar_graph;
 
 /*
 * A node on the path from root to end point.
 */
-typedef struct vul_astar_path_node_t {
+typedef struct vul_astar_path_node {
 	void *node_data;
-	struct vul_astar_path_node_t *next;
-} vul_astar_path_node_t;
+	struct vul_astar_path_node *next;
+} vul_astar_path_node;
 
 /*
 * A* result struct. Contains statistics on the sizes of the sets
@@ -92,12 +92,12 @@ typedef struct vul_astar_path_node_t {
 * function and must be freed once no longer needed with astar_path_finalize.
 * Also contains the final node, for problems where finding that node it the goal.
 */
-typedef struct vul_astar_result_t {
-	ui64_t size_closed_set;
-	ui64_t size_open_set;
-	vul_astar_path_node_t *root;
-	vul_astar_node_t *final_node;
-} vul_astar_result_t;
+typedef struct vul_astar_result {
+	u64 size_closed_set;
+	u64 size_open_set;
+	vul_astar_path_node *root;
+	vul_astar_node *final_node;
+} vul_astar_result;
 
 
 typedef enum vul_astar_strategy {
@@ -107,7 +107,9 @@ typedef enum vul_astar_strategy {
 	VUL_ASTAR_STRATEGY_Count
 } vul_astar_strategy;
 
-#ifndef VUL_DEFINE
+#ifdef _cplusplus
+extern "C" {
+#endif
 /*
  * Performs an A* search on the given graph using the given heuristic.
  * Terminates if the node is found to be final by the given is_final function.
@@ -130,29 +132,29 @@ typedef enum vul_astar_strategy {
  * existing, as we will otherwise have a node with multiple,
  * potentially conflicting states (@TODO(thynn): Which is why the node array should be a map!)
  */
-void vul_astar_search( vul_astar_result_t *result,
-					   vul_astar_graph_t *graph,
-					   f64_t( *heuristic )( vul_astar_node_t *s, vul_astar_node_t *t ),
-					   int( *is_final )( vul_astar_node_t *current, vul_astar_node_t *end ),
-					   ui64_t( *neighbors )( vul_astar_node_t **neighbors, vul_astar_graph_t *graph, vul_astar_node_t *root, ui32_t max ),
-					   f64_t( *cost )( vul_astar_node_t *s, vul_astar_node_t *t ),
-					   vul_astar_node_t *start,
-					   vul_astar_node_t *end,
+void vul_astar_search( vul_astar_result *result,
+					   vul_astar_graph *graph,
+					   f64( *heuristic )( vul_astar_node *s, vul_astar_node *t ),
+					   int( *is_final )( vul_astar_node *current, vul_astar_node *end ),
+					   u64( *neighbors )( vul_astar_node **neighbors, vul_astar_graph *graph, vul_astar_node *root, u32 max ),
+					   f64( *cost )( vul_astar_node *s, vul_astar_node *t ),
+					   vul_astar_node *start,
+					   vul_astar_node *end,
 					   vul_astar_strategy strategy,
-					   ui32_t max_neighbors,
-					   void( *visualize )( vul_astar_graph_t *graph, vul_astar_node_t *start, vul_astar_node_t *end, vul_astar_node_t *current ) );
+					   u32 max_neighbors,
+					   void( *visualize )( vul_astar_graph *graph, vul_astar_node *start, vul_astar_node *end, vul_astar_node *current ) );
 
 /*
-* Iteration function for the general purpose iterator of vul_stable_vector_t
+* Iteration function for the general purpose iterator of vul_svector
 * that resets the a node.
 */
-void vul__astar_node_reseter( void *node_ptr, ui32_t index, void *nothing );
+static void vul__astar_node_reseter( void *node_ptr, u32 index, void *nothing );
 
 /*
 * Reset the state of all nodes in the graph to undiscovered. Allows multiple searches
 * on the same graph without reconstruction.
 */
-void vul_astar_graph_reset( vul_astar_graph_t *graph );
+void vul_astar_graph_reset( vul_astar_graph *graph );
 
 /*
 * Traces back the path from the given end node to the start node (identified
@@ -160,58 +162,63 @@ void vul_astar_graph_reset( vul_astar_graph_t *graph );
 * Free the path by passing the root node (returned from this) to 
 * vul_astar_path_finalize.
 */
-vul_astar_path_node_t *vul_astar_calculate_path( vul_astar_node_t *end );
+vul_astar_path_node *vul_astar_calculate_path( vul_astar_node *end );
 
 /*
 * Frees the memory allocated by vul_astar_calculate_path in the path from the
 * given root node.
 */
-void vul_astar_path_finalize( vul_astar_path_node_t *root );
+void vul_astar_path_finalize( vul_astar_path_node *root );
 
 /*
 * Comparison function used to sort astar_nodes in the search based on their
 * f_cost value.
 */
-int vul__astar_node_comparator( void *a, void *b );
+static int vul__astar_node_comparator( void *a, void *b );
 
 //-------------------------------------------------------------------------------
 // Helper functions to pop, peek and push that help keep the main function clean
 
-void vul__astar_open_set_pop( vul_astar_strategy strategy, void *set, void *data_out );
-vul_astar_node_t *vul_astar__open_set_peek( vul_astar_strategy strategy, void *set );
-void vul__astar_open_set_push( vul_astar_strategy strategy, void *set, vul_astar_node_t **node );
-void *vul__astar_open_set_create( vul_astar_strategy strategy );
-void vul__astar_open_set_finalize( vul_astar_strategy strategy, void *set );
-int vul__astar_open_set_is_empty( vul_astar_strategy strategy, void *set );
+static void vul__astar_open_set_pop( vul_astar_strategy strategy, void *set, void *data_out );
+static vul_astar_node *vul_astar__open_set_peek( vul_astar_strategy strategy, void *set );
+static void vul__astar_open_set_push( vul_astar_strategy strategy, void *set, vul_astar_node **node );
+static void *vul__astar_open_set_create( vul_astar_strategy strategy );
+static void vul__astar_open_set_finalize( vul_astar_strategy strategy, void *set );
+static int vul__astar_open_set_is_empty( vul_astar_strategy strategy, void *set );
 
+#ifdef _cplusplus
+}
 #endif
-
 #endif
 
 #ifdef VUL_DEFINE
 
-void vul_astar_search( vul_astar_result_t *result,
-					   vul_astar_graph_t *graph,
-					   f64_t( *heuristic )( vul_astar_node_t *s, vul_astar_node_t *t ),
-					   int( *is_final )( vul_astar_node_t *current, vul_astar_node_t *end ),
-					   ui64_t( *neighbors )( vul_astar_node_t **neighbors, vul_astar_graph_t *graph, vul_astar_node_t *root, ui32_t max ),
-					   f64_t( *cost )( vul_astar_node_t *s, vul_astar_node_t *t ),
-					   vul_astar_node_t *start,
-					   vul_astar_node_t *end,
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+void vul_astar_search( vul_astar_result *result,
+					   vul_astar_graph *graph,
+					   f64( *heuristic )( vul_astar_node *s, vul_astar_node *t ),
+					   int( *is_final )( vul_astar_node *current, vul_astar_node *end ),
+					   u64( *neighbors )( vul_astar_node **neighbors, vul_astar_graph *graph, vul_astar_node *root, u32 max ),
+					   f64( *cost )( vul_astar_node *s, vul_astar_node *t ),
+					   vul_astar_node *start,
+					   vul_astar_node *end,
 					   vul_astar_strategy strategy,
-					   ui32_t max_neighbors,
-					   void( *visualize )( vul_astar_graph_t *graph, vul_astar_node_t *start, vul_astar_node_t *end, vul_astar_node_t *current ) )
+					   u32 max_neighbors,
+					   void( *visualize )( vul_astar_graph *graph, vul_astar_node *start, vul_astar_node *end, vul_astar_node *current ) )
 	{
 	void *open_set;
-	vul_astar_node_t *n, **nb, *best;
-	ui64_t c, i;
-	f64_t g;
+	vul_astar_node *n, **nb, *best;
+	u64 c, i;
+	f64 g;
 
 	/* Initialize the open set */
 	open_set = vul__astar_open_set_create( strategy );
 
 	/* Initialize the neighborood */
-	nb = ( vul_astar_node_t** )VUL_ASTAR_ALLOC( sizeof( vul_astar_node_t* ) * max_neighbors );
+	nb = ( vul_astar_node** )VUL_ASTAR_ALLOC( sizeof( vul_astar_node* ) * max_neighbors );
 	n = NULL;
 	best = NULL; // Store the best node we've seen so far by our heuristic, so we can
 				 // return something if we don't solve the problem.
@@ -285,18 +292,18 @@ void vul_astar_search( vul_astar_result_t *result,
 	free( nb );
 }
 
-void astar__node_reseter( void *node_ptr, ui32_t index, void *nothing )
+static void astar__node_reseter( void *node_ptr, u32 index, void *nothing )
 {
-	vul_astar_node_t *node;
+	vul_astar_node *node;
 
-	node = ( vul_astar_node_t* )node_ptr;
+	node = ( vul_astar_node* )node_ptr;
 	node->state = VUL_ASTAR_NODE_UNDISCOVERED;
 	node->path_parent = NULL;
 	node->g_cost = 0.0;
 	node->f_cost = 0.0;
 }
 
-void vul_astar_graph_reset( vul_astar_graph_t *graph )
+void vul_astar_graph_reset( vul_astar_graph *graph )
 {
 	// Our stable vector has a GP iterator...
 	vul_svector_iterate( graph->nodes, astar__node_reseter, NULL );
@@ -306,13 +313,13 @@ void vul_astar_graph_reset( vul_astar_graph_t *graph )
 * Comparison function used to sort astar_nodes in the search based on their
 * f_cost value.
 */
-int astar__node_comparator( void *a, void *b )
+static int astar__node_comparator( void *a, void *b )
 {
-	f64_t diff, eps;
-	vul_astar_node_t *na, *nb;
+	f64 diff, eps;
+	vul_astar_node *na, *nb;
 
-	na = *( vul_astar_node_t** )a;
-	nb = *( vul_astar_node_t** )b;
+	na = *( vul_astar_node** )a;
+	nb = *( vul_astar_node** )b;
 
 	diff = na->f_cost - nb->f_cost;
 	eps = 1e-8;
@@ -330,13 +337,13 @@ int astar__node_comparator( void *a, void *b )
 * Traces back the path from the given end node to the start node (identified
 * by a NULL parent node). Allocates ever path node along the way.
 */
-vul_astar_path_node_t *vul_astar_calculate_path( vul_astar_node_t *end )
+vul_astar_path_node *vul_astar_calculate_path( vul_astar_node *end )
 {
-	vul_astar_path_node_t *cur, *last;
+	vul_astar_path_node *cur, *last;
 
 	last = NULL;
 	while( end ) {
-		cur = ( vul_astar_path_node_t* )VUL_ASTAR_ALLOC( sizeof( vul_astar_path_node_t ) );
+		cur = ( vul_astar_path_node* )VUL_ASTAR_ALLOC( sizeof( vul_astar_path_node ) );
 		cur->next = last;
 		cur->node_data = end->user_data;
 
@@ -347,9 +354,9 @@ vul_astar_path_node_t *vul_astar_calculate_path( vul_astar_node_t *end )
 	return cur;
 }
 
-void vul_astar_path_finalize( vul_astar_path_node_t *root )
+void vul_astar_path_finalize( vul_astar_path_node *root )
 {
-	vul_astar_path_node_t *next;
+	vul_astar_path_node *next;
 
 	while( root ) {
 		next = root->next;
@@ -358,57 +365,59 @@ void vul_astar_path_finalize( vul_astar_path_node_t *root )
 	}
 }
 
-void vul__astar_open_set_pop( vul_astar_strategy strategy, void *set, void *data_out )
+static void vul__astar_open_set_pop( vul_astar_strategy strategy, void *set, void *data_out )
 {
 	if( strategy == VUL_ASTAR_STRATEGY_BEST_FIRST ) {
-		vul_priority_heap_pop( ( vul_priority_heap_t* )set, data_out );
+		vul_priority_heap_pop( ( vul_priority_heap* )set, data_out );
 	} else if( strategy == VUL_ASTAR_STRATEGY_BREADTH_FIRST ) {
-		vul_queue_pop( ( vul_queue_t* )set, data_out );
+		vul_queue_pop( ( vul_queue* )set, data_out );
 	} else if( strategy == VUL_ASTAR_STRATEGY_DEPTH_FIRST ) {
-		vul_stack_pop( ( vul_stack_t* )set, data_out );
-	} else {
-		assert( 0 && "Invalid search strategy" );
-	}
-}
-vul_astar_node_t *vul__astar_open_set_peek( vul_astar_strategy strategy, void *set )
-{
-	if( strategy == VUL_ASTAR_STRATEGY_BEST_FIRST ) {
-		return ( vul_astar_node_t* )vul_priority_heap_peek( ( vul_priority_heap_t* )set );
-	} else if( strategy == VUL_ASTAR_STRATEGY_BREADTH_FIRST ) {
-		return ( vul_astar_node_t* )vul_queue_peek( ( vul_queue_t* )set );
-	} else if( strategy == VUL_ASTAR_STRATEGY_DEPTH_FIRST ) {
-		return ( vul_astar_node_t* )vul_stack_peek( ( vul_stack_t* )set );
-	} else {
-		assert( 0 && "Invalid search strategy" );
-	}
-	return NULL;
-}
-void vul__astar_open_set_push( vul_astar_strategy strategy, void *set, vul_astar_node_t **node )
-{
-	if( strategy == VUL_ASTAR_STRATEGY_BEST_FIRST ) {
-		vul_priority_heap_push( ( vul_priority_heap_t* )set, node );
-	} else if( strategy == VUL_ASTAR_STRATEGY_BREADTH_FIRST ) {
-		vul_queue_push( ( vul_queue_t* )set, node );
-	} else if( strategy == VUL_ASTAR_STRATEGY_DEPTH_FIRST ) {
-		vul_stack_push( ( vul_stack_t* )set, node );
+		vul_stack_pop( ( vul_stack* )set, data_out );
 	} else {
 		assert( 0 && "Invalid search strategy" );
 	}
 }
 
-void *vul__astar_open_set_create( vul_astar_strategy strategy )
+static vul_astar_node *vul__astar_open_set_peek( vul_astar_strategy strategy, void *set )
 {
 	if( strategy == VUL_ASTAR_STRATEGY_BEST_FIRST ) {
-		return vul_priority_heap_create( sizeof( vul_astar_node_t* ), 
+		return ( vul_astar_node* )vul_priority_heap_peek( ( vul_priority_heap* )set );
+	} else if( strategy == VUL_ASTAR_STRATEGY_BREADTH_FIRST ) {
+		return ( vul_astar_node* )vul_queue_peek( ( vul_queue* )set );
+	} else if( strategy == VUL_ASTAR_STRATEGY_DEPTH_FIRST ) {
+		return ( vul_astar_node* )vul_stack_peek( ( vul_stack* )set );
+	} else {
+		assert( 0 && "Invalid search strategy" );
+	}
+	return NULL;
+}
+
+static void vul__astar_open_set_push( vul_astar_strategy strategy, void *set, vul_astar_node **node )
+{
+	if( strategy == VUL_ASTAR_STRATEGY_BEST_FIRST ) {
+		vul_priority_heap_push( ( vul_priority_heap* )set, node );
+	} else if( strategy == VUL_ASTAR_STRATEGY_BREADTH_FIRST ) {
+		vul_queue_push( ( vul_queue* )set, node );
+	} else if( strategy == VUL_ASTAR_STRATEGY_DEPTH_FIRST ) {
+		vul_stack_push( ( vul_stack* )set, node );
+	} else {
+		assert( 0 && "Invalid search strategy" );
+	}
+}
+
+static void *vul__astar_open_set_create( vul_astar_strategy strategy )
+{
+	if( strategy == VUL_ASTAR_STRATEGY_BEST_FIRST ) {
+		return vul_priority_heap_create( sizeof( vul_astar_node* ), 
 										 astar__node_comparator,
 										 VUL_ASTAR_ALLOC,
 										 VUL_ASTAR_FREE );
 	} else if( strategy == VUL_ASTAR_STRATEGY_BREADTH_FIRST ) {
-		return vul_queue_create( sizeof( vul_astar_node_t* ), 
+		return vul_queue_create( sizeof( vul_astar_node* ), 
 								 VUL_ASTAR_ALLOC, 
 								 VUL_ASTAR_FREE );
 	} else if( strategy == VUL_ASTAR_STRATEGY_DEPTH_FIRST ) {
-		return vul_stack_create( sizeof( vul_astar_node_t* ), 
+		return vul_stack_create( sizeof( vul_astar_node* ), 
 								 8, 
 								 VUL_ASTAR_ALLOC, 
 								 VUL_ASTAR_FREE );
@@ -418,32 +427,34 @@ void *vul__astar_open_set_create( vul_astar_strategy strategy )
 	return NULL;
 }
 
-void vul__astar_open_set_finalize( vul_astar_strategy strategy, void *set )
+static void vul__astar_open_set_finalize( vul_astar_strategy strategy, void *set )
 {
 	if( strategy == VUL_ASTAR_STRATEGY_BEST_FIRST ) {
-		vul_priority_heap_destroy( ( vul_priority_heap_t* )set );
+		vul_priority_heap_destroy( ( vul_priority_heap* )set );
 	} else if( strategy == VUL_ASTAR_STRATEGY_BREADTH_FIRST ) {
-		vul_queue_destroy( ( vul_queue_t* )set );
+		vul_queue_destroy( ( vul_queue* )set );
 	} else if( strategy == VUL_ASTAR_STRATEGY_DEPTH_FIRST ) {
-		vul_stack_destroy( ( vul_stack_t* )set );
+		vul_stack_destroy( ( vul_stack* )set );
 	} else {
 		assert( 0 && "Invalid search strategy" );
 	}
 }
 
-int vul__astar_open_set_is_empty( vul_astar_strategy strategy, void *set )
+static int vul__astar_open_set_is_empty( vul_astar_strategy strategy, void *set )
 {
 	if( strategy == VUL_ASTAR_STRATEGY_BEST_FIRST ) {
-		return vul_priority_heap_is_empty( ( vul_priority_heap_t* )set );
+		return vul_priority_heap_is_empty( ( vul_priority_heap* )set );
 	} else if( strategy == VUL_ASTAR_STRATEGY_BREADTH_FIRST ) {
-		return vul_queue_is_empty( ( vul_queue_t* )set );
+		return vul_queue_is_empty( ( vul_queue* )set );
 	} else if( strategy == VUL_ASTAR_STRATEGY_DEPTH_FIRST ) {
-		return vul_stack_is_empty( ( vul_stack_t* )set );
+		return vul_stack_is_empty( ( vul_stack* )set );
 	} else {
 		assert( 0 && "Invalid search strategy" );
 	}
 	return 1;
 }
 
-
+#ifdef _cplusplus
+}
+#endif
 #endif

@@ -28,14 +28,14 @@
 
 namespace vul {
 	
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	struct Vector;
 
 	//----------------
 	// Declarations
 	//
 	
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	struct Point {
 		T data[ n ];
 
@@ -69,11 +69,11 @@ namespace vul {
 		/**
 		 * Indexing operator.
 		 */
-		T &operator[ ]( i32_t i );
+		T &operator[ ]( s32 i );
 		/**
 		 * Constant indexing operator.
 		 */
-		T const &operator[ ]( i32_t i ) const;
+		T const &operator[ ]( s32 i ) const;
 		/**
 		 * Cast to a vector
 		 */
@@ -87,21 +87,21 @@ namespace vul {
 
 #ifndef VUL_CPLUSPLUS11
 	// Constructors
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > makePoint( );								// Empty constructor. Memsets entirety of data to 0.
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > makePoint( T val ); 						// Initialize to single value
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > makePoint( const Point< T, n > &p ); 		// Copy constructor
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > makePoint( T (& a)[ n ] ); 						// Generic array constructor
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > makePoint( const Vector< T, n > &vec );	// Explicit conversion from a vector
 #endif
-	template< typename T, i32_t n >
-	Point< T, n > makePoint( f32_t (& a)[ n ] ); 					// From float arrays, to interface with other libraries
-	template< typename T, i32_t n >
-	Point< T, n > makePoint( i32_t (& a)[ n ] ); 					// From int arrays, to interface with other libraries
+	template< typename T, s32 n >
+	Point< T, n > makePoint( f32 (& a)[ n ] ); 					// From float arrays, to interface with other libraries
+	template< typename T, s32 n >
+	Point< T, n > makePoint( s32 (& a)[ n ] ); 					// From int arrays, to interface with other libraries
 
 	// Specializations
 	template< typename T >
@@ -116,76 +116,76 @@ namespace vul {
 	 * Componentwise coparison. Returns a vector of boolean indicating if
 	 * compnents in corresponding positions are equal.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< bool, n > operator==( const Point< T, n > &a, const Point< T, n > &b );
 	/**
 	 * Componentwise coparison. Returns a vector of boolean indicating if
 	 * compnents in corresponding positions are not equal.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< bool, n > operator!=( const Point< T, n > &a, const Point< T, n > &b );
 
 	/**
 	 * Translate point a by vector b. Returns the resulting point.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > operator+( const Point< T, n > &a, const Vector< T, n > &b );
 	/**
 	 * Find the translation between points b and a, and return it as a vector.
 	 * Which means it behaves as a componentwise subtraction.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > operator-( const Point< T, n > &a, const Point< T, n > &b );
 	
 	/**
 	 * Componentwise min( compnent, b )
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > min( const Point< T, n > &a, T b );
 	/**
 	 * Componentwise max( compnent, b ).
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > max( const Point< T, n > &a, T b );
 	/**
 	 * Componentwise min( compnent_a, compnent_b )
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > min( const Point< T, n > &a, const Point< T, n > &b );
 	/**
 	 * Componentwise max( compnent_a, compnent_b )
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > max( const Point< T, n > &a, const Point< T, n > &b );
 	/**
 	 * Compnentwise abs
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > abs( const Point< T, n > &a );
 	/**
 	 * Componentwise clamp
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > clamp( const Point< T, n > &a, T mini, T maxi );
 	/**
 	 * Componentwise saturate, so clamp( x, 0, 1 )
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > saturate( const Point< T, n > &a );
 	/**
 	 * Componentwise linear interpolation based on t.
 	 */
-	template< typename T, i32_t n, typename T_t >
+	template< typename T, s32 n, typename T_t >
 	Vector< T, n > lerp( const Point< T, n > &mini, const Point< T, n > &maxi, T_t t );
 	/**
 	 * Returns the smallest compnent.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	T minComponent( const Point< T, n > &a );
 	/**
 	 * Returns the largest compnent.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	T maxComponent( const Point< T, n > &a );
 		
 	
@@ -194,47 +194,47 @@ namespace vul {
 	//
 
 #ifdef VUL_CPLUSPLUS11
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n >::Point( )
 	{
 		memset( data, 0, sizeof( data ) );
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n >::Point( T val )
 	{
-		i32_t i;
+		s32 i;
 		for( i = 0; i < n; ++i ) {
 			data[ i ] = val;
 		}
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n >::Point( const Point< T, n > &p )
 	{
-		i32_t i;
+		s32 i;
 		for( i = 0; i < n; ++i ) {
 			data[ i ] = p[ i ];
 		}
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n >::Point( T (& a)[ n ] )
 	{
-		i32_t i;
+		s32 i;
 		for( i = 0; i < n; ++i ) {
 			data[ i ] = a[ i ];
 		}
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n >::Point( const Vector< T, n > &vec )
 	{
-		i32_t i;
+		s32 i;
 		for( i = 0; i < n; ++i ) {
 			data[ i ] = vec[ i ];
 		}
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n >::Point( std::initializer_list< T > list )
 	{
-		i32_t i;
+		s32 i;
 		typename std::initializer_list< T >::iterator it;
 
 		for( it = list.begin( ), i = 0; it != list.end( ) && i < n; ++it, ++i ) {
@@ -242,7 +242,7 @@ namespace vul {
 		}
 	}
 #else
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > makePoint( )
 	{
 		Point< T, n > p;
@@ -251,11 +251,11 @@ namespace vul {
 
 		return p;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > makePoint( T val )
 	{
 		Point< T, n > p;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			p.data[ i ] = val;
@@ -263,11 +263,11 @@ namespace vul {
 
 		return p;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > makePoint( const Point< T, n > &p )
 	{
 		Point< T, n > r;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			r.data[ i ] = p[ i ];
@@ -275,11 +275,11 @@ namespace vul {
 
 		return r;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > makePoint( T (& a)[ n ] )
 	{
 		Point< T, n > p;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			p.data[ i ] = a[ i ];
@@ -287,11 +287,11 @@ namespace vul {
 
 		return p;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > makePoint( const Vector< T, n > &vec )
 	{
 		Point< T, n > p;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			p.data[ i ] = vec.data[ i ];
@@ -301,11 +301,11 @@ namespace vul {
 	}
 #endif
 	
-	template< typename T, i32_t n >
-	Point< T, n > makePoint( f32_t (& a)[ n ] )
+	template< typename T, s32 n >
+	Point< T, n > makePoint( f32 (& a)[ n ] )
 	{
 		Point< T, n > p;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			p.data[ i ] = static_cast< T >( a[ i ] );
@@ -313,11 +313,11 @@ namespace vul {
 
 		return p;
 	}
-	template< typename T, i32_t n >
-	Point< T, n > makePoint( i32_t (& a)[ n ] )
+	template< typename T, s32 n >
+	Point< T, n > makePoint( s32 (& a)[ n ] )
 	{
 		Point< T, n > p;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			p.data[ i ] = static_cast< T >( a[ i ] );
@@ -360,10 +360,10 @@ namespace vul {
 	}
 
 	// Operators
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > &Point< T, n >::operator=( const Point< T, n > & rhs )
 	{
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			data[ i ] = rhs[ i ];
@@ -371,10 +371,10 @@ namespace vul {
 		return *this;
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n >& Point< T, n >::operator+=( const Vector< T, n > &vec )
 	{
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			data[ i ] += vec[ i ];
@@ -382,10 +382,10 @@ namespace vul {
 
 		return *this;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n >& Point< T, n >::operator*=( const Vector< T, n > &vec )
 	{
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			data[ i ] *= vec[ i ];
@@ -393,10 +393,10 @@ namespace vul {
 
 		return *this;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n >& Point< T, n >::operator/=( const Vector< T, n > &vec )
 	{
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			data[ i ] /= vec[ i ];
@@ -405,35 +405,35 @@ namespace vul {
 		return *this;
 	}
 
-	template< typename T, i32_t n >
-	T &Point< T, n >::operator[ ]( i32_t i )
+	template< typename T, s32 n >
+	T &Point< T, n >::operator[ ]( s32 i )
 	{
 		assert( i < n );
 		return data[ i ];
 	}
-	template< typename T, i32_t n >
-	T const &Point< T, n >::operator[ ]( i32_t i ) const
+	template< typename T, s32 n >
+	T const &Point< T, n >::operator[ ]( s32 i ) const
 	{
 		assert( i < n );
 		return data[ i ];
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > &Point< T, n >::as_vec( )
 	 {
 		 return reinterpret_cast< Vector< T, n > & >( data );
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	const Vector< T, n > &Point< T, n >::as_vec( ) const
 	 {
 		 return reinterpret_cast< const Vector< T, n > & >( data );
 	}
 	// Operations
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< bool, n > operator==( const Point< T, n > &a, const Point< T, n > &b )
 	{
 		Vector< bool, n > v;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			v.data[ i ] = a.data[ i ] == b.data[ i ];
@@ -441,11 +441,11 @@ namespace vul {
 
 		return v;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< bool, n > operator!=( const Point< T, n > &a, const Point< T, n > &b )
 	{
 		Vector< bool, n > v;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			v.data[ i ] = a.data[ i ] != b.data[ i ];
@@ -454,11 +454,11 @@ namespace vul {
 		return v;
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > operator+( const Point< T, n > &a, const Vector< T, n > &b )
 	{
 		Point< T, n > p;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			p.data[ i ] = a.data[ i ] + b.data[ i ];
@@ -466,11 +466,11 @@ namespace vul {
 
 		return p;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > operator-( const Point< T, n > &a, const Point< T, n > &b )
 	{
 		Vector< T, n > v;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			v.data[ i ] = a.data[ i ] - b.data[ i ];
@@ -479,11 +479,11 @@ namespace vul {
 		return v;
 	}
 	
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > min( const Point< T, n > &a, T b )
 	{
 		Vector< T, n > v;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			v.data[ i ] = a.data[ i ] < b ? a.data[ i ] : b;
@@ -491,11 +491,11 @@ namespace vul {
 
 		return v;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > max( const Point< T, n > &a, T b )
 	{
 		Vector< T, n > v;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			v.data[ i ] = a.data[ i ] > b ? a.data[ i ] : b;
@@ -503,11 +503,11 @@ namespace vul {
 
 		return v;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > min( const Point< T, n > &a, const Point< T, n > &b )
 	{
 		Vector< T, n > v;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			v.data[ i ] = a.data[ i ] < b.data[ i ] ? a.data[ i ] : b.data[ i ];
@@ -515,11 +515,11 @@ namespace vul {
 
 		return v;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > max( const Point< T, n > &a, const Point< T, n > &b )
 	{
 		Vector< T, n > v;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			v.data[ i ] = a.data[ i ] > b.data[ i ] ? a.data[ i ] : b.data[ i ];
@@ -527,11 +527,11 @@ namespace vul {
 
 		return v;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > abs( const Point< T, n > &a )
 	{
 		Vector< T, n > v;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			v.data[ i ] = a.data[ i ] >= 0 ? a.data[ i ] : -a.data[ i ];
@@ -539,11 +539,11 @@ namespace vul {
 
 		return v;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > clamp( const Point< T, n > &a, T mini, T maxi )
 	{
 		Vector< T, n > v;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < n; ++i ) {
 			v.data[ i ] = a.data[ i ] < mini ? mini
@@ -553,11 +553,11 @@ namespace vul {
 
 		return v;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > saturate( const Point< T, n > &a )
 	{
 		Vector< T, n > v;
-		i32_t i;
+		s32 i;
 		T t0, t1;
 
 		t0 = static_cast< T >( 0.f );
@@ -570,11 +570,11 @@ namespace vul {
 
 		return v;
 	}
-	template< typename T, i32_t n, typename T_t >
+	template< typename T, s32 n, typename T_t >
 	Vector< T, n > lerp( const Point< T, n > &mini, const Point< T, n > &maxi, T_t t )
 	{
 		Vector< T, n > v;
-		i32_t i;
+		s32 i;
 		T_t t1;
 
 		t1 = static_cast< T >( 1.f ) - t;
@@ -585,10 +585,10 @@ namespace vul {
 
 		return v;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	T minComponent( const Point< T, n > &a )
 	{
-		i32_t i;
+		s32 i;
 		T m;
 
 		m = std::numeric_limits< T >::max( );
@@ -598,10 +598,10 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	T maxComponent( const Point< T, n > &a )
 	{
-		i32_t i;
+		s32 i;
 		T m;
 
 		m = std::numeric_limits< T >::min( );

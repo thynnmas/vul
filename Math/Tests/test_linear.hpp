@@ -54,67 +54,67 @@ namespace vul_test {
 
 	bool TestLinear::conjugateGradient( )
 	{
-		Matrix< f32_t, 3, 3 > A = makeMatrix33< f32_t >( 25, 15, -5,
+		Matrix< f32, 3, 3 > A = makeMatrix33< f32 >( 25, 15, -5,
 														 15, 18, 0,
 														 -5, 0, 11 );
-		Vector< f32_t, 3 > b = makeVector< f32_t >( 1, 3, 5 );
-		f32_t eps = 1e-10f;
-		i32_t iters = 32;
-		Vector< f32_t, 3 > init = makeVector< f32_t, 3 >( 0.f );
+		Vector< f32, 3 > b = makeVector< f32 >( 1, 3, 5 );
+		f32 eps = 1e-10f;
+		s32 iters = 32;
+		Vector< f32, 3 > init = makeVector< f32, 3 >( 0.f );
 
-		Vector< f32_t, 3 > x = solveConjugateGradient( A, init, b, iters, eps );
+		Vector< f32, 3 > x = solveConjugateGradient( A, init, b, iters, eps );
 		return true;
 	}
 	bool TestLinear::luDecomposition( )
 	{
-		Matrix< f32_t, 3, 3 > A = makeMatrix33< f32_t >( 25, 15, -5,
+		Matrix< f32, 3, 3 > A = makeMatrix33< f32 >( 25, 15, -5,
 														 15, 18, 0,
 														 -5, 0, 11 );
-		Vector< f32_t, 3 > b = makeVector< f32_t >( 1, 3, 5 );
-		f32_t eps = 1e-10f;
-		i32_t iters = 32;
-		Vector< f32_t, 3 > init = makeVector< f32_t, 3 >( 0.f );
+		Vector< f32, 3 > b = makeVector< f32 >( 1, 3, 5 );
+		f32 eps = 1e-10f;
+		s32 iters = 32;
+		Vector< f32, 3 > init = makeVector< f32, 3 >( 0.f );
 
-		Vector< f32_t, 3 > x = solveLUDecomposition( A, init, b, iters, eps );
+		Vector< f32, 3 > x = solveLUDecomposition( A, init, b, iters, eps );
 		return true;
 	}
 	bool TestLinear::choleskyDecomposition( )
 	{
-		Matrix< f32_t, 3, 3 > A = makeMatrix33< f32_t >( 25, 15, -5,
+		Matrix< f32, 3, 3 > A = makeMatrix33< f32 >( 25, 15, -5,
 														 15, 18, 0,
 														 -5, 0, 11 );
-		Vector< f32_t, 3 > b = makeVector< f32_t >( 1, 3, 5 ); // @TODO(thynn): This should make sense <--
-		f32_t eps = 1e-10f;
-		i32_t iters = 32;
-		Vector< f32_t, 3 > init = makeVector< f32_t, 3 >( 0.f );
+		Vector< f32, 3 > b = makeVector< f32 >( 1, 3, 5 ); // @TODO(thynn): This should make sense <--
+		f32 eps = 1e-10f;
+		s32 iters = 32;
+		Vector< f32, 3 > init = makeVector< f32, 3 >( 0.f );
 
-		Vector< f32_t, 3 > x = solveCholeskyDecomposition( A, init, b, iters, eps );
+		Vector< f32, 3 > x = solveCholeskyDecomposition( A, init, b, iters, eps );
 		return true;
 	}
 	bool TestLinear::qrDecomposition( )
 	{
-		Matrix< f32_t, 3, 3 > A = makeMatrix33< f32_t >( 25, 15, -5,
+		Matrix< f32, 3, 3 > A = makeMatrix33< f32 >( 25, 15, -5,
 														 15, 18, 0,
 														 -5, 0, 11 );
-		Vector< f32_t, 3 > b = makeVector< f32_t >( 1, 3, 5 );
-		f32_t eps = 1e-10f;
-		i32_t iters = 32;
-		Vector< f32_t, 3 > init = makeVector< f32_t, 3 >( 0.f );
+		Vector< f32, 3 > b = makeVector< f32 >( 1, 3, 5 );
+		f32 eps = 1e-10f;
+		s32 iters = 32;
+		Vector< f32, 3 > init = makeVector< f32, 3 >( 0.f );
 
-		Vector< f32_t, 3 > x = solveQRDecomposition( A, init, b, iters, eps );
+		Vector< f32, 3 > x = solveQRDecomposition( A, init, b, iters, eps );
 		return true;
 	}
 	bool TestLinear::successiveOverRelaxation( )
 	{
-		Matrix< f32_t, 3, 3 > A = makeMatrix33< f32_t >( 25, 15, -5,
+		Matrix< f32, 3, 3 > A = makeMatrix33< f32 >( 25, 15, -5,
 														 15, 18, 0,
 														 -5, 0, 11 );
-		Vector< f32_t, 3 > b = makeVector< f32_t >( 1, 3, 5 );
-		f32_t eps = 1e-10f;
-		i32_t iters = 32;
-		Vector< f32_t, 3 > init = makeVector< f32_t, 3 >( 0.f );
+		Vector< f32, 3 > b = makeVector< f32 >( 1, 3, 5 );
+		f32 eps = 1e-10f;
+		s32 iters = 32;
+		Vector< f32, 3 > init = makeVector< f32, 3 >( 0.f );
 
-		Vector< f32_t, 3 > x = solveSOR( A, init, b, 1.1f, iters, eps );
+		Vector< f32, 3 > x = solveSOR( A, init, b, 1.1f, iters, eps );
 		return true;
 	}
 };

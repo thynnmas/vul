@@ -26,14 +26,14 @@
 #include "Math/vul_math.hpp"
 	
 #ifdef VUL_COLLISSION_TYPE_FIXED
-	typedef fi32_t preal_t;
+	typedef fi32 preal;
 #else
-	typedef f32_t preal_t;
+	typedef f32 preal;
 #endif
-typedef Matrix< preal_t, 3, 3 > pmat_t;
-typedef Vector< preal_t, 3 > pvec_t;
-typedef Point< preal_t, 3 > ppt_t;
-typedef AABB< preal_t, 3 > paabb_t;
+typedef Matrix< preal, 3, 3 > pmat;
+typedef Vector< preal, 3 > pvec;
+typedef Point< preal, 3 > ppt;
+typedef AABB< preal, 3 > paabb;
 
 enum ColliderType {
 	COLLIDER_BOX,
@@ -56,20 +56,20 @@ union ColliderPtr {
 class Collider {
 
 public:
-	preal_t mass;
-	pmat_t localInertiaTensor;
-	pvec_t localCentroid;
+	preal mass;
+	pmat localInertiaTensor;
+	pvec localCentroid;
 	ColliderType type;
 	ColliderPtr ptr;		
 		
 	/**
 		* Intersection test with a ray.
 		*/
-	bool intersect( const Ray &ray, preal_t *t, pvec_t *normal );
+	bool intersect( const Ray &ray, preal *t, pvec *normal );
 
 	bool intersect( Collider *other );
 
-	bool intersect( const ppt_t &pt );
+	bool intersect( const ppt &pt );
 
 	//@TODO: Geometry stuff
 private:
@@ -77,8 +77,8 @@ private:
 	template< typename T >
 	bool intersect( const T &primary, Collider *other );
 
-	Vector< preal_t, 2 > project( const ColliderTriangle &tri, const pvec_t &axis );
-	Vector< preal_t, 2 > project( const ColliderBox &box, const pvec_t &axis, const pvec_t *axes = NULL );
+	Vector< preal, 2 > project( const ColliderTriangle &tri, const pvec &axis );
+	Vector< preal, 2 > project( const ColliderBox &box, const pvec &axis, const pvec *axes = NULL );
 
 	bool intersect( const ColliderPlane &a, const ColliderPlane &b );
 	bool intersect( const ColliderPlane &plane, const ColliderBox &box );
@@ -86,8 +86,8 @@ private:
 	bool intersect( const ColliderPlane &plane, const ColliderCylinder &cylinder );
 	bool intersect( const ColliderPlane &plane, const ColliderSphere &sphere );
 	bool intersect( const ColliderPlane &plane, const ColliderTriangle &triangle );
-	bool intersect( const ColliderPlane &plane, const Ray &ray, preal_t *t, pvec_t *normal );
-	bool intersect( const ColliderPlane &plane, const ppt_t &pt );
+	bool intersect( const ColliderPlane &plane, const Ray &ray, preal *t, pvec *normal );
+	bool intersect( const ColliderPlane &plane, const ppt &pt );
 		
 	bool intersect( const ColliderBox &a, const ColliderBox &b );
 	bool intersect( const ColliderBox &box, const ColliderPlane &plane );
@@ -95,8 +95,8 @@ private:
 	bool intersect( const ColliderBox &box, const ColliderCylinder &cylinder );
 	bool intersect( const ColliderBox &box, const ColliderSphere &sphere );
 	bool intersect( const ColliderBox &box, const ColliderTriangle &triangle );
-	bool intersect( const ColliderBox &box, const Ray &ray, preal_t *t, pvec_t *normal );
-	bool intersect( const ColliderBox &box, const ppt_t &pt );
+	bool intersect( const ColliderBox &box, const Ray &ray, preal *t, pvec *normal );
+	bool intersect( const ColliderBox &box, const ppt &pt );
 		
 	bool intersect( const ColliderConvexHull &a, const ColliderConvexHull &b );
 	bool intersect( const ColliderConvexHull &hull, const ColliderPlane &plane );
@@ -104,8 +104,8 @@ private:
 	bool intersect( const ColliderConvexHull &hull, const ColliderCylinder &cylinder );
 	bool intersect( const ColliderConvexHull &hull, const ColliderSphere &sphere );
 	bool intersect( const ColliderConvexHull &hull, const ColliderTriangle &triangle );
-	bool intersect( const ColliderConvexHull &hull, const Ray &ray, preal_t *t, pvec_t *normal );
-	bool intersect( const ColliderConvexHull &hull, const ppt_t &pt );
+	bool intersect( const ColliderConvexHull &hull, const Ray &ray, preal *t, pvec *normal );
+	bool intersect( const ColliderConvexHull &hull, const ppt &pt );
 		
 	bool intersect( const ColliderCylinder &a, const ColliderCylinder &b );
 	bool intersect( const ColliderCylinder &cylinder, const ColliderPlane &plane );
@@ -113,8 +113,8 @@ private:
 	bool intersect( const ColliderCylinder &cylinder, const ColliderConvexHull &hull );
 	bool intersect( const ColliderCylinder &cylinder, const ColliderSphere &sphere );
 	bool intersect( const ColliderCylinder &cylinder, const ColliderTriangle &triangle );
-	bool intersect( const ColliderCylinder &cylinder, const Ray &ray, preal_t *t, pvec_t *normal );
-	bool intersect( const ColliderCylinder &cylinder, const ppt_t &pt );
+	bool intersect( const ColliderCylinder &cylinder, const Ray &ray, preal *t, pvec *normal );
+	bool intersect( const ColliderCylinder &cylinder, const ppt &pt );
 		
 	bool intersect( const ColliderSphere &a, const ColliderSphere &b );
 	bool intersect( const ColliderSphere &sphere, const ColliderPlane &plane );
@@ -122,8 +122,8 @@ private:
 	bool intersect( const ColliderSphere &sphere, const ColliderCylinder &cylinder );
 	bool intersect( const ColliderSphere &sphere, const ColliderConvexHull &hull );
 	bool intersect( const ColliderSphere &sphere, const ColliderTriangle &triangle );
-	bool intersect( const ColliderSphere &sphere, const Ray &ray, preal_t *t, pvec_t *normal );
-	bool intersect( const ColliderSphere &sphere, const ppt_t &pt );
+	bool intersect( const ColliderSphere &sphere, const Ray &ray, preal *t, pvec *normal );
+	bool intersect( const ColliderSphere &sphere, const ppt &pt );
 		
 	bool intersect( const ColliderTriangle &a, const ColliderTriangle &b );
 	bool intersect( const ColliderTriangle &triangle, const ColliderPlane &plane );
@@ -131,13 +131,13 @@ private:
 	bool intersect( const ColliderTriangle &triangle, const ColliderCylinder &cylinder );
 	bool intersect( const ColliderTriangle &triangle, const ColliderConvexHull &hull );
 	bool intersect( const ColliderTriangle &triangle, const ColliderSphere &sphere );
-	bool intersect( const ColliderTriangle &triangle, const Ray &ray, preal_t *t, pvec_t *normal );
-	bool intersect( const ColliderTriangle &triangle, const ppt_t &pt );
+	bool intersect( const ColliderTriangle &triangle, const Ray &ray, preal *t, pvec *normal );
+	bool intersect( const ColliderTriangle &triangle, const ppt &pt );
 };
 
 #ifdef VUL_DEFINE
 
-bool Collider::intersect( const Ray &ray, preal_t *t, pvec_t *normal )
+bool Collider::intersect( const Ray &ray, preal *t, pvec *normal )
 {
 	switch( type )
 	{
@@ -197,7 +197,7 @@ bool Collider::intersect( Collider *other )
 	return false;
 }
 
-bool Collider::intersect( const ppt_t &pt )
+bool Collider::intersect( const ppt &pt )
 {
 	switch( type )
 	{
@@ -257,9 +257,9 @@ bool Collider::intersect( const T &primary, Collider *other )
 	return false;
 }
 
-Vector< preal_t, 2 > Collider::project( const ColliderTriangle &tri, const pvec_t &axis )
+Vector< preal, 2 > Collider::project( const ColliderTriangle &tri, const pvec &axis )
 {
-	preal_t d0, d1, d2, mn, mx;
+	preal d0, d1, d2, mn, mx;
 
 	d0 = dot( axis, tri.getVertex( 0 ).as_vec( ) );
 	d1 = dot( axis, tri.getVertex( 1 ).as_vec( ) );
@@ -268,13 +268,13 @@ Vector< preal_t, 2 > Collider::project( const ColliderTriangle &tri, const pvec_
 	mn = std::min( d0, std::min( d1, d2 ) );
 	mx = std::max( d0, std::max( d1, d2 ) );
 
-	return makeVector< preal_t >( mn, mx );
+	return makeVector< preal >( mn, mx );
 }
 
-Vector< preal_t, 2 > Collider::project( const ColliderBox &box, const pvec_t &axis, const pvec_t *axes )
+Vector< preal, 2 > Collider::project( const ColliderBox &box, const pvec &axis, const pvec *axes )
 {
-	preal_t origin = dot( axis, box.getCenter( ).as_vec( ) );
-	preal_t maxex;
+	preal origin = dot( axis, box.getCenter( ).as_vec( ) );
+	preal maxex;
 		
 	if( axes == NULL )
 	{
@@ -287,7 +287,7 @@ Vector< preal_t, 2 > Collider::project( const ColliderBox &box, const pvec_t &ax
 				+ abs( box.getExtent( )[ 2 ] * dot( axis, axes[ 2 ] ) );
 	}
 
-	return makeVector< preal_t >( origin - maxex, origin + maxex );
+	return makeVector< preal >( origin - maxex, origin + maxex );
 }
 //-------------------------------------------------------------------------------
 // Intersection algorithms.
@@ -296,17 +296,17 @@ Vector< preal_t, 2 > Collider::project( const ColliderBox &box, const pvec_t &ax
 
 bool Collider::intersect( const ColliderPlane &a, const ColliderPlane &b )
 {
-	preal_t ndotn = dot( a.getNormal( ), b.getNormal( ) );
-	if( abs( ndotn ) < std::numeric_limits< preal_t >::epsilon( ) ) 
+	preal ndotn = dot( a.getNormal( ), b.getNormal( ) );
+	if( abs( ndotn ) < std::numeric_limits< preal >::epsilon( ) ) 
 	{
 		// Planes are parallel, check if the same
-		preal_t d;
-		if( ndotn >= preal_t( 0 ) ) {
+		preal d;
+		if( ndotn >= preal( 0 ) ) {
 			d = a.getConstant( ) - b.getConstant( );
 		} else {
 			d = a.getConstant( ) + b.getConstant( );
 		}
-		if( d >= std::numeric_limits< preal_t >::epsilon( ) ) {
+		if( d >= std::numeric_limits< preal >::epsilon( ) ) {
 			return false;
 		}
 		return true;
@@ -315,15 +315,15 @@ bool Collider::intersect( const ColliderPlane &a, const ColliderPlane &b )
 }
 bool Collider::intersect( const ColliderPlane &plane, const ColliderBox &box )
 {
-	preal_t tmp[ 3 ] = 
+	preal tmp[ 3 ] = 
 	{
 		box.getExtent( )[ 0 ] * dot( plane.getNormal( ), extractAxis( box.getOrientation( ), 0 ) ),
 		box.getExtent( )[ 1 ] * dot( plane.getNormal( ), extractAxis( box.getOrientation( ), 1 ) ),
 		box.getExtent( )[ 2 ] * dot( plane.getNormal( ), extractAxis( box.getOrientation( ), 2 ) )
 	};
 
-	preal_t rad = std::abs( tmp[ 0 ] ) + std::abs( tmp[ 1 ] ) + std::abs( tmp[ 2 ] );
-	preal_t sd = dot( plane.getNormal( ), box.getCenter( ).as_vec( ) ) - plane.getConstant( );
+	preal rad = std::abs( tmp[ 0 ] ) + std::abs( tmp[ 1 ] ) + std::abs( tmp[ 2 ] );
+	preal sd = dot( plane.getNormal( ), box.getCenter( ).as_vec( ) ) - plane.getConstant( );
 
 	return std::abs( sd ) <= rad;
 }
@@ -335,17 +335,17 @@ bool Collider::intersect( const ColliderPlane &plane, const ColliderConvexHull &
 }
 bool Collider::intersect( const ColliderPlane &plane, const ColliderCylinder &cylinder )
 {
-	preal_t sd = dot( plane.getNormal( ), cylinder.getCenter( ).as_vec( ) ) - plane.getConstant( );
-	preal_t ndotw = std::abs( dot( plane.getNormal( ), cylinder.getAxis( ) ) );
-	preal_t root = std::sqrt( abs( preal_t( 1.f ) - ndotw*ndotw ) );
-	preal_t term = cylinder.getRadius( ) * root + preal_t( 0.5f ) * cylinder.getHeight( ) * ndotw;
+	preal sd = dot( plane.getNormal( ), cylinder.getCenter( ).as_vec( ) ) - plane.getConstant( );
+	preal ndotw = std::abs( dot( plane.getNormal( ), cylinder.getAxis( ) ) );
+	preal root = std::sqrt( abs( preal( 1.f ) - ndotw*ndotw ) );
+	preal term = cylinder.getRadius( ) * root + preal( 0.5f ) * cylinder.getHeight( ) * ndotw;
 
 	return std::abs( sd ) <= term;
 }
 bool Collider::intersect( const ColliderPlane &plane, const ColliderSphere &sphere )
 {
 	// Project center distance to plane on normal
-	preal_t ndotc = dot( plane.getNormal( ), sphere.getCenter( ).as_vec( ) );
+	preal ndotc = dot( plane.getNormal( ), sphere.getCenter( ).as_vec( ) );
 	return std::abs( ndotc - plane.getConstant( ) ) <= sphere.getRadius( );
 }
 bool Collider::intersect( const ColliderPlane &plane, const ColliderTriangle &triangle )
@@ -359,18 +359,18 @@ bool Collider::intersect( const ColliderPlane &plane, const ColliderTriangle &tr
 		
 	return !( signs[ 0 ] == signs[ 1 ] && signs[ 1 ] == signs[ 2 ] );
 }
-bool Collider::intersect( const ColliderPlane &plane, const Ray &ray, preal_t *t, pvec_t *normal )
+bool Collider::intersect( const ColliderPlane &plane, const Ray &ray, preal *t, pvec *normal )
 {
-	preal_t ddotn = dot( ray.getDirection( ), plane.getNormal( ) );
-	preal_t sd = dot( plane.getNormal( ), ray.getOrigin( ).as_vec( ) ) - plane.getConstant( );
+	preal ddotn = dot( ray.getDirection( ), plane.getNormal( ) );
+	preal sd = dot( plane.getNormal( ), ray.getOrigin( ).as_vec( ) ) - plane.getConstant( );
 
-	if( std::abs( ddotn ) > std::numeric_limits< preal_t >::epsilon( ) )
+	if( std::abs( ddotn ) > std::numeric_limits< preal >::epsilon( ) )
 	{
 		*t = -sd / ddotn;
 			
-	} else if( std::abs( sd ) < std::numeric_limits< preal_t >::epsilon( ) )
+	} else if( std::abs( sd ) < std::numeric_limits< preal >::epsilon( ) )
 	{
-		*t = preal_t( 0.f );
+		*t = preal( 0.f );
 	} else {
 		return false;
 	}
@@ -378,32 +378,32 @@ bool Collider::intersect( const ColliderPlane &plane, const Ray &ray, preal_t *t
 	*normal = plane.getNormal( );
 	return true;
 }
-bool Collider::intersect( const ColliderPlane &plane, const ppt_t &pt )
+bool Collider::intersect( const ColliderPlane &plane, const ppt &pt )
 {
 	return ( dot( pt.as_vec( ), plane.getNormal( ) ) - plane.getConstant( ) )
-			< std::numeric_limits< preal_t >::epsilon( );
+			< std::numeric_limits< preal >::epsilon( );
 }
 		
 bool Collider::intersect( const ColliderBox &a, const ColliderBox &b )
 {
-	const preal_t cutoff = preal_t( 1.f ) - std::numeric_limits< preal_t >::epsilon( );
+	const preal cutoff = preal( 1.f ) - std::numeric_limits< preal >::epsilon( );
 	bool parallellAxes = false;
 		
-	const pmat_t aA = makeMatrix< preal_t >( a.getOrientation( ) );
-	const pmat_t aB = makeMatrix< preal_t >( b.getOrientation( ) );
-	const pvec_t exA = a.getExtent( );
-	const pvec_t exB = b.getExtent( );
+	const pmat aA = makeMatrix< preal >( a.getOrientation( ) );
+	const pmat aB = makeMatrix< preal >( b.getOrientation( ) );
+	const pvec exA = a.getExtent( );
+	const pvec exB = b.getExtent( );
 
-	const pvec_t diff = b.getCenter( ) - a.getCenter( );
+	const pvec diff = b.getCenter( ) - a.getCenter( );
 
-	pmat_t C;
-	pmat_t Cabs;
-	pvec_t adotd;
-	preal_t t, t0, t1, t01;
+	pmat C;
+	pmat Cabs;
+	pvec adotd;
+	preal t, t0, t1, t01;
 		
-	for( i32_t j = 0; j < 3; ++j )
+	for( s32 j = 0; j < 3; ++j )
 	{
-		for( i32_t i = 0; i < 3; ++i )
+		for( s32 i = 0; i < 3; ++i )
 		{
 			C( j, i ) = dot( column( aA, j ), column( aB, i ) );
 			Cabs( j, i ) = abs( C( j, i ) );
@@ -422,7 +422,7 @@ bool Collider::intersect( const ColliderBox &a, const ColliderBox &b )
 		}
 	}
 
-	for( i32_t i = 0; i < 3; ++i )
+	for( s32 i = 0; i < 3; ++i )
 	{
 		t = abs( dot( column( aB, i ), diff ) );
 		t0 = dot( exA, column( Cabs, i ) );
@@ -540,12 +540,12 @@ bool Collider::intersect( const ColliderBox &box, const ColliderCylinder &cylind
 }
 bool Collider::intersect( const ColliderBox &box, const ColliderSphere &sphere )
 {
-	pvec_t diffCenter = sphere.getCenter( ) - box.getCenter( );
+	pvec diffCenter = sphere.getCenter( ) - box.getCenter( );
 
-	pvec_t a = makeVector< preal_t >( abs( dot( diffCenter, extractAxis( box.getOrientation( ), 0 ) ) ),
+	pvec a = makeVector< preal >( abs( dot( diffCenter, extractAxis( box.getOrientation( ), 0 ) ) ),
 										abs( dot( diffCenter, extractAxis( box.getOrientation( ), 1 ) ) ),
 										abs( dot( diffCenter, extractAxis( box.getOrientation( ), 2 ) ) ) );
-	pvec_t diff = a - box.getExtent( );
+	pvec diff = a - box.getExtent( );
 
 	if( a[ 0 ] <= box.getExtent( )[ 0 ] ) {
 		if( a[ 1 ] <= box.getExtent( )[ 1 ] ) {
@@ -558,7 +558,7 @@ bool Collider::intersect( const ColliderBox &box, const ColliderSphere &sphere )
 			if( a[ 2 ] <= box.getExtent( )[ 2 ] ) {
 				return diff[ 1 ] <= sphere.getRadius( );
 			} else {
-				preal_t r2 = sphere.getRadius( ) * sphere.getRadius( );
+				preal r2 = sphere.getRadius( ) * sphere.getRadius( );
 				return diff[ 1 ] * diff[ 1 ] + diff[ 2 ] * diff[ 2 ] <= r2;
 			}
 		}
@@ -567,15 +567,15 @@ bool Collider::intersect( const ColliderBox &box, const ColliderSphere &sphere )
 			if( a[ 2 ] <= box.getExtent( )[ 2 ] ) {
 				return diff[ 0 ] <= sphere.getRadius( );
 			} else {
-				preal_t r2 = sphere.getRadius( ) * sphere.getRadius( );
+				preal r2 = sphere.getRadius( ) * sphere.getRadius( );
 				return diff[ 0 ] * diff[ 0 ] + diff[ 2 ] * diff[ 2 ] <= r2;
 			}
 		} else {
 			if( a[ 2 ] <= box.getExtent( )[ 2 ] ) {
-				preal_t r2 = sphere.getRadius( ) * sphere.getRadius( );
+				preal r2 = sphere.getRadius( ) * sphere.getRadius( );
 				return diff[ 0 ] * diff[ 0 ] + diff[ 1 ] * diff[ 1 ] <= r2;
 			} else {					
-				preal_t r2 = sphere.getRadius( ) * sphere.getRadius( );
+				preal r2 = sphere.getRadius( ) * sphere.getRadius( );
 				return dot( diff, diff ) <= r2;
 			}
 		}
@@ -583,10 +583,10 @@ bool Collider::intersect( const ColliderBox &box, const ColliderSphere &sphere )
 }
 bool Collider::intersect( const ColliderBox &box, const ColliderTriangle &triangle )
 {
-	Vector< preal_t, 2 > ex0, ex1;
-	pvec_t diff, edges[ 3 ], axes[ 3 ];
+	Vector< preal, 2 > ex0, ex1;
+	pvec diff, edges[ 3 ], axes[ 3 ];
 		
-	for( i32_t i = 0; i < 3; ++i )
+	for( s32 i = 0; i < 3; ++i )
 	{
 		axes[ i ] = extractAxis( box.getOrientation( ), i );
 	}
@@ -601,10 +601,10 @@ bool Collider::intersect( const ColliderBox &box, const ColliderTriangle &triang
 		return false;
 	}
 
-	for( i32_t i = 0; i < 3; ++i )
+	for( s32 i = 0; i < 3; ++i )
 	{
 		ex0 = project( triangle, axes[ i ] );
-		preal_t ddotc = dot( axes[ i ], box.getCenter( ).as_vec( ) );
+		preal ddotc = dot( axes[ i ], box.getCenter( ).as_vec( ) );
 		ex1[ 0 ] = ddotc - box.getExtent( )[ i ];
 		ex1[ 1 ] = ddotc + box.getExtent( )[ i ];
 		if( ex1[ 1 ] < ex0[ 0 ] || ex0[ 1 ] < ex1[ 0 ] )
@@ -614,9 +614,9 @@ bool Collider::intersect( const ColliderBox &box, const ColliderTriangle &triang
 	}
 
 	edges[ 2 ] = edges[ 1 ] - edges[ 0 ];
-	for( i32_t i = 0; i < 3; ++i )
+	for( s32 i = 0; i < 3; ++i )
 	{
-		for( i32_t j = 0; j < 3; ++j )
+		for( s32 j = 0; j < 3; ++j )
 		{
 			diff = cross( edges[ i ], axes[ j ] );
 			ex0 = project( triangle, diff );
@@ -630,22 +630,22 @@ bool Collider::intersect( const ColliderBox &box, const ColliderTriangle &triang
 
 	return true;
 }
-bool Collider::intersect( const ColliderBox &box, const Ray &ray, preal_t *t, pvec_t *normal )
+bool Collider::intersect( const ColliderBox &box, const Ray &ray, preal *t, pvec *normal )
 {
 	// Transform ray into box space
-	pmat_t invOri = makeMatrix( inverse( box.getOrientation( ) ) );
-	pvec_t o = ray.getOrigin( ).as_vec( ) * invOri;
-	pvec_t d = ray.getDirection( ) * invOri;
-	AABB< preal_t, 3 > aabb = makeAABB< preal_t, 3 >( box.getCenter( ).as_vec( ) - box.getExtent( ) * preal_t( 0.5f ),
-														box.getCenter( ).as_vec( ) + box.getExtent( ) * preal_t( 0.5f ) );
+	pmat invOri = makeMatrix( inverse( box.getOrientation( ) ) );
+	pvec o = ray.getOrigin( ).as_vec( ) * invOri;
+	pvec d = ray.getDirection( ) * invOri;
+	AABB< preal, 3 > aabb = makeAABB< preal, 3 >( box.getCenter( ).as_vec( ) - box.getExtent( ) * preal( 0.5f ),
+														box.getCenter( ).as_vec( ) + box.getExtent( ) * preal( 0.5f ) );
 	Ray r( o.as_point( ), d );
 	RayIntersectPoint pt = r.intersects( aabb );
 	if( pt.intersects )
 	{
 		*t = pt.distanceToIntersect;
 		o = o + d * ( *t );
-		preal_t minus = preal_t( -1.f ),
-				plus = preal_t( 1.f );
+		preal minus = preal( -1.f ),
+				plus = preal( 1.f );
 		( *normal )[ 0 ] = o[ 0 ] == aabb._min[ 0 ] ? minus : plus;
 		( *normal )[ 1 ] = o[ 1 ] == aabb._min[ 1 ] ? minus : plus;
 		( *normal )[ 2 ] = o[ 2 ] == aabb._min[ 2 ] ? minus : plus;
@@ -655,13 +655,13 @@ bool Collider::intersect( const ColliderBox &box, const Ray &ray, preal_t *t, pv
 		return false;
 	}
 }
-bool Collider::intersect( const ColliderBox &box, const ppt_t &pt )
+bool Collider::intersect( const ColliderBox &box, const ppt &pt )
 {
-	Vector< preal_t, 3 > halfExtent = box.getExtent( ) * preal_t( 0.5f );
-	paabb_t b = makeAABB< preal_t, 3 >( ( box.getCenter( ).as_vec( ) - halfExtent ).as_point( ),
-										( box.getCenter( ).as_vec( ) + halfExtent ).as_point( ) );
-	pvec_t localPt = pt - box.getCenter( );
-	ppt_t rpt = ( ( inverse( box.getOrientation( ) ) * localPt ) 
+	Vector< preal, 3 > halfExtent = box.getExtent( ) * preal( 0.5f );
+	paabb b = makeAABB< preal, 3 >( ( box.getCenter( ).as_vec( ) - halfExtent ).as_point( ),
+									( box.getCenter( ).as_vec( ) + halfExtent ).as_point( ) );
+	pvec localPt = pt - box.getCenter( );
+	ppt rpt = ( ( inverse( box.getOrientation( ) ) * localPt ) 
 					+ box.getCenter( ).as_vec( ) ).as_point( ); // Rotate the local point and back to world space
 	return inside( b, rpt );
 }
@@ -698,13 +698,13 @@ bool Collider::intersect( const ColliderConvexHull &hull, const ColliderTriangle
 	assert( false && "Not implemented yet!" );
 	return false;
 }
-bool Collider::intersect( const ColliderConvexHull &hull, const Ray &ray, preal_t *t, pvec_t *normal )
+bool Collider::intersect( const ColliderConvexHull &hull, const Ray &ray, preal *t, pvec *normal )
 {
 	// @TODO: This is not done
 	assert( false && "Not implemented yet!" );
 	return false;
 }
-bool Collider::intersect( const ColliderConvexHull &hull, const ppt_t &pt )
+bool Collider::intersect( const ColliderConvexHull &hull, const ppt &pt )
 {
 	// @TODO: This is not done
 	assert( false && "Not implemented yet!" );
@@ -713,11 +713,11 @@ bool Collider::intersect( const ColliderConvexHull &hull, const ppt_t &pt )
 		
 bool Collider::intersect( const ColliderCylinder &a, const ColliderCylinder &b )
 {
-	pvec_t d = b.getCenter( ) - a.getCenter( );
-	pvec_t ax = cross( a.getAxis( ), b.getAxis( ) );
-	preal_t lenax = norm( ax ),
-					halfHa = a.getHeight( ) * preal_t( 0.5f ),
-					halfHb = b.getHeight( ) * preal_t( 0.5f ),
+	pvec d = b.getCenter( ) - a.getCenter( );
+	pvec ax = cross( a.getAxis( ), b.getAxis( ) );
+	preal lenax = norm( ax ),
+					halfHa = a.getHeight( ) * preal( 0.5f ),
+					halfHb = b.getHeight( ) * preal( 0.5f ),
 					rsum = a.getRadius( ) + b.getRadius( ),
 					wadotwb = dot( a.getAxis( ), b.getAxis( ) ),
 					zero( 0.f );
@@ -784,26 +784,26 @@ bool Collider::intersect( const ColliderCylinder &cylinder, const ColliderTriang
 	assert( false && "Not implemented yet!" );
 	return false;
 }
-bool Collider::intersect( const ColliderCylinder &cylinder, const Ray &ray, preal_t *t, pvec_t *normal )
+bool Collider::intersect( const ColliderCylinder &cylinder, const Ray &ray, preal *t, pvec *normal )
 {
 	// @TODO: This is not done
 	assert( false && "Not implemented yet!" );
 	return false;
 }
-bool Collider::intersect( const ColliderCylinder &cylinder, const ppt_t &pt )
+bool Collider::intersect( const ColliderCylinder &cylinder, const ppt &pt )
 {
-	preal_t half( 0.5f );
-	pvec_t pt1 = cylinder.getCenter( ).as_vec( ) + cylinder.getAxis( ) * ( cylinder.getHeight( ) * half ),
+	preal half( 0.5f );
+	pvec pt1 = cylinder.getCenter( ).as_vec( ) + cylinder.getAxis( ) * ( cylinder.getHeight( ) * half ),
 			pt2 = cylinder.getCenter( ).as_vec( ) + cylinder.getAxis( ) * ( cylinder.getHeight( ) * half );
-	pvec_t dpt = pt.as_vec( ) - pt1;
-	preal_t d = dot( dpt, pt2 - pt1 );
-	preal_t lensq = cylinder.getHeight( ) * cylinder.getHeight( );
+	pvec dpt = pt.as_vec( ) - pt1;
+	preal d = dot( dpt, pt2 - pt1 );
+	preal lensq = cylinder.getHeight( ) * cylinder.getHeight( );
 
-	if( d < preal_t( 0.f ) || d > lensq )
+	if( d < preal( 0.f ) || d > lensq )
 	{
 		return false;
 	} else {
-		preal_t dsq = dot( dpt, dpt ) - d * d / lensq;
+		preal dsq = dot( dpt, dpt ) - d * d / lensq;
 
 		if( dsq > cylinder.getRadius( ) * cylinder.getRadius( ) )
 		{
@@ -840,21 +840,21 @@ bool Collider::intersect( const ColliderSphere &sphere, const ColliderTriangle &
 		|| norm( sphere.getCenter( ) - triangle.getVertex( 1 ) ) <= sphere.getRadius( )
 		|| norm( sphere.getCenter( ) - triangle.getVertex( 2 ) ) <= sphere.getRadius( );
 }
-bool Collider::intersect( const ColliderSphere &sphere, const Ray &ray, preal_t *t, pvec_t *normal )
+bool Collider::intersect( const ColliderSphere &sphere, const Ray &ray, preal *t, pvec *normal )
 {
-	const preal_t inf = std::numeric_limits< preal_t >::max( );
-	const preal_t eps = std::numeric_limits< preal_t >::epsilon( );
-	const pvec_t  p = sphere.getCenter( ) - ray.getOrigin( );
-	const preal_t PdotP = dot( p, p );
-	const preal_t PdotD = dot( p, ray.getDirection( ) );
-	const preal_t b    = PdotD,
+	const preal inf = std::numeric_limits< preal >::max( );
+	const preal eps = std::numeric_limits< preal >::epsilon( );
+	const pvec  p = sphere.getCenter( ) - ray.getOrigin( );
+	const preal PdotP = dot( p, p );
+	const preal PdotD = dot( p, ray.getDirection( ) );
+	const preal b    = PdotD,
 					bsqr = b * b;
-	preal_t d = bsqr - PdotP + sphere.getRadius( ) * sphere.getRadius( );
+	preal d = bsqr - PdotP + sphere.getRadius( ) * sphere.getRadius( );
 	if( d < 0 ) {
 		return false;
 	}
 	d = sqrt( d );
-	f32_t t1 = b - d,
+	f32 t1 = b - d,
 			t2 = b + d;
 	t1 = t1 < eps ? inf : t1;
 	t2 = t2 < eps ? inf : t2;
@@ -863,7 +863,7 @@ bool Collider::intersect( const ColliderSphere &sphere, const Ray &ray, preal_t 
 	*normal = ( ray.getOrigin( ) + ray.getDirection( ) * ( *t ) ) - sphere.getCenter( );
 	return true;
 }
-bool Collider::intersect( const ColliderSphere &sphere, const ppt_t &pt )
+bool Collider::intersect( const ColliderSphere &sphere, const ppt &pt )
 {
 	return norm( pt - sphere.getCenter( ) ) <= sphere.getRadius( );
 }
@@ -871,39 +871,39 @@ bool Collider::intersect( const ColliderSphere &sphere, const ppt_t &pt )
 bool Collider::intersect( const ColliderTriangle &a, const ColliderTriangle &b )
 {
 	// Get normal of A
-	pvec_t ae[ 3 ];
+	pvec ae[ 3 ];
 	ae[ 0 ] = a.getVertex( 1 ) - a.getVertex( 0 );
 	ae[ 1 ] = a.getVertex( 2 ) - a.getVertex( 0 );
 	ae[ 2 ] = a.getVertex( 0 ) - a.getVertex( 2 );
-	pvec_t an = cross( ae[ 0 ], ae[ 1 ] );
+	pvec an = cross( ae[ 0 ], ae[ 1 ] );
 		
 	// Project B onto normal of A, test for separation
-	preal_t anDotA = dot( an, a.getVertex( 0 ).as_vec( ) );
-	Vector< preal_t, 2 > arp = project( b, an ), brp;
+	preal anDotA = dot( an, a.getVertex( 0 ).as_vec( ) );
+	Vector< preal, 2 > arp = project( b, an ), brp;
 	if( anDotA < arp[ 0 ] || anDotA > arp[ 1 ] ) {
 		return false;
 	}
 
 	// Get normal of B
-	pvec_t be[ 3 ];
+	pvec be[ 3 ];
 	be[ 0 ] = b.getVertex( 1 ) - b.getVertex( 0 );
 	be[ 1 ] = b.getVertex( 2 ) - b.getVertex( 0 );
 	be[ 2 ] = b.getVertex( 0 ) - b.getVertex( 2 );
-	pvec_t bn = cross( be[ 0 ], be[ 1 ] );
+	pvec bn = cross( be[ 0 ], be[ 1 ] );
 
-	pvec_t nxn = cross( an, bn );
-	if( dot( nxn, nxn ) >= std::numeric_limits< preal_t >::epsilon( ) )
+	pvec nxn = cross( an, bn );
+	if( dot( nxn, nxn ) >= std::numeric_limits< preal >::epsilon( ) )
 	{	// Not parallel
 		// Project A onto normal of B, test for separation
-		preal_t bnDotB = dot( bn, b.getVertex( 0 ).as_vec( ) );
+		preal bnDotB = dot( bn, b.getVertex( 0 ).as_vec( ) );
 		brp = project( a, bn );
 		if( bnDotB < arp[ 0 ] || bnDotB > arp[ 1 ] ) {
 			return false;
 		}
 
-		for( ui32_t ib = 0; ib < 3; ++ib ) {
-			for( ui32_t ia = 0; ia < 3; ++ia ) {
-				pvec_t d = cross( ae[ ia ], be[ ib ] );
+		for( u32 ib = 0; ib < 3; ++ib ) {
+			for( u32 ia = 0; ia < 3; ++ia ) {
+				pvec d = cross( ae[ ia ], be[ ib ] );
 				arp = project( a, d );
 				brp = project( b, d );
 				if( arp[ 1 ] < brp[ 0 ] || brp[ 1 ] < arp[ 0 ] )
@@ -914,16 +914,16 @@ bool Collider::intersect( const ColliderTriangle &a, const ColliderTriangle &b )
 		}
 	} else {
 		// Triangles are coplanar
-		for( ui32_t i = 0; i < 3; ++i ) {
-			pvec_t d = cross( an, ae[ i ] );
+		for( u32 i = 0; i < 3; ++i ) {
+			pvec d = cross( an, ae[ i ] );
 			arp = project( a, d );
 			brp = project( b, d );
 			if( arp[ 1 ] < brp[ 0 ] || brp[ 1 ] < arp[ 0 ] ) {
 				return false;
 			}
 		}
-		for( ui32_t i = 0; i < 3; ++i ) {
-			pvec_t d = cross( bn, be[ i ] );
+		for( u32 i = 0; i < 3; ++i ) {
+			pvec d = cross( bn, be[ i ] );
 			arp = project( a, d );
 			brp = project( b, d );
 			if( arp[ 1 ] < brp[ 0 ] || brp[ 1 ] < arp[ 0 ] ) {
@@ -953,56 +953,56 @@ bool Collider::intersect( const ColliderTriangle &triangle, const ColliderSphere
 {
 	return intersect( sphere, triangle );
 }
-bool Collider::intersect( const ColliderTriangle &triangle, const Ray &ray, preal_t *t, pvec_t *normal )
+bool Collider::intersect( const ColliderTriangle &triangle, const Ray &ray, preal *t, pvec *normal )
 {
-	const preal_t inf = std::numeric_limits< f32_t >::max( );
-	const preal_t eps = std::numeric_limits< f32_t >::epsilon( );
-	pvec_t e1 = triangle.getVertex( 1 ) - triangle.getVertex( 0 );
-	pvec_t e2 = triangle.getVertex( 2 ) - triangle.getVertex( 0 );
+	const preal inf = std::numeric_limits< f32 >::max( );
+	const preal eps = std::numeric_limits< f32 >::epsilon( );
+	pvec e1 = triangle.getVertex( 1 ) - triangle.getVertex( 0 );
+	pvec e2 = triangle.getVertex( 2 ) - triangle.getVertex( 0 );
 	*normal = normalize( cross( e1, e2 ) );
-	preal_t b = dot( *normal, ray.getDirection( ) );
+	preal b = dot( *normal, ray.getDirection( ) );
 	
-	pvec_t w0 = ray.getOrigin( ) - triangle.getVertex( 0 );
-	preal_t a = -dot( *normal, w0 );
-	preal_t tn = a / b;
+	pvec w0 = ray.getOrigin( ) - triangle.getVertex( 0 );
+	preal a = -dot( *normal, w0 );
+	preal tn = a / b;
 
-	ppt_t p = ray.getOrigin( ) + ( ray.getDirection( ) * tn );
+	ppt p = ray.getOrigin( ) + ( ray.getDirection( ) * tn );
 
-	preal_t uu, uv, vv, wu, wv, inverseD;
+	preal uu, uv, vv, wu, wv, inverseD;
 	uu = dot( e1, e1 );
 	uv = dot( e1, e2 );
 	vv = dot( e2, e2 );
 
-	pvec_t w = p - triangle.getVertex( 0 );
+	pvec w = p - triangle.getVertex( 0 );
 	wu = dot( w, e1 );
 	wv = dot( w, e2 );
 	inverseD = uv *uv - uu *vv;
 	inverseD = 1.f / inverseD;
 
-	preal_t u = ( uv * wv - vv * wu ) * inverseD;
-	if( u < preal_t( 0.f ) || u > preal_t( 1.f ) ) {
+	preal u = ( uv * wv - vv * wu ) * inverseD;
+	if( u < preal( 0.f ) || u > preal( 1.f ) ) {
 		return false;
 	}
 
-	preal_t v = ( uv * wu - uu * wv ) * inverseD;
-	if( v < preal_t( 0.f ) || ( u + v ) > preal_t( 1.f ) ) {
+	preal v = ( uv * wu - uu * wv ) * inverseD;
+	if( v < preal( 0.f ) || ( u + v ) > preal( 1.f ) ) {
 		return false;
 	}
 
 	*t = tn;
 	return true;
 }
-bool Collider::intersect( const ColliderTriangle &triangle, const ppt_t &pt )
+bool Collider::intersect( const ColliderTriangle &triangle, const ppt &pt )
 {
-	pvec_t e1 = triangle.getVertex( 1 ) - triangle.getVertex( 0 );
-	pvec_t e2 = triangle.getVertex( 2 ) - triangle.getVertex( 0 );
-	pvec_t n = normalize( cross( e1, e2 ) );
-	pvec_t d = pt - triangle.getVertex( 0 );
+	pvec e1 = triangle.getVertex( 1 ) - triangle.getVertex( 0 );
+	pvec e2 = triangle.getVertex( 2 ) - triangle.getVertex( 0 );
+	pvec n = normalize( cross( e1, e2 ) );
+	pvec d = pt - triangle.getVertex( 0 );
 
-	preal_t dp = dot( d, n );
-	pvec_t s = d - n * dp;
+	preal dp = dot( d, n );
+	pvec s = d - n * dp;
 
-	return norm( s ) <= std::numeric_limits< preal_t >::epsilon( );
+	return norm( s ) <= std::numeric_limits< preal >::epsilon( );
 }
 
 

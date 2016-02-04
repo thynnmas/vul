@@ -15,33 +15,93 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef VUL_GL_H
+#define VUL_GL_H
+
 #include "vul_types.h"
 #include <stdio.h>
 #include <math.h>
-#undef far	// These things are annoying...
-#undef near
 
+#ifdef _cplusplus
+extern "C" {
+#endif
 /**
  * Creates a uniform orthographic projection matrix.
  * Depth range will be [-1, 1], right handed.
  * Matrix is assumed to be column major: mat44[ 1 ] = column 0, row 1
  */
-#ifndef VUL_DEFINE
-void vul_gl_ortho( f32_t *mat44,
-				   const f32_t left,
-				   const f32_t right,
-				   const f32_t bottom,
-				   const f32_t top,
-				   const f32_t near,
-				   const f32_t far );
-#else
-void vul_gl_ortho( f32_t *mat44,
-				   const f32_t left,
-				   const f32_t right,
-				   const f32_t bottom,
-				   const f32_t top,
-				   const f32_t near,
-				   const f32_t far )
+void vul_gl_ortho( f32 *mat44,
+				   const f32 left,
+				   const f32 right,
+				   const f32 bottom,
+				   const f32 top,
+				   const f32 vnear,
+				   const f32 vfar );
+/**
+ * Creates a uniform perspective projection matrix for the given
+ * vertical FOV and aspect ratio. FOV in radians.
+ * Depth range will be [-1, 1], right handed.
+ * @NOTE: vnear must be > 0
+ * Matrix is assumed to be column major: mat44[ 1 ] = column 0, row 1
+ */
+void vul_gl_perspective( f32 *mat44, 
+						 const f32 fov_y,
+						 const f32 aspect,
+						 const f32 vnear,
+						 const f32 vfar );
+/**
+ * Creates a uniform perspective projection matrix for the given
+ * vertical FOV and viewport width and height. FOV in radians.
+ * Depth range will be [-1, 1], right handed.
+ * @NOTE: vnear must be > 0
+ * Matrix is assumed to be column major: mat44[ 1 ] = column 0, row 1
+ */
+void vul_gl_perspective_fov( f32 *mat44, 
+							 const f32 fov_y,
+							 const f32 width,
+							 const f32 height,
+							 const f32 vnear,
+							 const f32 vfar );
+/**
+ * Creates a uniform perspective projection matrix for the given
+ * vertical FOV and viewport size and position. FOV in radians.
+ * Depth range will be [-1, 1], right handed.
+ * @NOTE: vnear must be > 0
+ * Matrix is assumed to be column major: mat44[ 1 ] = column 0, row 1
+ */
+void vul_gl_perspective_fov_offset( f32 *mat44, 
+									const f32 fov_y,
+									const f32 left,
+									const f32 right,
+									const f32 bottom,
+									const f32 top,
+									const f32 vnear,
+									const f32 vfar );
+/**
+ * Check for errors in OpenGL and print the output to the given string if
+ * the string is not null, to stdout otherwise.
+ * Returns 0 if no errors were found, 1 otherwise.
+ */
+int vul_gl_check_error_print( char *out_str );
+
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+void vul_gl_ortho( f32 *mat44,
+				   const f32 left,
+				   const f32 right,
+				   const f32 bottom,
+				   const f32 top,
+				   const f32 vnear,
+				   const f32 vfar )
 {
 	// Rotation & shear
 	mat44[ 1 ] = mat44[ 2 ] = 0.f; 
@@ -51,7 +111,7 @@ void vul_gl_ortho( f32_t *mat44,
 	// Scale
 	mat44[ 0 ] = 2.f / ( right - left );
 	mat44[ 5 ] = 2.f / ( top - bottom );
-	mat44[ 10 ] = -2.f / ( far - near);
+	mat44[ 10 ] = -2.f / ( vfar - vnear);
 	mat44[ 15 ] = 1.f;
 
 	// Homogenous
@@ -62,33 +122,18 @@ void vul_gl_ortho( f32_t *mat44,
 	// Translation
 	mat44[ 12 ] = -( right + left ) / ( right - left );
 	mat44[ 13 ] = -( top + bottom ) / ( top - bottom );
-	mat44[ 14 ] = -( far + near ) / ( far - near );
+	mat44[ 14 ] = -( vfar + vnear ) / ( vfar - vnear );
 }
-#endif
 
-/**
- * Creates a uniform perspective projection matrix for the given
- * vertical FOV and aspect ratio. FOV in radians.
- * Depth range will be [-1, 1], right handed.
- * @NOTE: near must be > 0
- * Matrix is assumed to be column major: mat44[ 1 ] = column 0, row 1
- */
-#ifndef VUL_DEFINE
-void vul_gl_perspective( f32_t *mat44, 
-						 const f32_t fov_y,
-						 const f32_t aspect,
-						 const f32_t near,
-						 const f32_t far );
-#else
-void vul_gl_perspective( f32_t *mat44, 
-						 const f32_t fov_y,
-						 const f32_t aspect,
-						 const f32_t near,
-						 const f32_t far )
+void vul_gl_perspective( f32 *mat44, 
+						 const f32 fov_y,
+						 const f32 aspect,
+						 const f32 vnear,
+						 const f32 vfar )
 {
-	f32_t range, left, right, bottom, top;
+	f32 range, left, right, bottom, top;
 
-	range = ( f32_t )tan( fov_y / 2.f ) * near;
+	range = ( f32 )tan( fov_y / 2.f ) * vnear;
 	left = -range * aspect;
 	right = range * aspect;
 	bottom = -range;
@@ -100,9 +145,9 @@ void vul_gl_perspective( f32_t *mat44,
 	mat44[ 8 ] = mat44[ 9 ] = 0.f;
 
 	// Scale
-	mat44[ 0 ] = ( 2.f * near ) / ( right - left );
-	mat44[ 5 ] = ( 2.f * near ) / ( top - bottom );
-	mat44[ 10 ] = -( far + near ) / ( far - near );
+	mat44[ 0 ] = ( 2.f * vnear ) / ( right - left );
+	mat44[ 5 ] = ( 2.f * vnear ) / ( top - bottom );
+	mat44[ 10 ] = -( vfar + vnear ) / ( vfar - vnear );
 	mat44[ 15 ] = 0.f;
 
 	// Homogenous
@@ -113,35 +158,19 @@ void vul_gl_perspective( f32_t *mat44,
 	// Translation
 	mat44[ 12 ] = 0.f;
 	mat44[ 13 ] = 0.f;
-	mat44[ 14 ] = -( 2.f * far * near ) / ( far - near );
+	mat44[ 14 ] = -( 2.f * vfar * vnear ) / ( vfar - vnear );
 }
-#endif
 
-/**
- * Creates a uniform perspective projection matrix for the given
- * vertical FOV and viewport width and height. FOV in radians.
- * Depth range will be [-1, 1], right handed.
- * @NOTE: near must be > 0
- * Matrix is assumed to be column major: mat44[ 1 ] = column 0, row 1
- */
-#ifndef VUL_DEFINE
-void vul_gl_perspective_fov( f32_t *mat44, 
-							 const f32_t fov_y,
-							 const f32_t width,
-							 const f32_t height,
-							 const f32_t near,
-							 const f32_t far );
-#else
-void vul_gl_perspective_fov( f32_t *mat44, 
-							 const f32_t fov_y,
-							 const f32_t width,
-							 const f32_t height,
-							 const f32_t near,
-							 const f32_t far )
+void vul_gl_perspective_fov( f32 *mat44, 
+							 const f32 fov_y,
+							 const f32 width,
+							 const f32 height,
+							 const f32 vnear,
+							 const f32 vfar )
 {
-	f32_t h, w;
+	f32 h, w;
 	
-	h = ( f32_t )cos( 0.5f * fov_y ) / ( f32_t )sin( 0.5f * fov_y );
+	h = ( f32 )cos( 0.5f * fov_y ) / ( f32 )sin( 0.5f * fov_y );
 	w = h * ( height / width );
 	
 	// Rotation & shear
@@ -152,7 +181,7 @@ void vul_gl_perspective_fov( f32_t *mat44,
 	// Scale
 	mat44[ 0 ] = w;
 	mat44[ 5 ] = h;
-	mat44[ 10 ] = -( far + near ) / ( far - near );
+	mat44[ 10 ] = -( vfar + vnear ) / ( vfar - vnear );
 	mat44[ 15 ] = 0.f;
 
 	// Homogenous
@@ -163,40 +192,21 @@ void vul_gl_perspective_fov( f32_t *mat44,
 	// Translation
 	mat44[ 12 ] = 0.f;
 	mat44[ 13 ] = 0.f;
-	mat44[ 14 ] = -( 2.f * far * near ) / ( far - near );
+	mat44[ 14 ] = -( 2.f * vfar * vnear ) / ( vfar - vnear );
 }
-#endif
 
-
-/**
- * Creates a uniform perspective projection matrix for the given
- * vertical FOV and viewport size and position. FOV in radians.
- * Depth range will be [-1, 1], right handed.
- * @NOTE: near must be > 0
- * Matrix is assumed to be column major: mat44[ 1 ] = column 0, row 1
- */
-#ifndef VUL_DEFINE
-void vul_gl_perspective_fov_offset( f32_t *mat44, 
-									const f32_t fov_y,
-									const f32_t left,
-									const f32_t right,
-									const f32_t bottom,
-									const f32_t top,
-									const f32_t near,
-									const f32_t far );
-#else
-void vul_gl_perspective_fov_offset( f32_t *mat44, 
-									const f32_t fov_y,
-									const f32_t left,
-									const f32_t right,
-									const f32_t bottom,
-									const f32_t top,
-									const f32_t near,
-									const f32_t far )
+void vul_gl_perspective_fov_offset( f32 *mat44, 
+									const f32 fov_y,
+									const f32 left,
+									const f32 right,
+									const f32 bottom,
+									const f32 top,
+									const f32 vnear,
+									const f32 vfar )
 {
-	f32_t w, h;
+	f32 w, h;
 
-	h = ( f32_t )cos( 0.5f * fov_y ) / ( f32_t )sin( 0.5f * fov_y );
+	h = ( f32 )cos( 0.5f * fov_y ) / ( f32 )sin( 0.5f * fov_y );
 	w = h * ( top - bottom ) / ( right - left );
 
 	// Rotation & shear
@@ -208,7 +218,7 @@ void vul_gl_perspective_fov_offset( f32_t *mat44,
 	// Scale
 	mat44[ 0 ] = w;
 	mat44[ 5 ] = h;
-	mat44[ 10 ] = -( far + near ) / ( far - near );
+	mat44[ 10 ] = -( vfar + vnear ) / ( vfar - vnear );
 	mat44[ 15 ] = 0.f;
 
 	// Homogenous
@@ -219,18 +229,9 @@ void vul_gl_perspective_fov_offset( f32_t *mat44,
 	// Translation
 	mat44[ 12 ] = 0.f;
 	mat44[ 13 ] = 0.f;
-	mat44[ 14 ] = -( 2.f * far * near ) / ( far - near );
+	mat44[ 14 ] = -( 2.f * vfar * vnear ) / ( vfar - vnear );
 }
-#endif
 
-/**
- * Check for errors in OpenGL and print the output to the given string if
- * the string is not null, to stdout otherwise.
- * Returns 0 if no errors were found, 1 otherwise.
- */
-#ifndef VUL_DEFINE
-int vul_gl_check_error_print( char *out_str );
-#else
 int vul_gl_check_error_print( char *out_str )
 {
 	GLenum error;
@@ -307,4 +308,9 @@ int vul_gl_check_error_print( char *out_str )
 
 	return 0;
 }
+
+#ifdef _cplusplus
+}
+#endif
+
 #endif

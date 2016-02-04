@@ -34,36 +34,36 @@
 */
 //#define VUL_DEFINE
 
-typedef struct vul_csp_type_t {
-	ui32_t size;
+typedef struct vul_csp_type {
+	u32 size;
 	void *data;
-} vul_csp_type_t;
+} vul_csp_type;
 
-typedef struct vul_csp_var_t {
-	ui32_t id;					 // Unique identifier. If you're using string names, hash them....
-	vul_csp_type_t *bound_value; // This is used in revise only, and is null for the variables in CNET.
+typedef struct vul_csp_var {
+	u32 id;					 // Unique identifier. If you're using string names, hash them....
+	vul_csp_type *bound_value; // This is used in revise only, and is null for the variables in CNET.
 	// It is simple here to let us have one less type, and will probably go
 	// at the next refactor that touches code involving it...
-} vul_csp_var_t;
+} vul_csp_var;
 
-typedef struct vul_csp_constraint_t {
-	ui32_t var_count;
+typedef struct vul_csp_constraint {
+	u32 var_count;
 
-	vul_csp_var_t **vars;
-	vul_svector_t **doms; // csp_type_t
-	int( *test )( ui32_t count, vul_csp_var_t *vars );
-} vul_csp_constraint_t;
+	vul_csp_var **vars;
+	vul_svector **doms; // csp_type
+	int( *test )( u32 count, vul_csp_var *vars );
+} vul_csp_constraint;
 
-typedef struct vul_csp_variable_instance_t {
-	vul_csp_var_t *var;
-	vul_svector_t *dom_inst; // csp_type_t
-} vul_csp_variable_instance_t;
+typedef struct vul_csp_variable_instance {
+	vul_csp_var *var;
+	vul_svector *dom_inst; // csp_type
+} vul_csp_variable_instance;
 
-typedef struct vul_csp_constraint_instance_t {
-	vul_csp_constraint_t *constraint;
+typedef struct vul_csp_constraint_instance {
+	vul_csp_constraint *constraint;
 
-	vul_csp_variable_instance_t **var_insts;
-} vul_csp_constraint_instance_t;
+	vul_csp_variable_instance **var_insts;
+} vul_csp_constraint_instance;
 
 /*
 * Top level data structure of GAC that keeps all the constraints
@@ -71,45 +71,45 @@ typedef struct vul_csp_constraint_instance_t {
 * Everything internally in the search handles instances or
 * references to these.
 */
-typedef struct vul_gac_cnet_t {
-	vul_svector_t *constraints; // csp_constraint_t
-	vul_svector_t *variables; // csp_var_t (with bound_Value = NULL)
-	vul_svector_t *domains;	// vul_svector_t*< csp_type_t >
-} vul_gac_cnet_t;
+typedef struct vul_gac_cnet {
+	vul_svector *constraints; // csp_constraint
+	vul_svector *variables; // csp_var (with bound_Value = NULL)
+	vul_svector *domains;	// vul_svector*< csp_type >
+} vul_gac_cnet;
 
 /*
 * Search node data. Contains a reference to the variable we just made
 * an asusmption about to get here (NULL in root node), constraint instances
 * and variable instances.
 */
-typedef struct vul_gac_node_data_t {
-	ui32_t assumption_var_index; // 0xffffffff if no assumption was made
+typedef struct vul_gac_node_data {
+	u32 assumption_var_index; // 0xffffffff if no assumption was made
 
-	ui32_t constraint_count;
-	vul_csp_constraint_instance_t *const_insts; // These have pointers to the instance array below
+	u32 constraint_count;
+	vul_csp_constraint_instance *const_insts; // These have pointers to the instance array below
 
-	vul_svector_t *var_insts; // csp_variable_instance_t
-} vul_gac_node_data_t;
+	vul_svector *var_insts; // csp_variable_instance
+} vul_gac_node_data;
 
 /*
 * Used in revise and revise_recurse, this holds the index into the constraint instances
 * variable instance a binding is for, and the index into its domain that is bound.
 */
 typedef struct vul__gac_revise_binding {
-	ui32_t index;
-	ui32_t value;
+	u32 index;
+	u32 value;
 } vul__gac_revise_binding;
 
 typedef struct vul_gac_revise_part {
-	vul_csp_constraint_instance_t *c;
-	ui32_t focal;
+	vul_csp_constraint_instance *c;
+	u32 focal;
 } vul_gac_revise_pair;
 
 /**
  * User data for A* nodes
  */
 typedef struct vul_gac_astar_node_user_data {
-	vul_gac_node_data_t *gac_node;
+	vul_gac_node_data *gac_node;
 	void *user_data; // For the user
 } vul_gac_astar_node_user_data;
 
@@ -117,30 +117,170 @@ typedef struct vul_gac_astar_node_user_data {
  * User data for the A* graph
  */
 typedef struct vul_gac_astar_graph_user_data {
-	vul_gac_cnet_t *cnet;
+	vul_gac_cnet *cnet;
 	void *user_data;
 } vul_gac_astar_graph_user_data;
 
+#ifdef _cplusplus
+extern "C" {
 #endif
-
 /*
 * Creates a initial search node with full domains, no assumption made
 * and runs the initial GAC iteration.
 */
-#ifndef VUL_DEFINE
-void vul_csp_graph_initialize( vul_astar_graph_t *graph );
-#else
-void vul_csp_graph_initialize( vul_astar_graph_t *graph )
+void vul_csp_graph_initialize( vul_astar_graph *graph );
+/*
+* Helper function that compares a csp_var_t instance with a
+* csp_variable_instance_t.
+* Simply compares their id. Used to find things in vectors.
+*/
+int vul__csp_variable_instance_var_comparator( void *a, void *b );
+/*
+* Helper function that compares two csp_variable_instance_t instances
+* by comraing the id of their variables. Used to ind things in vectors.
+*/
+int vul__csp_variable_instance_var_inst_comparator( void *a, void *b );
+/*
+* Deallocates a node. Does NOT touch any of the things referenced in CNET.
+*/
+void vul__csp_graph_finalize_astar_node( vul_astar_node *node );
+/*
+* Resets an astar graph for a graph coloring problem.
+* Destroys the astar_graph, then rebuilds it.
+*/
+void vul_csp_graph_reset( vul_astar_graph *graph );
+/*
+* Recursively binds the first free variable to every possibility in its
+* domain and calls itself with it bound. If zero variables are free, it
+* performs the revise step and returns, true if for any of the combinations,
+* the constraint holds, false otherwise.
+* bound is a vector of type gac__revise_binding.
+*
+* @NOTE(thynn): Yes this contains GOTOs, but they are function internal 
+* and simplify the logic quite a bit, so tough...
+*/
+int vul__gac_revise_recurse( vul_csp_constraint_instance *cons, 
+							 vul_svector *bound );
+/*
+* Performs a single general arc-consistency revision.
+* Returns true if the focal variable's domain was restricted.
+* Uses gac__revise_recurse internally.
+*/
+int vul_gac_revise( vul_csp_constraint_instance *cons, 
+					u32 focal_index );
+/*
+* This performs the GAC algorithm over all constraints.
+* Don't call manually, gets called from gac_initialize or gac_rerun.
+*/
+void vul_gac_deduction( vul_queue *queue,
+						u32 constraint_count,
+						vul_csp_constraint_instance *const_insts );/*
+* This initializes the queue with all constraint pairs
+* and calls gac_deduction. This works on the CNET constraints,
+* but we actually want constraint instances because we generate them
+* for the initial search state anyway, and it simlpifies the work
+* we do here not to have to recreate them.
+*/
+void vul_gac_initialize( u32 constraint_count, 
+						 vul_csp_constraint_instance *const_insts );
+/*
+* This initializes the queue based on a just made assumption,
+* and then calls gac_eduction.
+* It works on constraint instances.
+*/
+void vul_gac_rerun( u32 constraint_count, 
+					vul_csp_constraint_instance *const_insts, 
+					vul_csp_var *assumption );
+/*
+* Finalizes the CNET.
+*/
+void vul_gac_cnet_finalize( vul_gac_cnet *cnet );
+/*
+* Finalizes a single gac_node_data_t.
+*/
+void vul_gac_node_finalize( vul_gac_node_data *node );
+/*
+* Counts the number of vertices with non-singular domains.
+*/
+int vul_gac_count_unassigned( vul_astar_node *node );
+/*
+* Count the number of constraints not satisfied by the given node.
+*/
+int vul_gac_count_failed( vul_astar_node *node );
+/*
+* Initializes the graph, creates the first node (without assumption)
+* and perform the initial deduction (calls gac_initialize).
+* Returns the created first node; no user data allocated.
+*/
+vul_gac_node_data *vul_gac_graph_initialize( vul_astar_graph *graph );
+/*
+* Checks if a node is in a valid state, i.e.
+* if all variable instances have non-empty domain instances.
+*/
+int vul_gac_is_valid( vul_astar_node *anode );
+/*
+* Internal function used by astar_neighbor to create new nodes.
+* It copies the domain instances and variable instances of the
+* parent node, restricting the variable at index var_restrict
+* to the value in it's domain at index var_dom_restrict,
+* and marks that as the made assumption.
+* Then it marks the node as undiscovered with 0-costs.
+*/
+void vul__gac_create_astar_node_copy( vul_astar_node **anode,
+									  vul_astar_graph *graph,
+									  vul_astar_node *parent,
+									  vul_gac_node_data *to_copy,
+									  u32 var_restrict,
+									  u32 var_dom_restrict );
+/*
+* Determines if the current node (c) is final. We don't have a known end
+* node in GAC, so e is always NULL. This return true iff all variable
+* domains are reduced to size 1.
+* This is where we perform deduction! It is called when a search node is closed.
+*/
+int vul_gac_is_final( vul_astar_node *c, vul_astar_node *e );
+/*
+* Create neighbor-function: Make assumptions; order is important here: return the best candidate first!
+* best candidate is the one that constrains the most. Perform deduction and don't return illegal states.
+*/
+u64 vul_gac_neighbors( vul_astar_node **neighbors,
+					   vul_astar_graph *graph,
+					   vul_astar_node *root,
+					   u32 max_neighbors );
+/*
+* The heuristic we use is number of free variables.
+* End node is always null, and not used.
+*/
+f64 vul_gac_heuristic( vul_astar_node *s, vul_astar_node *e );
+/*
+* Cost function. Always 1, since we cannot determine if it is valid at this point
+* as it is called before we've done the deduction step. If we did the deduction here,
+* we would always be performing breath first expasion; not wanted!
+*/
+f64 vul_gac_cost_neighbors( vul_astar_node *s, vul_astar_node *t );
+
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+void vul_csp_graph_initialize( vul_astar_graph *graph )
 {
-	vul_gac_node_data_t *gac_node;
-	vul_astar_node_t *anode;
+	vul_gac_node_data *gac_node;
+	vul_astar_node *anode;
 	vul_gac_astar_node_user_data *ndata;
 
 	// Call gac_graph_initialize to start GAC and create the intial node.
 	gac_node = vul_gac_graph_initialize( graph );
 
 	// Create the astar_node so we can check if we're done
-	anode = ( vul_astar_node_t* )vul_svector_append_empty( graph->nodes );
+	anode = ( vul_astar_node* )vul_svector_append_empty( graph->nodes );
 	anode->user_data = ( vul_gac_astar_node_user_data* )VUL_ASTAR_ALLOC( sizeof( vul_gac_astar_node_user_data ) );
 	ndata = ( vul_gac_astar_node_user_data* )anode->user_data;
 	ndata->gac_node = gac_node;
@@ -151,55 +291,31 @@ void vul_csp_graph_initialize( vul_astar_graph_t *graph )
 	anode->state = VUL_ASTAR_NODE_UNDISCOVERED;
 	anode->path_parent = NULL;
 }
-#endif
 
-/*
-* Helper function that compares a csp_var_t instance with a
-* csp_variable_instance_t.
-* Simply compares their id. Used to find things in vectors.
-*/
-#ifndef VUL_DEFINE
-int vul__csp_variable_instance_var_comparator( void *a, void *b );
-#else
 int vul__csp_variable_instance_var_comparator( void *a, void *b )
 {
 	// This actually compares csp_variable_instance_t (b) with a csp_var_t (a)
-	vul_csp_var_t *va, *vb;
+	vul_csp_var *va, *vb;
 
-	va = ( vul_csp_var_t* )a;
-	vb = ( ( vul_csp_variable_instance_t* )b )->var;
+	va = ( vul_csp_var* )a;
+	vb = ( ( vul_csp_variable_instance* )b )->var;
 
 	return va->id == vb->id ? 0 : 1;
 }
-#endif
 
-/*
-* Helper function that compares two csp_variable_instance_t instances
-* by comraing the id of their variables. Used to ind things in vectors.
-*/
-#ifndef VUL_DEFINE
-int vul__csp_variable_instance_var_inst_comparator( void *a, void *b );
-#else
 int vul__csp_variable_instance_var_inst_comparator( void *a, void *b )
 {
-	vul_csp_var_t *va, *vb;
+	vul_csp_var *va, *vb;
 
-	va = ( ( vul_csp_variable_instance_t* )a )->var;
-	vb = ( ( vul_csp_variable_instance_t* )b )->var;
+	va = ( ( vul_csp_variable_instance* )a )->var;
+	vb = ( ( vul_csp_variable_instance* )b )->var;
 
 	return va->id == vb->id ? 0 : 1;
 }
-#endif
 
-/*
-* Deallocates a node. Does NOT touch any of the things referenced in CNET.
-*/
-#ifndef VUL_DEFINE
-void vul__csp_graph_finalize_astar_node( vul_astar_node_t *node );
-#else
-void vul__csp_graph_finalize_astar_node( vul_astar_node_t *node )
+void vul__csp_graph_finalize_astar_node( vul_astar_node *node )
 {
-	ui32_t i;
+	u32 i;
 	vul_gac_astar_node_user_data *ndata;
 
 	ndata = ( vul_gac_astar_node_user_data* )node->user_data;
@@ -211,53 +327,30 @@ void vul__csp_graph_finalize_astar_node( vul_astar_node_t *node )
 
 	VUL_ASTAR_FREE( ndata );
 }
-#endif
 
-/*
-* Resets an astar graph for a graph coloring problem.
-* Destroys the astar_graph, then rebuilds it.
-*/
-#ifndef VUL_DEFINE
-void vul_csp_graph_reset( vul_astar_graph_t *graph );
-#else
-void vul_csp_graph_reset( vul_astar_graph_t *graph )
+void vul_csp_graph_reset( vul_astar_graph *graph )
 {
-	ui32_t i;
+	u32 i;
 
 	// Clean up the astar_graph.
 	for( i = 0; i < vul_svector_size( graph->nodes ); ++i ) {
-		vul__csp_graph_finalize_astar_node( ( vul_astar_node_t* )vul_svector_get( graph->nodes, i ) );
+		vul__csp_graph_finalize_astar_node( ( vul_astar_node* )vul_svector_get( graph->nodes, i ) );
 	}
 	vul_svector_destroy( graph->nodes );
-	graph->nodes = vul_svector_create( sizeof( vul_astar_node_t ), 32, 
+	graph->nodes = vul_svector_create( sizeof( vul_astar_node ), 32, 
 									   VUL_ASTAR_ALLOC, VUL_ASTAR_FREE );
 
 	// Reinitialize
 	vul_csp_graph_initialize( graph );
 }
-#endif
 
-/*
-* Recursively binds the first free variable to every possibility in its
-* domain and calls itself with it bound. If zero variables are free, it
-* performs the revise step and returns, true if for any of the combinations,
-* the constraint holds, false otherwise.
-* bound is a vector of type gac__revise_binding.
-*
-* @NOTE(thynn): Yes this contains GOTOs, but they are function internal 
-* and simplify the logic quite a bit, so tough...
-*/
-#ifndef VUL_DEFINE
-int vul__gac_revise_recurse( vul_csp_constraint_instance_t *cons, 
-							 vul_svector_t *bound );
-#else
-int vul__gac_revise_recurse( vul_csp_constraint_instance_t *cons, 
-							 vul_svector_t *bound )
+int vul__gac_revise_recurse( vul_csp_constraint_instance *cons, 
+							 vul_svector *bound )
 {
-	ui32_t i, j, unknown, found;
-	ui32_t bound_count;
-	vul_csp_var_t *lvars;
-	vul_svector_t *dom;
+	u32 i, j, unknown, found;
+	u32 bound_count;
+	vul_csp_var *lvars;
+	vul_svector *dom;
 	vul__gac_revise_binding *b;
 
 	bound_count = vul_svector_size( bound );
@@ -267,12 +360,12 @@ int vul__gac_revise_recurse( vul_csp_constraint_instance_t *cons,
 	
 	if( cons->constraint->var_count - bound_count == 0 ) {
 		// We have a trivial case; no more binding to do.
-		lvars = ( vul_csp_var_t* )VUL_ASTAR_ALLOC( sizeof( vul_csp_var_t ) 
+		lvars = ( vul_csp_var* )VUL_ASTAR_ALLOC( sizeof( vul_csp_var ) 
 												   * cons->constraint->var_count );
 		for( i = 0; i < bound_count; ++i ) {
 			b = ( vul__gac_revise_binding* )vul_svector_get( bound, i );
 			lvars[ b->index ].id = cons->var_insts[ b->index ]->var->id;
-			lvars[ b->index ].bound_value = ( vul_csp_type_t* )vul_svector_get( cons->var_insts[ b->index ]->dom_inst,
+			lvars[ b->index ].bound_value = ( vul_csp_type* )vul_svector_get( cons->var_insts[ b->index ]->dom_inst,
 																				b->value );
 		}
 
@@ -316,23 +409,13 @@ int vul__gac_revise_recurse( vul_csp_constraint_instance_t *cons,
 
 	return 0;
 }
-#endif
 
-/*
-* Performs a single general arc-consistency revision.
-* Returns true if the focal variable's domain was restricted.
-* Uses gac__revise_recurse internally.
-*/
-#ifndef VUL_DEFINE
-int vul_gac_revise( vul_csp_constraint_instance_t *cons, 
-					ui32_t focal_index );
-#else
-int vul_gac_revise( vul_csp_constraint_instance_t *cons, 
-					ui32_t focal_index )
+int vul_gac_revise( vul_csp_constraint_instance *cons, 
+					u32 focal_index )
 {
-	ui32_t i, ret, del;
-	i32_t j;
-	vul_svector_t *to_remove, *bound, *dom;
+	u32 i, ret, del;
+	s32 j;
+	vul_svector *to_remove, *bound, *dom;
 	vul__gac_revise_binding *b;
 
 	bound = vul_svector_create( sizeof( vul__gac_revise_binding ), 
@@ -340,7 +423,7 @@ int vul_gac_revise( vul_csp_constraint_instance_t *cons,
 							    VUL_ASTAR_ALLOC, 
 								VUL_ASTAR_FREE );
 	ret = 0; // No removes unless we find any
-	to_remove = vul_svector_create( sizeof( ui32_t ), 8,
+	to_remove = vul_svector_create( sizeof( u32 ), 8,
 									VUL_ASTAR_ALLOC,
 									VUL_ASTAR_FREE );
 	dom = cons->var_insts[ focal_index ]->dom_inst;
@@ -361,32 +444,22 @@ int vul_gac_revise( vul_csp_constraint_instance_t *cons,
 	if( ret ) {
 		// Remove in descending order (to_remove is indices, and ascending )
 		for( j = vul_svector_size( to_remove ) - 1; j >= 0; --j ) {
-			vul_svector_remove_swap( dom, *( ui32_t* )vul_svector_get( to_remove, j ) );
+			vul_svector_remove_swap( dom, *( u32* )vul_svector_get( to_remove, j ) );
 		}
 	}
 	vul_svector_destroy( to_remove );
 	vul_svector_destroy( bound );
 	return ret;
 }
-#endif
 
-/*
-* This performs the GAC algorithm over all constraints.
-* Don't call manually, gets called from gac_initialize or gac_rerun.
-*/
-#ifndef VUL_DEFINE
-void vul_gac_deduction( vul_queue_t *queue,
-						ui32_t constraint_count,
-						vul_csp_constraint_instance_t *const_insts );
-#else
-void vul_gac_deduction( vul_queue_t *q, 
-						ui32_t constraint_count, 
-						vul_csp_constraint_instance_t *const_insts )
+void vul_gac_deduction( vul_queue *q, 
+						u32 constraint_count, 
+						vul_csp_constraint_instance *const_insts )
 {
-	ui32_t i, j, k;
-	ui32_t add; // boolean
+	u32 i, j, k;
+	u32 add; // boolean
 	vul_gac_revise_pair next, pair;
-	vul_csp_variable_instance_t *var_inst;
+	vul_csp_variable_instance *var_inst;
 
 	while( !vul_queue_is_empty( q ) ){
 		vul_queue_pop( q, ( void* )&next );
@@ -411,25 +484,13 @@ void vul_gac_deduction( vul_queue_t *q,
 		}
 	}
 }
-#endif
 
-/*
-* This initializes the queue with all constraint pairs
-* and calls gac_deduction. This works on the CNET constraints,
-* but we actually want constraint instances because we generate them
-* for the initial search state anyway, and it simlpifies the work
-* we do here not to have to recreate them.
-*/
-#ifndef VUL_DEFINE
-void vul_gac_initialize( ui32_t constraint_count, 
-						 vul_csp_constraint_instance_t *const_insts );
-#else
-void vul_gac_initialize( ui32_t constraint_count, 
-						 vul_csp_constraint_instance_t *const_insts )
+void vul_gac_initialize( u32 constraint_count, 
+						 vul_csp_constraint_instance *const_insts )
 {
-	ui32_t i, j;
+	u32 i, j;
 	vul_gac_revise_pair pair;
-	vul_queue_t *q;
+	vul_queue *q;
 
 	q = vul_queue_create( sizeof( vul_gac_revise_pair ),
 						  VUL_ASTAR_ALLOC,
@@ -446,26 +507,15 @@ void vul_gac_initialize( ui32_t constraint_count,
 	// Now perform deduction
 	vul_gac_deduction( q, constraint_count, const_insts );
 }
-#endif
 
-/*
-* This initializes the queue based on a just made assumption,
-* and then calls gac_eduction.
-* It works on constraint instances.
-*/
-#ifndef VUL_DEFINE
-void vul_gac_rerun( ui32_t constraint_count, 
-					vul_csp_constraint_instance_t *const_insts, 
-					vul_csp_var_t *assumption );
-#else
-void vul_gac_rerun( ui32_t constraint_count,
-				vul_csp_constraint_instance_t *const_insts,
-				vul_csp_var_t *assumption )
+void vul_gac_rerun( u32 constraint_count,
+					vul_csp_constraint_instance *const_insts,
+					vul_csp_var *assumption )
 {
-	ui32_t i, j, k;
+	u32 i, j, k;
 	vul_gac_revise_pair pair;
-	vul_queue_t *q;
-	vul_csp_variable_instance_t *var_inst;
+	vul_queue *q;
+	vul_csp_variable_instance *var_inst;
 
 	q = vul_queue_create( sizeof( vul_gac_revise_pair ),
 						  VUL_ASTAR_ALLOC,
@@ -491,22 +541,15 @@ void vul_gac_rerun( ui32_t constraint_count,
 	// Then perform deduction
 	vul_gac_deduction( q, constraint_count, const_insts );
 }
-#endif
 
-/*
-* Finalizes the CNET.
-*/
-#ifndef VUL_DEFINE
-void vul_gac_cnet_finalize( vul_gac_cnet_t *cnet );
-#else
-void vul_gac_cnet_finalize( vul_gac_cnet_t *cnet )
+void vul_gac_cnet_finalize( vul_gac_cnet *cnet )
 {
-	ui32_t i, j;
-	vul_csp_constraint_t *c;
+	u32 i, j;
+	vul_csp_constraint *c;
 
 	// For each constriant, free doms, var, test, then destroy the vector
 	for( i = 0; i < vul_svector_size( cnet->constraints ); ++i ) {
-		c = ( vul_csp_constraint_t* )vul_svector_get( cnet->constraints, i );
+		c = ( vul_csp_constraint* )vul_svector_get( cnet->constraints, i );
 		VUL_ASTAR_FREE( c->vars );
 		VUL_ASTAR_FREE( c->doms );
 	}
@@ -514,7 +557,7 @@ void vul_gac_cnet_finalize( vul_gac_cnet_t *cnet )
 
 	// For each domain, destroy the vector, then destroy the outer vector
 	for( i = 0; i < vul_svector_size( cnet->domains ); ++i ) {
-		vul_svector_destroy( *( ( vul_svector_t** )vul_svector_get( cnet->domains, i ) ) );
+		vul_svector_destroy( *( ( vul_svector** )vul_svector_get( cnet->domains, i ) ) );
 	}
 	vul_svector_destroy( cnet->domains );
 
@@ -524,22 +567,15 @@ void vul_gac_cnet_finalize( vul_gac_cnet_t *cnet )
 	// And free the cnet
 	VUL_ASTAR_FREE( cnet );
 }
-#endif
 
-/*
-* Finalizes a single gac_node_data_t.
-*/
-#ifndef VUL_DEFINE
-void vul_gac_node_finalize( vul_gac_node_data_t *node );
-#else
-void vul_gac_node_finalize( vul_gac_node_data_t *node )
+void vul_gac_node_finalize( vul_gac_node_data *node )
 {
-	ui32_t i;
-	vul_csp_variable_instance_t *v;
+	u32 i;
+	vul_csp_variable_instance *v;
 
 	// Delete all the variable instances
 	for( i = 0; i < vul_svector_size( node->var_insts ); ++i ) {
-		v = ( vul_csp_variable_instance_t* )vul_svector_get( node->var_insts, i );
+		v = ( vul_csp_variable_instance* )vul_svector_get( node->var_insts, i );
 		vul_svector_destroy( v->dom_inst );
 	}
 
@@ -553,20 +589,12 @@ void vul_gac_node_finalize( vul_gac_node_data_t *node )
 
 	VUL_ASTAR_FREE( node );
 }
-#endif
 
-
-/*
-* Counts the number of vertices with non-singular domains.
-*/
-#ifndef VUL_DEFINE
-int vul_gac_count_unassigned( vul_astar_node_t *node );
-#else
-int vul_gac_count_unassigned( vul_astar_node_t *node )
+int vul_gac_count_unassigned( vul_astar_node *node )
 {
-	ui32_t i, j, ret;
+	u32 i, j, ret;
 	vul_gac_astar_node_user_data *udata;
-	vul_gac_node_data_t *gnode;
+	vul_gac_node_data *gnode;
 
 	udata = ( vul_gac_astar_node_user_data* )node->user_data;
 	gnode = udata->gac_node;
@@ -582,19 +610,12 @@ int vul_gac_count_unassigned( vul_astar_node_t *node )
 	}
 	return ret;
 }
-#endif
 
-/*
-* Count the number of constraints not satisfied by the given node.
-*/
-#ifndef VUL_DEFINE
-int vul_gac_count_failed( vul_astar_node_t *node );
-#else
-int vul_gac_count_failed( vul_astar_node_t *node )
+int vul_gac_count_failed( vul_astar_node *node )
 {
-	ui32_t i, j, k, l, ret;
+	u32 i, j, k, l, ret;
 	vul_gac_astar_node_user_data *udata;
-	vul_gac_node_data_t *gnode;
+	vul_gac_node_data *gnode;
 
 	udata = ( vul_gac_astar_node_user_data* )node->user_data;
 	gnode = udata->gac_node;
@@ -621,65 +642,56 @@ int vul_gac_count_failed( vul_astar_node_t *node )
 	}
 	return ret;
 }
-#endif
 
-/*
-* Initializes the graph, creates the first node (without assumption)
-* and perform the initial deduction (calls gac_initialize).
-* Returns the created first node; no user data allocated.
-*/
-#ifndef VUL_DEFINE
-vul_gac_node_data_t *vul_gac_graph_initialize( vul_astar_graph_t *graph );
-#else
-vul_gac_node_data_t *vul_gac_graph_initialize( vul_astar_graph_t *graph )
+vul_gac_node_data *vul_gac_graph_initialize( vul_astar_graph *graph )
 {
-	ui32_t i, j, size;
-	vul_gac_node_data_t *gac_node;
-	vul_csp_constraint_t *c;
+	u32 i, j, size;
+	vul_gac_node_data *gac_node;
+	vul_csp_constraint *c;
 	vul_gac_astar_graph_user_data *udata;
-	vul_csp_variable_instance_t *v;
-	vul_astar_node_t *anode;
+	vul_csp_variable_instance *v;
+	vul_astar_node *anode;
 	vul_gac_astar_node_user_data *ndata;
 
 	udata = ( vul_gac_astar_graph_user_data* )graph->user_data;
 
 	// Create the first search node
-	gac_node = ( vul_gac_node_data_t* )malloc( sizeof( vul_gac_node_data_t ) );
+	gac_node = ( vul_gac_node_data* )malloc( sizeof( vul_gac_node_data ) );
 	gac_node->assumption_var_index = 0xffffffff;
 	gac_node->constraint_count = vul_svector_size( udata->cnet->constraints );
-	gac_node->const_insts = ( vul_csp_constraint_instance_t* )VUL_ASTAR_ALLOC( sizeof( vul_csp_constraint_instance_t )
+	gac_node->const_insts = ( vul_csp_constraint_instance* )VUL_ASTAR_ALLOC( sizeof( vul_csp_constraint_instance )
 																			   * gac_node->constraint_count );
-	gac_node->var_insts = vul_svector_create( sizeof( vul_csp_variable_instance_t ),
+	gac_node->var_insts = vul_svector_create( sizeof( vul_csp_variable_instance ),
 											  vul_svector_size( udata->cnet->variables ),
 											  VUL_ASTAR_ALLOC, VUL_ASTAR_FREE);
 
 	// For each variable, create variable isntances
 	for( i = 0; i < vul_svector_size( udata->cnet->variables ); ++i ) {
-		v = ( vul_csp_variable_instance_t* )vul_svector_append_empty( gac_node->var_insts );
-		v->var = ( vul_csp_var_t* )vul_svector_get( udata->cnet->variables, i );
+		v = ( vul_csp_variable_instance* )vul_svector_append_empty( gac_node->var_insts );
+		v->var = ( vul_csp_var* )vul_svector_get( udata->cnet->variables, i );
 		size = vul_svector_size(
-			*( ( vul_svector_t** )vul_svector_get( udata->cnet->domains, i ) ) );
-		v->dom_inst = vul_svector_create( sizeof( vul_csp_type_t ), size,
+			*( ( vul_svector** )vul_svector_get( udata->cnet->domains, i ) ) );
+		v->dom_inst = vul_svector_create( sizeof( vul_csp_type ), size,
 										  VUL_ASTAR_ALLOC, VUL_ASTAR_FREE );
 		// And create the full domain
 		for( j = 0; j < size; ++j ) {
 			vul_svector_append( v->dom_inst,
 									  vul_svector_get(
-									  *( ( vul_svector_t** )vul_svector_get(
+									  *( ( vul_svector** )vul_svector_get(
 									  udata->cnet->domains, i ) ), j ) );
 		}
 	}
 
 	// For all constraints, create constraint instances
 	for( i = 0; i < gac_node->constraint_count; ++i ) {
-		c = ( vul_csp_constraint_t* )vul_svector_get( udata->cnet->constraints, i );
+		c = ( vul_csp_constraint* )vul_svector_get( udata->cnet->constraints, i );
 		gac_node->const_insts[ i ].constraint = c;
 		// For all variables involved in this constraint, link them from the array above.
-		gac_node->const_insts[ i ].var_insts = ( vul_csp_variable_instance_t** )VUL_ASTAR_ALLOC( sizeof( vul_csp_variable_instance_t* )
+		gac_node->const_insts[ i ].var_insts = ( vul_csp_variable_instance** )VUL_ASTAR_ALLOC( sizeof( vul_csp_variable_instance* )
 																								 * c->var_count );
 		for( j = 0; j < c->var_count; ++j ) {
 			// Find the correct variable instance
-			v = ( vul_csp_variable_instance_t* )vul_svector_find( gac_node->var_insts,
+			v = ( vul_csp_variable_instance* )vul_svector_find( gac_node->var_insts,
 																  c->vars[ j ],
 																  vul__csp_variable_instance_var_comparator );
 			assert( v ); // Just to make sure we catch faults early
@@ -692,114 +704,89 @@ vul_gac_node_data_t *vul_gac_graph_initialize( vul_astar_graph_t *graph )
 
 	return gac_node;
 }
-#endif
 
-/*
-* Checks if a node is in a valid state, i.e.
-* if all variable instances have non-empty domain instances.
-*/
-#ifndef VUL_DEFINE
-int vul_gac_is_valid( vul_astar_node_t *anode );
-#else
-int vul_gac_is_valid( vul_astar_node_t *anode )
+int vul_gac_is_valid( vul_astar_node *anode )
 {
-	ui32_t i;
-	vul_gac_node_data_t *node;
-	vul_csp_variable_instance_t *v;
+	u32 i;
+	vul_gac_node_data *node;
+	vul_csp_variable_instance *v;
 
 	node = ( ( vul_gac_astar_node_user_data* )anode->user_data )->gac_node;
 
 	for( i = 0; i < vul_svector_size( node->var_insts ); ++i ) {
-		v = ( vul_csp_variable_instance_t* )vul_svector_get( node->var_insts, i );
+		v = ( vul_csp_variable_instance* )vul_svector_get( node->var_insts, i );
 		if( vul_svector_size( v->dom_inst ) == 0 ) {
 			return 0;
 		}
 	}
 	return 1;
 }
-#endif
 
-/*
-* Internal function used by astar_neighbor to create new nodes.
-* It copies the domain instances and variable instances of the
-* parent node, restricting the variable at index var_restrict
-* to the value in it's domain at index var_dom_restrict,
-* and marks that as the made assumption.
-* Then it marks the node as undiscovered with 0-costs.
-*/
-#ifndef VUL_DEFINE
-void vul__gac_create_astar_node_copy( vul_astar_node_t **anode,
-									  vul_astar_graph_t *graph,
-									  vul_astar_node_t *parent,
-									  vul_gac_node_data_t *to_copy,
-									  ui32_t var_restrict,
-									  ui32_t var_dom_restrict );
-#else
-void vul__gac_create_astar_node_copy( vul_astar_node_t **anode,
-									  vul_astar_graph_t *graph,
-									  vul_astar_node_t *parent,
-									  vul_gac_node_data_t *to_copy,
-									  ui32_t var_restrict,
-									  ui32_t var_dom_restrict )
+void vul__gac_create_astar_node_copy( vul_astar_node **anode,
+									  vul_astar_graph *graph,
+									  vul_astar_node *parent,
+									  vul_gac_node_data *to_copy,
+									  u32 var_restrict,
+									  u32 var_dom_restrict )
 {
-	ui32_t i, j, k;
+	u32 i, j, k;
 	vul_gac_astar_graph_user_data *gdata;
 	vul_gac_astar_node_user_data *ndata;
-	vul_gac_node_data_t *node;
-	vul_csp_variable_instance_t *v, *vc;
-	vul_csp_type_t *t, *tc;
+	vul_gac_node_data *node;
+	vul_csp_variable_instance *v, *vc;
+	vul_csp_type *t, *tc;
 
 	gdata = ( vul_gac_astar_graph_user_data* )graph->user_data;
 
-	*anode = ( vul_astar_node_t* )VUL_ASTAR_ALLOC( sizeof( vul_astar_node_t ) );
+	*anode = ( vul_astar_node* )VUL_ASTAR_ALLOC( sizeof( vul_astar_node ) );
 	( *anode )->user_data = ( vul_gac_astar_node_user_data* )VUL_ASTAR_ALLOC( sizeof( vul_gac_astar_node_user_data ) );
 
 	// Copy the GAC node
-	node = ( vul_gac_node_data_t* )VUL_ASTAR_ALLOC( sizeof( vul_gac_node_data_t ) );
+	node = ( vul_gac_node_data* )VUL_ASTAR_ALLOC( sizeof( vul_gac_node_data ) );
 	node->assumption_var_index = var_restrict;
 	node->constraint_count = to_copy->constraint_count;
 
-	node->var_insts = vul_svector_create( sizeof( vul_csp_variable_instance_t ),
+	node->var_insts = vul_svector_create( sizeof( vul_csp_variable_instance ),
 										  vul_svector_size( to_copy->var_insts ),
 										  VUL_ASTAR_ALLOC,
 										  VUL_ASTAR_FREE );
 	for( i = 0; i < vul_svector_size( to_copy->var_insts ); ++i ) {
-		v = ( vul_csp_variable_instance_t* )vul_svector_append_empty( node->var_insts );
-		vc = ( vul_csp_variable_instance_t* )vul_svector_get( to_copy->var_insts, i );
+		v = ( vul_csp_variable_instance* )vul_svector_append_empty( node->var_insts );
+		vc = ( vul_csp_variable_instance* )vul_svector_get( to_copy->var_insts, i );
 		v->var = vc->var;
-		v->dom_inst = vul_svector_create( sizeof( vul_csp_type_t ),
+		v->dom_inst = vul_svector_create( sizeof( vul_csp_type ),
 												i == var_restrict ? 1 :
 												vul_svector_size( vc->dom_inst ),
 												VUL_ASTAR_ALLOC,
 												VUL_ASTAR_FREE );
 		if( i == var_restrict ) {
 			// Restrict the domain
-			t = ( vul_csp_type_t* )vul_svector_append_empty( v->dom_inst );
-			tc = ( vul_csp_type_t* )vul_svector_get( vc->dom_inst, var_dom_restrict );
+			t = ( vul_csp_type* )vul_svector_append_empty( v->dom_inst );
+			tc = ( vul_csp_type* )vul_svector_get( vc->dom_inst, var_dom_restrict );
 			t->size = tc->size;
 			t->data = tc->data;
 		} else {
 			// Copy domain
 			for( j = 0; j < vul_svector_size( vc->dom_inst ); ++j ) {
-				t = ( vul_csp_type_t* )vul_svector_append_empty( v->dom_inst );
-				tc = ( vul_csp_type_t* )vul_svector_get( vc->dom_inst, j );
+				t = ( vul_csp_type* )vul_svector_append_empty( v->dom_inst );
+				tc = ( vul_csp_type* )vul_svector_get( vc->dom_inst, j );
 				t->size = tc->size;
 				t->data = tc->data;
 			}
 		}
 	}
 
-	node->const_insts = ( vul_csp_constraint_instance_t* )VUL_ASTAR_ALLOC( sizeof( vul_csp_constraint_instance_t )
+	node->const_insts = ( vul_csp_constraint_instance* )VUL_ASTAR_ALLOC( sizeof( vul_csp_constraint_instance )
 																  * node->constraint_count );
 	for( i = 0; i < node->constraint_count; ++i ) {
 		// Copy the constraints
 		node->const_insts[ i ].constraint = to_copy->const_insts[ i ].constraint;
 		// Find the correct variable instances in the above copied array.
-		node->const_insts[ i ].var_insts = ( vul_csp_variable_instance_t** )VUL_ASTAR_ALLOC( sizeof( vul_csp_variable_instance_t* )
+		node->const_insts[ i ].var_insts = ( vul_csp_variable_instance** )VUL_ASTAR_ALLOC( sizeof( vul_csp_variable_instance* )
 																							 * node->const_insts[ i ].constraint->var_count );
 		for( j = 0; j < to_copy->const_insts[ i ].constraint->var_count; ++j ) {
 			// Find the correct variable instance
-			v = ( vul_csp_variable_instance_t* )vul_svector_find( node->var_insts,
+			v = ( vul_csp_variable_instance* )vul_svector_find( node->var_insts,
 																  to_copy->const_insts[ i ].var_insts[ j ],
 																  vul__csp_variable_instance_var_inst_comparator );
 			assert( v ); // Make sure we found a valid one.
@@ -818,23 +805,13 @@ void vul__gac_create_astar_node_copy( vul_astar_node_t **anode,
 	( *anode )->state = VUL_ASTAR_NODE_UNDISCOVERED;
 	( *anode )->path_parent = parent;
 }
-#endif
 
-/*
-* Determines if the current node (c) is final. We don't have a known end
-* node in GAC, so e is always NULL. This return true iff all variable
-* domains are reduced to size 1.
-* This is where we perform deduction! It is called when a search node is closed.
-*/
-#ifndef VUL_DEFINE
-int vul_gac_is_final( vul_astar_node_t *c, vul_astar_node_t *e );
-#else
-int vul_gac_is_final( vul_astar_node_t *c, vul_astar_node_t *e )
+int vul_gac_is_final( vul_astar_node *c, vul_astar_node *e )
 {
-	ui32_t i, j, ret;
+	u32 i, j, ret;
 	vul_gac_astar_node_user_data *udata;
-	vul_gac_node_data_t *gnode;
-	vul_csp_var_t *var;
+	vul_gac_node_data *gnode;
+	vul_csp_var *var;
 
 	udata = ( vul_gac_astar_node_user_data* )c->user_data;
 	gnode = udata->gac_node;
@@ -842,7 +819,7 @@ int vul_gac_is_final( vul_astar_node_t *c, vul_astar_node_t *e )
 	// Reduce the domain
 	if( gnode->assumption_var_index != 0xffffffff ) {
 		vul_gac_rerun( gnode->constraint_count, gnode->const_insts,
-					   ( ( vul_csp_variable_instance_t* )vul_svector_get( gnode->var_insts,
+					   ( ( vul_csp_variable_instance* )vul_svector_get( gnode->var_insts,
 																		  gnode->assumption_var_index ) )->var );
 	}
 
@@ -857,22 +834,11 @@ int vul_gac_is_final( vul_astar_node_t *c, vul_astar_node_t *e )
 	}
 	return 1;
 }
-#endif
 
-/*
-* Create neighbor-function: Make assumptions; order is important here: return the best candidate first!
-* best candidate is the one that constrains the most. Perform deduction and don't return illegal states.
-*/
-#ifndef VUL_DEFINE
-ui64_t vul_gac_neighbors( vul_astar_node_t **neighbors,
-						  vul_astar_graph_t *graph,
-						  vul_astar_node_t *root,
-						  ui32_t max_neighbors );
-#else
-ui64_t vul_gac_neighbors( vul_astar_node_t **neighbors,
-						  vul_astar_graph_t *graph,
-						  vul_astar_node_t *root,
-						  ui32_t max_neighbors )
+u64 vul_gac_neighbors( vul_astar_node **neighbors,
+					   vul_astar_graph *graph,
+					   vul_astar_node *root,
+					   u32 max_neighbors )
 {
 	// Any assumption for any variable without an assignemnt is a valid neighbor. 
 	// However this would lead to a flat structure (since all potential assignments are
@@ -888,9 +854,9 @@ ui64_t vul_gac_neighbors( vul_astar_node_t **neighbors,
 	// expanding past those, so before we do any expansion, check that this search node is valid; if it is not,
 	// return nothing.
 
-	ui32_t i, j, k, vi, vc, vcmax, vdmin, vd;
-	vul_gac_node_data_t *node;
-	vul_csp_variable_instance_t *v;
+	u32 i, j, k, vi, vc, vcmax, vdmin, vd;
+	vul_gac_node_data *node;
+	vul_csp_variable_instance *v;
 
 	// If not valid, make a dead end
 	if( !vul_gac_is_valid( root ) ) {
@@ -905,7 +871,7 @@ ui64_t vul_gac_neighbors( vul_astar_node_t **neighbors,
 	vdmin = 0x7fffffff;
 	for( i = 0; i < vul_svector_size( node->var_insts ); ++i ) {
 		vc = 0;
-		v = ( vul_csp_variable_instance_t* )vul_svector_get( node->var_insts, i );
+		v = ( vul_csp_variable_instance* )vul_svector_get( node->var_insts, i );
 		vd = vul_svector_size( v->dom_inst );
 		if( vd <= 1 ) {
 			continue; // Already constriced, no reason to assume anything further
@@ -928,34 +894,26 @@ ui64_t vul_gac_neighbors( vul_astar_node_t **neighbors,
 	}
 
 	// Create the neighbors
-	v = ( vul_csp_variable_instance_t* )vul_svector_get( node->var_insts, vi );
+	v = ( vul_csp_variable_instance* )vul_svector_get( node->var_insts, vi );
 	assert( vul_svector_size( v->dom_inst ) <= max_neighbors ); // Make sure we have room
 	for( i = 0; i < vul_svector_size( v->dom_inst ); ++i ) {
 		vul__gac_create_astar_node_copy( &neighbors[ i ], graph, root, node, vi, i );
 	}
-	return ( ui64_t )i;
+	return ( u64 )i;
 }
-#endif
 
-/*
-* The heuristic we use is number of free variables.
-* End node is always null, and not used.
-*/
-#ifndef VUL_DEFINE
-f64_t vul_gac_heuristic( vul_astar_node_t *s, vul_astar_node_t *e );
-#else
-f64_t vul_gac_heuristic( vul_astar_node_t *s, vul_astar_node_t *e )
+f64 vul_gac_heuristic( vul_astar_node *s, vul_astar_node *e )
 {
-	ui32_t i;
-	vul_gac_node_data_t *node;
-	vul_csp_variable_instance_t *v;
-	f64_t h;
+	u32 i;
+	vul_gac_node_data *node;
+	vul_csp_variable_instance *v;
+	f64 h;
 
 	node = ( ( vul_gac_astar_node_user_data* )s->user_data )->gac_node;
 
 	h = 0;
 	for( i = 0; i < vul_svector_size( node->var_insts ); ++i ) {
-		v = ( vul_csp_variable_instance_t* )vul_svector_get( node->var_insts, i );
+		v = ( vul_csp_variable_instance* )vul_svector_get( node->var_insts, i );
 		if( vul_svector_size( v->dom_inst ) > 1 ) { // A variable is free, increase the estimated cost.
 			h += 1;
 		}
@@ -963,18 +921,14 @@ f64_t vul_gac_heuristic( vul_astar_node_t *s, vul_astar_node_t *e )
 
 	return h;
 }
-#endif
 
-/*
-* Cost function. Always 1, since we cannot determine if it is valid at this point
-* as it is called before we've done the deduction step. If we did the deduction here,
-* we would always be performing breath first expasion; not wanted!
-*/
-#ifndef VUL_DEFINE
-f64_t vul_gac_cost_neighbors( vul_astar_node_t *s, vul_astar_node_t *t );
-#else
-f64_t vul_gac_cost_neighbors( vul_astar_node_t *s, vul_astar_node_t *t )
+f64 vul_gac_cost_neighbors( vul_astar_node *s, vul_astar_node *t )
 {
 	return 1.0;
 }
+
+#ifdef _cplusplus
+}
+#endif
+
 #endif

@@ -28,8 +28,8 @@
 
 static int vul__test_gl_ortho( )
 {
-	f32_t m32[ 16 ], f32eps;
-	ui32_t c, r;
+	f32 m32[ 16 ], f32eps;
+	u32 c, r;
 	
 	//glm::mat4x4 gm32;
 	
@@ -50,15 +50,15 @@ static int vul__test_gl_ortho( )
 
 static int vul__test_gl_perspective( )
 {
-	f32_t m32[ 16 ], m32o[ 16 ], f32eps;
-	ui32_t c, r;
+	f32 m32[ 16 ], m32o[ 16 ], f32eps;
+	u32 c, r;
 	//glm::mat4x4 gm32;
 	
 	f32eps = 1e-5f;
 
 	// Test aspect version
 	//gm32 = glm::perspective( 67.5f, 1.6f, 0.1f, 100.0f );
-	vul_gl_perspective( m32, 0.375f * ( f32_t )VUL_TEST_PI, 1.6f, 0.1f, 100.f );
+	vul_gl_perspective( m32, 0.375f * ( f32 )VUL_TEST_PI, 1.6f, 0.1f, 100.f );
 		
 	for( c = 0; c < 4; ++c ) {
 		for( r = 0; r < 4; ++r ) {
@@ -69,7 +69,7 @@ static int vul__test_gl_perspective( )
 	// Test width/height version
 	//gm32 = glm::perspectiveFov( 67.5f, 1280.f, 720.f, 0.1f, 100.0f );
 
-	vul_gl_perspective_fov( m32, 0.375f * ( f32_t )VUL_TEST_PI, 1280.f, 720.f, 0.1f, 100.f );
+	vul_gl_perspective_fov( m32, 0.375f * ( f32 )VUL_TEST_PI, 1280.f, 720.f, 0.1f, 100.f );
 		
 	for( c = 0; c < 4; ++c ) {
 		for( r = 0; r < 4; ++r ) {
@@ -78,7 +78,7 @@ static int vul__test_gl_perspective( )
 	}
 
 	// Test width/height + offset version
-	vul_gl_perspective_fov_offset( m32o, 0.375f * ( f32_t )VUL_TEST_PI, 0.f, 1280.f, 0.f, 720.f, 0.1f, 100.f );
+	vul_gl_perspective_fov_offset( m32o, 0.375f * ( f32 )VUL_TEST_PI, 0.f, 1280.f, 0.f, 720.f, 0.1f, 100.f );
 		
 	for( c = 0; c < 4; ++c ) {
 		for( r = 0; r < 4; ++r ) {

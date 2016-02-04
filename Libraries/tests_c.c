@@ -4,7 +4,7 @@
 //#include "Tests/test_gl.h" // This doesn't appear to work yet...
 //#include "Tests/test_astar.h"
 //#include "Tests/test_csp.h"
-#include "Tests/test_linear_solvers.h"
+//#include "Tests/test_linear_solvers.h"
 #include "Tests/test_priority_queues.h"
 
 #include <stdio.h>
@@ -26,7 +26,7 @@ int comp( const void *a, const void *b ) {
 
 void bench_sorts( )
 {
-	vul_timer_t clock;
+	vul_timer clock;
 	unsigned long long itime, stime, qtime, ttime;
 	int *inta;
 
@@ -37,31 +37,31 @@ void bench_sorts( )
 		inta[ i ] = ( rand( ) % RAND_MAX );
 	}
 	
-	vul_vector_t *insertiona = vul_vector_create( sizeof( int ), SIZE_1, malloc, free, realloc );
-	vul_vector_t *insertionb = vul_vector_create( sizeof( int ), SIZE_2, malloc, free, realloc );
-	vul_vector_t *insertionc = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
-	vul_vector_t *insertiond = vul_vector_create( sizeof( int ), SIZE_4, malloc, free, realloc );
-	vul_vector_t *shella = vul_vector_create( sizeof( int ), SIZE_1, malloc, free, realloc );
-	vul_vector_t *shellb = vul_vector_create( sizeof( int ), SIZE_2, malloc, free, realloc );
-	vul_vector_t *shellc = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
-	vul_vector_t *shelld = vul_vector_create( sizeof( int ), SIZE_4, malloc, free, realloc );
-	vul_vector_t *shelle = vul_vector_create( sizeof( int ), SIZE_5, malloc, free, realloc );
-	vul_vector_t *shellf = vul_vector_create( sizeof( int ), SIZE_6, malloc, free, realloc );
-	vul_vector_t *shellg = vul_vector_create( sizeof( int ), SIZE_7, malloc, free, realloc );
-	vul_vector_t *quicka = vul_vector_create( sizeof( int ), SIZE_1, malloc, free, realloc );
-	vul_vector_t *quickb = vul_vector_create( sizeof( int ), SIZE_2, malloc, free, realloc );
-	vul_vector_t *quickc = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
-	vul_vector_t *quickd = vul_vector_create( sizeof( int ), SIZE_4, malloc, free, realloc );
-	vul_vector_t *quicke = vul_vector_create( sizeof( int ), SIZE_5, malloc, free, realloc );
-	vul_vector_t *quickf = vul_vector_create( sizeof( int ), SIZE_6, malloc, free, realloc );
-	vul_vector_t *quickg = vul_vector_create( sizeof( int ), SIZE_7, malloc, free, realloc );
-	vul_vector_t *thynna = vul_vector_create( sizeof( int ), SIZE_1, malloc, free, realloc );
-	vul_vector_t *thynnb = vul_vector_create( sizeof( int ), SIZE_2, malloc, free, realloc );
-	vul_vector_t *thynnc = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
-	vul_vector_t *thynnd = vul_vector_create( sizeof( int ), SIZE_4, malloc, free, realloc );
-	vul_vector_t *thynne = vul_vector_create( sizeof( int ), SIZE_5, malloc, free, realloc );
-	vul_vector_t *thynnf = vul_vector_create( sizeof( int ), SIZE_6, malloc, free, realloc );
-	vul_vector_t *thynng = vul_vector_create( sizeof( int ), SIZE_7, malloc, free, realloc );
+	vul_vector *insertiona = vul_vector_create( sizeof( int ), SIZE_1, malloc, free, realloc );
+	vul_vector *insertionb = vul_vector_create( sizeof( int ), SIZE_2, malloc, free, realloc );
+	vul_vector *insertionc = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
+	vul_vector *insertiond = vul_vector_create( sizeof( int ), SIZE_4, malloc, free, realloc );
+	vul_vector *shella = vul_vector_create( sizeof( int ), SIZE_1, malloc, free, realloc );
+	vul_vector *shellb = vul_vector_create( sizeof( int ), SIZE_2, malloc, free, realloc );
+	vul_vector *shellc = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
+	vul_vector *shelld = vul_vector_create( sizeof( int ), SIZE_4, malloc, free, realloc );
+	vul_vector *shelle = vul_vector_create( sizeof( int ), SIZE_5, malloc, free, realloc );
+	vul_vector *shellf = vul_vector_create( sizeof( int ), SIZE_6, malloc, free, realloc );
+	vul_vector *shellg = vul_vector_create( sizeof( int ), SIZE_7, malloc, free, realloc );
+	vul_vector *quicka = vul_vector_create( sizeof( int ), SIZE_1, malloc, free, realloc );
+	vul_vector *quickb = vul_vector_create( sizeof( int ), SIZE_2, malloc, free, realloc );
+	vul_vector *quickc = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
+	vul_vector *quickd = vul_vector_create( sizeof( int ), SIZE_4, malloc, free, realloc );
+	vul_vector *quicke = vul_vector_create( sizeof( int ), SIZE_5, malloc, free, realloc );
+	vul_vector *quickf = vul_vector_create( sizeof( int ), SIZE_6, malloc, free, realloc );
+	vul_vector *quickg = vul_vector_create( sizeof( int ), SIZE_7, malloc, free, realloc );
+	vul_vector *thynna = vul_vector_create( sizeof( int ), SIZE_1, malloc, free, realloc );
+	vul_vector *thynnb = vul_vector_create( sizeof( int ), SIZE_2, malloc, free, realloc );
+	vul_vector *thynnc = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
+	vul_vector *thynnd = vul_vector_create( sizeof( int ), SIZE_4, malloc, free, realloc );
+	vul_vector *thynne = vul_vector_create( sizeof( int ), SIZE_5, malloc, free, realloc );
+	vul_vector *thynnf = vul_vector_create( sizeof( int ), SIZE_6, malloc, free, realloc );
+	vul_vector *thynng = vul_vector_create( sizeof( int ), SIZE_7, malloc, free, realloc );
 	
 	vul_vector_copy( shella, 0, inta, SIZE_1 );
 	vul_vector_copy( shellb, 0, inta, SIZE_2 );
@@ -222,7 +222,7 @@ void bench_sorts( )
 #define SIZE_MULT_ITERATIONS 100000
 void bench_sorts_multiple( )
 {
-	vul_timer_t clock;
+	vul_timer clock;
 	unsigned long long itime, stime;
 	int **ints;
 
@@ -236,8 +236,8 @@ void bench_sorts_multiple( )
 		}
 	}
 	
-	vul_vector_t **insertion = ( vul_vector_t** ) malloc( sizeof( vul_vector_t* ) * SIZE_MULT_ITERATIONS );
-	vul_vector_t **shell = ( vul_vector_t** )malloc( sizeof( vul_vector_t* ) * SIZE_MULT_ITERATIONS );
+	vul_vector **insertion = ( vul_vector** ) malloc( sizeof( vul_vector* ) * SIZE_MULT_ITERATIONS );
+	vul_vector **shell = ( vul_vector** )malloc( sizeof( vul_vector* ) * SIZE_MULT_ITERATIONS );
 	for( int i = 0; i < SIZE_MULT_ITERATIONS; ++i ) {
 		insertion[ i ] = vul_vector_create( sizeof( int ), SIZE_MULT_INTS, malloc, free, realloc );
 		vul_vector_copy( insertion[ i ], 0, ints[ i ], SIZE_MULT_INTS );
@@ -281,10 +281,10 @@ void test_sorts( )
 	for( int i = 0; i < SIZE_3; ++i ) {
 		inta[ i ] = ( rand( ) % SIZE_3 );
 	}
-	vul_vector_t *shella = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
-	vul_vector_t *insertiona = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
-	vul_vector_t *quicka = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
-	vul_vector_t *thynna = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
+	vul_vector *shella = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
+	vul_vector *insertiona = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
+	vul_vector *quicka = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
+	vul_vector *thynna = vul_vector_create( sizeof( int ), SIZE_3, malloc, free, realloc );
 
 	vul_vector_copy( shella, 0, inta, SIZE_3 );
 	vul_vector_copy( insertiona, 0, inta, SIZE_3 );
@@ -324,15 +324,15 @@ void test_sorts( )
 #include "vul_compress.h"
 void test_compression_rle( )
 {
-	const ui8_t *comp, *out;
-	ui32_t len_in, len_comp, len_out;
+	const u8 *comp, *out;
+	u32 len_in, len_comp, len_out;
 	
 	const char *strin = "WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW";
 	len_in = strlen( strin );
-	comp = vul_compress_rle( ( ui8_t* )strin, len_in, &len_comp );
+	comp = vul_compress_rle( ( u8* )strin, len_in, &len_comp );
 	
 	out = vul_decompress_rle( comp, len_comp, &len_out );
-	printf( "Lengths, in (%d), comp(%d), ratio(%f), out(%d)\n", len_in, len_comp, (f32_t)len_comp / (f32_t)len_in, len_out );
+	printf( "Lengths, in (%d), comp(%d), ratio(%f), out(%d)\n", len_in, len_comp, (f32)len_comp / (f32)len_in, len_out );
 	printf( "In:  %s\n", strin );
 	printf( "Out: %s\n", (char*)out );
 	printf( "compare: %d\n", strcmp(strin, ( char* )out ) );
@@ -350,7 +350,7 @@ int main( int argv, char **argc )
 
 	//vul_test_gl( );
 
-	vul_test_astar( );
+	//vul_test_astar( );
 
 	//vul_test_csp( );
 

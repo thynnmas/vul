@@ -3,7 +3,7 @@
  *
  * This file describes a quaternion type that interfaces with the linear math
  * classes otherwise defined in this library. While any numeric type is in theory
- * allowed, it only makes sense to use f32_t types. i32_termediate calculations
+ * allowed, it only makes sense to use f32 types. s32ermediate calculations
  * and results of norm, dot etc. are returned in the same type as the quaternion's
  * content.
  *
@@ -59,8 +59,8 @@ namespace vul {
 		explicit Quaternion< T >( T x, T y, T z, T w ); 
 		explicit Quaternion< T >( Vector< T, 3 > xyz, T w );
 		explicit Quaternion< T >( const T (& a)[ 4 ] );
-		explicit Quaternion< T >( f32_t (& a)[ 4 ] );
-		explicit Quaternion< T >( i32_t (& a)[ 4 ] );
+		explicit Quaternion< T >( f32 (& a)[ 4 ] );
+		explicit Quaternion< T >( s32 (& a)[ 4 ] );
 		explicit Quaternion< T >( std::initializer_list<T> list );
 		Quaternion< T >( const Quaternion< T > &rhs );
 #else
@@ -96,16 +96,16 @@ namespace vul {
 		/**
 		 * Indexing operator.
 		 */
-		T &operator[ ]( i32_t i );
+		T &operator[ ]( s32 i );
 		/**
 		 * Constant indexing operator.
 		 */
-		T const &operator[ ]( i32_t i ) const;
+		T const &operator[ ]( s32 i ) const;
 	}; 
 
-	typedef Quaternion< f32_t > quat;
-	typedef Quaternion< f64_t > dquat;
-	typedef Quaternion< f16_t > hquat;
+	typedef Quaternion< f32 > quat;
+	typedef Quaternion< f64 > dquat;
+	typedef Quaternion< f16 > hquat;
 
 #ifndef VUL_CPLUSPLUS11
 	template< typename T >
@@ -121,10 +121,10 @@ namespace vul {
 	Quaternion< T > makeQuat( const T (& a)[ 4 ] );
 	
 	template< typename T >
-	Quaternion< T > makeQuat( f32_t (& a)[ 4 ] );
+	Quaternion< T > makeQuat( f32 (& a)[ 4 ] );
 	
 	template< typename T >
-	Quaternion< T > makeQuat( i32_t (& a)[ 4 ] );
+	Quaternion< T > makeQuat( s32 (& a)[ 4 ] );
 #endif
 	/**
 	 * Construct a quaternion from and axis and an angle of rotation around that axis.
@@ -282,7 +282,7 @@ namespace vul {
 	 * thus being a faster way to extract the wanted vector from that matrix.
 	 */
 	template< typename T >
-	Vector< T, 3 > extractAxis( const Quaternion< T > &q, ui32_t dimension );
+	Vector< T, 3 > extractAxis( const Quaternion< T > &q, u32 dimension );
 
 	//----------------
 	// Definitions
@@ -321,7 +321,7 @@ namespace vul {
 	}
 	
 	template< typename T >
-	Quaternion< T >::Quaternion( f32_t (& a)[ 4 ] )
+	Quaternion< T >::Quaternion( f32 (& a)[ 4 ] )
 	{
 		data[ 0 ] = static_cast< T >( a[ 0 ] );
 		data[ 1 ] = static_cast< T >( a[ 1 ] );
@@ -330,7 +330,7 @@ namespace vul {
 	}
 	
 	template< typename T >
-	Quaternion< T >::Quaternion( i32_t (& a)[ 4 ] )
+	Quaternion< T >::Quaternion( s32 (& a)[ 4 ] )
 	{
 		data[ 0 ] = static_cast< T >( a[ 0 ] );
 		data[ 1 ] = static_cast< T >( a[ 1 ] );
@@ -340,7 +340,7 @@ namespace vul {
 	template< typename T >
 	Quaternion< T >::Quaternion( std::initializer_list< T > list )
 	{
-		i32_t i;
+		s32 i;
 		typename std::initializer_list< T >::iterator it;
 
 		for( it = list.begin( ), i = 0; it != list.end( ) && i < 4; ++it, ++i ) {
@@ -407,7 +407,7 @@ namespace vul {
 	}
 	
 	template< typename T >
-	Quaternion< T > makeQuat( f32_t (& a)[ 4 ] )
+	Quaternion< T > makeQuat( f32 (& a)[ 4 ] )
 	{
 		Quaternion< T > q;
 		
@@ -420,7 +420,7 @@ namespace vul {
 	}
 	
 	template< typename T >
-	Quaternion< T > makeQuat( i32_t (& a)[ 4 ] )
+	Quaternion< T > makeQuat( s32 (& a)[ 4 ] )
 	{
 		Quaternion< T > q;
 
@@ -654,13 +654,13 @@ namespace vul {
 	}
 
 	template< typename T >
-	T &Quaternion< T >::operator[ ]( i32_t i )
+	T &Quaternion< T >::operator[ ]( s32 i )
 	{
 		assert( i < 4 );
 		return data[ i ];
 	}
 	template< typename T >
-	T const &Quaternion< T >::operator[ ]( i32_t i ) const
+	T const &Quaternion< T >::operator[ ]( s32 i ) const
 	{
 		assert( i < 4 );
 		return data[ i ];
@@ -825,7 +825,7 @@ namespace vul {
 
 		cosine = dot( a, b );
 		if( cosine <= -1.f ) {
-			angle = ( f32_t )VUL_PI;
+			angle = ( f32 )VUL_PI;
 		} else {
 			if( cosine >= 1.f ) {
 				angle = 0.f;
@@ -844,7 +844,7 @@ namespace vul {
 			  + q.y * q.y
 			  + q.z * q.z
 			  + q.w * q.w;
-		return static_cast< T >( sqrt( ( f32_t )res ) );
+		return static_cast< T >( sqrt( ( f32 )res ) );
 	}
 	template< typename T >
 	Quaternion< T > normalize( const Quaternion< T > &q )
@@ -914,7 +914,7 @@ namespace vul {
 			nb = b;
 		}
 
-		if( std::abs( cosine ) < one - static_cast< T >( ( f32_t )VUL_QUATERNION_SLERP_EPSILON ) )
+		if( std::abs( cosine ) < one - static_cast< T >( ( f32 )VUL_QUATERNION_SLERP_EPSILON ) )
 		{
 			sine = sqrt( one - sqrt( cosine ) );
 			angle = atan2( sine, cosine );
@@ -963,7 +963,7 @@ namespace vul {
 	}
 
 	template< typename T >
-	Vector< T, 3 > extractAxis( const Quaternion< T > &q, ui32_t dimension )
+	Vector< T, 3 > extractAxis( const Quaternion< T > &q, u32 dimension )
 	{
 		Vector< T, 3 > ret;
 		T x2, y2, z2, xy, xz, xw, yz, yw, zw;	

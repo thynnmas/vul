@@ -30,14 +30,14 @@ namespace vul {
 	// Declarations
 	//
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	struct Vector;
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	struct Point;
-	template< typename T, i32_t m, i32_t n >
+	template< typename T, s32 m, s32 n >
 	struct Matrix;
 	
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	struct Affine { 
 		Matrix< T, n, n > mat;
 		Vector< T, n > vec;
@@ -66,29 +66,29 @@ namespace vul {
 	 * Create an empty affine transformation. No translation 
 	 * and an identity matrix are created.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Affine< T, n > makeAffine( );
 	/**
 	 * Create a copy of an affine transformation.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Affine< T, n > makeAffine( const Affine< T, n > &a );
 	/**
 	 * Create an affine transformation from a rotation/scale matrix and a translation vector.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Affine< T, n > makeAffine( const Matrix< T, n, n > &mat, const Vector< T, n > &vec );	// Constructor from Mat<n,n> & Vec<n>.
 #endif
 
 	/**
 	 * Apply an affine transformation to the point, including translation.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > operator*( const Affine< T, n > &a, const Point< T, n> &p );
 	/**
 	 * Apply an affine transformation to the vector. This does not translate.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > operator*( const Affine< T, n > &a, const Vector< T, n> &p );
 
 	/**
@@ -107,21 +107,21 @@ namespace vul {
 	//
 
 #ifdef VUL_CPLUSPLUS11
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Affine< T, n >::Affine( )
 	{
 		mat = makeIdentity< T, n >( );
 		vec = Vector< T, n >( );
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Affine< T, n >::Affine( const Affine< T, n > &a )
 	{
 		mat = a.mat;
 		vec = a.vec;
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Affine< T, n >::Affine( const Matrix< T, n, n > &mat, const Vector< T, n > &vec )
 	{
 		this->mat = mat;
@@ -129,7 +129,7 @@ namespace vul {
 	}
 #else
 #pragma warning(disable: 6001)
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Affine< T, n > makeAffine( )
 	{
 		Affine< T, n > a;
@@ -140,7 +140,7 @@ namespace vul {
 		return a;
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Affine< T, n > makeAffine( const Affine< T, n > &a )
 	{
 		Affine< T, n > r;
@@ -151,7 +151,7 @@ namespace vul {
 		return r;
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Affine< T, n > makeAffine( const Matrix< T, n, n > &mat, const Vector< T, n > &vec )
 	{
 		Affine< T, n > a;
@@ -163,7 +163,7 @@ namespace vul {
 	}
 #endif
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Affine< T, n > &Affine< T, n >::operator=( const Affine< T, n > &rhs )
 	{
 		mat = rhs.mat;
@@ -171,7 +171,7 @@ namespace vul {
 		return *this;
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > operator*( const Affine< T, n > &a, const Point< T, n> &p )
 	{
 		Point< T, n > r;
@@ -181,7 +181,7 @@ namespace vul {
 		return r;
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > operator*( const Affine< T, n > &a, const Vector< T, n> &p )
 	{
 		Vector< T, n > v;
@@ -225,7 +225,7 @@ namespace vul {
 	Affine< T, 3 > makeAffine3D( const Vector< T, 3 > &translation, const Vector< T, 3 > &scale, const Quaternion< T > &orientation )
 	{
 		Affine< T, 3 > a;
-		i32_t i, j;
+		s32 i, j;
 		
 		// Copy translation straight
 		a.vec = translation;

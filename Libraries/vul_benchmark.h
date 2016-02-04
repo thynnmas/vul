@@ -19,30 +19,106 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef VUL_BENCHMARK_H
+#define VUL_BENCHMARK_H
 
 #include "vul_types.h"
 #include "vul_timer.h"
 #include "vul_sort.h"
 
 #include <stdarg.h>
+#include <stdio.h>
 
 typedef struct vul_benchmark_result {
-	ui32_t iterations;
-	f64_t mean;
-	ui64_t median;
-	f64_t std_deviation;
+	u32 iterations;
+	f64 mean;
+	u64 median;
+	f64 std_deviation;
 } vul_benchmark_result;
 
+typedef struct vul_benchmark_histogram {
+	u32 *buckets, bucket_count, bucket_max;
+	u64 smallest, largest;
+} vul_benchmark_histogram;
 
+#ifdef _cplusplus
+extern "C" {
+#endif
 /**
  * Helper function used to find the median. This is the median-of-median
  * algorithm, and all the median-function does is pretend the k-argument doesn't exist.
  */
-uint32_t vul__benchmark_select( uint64_t *times, uint32_t left, uint32_t right, uint32_t k )
+static u32 vul__benchmark_select( u64 *times, u32 left, u32 right, u32 k );
+/**
+ * Finds the median element of an array of times. O(n)
+ */
+static u64 vul__benchmark_median( u64 *times, u32 left, u32 right );
+/**
+ * Calculates the mean of an array of times. O(n)
+ */
+static f64 vul__benchmark_mean( u64 *times, u32 left, u32 right );
+/**
+ * Calculates the stad_deviation of an array of times given the mean of the array.  O(n)
+ */
+static f64 vul__benchmark_standard_deviation( u64 *times, u32 left, u32 right, f64 mean );
+/**
+ * Runs the given function the given amount of times, calculating mean, median and
+ * std_deviation over the runs. All times in milliseconds.
+ */
+vul_benchmark_result vul_benchmark_millis( u32 repetitions, 
+										   void ( *function )( void *data ), void* func_data );
+/**
+ * Runs the given function the given amount of times, calculating mean, median and
+ * std_deviation over the runs. All times in microseconds.
+ */
+vul_benchmark_result vul_benchmark_micros( u32 repetitions, 
+										   void ( *function )( void *data ), void *func_data );
+/**
+ * Runs the given function, calculating mean, median and
+ * std_deviation over the runs, until the given percentage of samples (ci) is expected
+ * to lie in the interval mean +- error * mean.
+ * It will run at least min_iter iterations, and at most max_iter.
+ */
+vul_benchmark_result vul_benchmark_millis_confidence( f32 ci, f32 error, u32 min_iter, u32 max_iter,
+													  void ( *function )( void *data ), void *func_data );
+/**
+ * Runs the given function, calculating mean, median and
+ * std_deviation over the runs, until the given percentage of samples (ci) is expected
+ * to lie in the interval mean +- error * mean.
+ * It will run at least min_iter iterations, and at most max_iter.
+ */
+vul_benchmark_result vul_benchmark_micros_confidence( f32 ci, f32 error, u32 min_iter, u32 max_iter,
+													  void ( *function )( void *data ), void *func_data );
+/**
+ * Create a histogram from a range in a time array with a given number of buckets.
+ */
+static void vul__benchmark_create_histogram( vul_benchmark_histogram *hist, u64 *times, 
+											 u32 left, u32 right, u32 buckets );
+/**
+ * Print a histogram to stdout with a given number of buckets.
+ */
+void vul_benchmark_print_histogram_millis( u64 *times, u32 left, u32 right, u32 buckets );
+/**
+ * Print a histogram to stdout with a given number of buckets.
+ */
+void vul_benchmark_print_histogram_micros( u64 *times, u32 left, u32 right, u32 buckets );
+
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+u32 vul__benchmark_select( u64 *times, u32 left, u32 right, u32 k )
 {
-	uint64_t order[ 5 ], time;
-	uint32_t i, l, count, median;
-	int32_t j;
+	u64 order[ 5 ], time;
+	u32 i, l, count, median;
+	s32 j;
 
 	count = right - left;
 	if( count < 5 )
@@ -86,46 +162,36 @@ uint32_t vul__benchmark_select( uint64_t *times, uint32_t left, uint32_t right, 
 	return vul__benchmark_select( times, 0, count / 5, count / 10 );
 }
 
-
-/**
- * Finds the median element of an array of times. O(n)
- */
-ui64_t vul__benchmark_median( ui64_t *times, ui32_t left, ui32_t right )
+u64 vul__benchmark_median( u64 *times, u32 left, u32 right )
 {
 	return times[ vul__benchmark_select( times, left, right, ( right - left ) / 2 ) ];
 }
 
-/**
- * Calculates the mean of an array of times. O(n)
- */
-f64_t vul__benchmark_mean( ui64_t *times, ui32_t left, ui32_t right )
+f64 vul__benchmark_mean( u64 *times, u32 left, u32 right )
 {
-	ui32_t i;
-	f64_t avg, count;
+	u32 i;
+	f64 avg, count;
 
-	count = ( f64_t )( right - left );
+	count = ( f64 )( right - left );
 	avg = 0;
 	for( i = left; i < right; ++i )
 	{
-		avg += ( f64_t )times[ i ] / count;
+		avg += ( f64 )times[ i ] / count;
 	}
 
 	return avg;
 }
 
-/**
- * Calculates the stad_deviation of an array of times given the mean of the array.  O(n)
- */
-f64_t vul__benchmark_standard_deviation( ui64_t *times, ui32_t left, ui32_t right, f64_t mean )
+f64 vul__benchmark_standard_deviation( u64 *times, u32 left, u32 right, f64 mean )
 {
-	ui32_t i;
-	f64_t d, dev, inv_count;
+	u32 i;
+	f64 d, dev, inv_count;
 
-	inv_count = 1.0 / ( f64_t )( ( right - left ) - 1 );
+	inv_count = 1.0 / ( f64 )( ( right - left ) - 1 );
 	dev = 0;
 	for( i = left; i < right; ++i )
 	{
-		d = ( f64_t )times[ i ] - mean;
+		d = ( f64 )times[ i ] - mean;
 		d *= d;
 		dev += d * inv_count;
 	}
@@ -133,19 +199,15 @@ f64_t vul__benchmark_standard_deviation( ui64_t *times, ui32_t left, ui32_t righ
 	return sqrt( dev );
 }
 
-/**
- * Runs the given function the given amount of times, calculating mean, median and
- * std_deviation over the runs. All times in milliseconds.
- */
-vul_benchmark_result vul_benchmark_millis( ui32_t repetitions, 
+vul_benchmark_result vul_benchmark_millis( u32 repetitions, 
 										   void ( *function )( void *data ), void* func_data )
 {
-	ui32_t r;
-	ui64_t *times;
-	vul_timer_t *clk;
+	u32 r;
+	u64 *times;
+	vul_timer *clk;
 	vul_benchmark_result res;
 
-	times = ( ui64_t* )malloc( sizeof( ui64_t ) * repetitions );
+	times = ( u64* )malloc( sizeof( u64 ) * repetitions );
 	clk = vul_timer_create( );
 
 	// Run the benchmark
@@ -165,20 +227,15 @@ vul_benchmark_result vul_benchmark_millis( ui32_t repetitions,
 	return res;
 }
 
-
-/**
- * Runs the given function the given amount of times, calculating mean, median and
- * std_deviation over the runs. All times in microseconds.
- */
-vul_benchmark_result vul_benchmark_micros( ui32_t repetitions, 
+vul_benchmark_result vul_benchmark_micros( u32 repetitions, 
 										   void ( *function )( void *data ), void *func_data )
 {
-	ui32_t r;
-	ui64_t *times;
-	vul_timer_t *clk;
+	u32 r;
+	u64 *times;
+	vul_timer *clk;
 	vul_benchmark_result res;
 
-	times = ( ui64_t* )malloc( sizeof( ui64_t ) * repetitions );
+	times = ( u64* )malloc( sizeof( u64 ) * repetitions );
 	clk = vul_timer_create( );
 
 	// Run the benchmark
@@ -198,18 +255,12 @@ vul_benchmark_result vul_benchmark_micros( ui32_t repetitions,
 	return res;
 }
 
-/**
- * Runs the given function, calculating mean, median and
- * std_deviation over the runs, until the given percentage of samples (ci) is expected
- * to lie in the interval mean +- error * mean.
- * It will run at least min_iter iterations, and at most max_iter.
- */
-vul_benchmark_result vul_benchmark_millis_confidence( f32_t ci, f32_t error, ui32_t min_iter, ui32_t max_iter,
-																		void ( *function )( void *data ), void *func_data )
+vul_benchmark_result vul_benchmark_millis_confidence( f32 ci, f32 error, u32 min_iter, u32 max_iter,
+													  void ( *function )( void *data ), void *func_data )
 {
-	ui32_t iter, count;
-	ui64_t *times;
-	vul_timer_t *clk;
+	u32 iter, count;
+	u64 *times;
+	vul_timer *clk;
 	vul_benchmark_result res;
 
 	times = 0;
@@ -220,9 +271,9 @@ vul_benchmark_result vul_benchmark_millis_confidence( f32_t ci, f32_t error, ui3
 	while( count <= max_iter ) {
 		// (re)allocate the times array, maintaining the values we already have
 		if( times == NULL ) {
-			times = ( ui64_t* )malloc( sizeof( ui64_t ) * count );
+			times = ( u64* )malloc( sizeof( u64 ) * count );
 		} else {
-			times = ( ui64_t )realloc( times, sizeof( ui64_t ) * count );
+			times = ( u64* )realloc( times, sizeof( u64 ) * count );
 		}
 		// Run the benchmark
 		while( iter < count ) {
@@ -237,9 +288,9 @@ vul_benchmark_result vul_benchmark_millis_confidence( f32_t ci, f32_t error, ui3
 		res.iterations = count;
 
 		// Calculate teh size of error relative to the std.dev.
-		f64_t z = error / res.std_deviation;
+		f64 z = error / res.std_deviation;
 		// The percentage of samples expected to be in the CI is given as erf(z/sqrt(2))
-		f64_t eci = erf( z / sqrt( 2.f ) );
+		f64 eci = erf( z / sqrt( 2.f ) );
 		// If we have the desired precision, break
 		if( eci <= ci ) {
 			break;
@@ -257,18 +308,12 @@ vul_benchmark_result vul_benchmark_millis_confidence( f32_t ci, f32_t error, ui3
 	return res;
 }
 
-/**
- * Runs the given function, calculating mean, median and
- * std_deviation over the runs, until the given percentage of samples (ci) is expected
- * to lie in the interval mean +- error * mean.
- * It will run at least min_iter iterations, and at most max_iter.
- */
-vul_benchmark_result vul_benchmark_micros_confidence( f32_t ci, f32_t error, ui32_t min_iter, ui32_t max_iter,
-																		void ( *function )( void *data ), void *func_data )
+vul_benchmark_result vul_benchmark_micros_confidence( f32 ci, f32 error, u32 min_iter, u32 max_iter,
+													  void ( *function )( void *data ), void *func_data )
 {
-	ui32_t iter, count;
-	ui64_t *times;
-	vul_timer_t *clk;
+	u32 iter, count;
+	u64 *times;
+	vul_timer *clk;
 	vul_benchmark_result res;
 
 	times = 0;
@@ -279,9 +324,9 @@ vul_benchmark_result vul_benchmark_micros_confidence( f32_t ci, f32_t error, ui3
 	while( count <= max_iter ) {
 		// (re)allocate the times array, maintaining the values we already have
 		if( times == NULL ) {
-			times = ( ui64_t* )malloc( sizeof( ui64_t ) * count );
+			times = ( u64* )malloc( sizeof( u64 ) * count );
 		} else {
-			times = ( ui64_t )realloc( times, sizeof( ui64_t ) * count );
+			times = ( u64* )realloc( times, sizeof( u64 ) * count );
 		}
 		// Run the benchmark
 		while( iter < count ) {
@@ -296,9 +341,9 @@ vul_benchmark_result vul_benchmark_micros_confidence( f32_t ci, f32_t error, ui3
 		res.iterations = count;
 
 		// Calculate teh size of error relative to the std.dev.
-		f64_t z = error / res.std_deviation;
+		f64 z = error / res.std_deviation;
 		// The percentage of samples expected to be in the CI is given as erf(z/sqrt(2))
-		f64_t eci = erf( z / sqrt( 2.f ) );
+		f64 eci = erf( z / sqrt( 2.f ) );
 		// If we have the desired precision, break
 		if( eci <= ci ) {
 			break;
@@ -315,16 +360,12 @@ vul_benchmark_result vul_benchmark_micros_confidence( f32_t ci, f32_t error, ui3
 
 	return res;
 }
-typedef struct vul_benchmark_histogram {
-	uint32_t *buckets, bucket_count, bucket_max;
-	uint64_t smallest, largest;
-} vul_benchmark_histogram;
 
-void vul__benchmark_create_histogram( vul_benchmark_histogram *hist, uint64_t *times, 
-												  uint32_t left, uint32_t right, uint32_t buckets )
+void vul__benchmark_create_histogram( vul_benchmark_histogram *hist, u64 *times, 
+									 u32 left, u32 right, u32 buckets )
 {
-	double s, l, r, t;
-	uint32_t i, j;
+	f64 s, l, r, t;
+	u32 i, j;
 	hist->bucket_count = buckets;
 	
 	// Find range
@@ -334,24 +375,24 @@ void vul__benchmark_create_histogram( vul_benchmark_histogram *hist, uint64_t *t
 		hist->smallest = times[ i ] < hist->smallest ? times[ i ] : hist->smallest;
 		hist->largest = times[ i ] > hist->largest ? times[ i ] : hist->largest;
 	}
-	s = ( double )( hist->largest - hist->smallest ) / ( double )buckets;
-	if( hist->largest - hist->smallest < ( uint64_t )buckets ) {
-		uint32_t hb = buckets / 2;
-		double med = ( double )hist->smallest + ( s * ( double )hb );
+	s = ( f64 )( hist->largest - hist->smallest ) / ( f64 )buckets;
+	if( hist->largest - hist->smallest < ( u64 )buckets ) {
+		u32 hb = buckets / 2;
+		f64 med = ( f64 )hist->smallest + ( s * ( f64 )hb );
 		s = 1.0;
-		hist->smallest = med - s * ( double )hb;
-		hist->largest = med + s * ( double )hb;
+		hist->smallest = med - s * ( f64 )hb;
+		hist->largest = med + s * ( f64 )hb;
 	}
 	
 	// Fill buckets
-	hist->buckets = ( uint32_t* )malloc( sizeof( uint32_t ) * buckets );
-	l = ( double )hist->smallest;
-	r = ( double )hist->smallest + s;
+	hist->buckets = ( u32* )malloc( sizeof( u32 ) * buckets );
+	l = ( f64 )hist->smallest;
+	r = ( f64 )hist->smallest + s;
 	for( i = 0; i < buckets; ++i ) {
 		hist->buckets[ i ] = 0;
 		for( j = left; j < right; ++j ) {
-			t = ( double )times[ j ];
-			if( t >= l && ( t < r || ( i == buckets - 1  && t == ( double )hist->largest ) ) ) { 
+			t = ( f64 )times[ j ];
+			if( t >= l && ( t < r || ( i == buckets - 1  && t == ( f64 )hist->largest ) ) ) { 
 				++hist->buckets[ i ];
 			}
 		}
@@ -366,14 +407,11 @@ void vul__benchmark_create_histogram( vul_benchmark_histogram *hist, uint64_t *t
 	}
 }
 
-/**
- * Print a histogram to stdout with a given number of buckets.
- */
-void vul_benchmark_print_histogram_millis( uint64_t *times, uint32_t left, uint32_t right, uint32_t buckets )
+void vul_benchmark_print_histogram_millis( u64 *times, u32 left, u32 right, u32 buckets )
 {
-	uint32_t i, j, ml;
-	uint64_t v, s;
-	double l, r, ds;
+	u32 i, j, ml;
+	u64 v, s;
+	f64 l, r, ds;
 	vul_benchmark_histogram hist;
 	
 	// Calcualte it
@@ -381,7 +419,7 @@ void vul_benchmark_print_histogram_millis( uint64_t *times, uint32_t left, uint3
 	
 	// Print legend
 	printf( "Time (ms) | Count |0" );
-	ml = ( uint32_t )log10( ( double )hist.bucket_max );
+	ml = ( u32 )log10( ( f64 )hist.bucket_max );
 	for( i = 1; i < buckets - ml; ++i ) printf(" ");
 	printf( "%d|\n", hist.bucket_max );
 	printf( "----------|-------|" );
@@ -389,13 +427,13 @@ void vul_benchmark_print_histogram_millis( uint64_t *times, uint32_t left, uint3
 	printf("|\n");
 
 	s = hist.bucket_max / buckets;
-	ds = ( double )( hist.largest - hist.smallest ) / ( double )buckets;
-	l = ( double )hist.smallest;
+	ds = ( f64 )( hist.largest - hist.smallest ) / ( f64 )buckets;
+	l = ( f64 )hist.smallest;
 	r = l + ds;
 	for( i = 0; i < buckets; ++i ) {
 		v = 0;
 		printf("%02.1f-%02.1f | %d", l, r, hist.buckets[ i ]);
-		ml = ( uint32_t )log10( ( double )hist.buckets[ i ] );
+		ml = ( u32 )log10( ( f64 )hist.buckets[ i ] );
 		for( j = 0; j < 5 - ml; ++j ) printf(" ");
 		printf("|");
 		l = r;
@@ -413,14 +451,11 @@ void vul_benchmark_print_histogram_millis( uint64_t *times, uint32_t left, uint3
 	free( hist.buckets );
 }
 
-/**
- * Print a histogram to stdout with a given number of buckets.
- */
-void vul_benchmark_print_histogram_micros( uint64_t *times, uint32_t left, uint32_t right, uint32_t buckets )
+void vul_benchmark_print_histogram_micros( u64 *times, u32 left, u32 right, u32 buckets )
 {
-	uint32_t i, j, ml;
-	uint64_t v, s;
-	double l, r, ds;
+	u32 i, j, ml;
+	u64 v, s;
+	f64 l, r, ds;
 	vul_benchmark_histogram hist;
 	
 	// Calcualte it
@@ -428,7 +463,7 @@ void vul_benchmark_print_histogram_micros( uint64_t *times, uint32_t left, uint3
 	
 	// Print legend
 	printf( "Time (ms)   | Count |0" );
-	ml = ( uint32_t )log10( ( double )hist.bucket_max ) + 1;
+	ml = ( u32 )log10( ( f64 )hist.bucket_max ) + 1;
 	for( i = 1; i < buckets - ml; ++i ) printf(" ");
 	printf( "%d|\n", hist.bucket_max );
 	printf( "------------|-------|" );
@@ -436,13 +471,13 @@ void vul_benchmark_print_histogram_micros( uint64_t *times, uint32_t left, uint3
 	printf("|\n");
 
 	s = hist.bucket_max / buckets;
-	ds = ( double )( hist.largest - hist.smallest ) / ( double )buckets;
-	l = ( double )hist.smallest;
+	ds = ( f64 )( hist.largest - hist.smallest ) / ( f64 )buckets;
+	l = ( f64 )hist.smallest;
 	r = l + ds;
 	for( i = 0; i < buckets; ++i ) {
 		v = 0;
 		printf("%02.2f-%02.2f | %d", l / 1000.0, r / 1000.0, hist.buckets[ i ]);
-		ml = ( uint32_t )log10( ( double )hist.buckets[ i ] );
+		ml = ( u32 )log10( ( f64 )hist.buckets[ i ] );
 		for( j = 0; j < 5 - ml; ++j ) printf(" ");
 		printf("|");
 		l = r;
@@ -459,3 +494,9 @@ void vul_benchmark_print_histogram_micros( uint64_t *times, uint32_t left, uint3
 	// Clean up
 	free( hist.buckets );
 }
+
+#ifdef _cplusplus
+}
+#endif
+
+#endif

@@ -41,151 +41,151 @@ namespace vul {
 	//	
 #ifdef VUL_AOSOA_SSE
 	/**
-	 * Pack an array of Vector< f32_t, n > into an array of Vector< __m128, n >
+	 * Pack an array of Vector< f32, n > into an array of Vector< __m128, n >
 	 * Expects in to be of size count + count % 4, and out to be of size (count + 3 ) / 4.
 	 */
-	template< ui32_t n >
-	void pack( Vector< __m128, n > *out, const Vector< f32_t, n > *in, ui32_t count );
+	template< u32 n >
+	void pack( Vector< __m128, n > *out, const Vector< f32, n > *in, u32 count );
 	/**
-	 * Pack an array of Vector< f64_t, n > into an array of Vector< __m128d, n >
+	 * Pack an array of Vector< f64, n > into an array of Vector< __m128d, n >
 	 * Expects in to be of size count + count % 2, and out to be of size (count + 1 ) / 2.
 	 */
-	template< ui32_t n >
-	void pack( Vector< __m128d, n > *out, const Vector< f64_t, n > *in, ui32_t count );
+	template< u32 n >
+	void pack( Vector< __m128d, n > *out, const Vector< f64, n > *in, u32 count );
 #endif
 #ifdef VUL_AOSOA_AVX
 	/**
-	 * Pack an array of Vector< f32_t, n > into an array of Vector< __m256, n >
+	 * Pack an array of Vector< f32, n > into an array of Vector< __m256, n >
 	 * Expects in to be of size count + count % 8, and out to be of size (count + 7 ) / 8.
 	 */
-	template< ui32_t n >
-	void pack( Vector< __m256, n > *out, const Vector< f32_t, n > *in, ui32_t count );
+	template< u32 n >
+	void pack( Vector< __m256, n > *out, const Vector< f32, n > *in, u32 count );
 	/**
-	 * Pack an array of Vector< f64_t, n > into an array of Vector< __m256d, n >
+	 * Pack an array of Vector< f64, n > into an array of Vector< __m256d, n >
 	 * Expects in to be of size count + count % 4, and out to be of size (count + 3 ) / 4.
 	 */
-	template< ui32_t n >
-	void pack( Vector< __m256d, n > *out, const Vector< f64_t, n > *in, ui32_t count );
+	template< u32 n >
+	void pack( Vector< __m256d, n > *out, const Vector< f64, n > *in, u32 count );
 #endif
 #ifdef VUL_AOSOA_NEON
 	/**
-	 * Pack an array of Vector< f32_t, n > into an array of Vector< flaot32x4_t, n >
+	 * Pack an array of Vector< f32, n > into an array of Vector< flaot32x4_t, n >
 	 * Expects in to be of size count + count % 4, and out to be of size (count + 3 ) / 4.
 	 */
-	template< ui32_t n >
-	void pack( Vector< float32x4_t, n > *out, const Vector< f32_t, n > *in, ui32_t count );
+	template< u32 n >
+	void pack( Vector< float32x4_t, n > *out, const Vector< f32, n > *in, u32 count );
 #endif
 	
 #ifdef VUL_AOSOA_SSE
 	/**
-	 * Unpacks an array of Vector< __m128, n > into an array of Vector< f32_t, n >
+	 * Unpacks an array of Vector< __m128, n > into an array of Vector< f32, n >
 	 * Expects out to be of size count + count % 4, and in to be of size (count + 3 ) / 4.
 	 */
-	template< ui32_t n >
-	void unpack( Vector< f32_t, n > *out, const Vector< __m128, n > *in, ui32_t count );
+	template< u32 n >
+	void unpack( Vector< f32, n > *out, const Vector< __m128, n > *in, u32 count );
 	/**
-	 * Pack an array of Vector< __m128d, n > into an array of Vector< f64_t, n >
+	 * Pack an array of Vector< __m128d, n > into an array of Vector< f64, n >
 	 * Expects out to be of size count + count % 2, and in to be of size (count + 1 ) / 2.
 	 */
-	template< ui32_t n >
-	void unpack( Vector< f64_t, n > *out, const Vector< __m128d, n > *in, ui32_t count );
+	template< u32 n >
+	void unpack( Vector< f64, n > *out, const Vector< __m128d, n > *in, u32 count );
 #endif
 #ifdef VUL_AOSOA_AVX
 	/**
-	 * Pack an array of Vector< __m256, n > into an array of Vector< f32_t, n >
+	 * Pack an array of Vector< __m256, n > into an array of Vector< f32, n >
 	 * Expects out to be of size count + count % 8, and in to be of size (count + 7 ) / 8.
 	 */
-	template< ui32_t n >
-	void unpack( Vector< f32_t, n > *out, const Vector< __m256, n > *in, ui32_t count );
+	template< u32 n >
+	void unpack( Vector< f32, n > *out, const Vector< __m256, n > *in, u32 count );
 	/**
-	 * Pack an array of Vector< __m256d, n > into an array of Vector< f64_t, n >
+	 * Pack an array of Vector< __m256d, n > into an array of Vector< f64, n >
 	 * Expects out to be of size count + count % 4, and in to be of size (count + 3 ) / 4.
 	 */
-	template< ui32_t n >
-	void unpack( Vector< f64_t, n > *out, const Vector< __m256d, n > *in, ui32_t count );
+	template< u32 n >
+	void unpack( Vector< f64, n > *out, const Vector< __m256d, n > *in, u32 count );
 #endif
 #ifdef VUL_AOSOA_NEON
 	/**
-	 * Pack an array of Vector< float32x4_t, n > into an array of Vector< f32_t, n >
+	 * Pack an array of Vector< float32x4_t, n > into an array of Vector< f32, n >
 	 * Expects out to be of size count + count % 4, and in to be of size (count + 3 ) / 4.
 	 */
-	template< ui32_t n >
-	void unpack( Vector< f32_t, n > *out, const Vector< float32x4_t, n > *in, ui32_t count );
+	template< u32 n >
+	void unpack( Vector< f32, n > *out, const Vector< float32x4_t, n > *in, u32 count );
 #endif
 	
 #ifdef VUL_AOSOA_SSE
 	/**
-	 * Pack an array of AABB< f32_t, n > into an array of AABB< __m128, n >
+	 * Pack an array of AABB< f32, n > into an array of AABB< __m128, n >
 	 * Expects in to be of size count + count % 4, and out to be of size (count + 3 ) / 4.
 	 */
-	template< ui32_t n >
-	void pack( AABB< __m128, n > *out, const AABB< f32_t, n > *in, ui32_t count );
+	template< u32 n >
+	void pack( AABB< __m128, n > *out, const AABB< f32, n > *in, u32 count );
 	/**
-	 * Pack an array of AABB< f64_t, n > into an array of AABB< __m128d, n >
+	 * Pack an array of AABB< f64, n > into an array of AABB< __m128d, n >
 	 * Expects in to be of size count + count % 2, and out to be of size (count + 1 ) / 2.
 	 */
-	template< ui32_t n >
-	void pack( AABB< __m128d, n > *out, const AABB< f64_t, n > *in, ui32_t count );
+	template< u32 n >
+	void pack( AABB< __m128d, n > *out, const AABB< f64, n > *in, u32 count );
 #endif
 #ifdef VUL_AOSOA_AVX
 	/**
-	 * Pack an array of AABB< f32_t, n > into an array of AABB< __m256, n >
+	 * Pack an array of AABB< f32, n > into an array of AABB< __m256, n >
 	 * Expects in to be of size count + count % 8, and out to be of size (count + 7 ) / 8.
 	 */
-	template< ui32_t n >
-	void pack( AABB< __m256, n > *out, const AABB< f32_t, n > *in, ui32_t count );
+	template< u32 n >
+	void pack( AABB< __m256, n > *out, const AABB< f32, n > *in, u32 count );
 	/**
-	 * Pack an array of AABB< f64_t, n > into an array of AABB< __m256d, n >
+	 * Pack an array of AABB< f64, n > into an array of AABB< __m256d, n >
 	 * Expects in to be of size count + count % 4, and out to be of size (count + 3 ) / 4.
 	 */
-	template< ui32_t n >
-	void pack( AABB< __m256d, n > *out, const AABB< f64_t, n > *in, ui32_t count );
+	template< u32 n >
+	void pack( AABB< __m256d, n > *out, const AABB< f64, n > *in, u32 count );
 #endif
 #ifdef VUL_AOSOA_NEON
 	/**
-	 * Pack an array of AABB< f32_t, n > into an array of AABB< float32x4_t, n >
+	 * Pack an array of AABB< f32, n > into an array of AABB< float32x4_t, n >
 	 * Expects in to be of size count + count % 4, and out to be of size (count + 3 ) / 4.
 	 */
-	template< ui32_t n >
-	void pack( AABB< float32x4_t, n > *out, const AABB< f32_t, n > *in, ui32_t count );
+	template< u32 n >
+	void pack( AABB< float32x4_t, n > *out, const AABB< f32, n > *in, u32 count );
 #endif
 
 	
 #ifdef VUL_AOSOA_SSE
 	/**
-	 * Unpacks an array of AABB< __m128, n > into an array of AABB< f32_t, n >
+	 * Unpacks an array of AABB< __m128, n > into an array of AABB< f32, n >
 	 * Expects out to be of size count + count % 4, and in to be of size (count + 3 ) / 4.
 	 */
-	template< ui32_t n >
-	void unpack( AABB< f32_t, n > *out, const AABB< __m128, n > *in, ui32_t count );
+	template< u32 n >
+	void unpack( AABB< f32, n > *out, const AABB< __m128, n > *in, u32 count );
 	/**
-	 * Pack an array of AABB< __m128d, n > into an array of AABB< f64_t, n >
+	 * Pack an array of AABB< __m128d, n > into an array of AABB< f64, n >
 	 * Expects out to be of size count + count % 2, and in to be of size (count + 1 ) / 2.
 	 */
-	template< ui32_t n >
-	void unpack( AABB< f64_t, n > *out, const AABB< __m128d, n > *in, ui32_t count );
+	template< u32 n >
+	void unpack( AABB< f64, n > *out, const AABB< __m128d, n > *in, u32 count );
 #endif
 #ifdef VUL_AOSOA_AVX
 	/**
-	 * Pack an array of AABB< __m256, n > into an array of AABB< f32_t, n >
+	 * Pack an array of AABB< __m256, n > into an array of AABB< f32, n >
 	 * Expects out to be of size count + count % 8, and in to be of size (count + 7 ) / 8.
 	 */
-	template< ui32_t n >
-	void unpack( AABB< f32_t, n > *out, const AABB< __m256, n > *in, ui32_t count );
+	template< u32 n >
+	void unpack( AABB< f32, n > *out, const AABB< __m256, n > *in, u32 count );
 	/**
-	 * Pack an array of AABB< __m256d, n > into an array of AABB< f64_t, n >
+	 * Pack an array of AABB< __m256d, n > into an array of AABB< f64, n >
 	 * Expects out to be of size count + count % 4, and in to be of size (count + 3 ) / 4.
 	 */
-	template< ui32_t n >
-	void unpack( AABB< f64_t, n > *out, const AABB< __m256d, n > *in, ui32_t count );
+	template< u32 n >
+	void unpack( AABB< f64, n > *out, const AABB< __m256d, n > *in, u32 count );
 #endif
 #ifdef VUL_AOSOA_NEON
 	/**
-	 * Pack an array of AABB< float32x4_t, n > into an array of AABB< f32_t, n >
+	 * Pack an array of AABB< float32x4_t, n > into an array of AABB< f32, n >
 	 * Expects out to be of size count + count % 4, and in to be of size (count + 3 ) / 4.
 	 */
-	template< ui32_t n >
-	void unpack( AABB< f32_t, n > *out, const AABB< float32x4_t, n > *in, ui32_t count );
+	template< u32 n >
+	void unpack( AABB< f32, n > *out, const AABB< float32x4_t, n > *in, u32 count );
 #endif
 	
 	
@@ -193,10 +193,10 @@ namespace vul {
 	// Definitions
 	//	
 #ifdef VUL_AOSOA_SSE
-	template< ui32_t n >
-	void pack( Vector< __m128, n > *out, const Vector< f32_t, n > *in, ui32_t count )
+	template< u32 n >
+	void pack( Vector< __m128, n > *out, const Vector< f32, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		__m128 tmp[ n ];
 		
 		simdCount = ( count + 3 ) / 4;
@@ -216,10 +216,10 @@ namespace vul {
 #endif
 		}
 	}
-	template< ui32_t n >
-	void pack( Vector< __m128d, n > *out, const Vector< f64_t, n > *in, ui32_t count )
+	template< u32 n >
+	void pack( Vector< __m128d, n > *out, const Vector< f64, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		__m128d tmp[ n ];
 		
 		simdCount = ( count + 1 ) / 2;
@@ -239,10 +239,10 @@ namespace vul {
 	}
 #endif
 #ifdef VUL_AOSOA_AVX
-	template< ui32_t n >
-	void pack( Vector< __m256, n > *out, const Vector< f32_t, n > *in, ui32_t count )
+	template< u32 n >
+	void pack( Vector< __m256, n > *out, const Vector< f32, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		__m256 tmp[ n ];
 		
 		simdCount = ( count + 7 ) / 8;
@@ -266,10 +266,10 @@ namespace vul {
 #endif
 		}
 	}
-	template< ui32_t n >
-	void pack( Vector< __m256d, n > *out, const Vector< f64_t, n > *in, ui32_t count )
+	template< u32 n >
+	void pack( Vector< __m256d, n > *out, const Vector< f64, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		__m256d tmp[ n ];
 		
 		simdCount = ( count + 3 ) / 4;
@@ -291,10 +291,10 @@ namespace vul {
 	}
 #endif
 #ifdef VUL_AOSOA_NEON
-	template< ui32_t n >
-	void pack( Vector< float32x4_t, n > *out, const Vector< f32_t, n > *in, ui32_t count )
+	template< u32 n >
+	void pack( Vector< float32x4_t, n > *out, const Vector< f32, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		float32x4_t tmp[ n ];
 		
 		simdCount = ( count + 3 ) / 4;
@@ -317,10 +317,10 @@ namespace vul {
 #endif
 
 #ifdef VUL_AOSOA_SSE
-	template< ui32_t n >
-	void unpack( Vector< f32_t, n > *out, const Vector< __m128, n > *in, ui32_t count )
+	template< u32 n >
+	void unpack( Vector< f32, n > *out, const Vector< __m128, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		
 		simdCount = ( count + 3 ) / 4;
 		for( i = 0; i < simdCount; ++i )
@@ -328,7 +328,7 @@ namespace vul {
 			for( j = 0; j < n; ++j )
 			{
 #ifdef __GNUC__
-				f32_t arr[ 4 ];
+				f32 arr[ 4 ];
 				_mm_store_ps( arr, in[ i ][ j ] );
 				out[ i * 4     ][ j ] = arr[ 3 ];
 				out[ i * 4 + 1 ][ j ] = arr[ 2 ];
@@ -343,10 +343,10 @@ namespace vul {
 			}
 		}
 	}
-	template< ui32_t n >
-	void unpack( Vector< f64_t, n > *out, const Vector< __m128d, n > *in, ui32_t count )
+	template< u32 n >
+	void unpack( Vector< f64, n > *out, const Vector< __m128d, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		
 		simdCount = ( count + 1 ) / 2;
 		for( i = 0; i < simdCount; ++i )
@@ -354,7 +354,7 @@ namespace vul {
 			for( j = 0; j < n; ++j )
 			{
 #ifdef __GNUC__
-				f64_t arr[ 2 ];
+				f64 arr[ 2 ];
 				_mm_store_pd( arr, in[ i ][ j ] );
 				out[ i * 2     ][ j ] = arr[ 1 ];
 				out[ i * 2 + 1 ][ j ] = arr[ 0 ];
@@ -367,10 +367,10 @@ namespace vul {
 	}
 #endif
 #ifdef VUL_AOSOA_AVX
-	template< ui32_t n >
-	void unpack( Vector< f32_t, n > *out, const Vector< __m256, n > *in, ui32_t count )
+	template< u32 n >
+	void unpack( Vector< f32, n > *out, const Vector< __m256, n > *in, u32 count )
 	{		
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		
 		simdCount = ( count + 7 ) / 8;
 		for( i = 0; i < simdCount; ++i )
@@ -378,7 +378,7 @@ namespace vul {
 			for( j = 0; j < n; ++j )
 			{
 #ifdef __GNUC__
-				f32_t arr[ 8 ];
+				f32 arr[ 8 ];
 				_mm256_store_ps( arr, in[ i ][ j ] );
 				out[ i * 8     ][ j ] = arr[ 7 ];
 				out[ i * 8 + 1 ][ j ] = arr[ 6 ];
@@ -401,10 +401,10 @@ namespace vul {
 			}
 		}
 	}
-	template< ui32_t n >
-	void unpack( Vector< f64_t, n > *out, const Vector< __m256d, n > *in, ui32_t count )
+	template< u32 n >
+	void unpack( Vector< f64, n > *out, const Vector< __m256d, n > *in, u32 count )
 	{		
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		
 		simdCount = ( count + 3 ) / 4;
 		for( i = 0; i < simdCount; ++i )
@@ -412,7 +412,7 @@ namespace vul {
 			for( j = 0; j < n; ++j )
 			{
 #ifdef __GNUC__
-				f64_t arr[ 4 ];
+				f64 arr[ 4 ];
 				_mm256_store_pd( arr, in[ i ][ j ] );
 				out[ i * 4     ][ j ] = arr[ 3 ];
 				out[ i * 4 + 1 ][ j ] = arr[ 2 ];
@@ -429,10 +429,10 @@ namespace vul {
 	}
 #endif
 #ifdef VUL_AOSOA_NEON
-	template< ui32_t n >
-	void unpack( Vector< f32_t, n > *out, const Vector< float32x4_t, n > *in, ui32_t count )
+	template< u32 n >
+	void unpack( Vector< f32, n > *out, const Vector< float32x4_t, n > *in, u32 count )
 	{		
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		
 		simdCount = ( count + 3 ) / 4;
 		for( i = 0; i < simdCount; ++i )
@@ -450,10 +450,10 @@ namespace vul {
 
 
 #ifdef VUL_AOSOA_SSE
-	template< ui32_t n >
-	void pack( AABB< __m128, n > *out, const AABB< f32_t, n > *in, ui32_t count )
+	template< u32 n >
+	void pack( AABB< __m128, n > *out, const AABB< f32, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		__m128 mini[ n ], maxi[ n ];
 #ifdef __GNUC__
 		Point< __m128, n > vmin __attribute__((aligned(16)));
@@ -488,10 +488,10 @@ namespace vul {
 #endif
 		}
 	}
-	template< ui32_t n >
-	void pack( AABB< __m128d, n > *out, const AABB< f64_t, n > *in, ui32_t count )
+	template< u32 n >
+	void pack( AABB< __m128d, n > *out, const AABB< f64, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		__m128d mini[ n ], maxi[ n ];
 #ifdef __GNUC__
 		Point< __m128d, n > vmin __attribute__((aligned(16)));
@@ -524,10 +524,10 @@ namespace vul {
 	}
 #endif
 #ifdef VUL_AOSOA_AVX
-	template< ui32_t n >
-	void pack( AABB< __m256, n > *out, const AABB< f32_t, n > *in, ui32_t count )
+	template< u32 n >
+	void pack( AABB< __m256, n > *out, const AABB< f32, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		__m256 mini[ n ], maxi[ n ];
 #ifdef __GNUC__
 		Point< __m256, n > vmin __attribute__((aligned(32)));
@@ -570,10 +570,10 @@ namespace vul {
 #endif
 		}
 	}
-	template< ui32_t n >
-	void pack( AABB< __m256d, n > *out, const AABB< f64_t, n > *in, ui32_t count )
+	template< u32 n >
+	void pack( AABB< __m256d, n > *out, const AABB< f64, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		__m256d mini[ n ], maxi[ n ];
 #ifdef __GNUC__
 		Point< __m256d, n > vmin __attribute__((aligned(32)));
@@ -610,10 +610,10 @@ namespace vul {
 	}
 #endif
 #ifdef VUL_AOSOA_NEON
-	template< ui32_t n >
-	void pack( AABB< float32x4_t, n > *out, const AABB< f32_t, n > *in, ui32_t count )
+	template< u32 n >
+	void pack( AABB< float32x4_t, n > *out, const AABB< f32, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		float32x4_t mini[ n ], maxi[ n ];
 		
 		Point< float32x4_t, n > vmin __attribute__((aligned(16)));
@@ -647,10 +647,10 @@ namespace vul {
 #endif
 
 #ifdef VUL_AOSOA_SSE
-	template< ui32_t n >
-	void unpack( AABB< f32_t, n > *out, const AABB< __m128, n > *in, ui32_t count )
+	template< u32 n >
+	void unpack( AABB< f32, n > *out, const AABB< __m128, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		
 		simdCount = ( count + 3 ) / 4;
 		for( i = 0; i < simdCount; ++i )
@@ -658,7 +658,7 @@ namespace vul {
 			for( j = 0; j < n; ++j )
 			{
 #ifdef __GNUC__
-				f32_t arr[ 4 ];
+				f32 arr[ 4 ];
 				_mm_store_ps( arr, in[ i ]._min[ j ] );
 				out[ i * 4     ]._min[ j ] = arr[ 3 ];
 				out[ i * 4 + 1 ]._min[ j ] = arr[ 2 ];
@@ -682,10 +682,10 @@ namespace vul {
 			}
 		}
 	}
-	template< ui32_t n >
-	void unpack( AABB< f64_t, n > *out, const AABB< __m128d, n > *in, ui32_t count )
+	template< u32 n >
+	void unpack( AABB< f64, n > *out, const AABB< __m128d, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		
 		simdCount = ( count + 1 ) / 2;
 		for( i = 0; i < simdCount; ++i )
@@ -693,7 +693,7 @@ namespace vul {
 			for( j = 0; j < n; ++j )
 			{
 #ifdef __GNUC__
-				f64_t arr[ 2 ];
+				f64 arr[ 2 ];
 				_mm_store_pd( arr, in[ i ]._min[ j ] );
 				out[ i * 2     ]._min[ j ] = arr[ 1 ];
 				out[ i * 2 + 1 ]._min[ j ] = arr[ 0 ];
@@ -711,10 +711,10 @@ namespace vul {
 	}
 #endif
 #ifdef VUL_AOSOA_AVX
-	template< ui32_t n >
-	void unpack( AABB< f32_t, n > *out, const AABB< __m256, n > *in, ui32_t count )
+	template< u32 n >
+	void unpack( AABB< f32, n > *out, const AABB< __m256, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		
 		simdCount = ( count + 7 ) / 8;
 		for( i = 0; i < simdCount; ++i )
@@ -722,7 +722,7 @@ namespace vul {
 			for( j = 0; j < n; ++j )
 			{
 #ifdef __GNUC__
-				f32_t arr[ 8 ];
+				f32 arr[ 8 ];
 				_mm256_store_ps( arr, in[ i ]._min[ j ] );
 				out[ i * 8     ]._min[ j ] = arr[ 7 ];
 				out[ i * 8 + 1 ]._min[ j ] = arr[ 6 ];
@@ -762,10 +762,10 @@ namespace vul {
 			}
 		}
 	}
-	template< ui32_t n >
-	void unpack( AABB< f64_t, n > *out, const AABB< __m256d, n > *in, ui32_t count )
+	template< u32 n >
+	void unpack( AABB< f64, n > *out, const AABB< __m256d, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		
 		simdCount = ( count + 3 ) / 4;
 		for( i = 0; i < simdCount; ++i )
@@ -773,7 +773,7 @@ namespace vul {
 			for( j = 0; j < n; ++j )
 			{
 #ifdef __GNUC__
-				f64_t arr[ 4 ];
+				f64 arr[ 4 ];
 				_mm256_store_pd( arr, in[ i ]._min[ j ] );
 				out[ i * 4     ]._min[ j ] = arr[ 3 ];
 				out[ i * 4 + 1 ]._min[ j ] = arr[ 2 ];
@@ -800,10 +800,10 @@ namespace vul {
 #endif
 
 #ifdef VUL_AOSOA_NEON
-	template< ui32_t n >
-	void unpack( AABB< f32_t, n > *out, const AABB< float32x4_t, n > *in, ui32_t count )
+	template< u32 n >
+	void unpack( AABB< f32, n > *out, const AABB< float32x4_t, n > *in, u32 count )
 	{
-		ui32_t simdCount, i, j;
+		u32 simdCount, i, j;
 		
 		simdCount = ( count + 3 ) / 4;
 		for( i = 0; i < simdCount; ++i )

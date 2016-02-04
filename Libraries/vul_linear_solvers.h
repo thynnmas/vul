@@ -49,12 +49,6 @@
 #include <math.h>
 #include <assert.h>
 
-#ifdef VUL_LINEAR_SOLVERS_ROW_MAJOR
-#define IDX( A, r, c, n ) A[ ( r ) * ( n ) + ( c ) ]
-#else
-#define IDX( A, r, c, n ) A[ ( c ) * ( n ) + ( r ) ]
-#endif
-
 #ifndef VUL_LINEAR_SOLVERS_ALLOC
 #include <stdlib.h>
 #define VUL_LINEAR_SOLVERS_ALLOC malloc
@@ -65,11 +59,91 @@
 	#endif
 #endif
 
+#ifdef _cplusplus
+extern "C" {
+#endif
 //---------------
-// Helpers
-//
+// Math helpers
 
-#define DECLARE_VECTOR_OP( name, op ) void name( float *out, float *a, float *b, int n );
+#define DECLARE_VECTOR_OP( name, op ) static void name( float *out, float *a, float *b, int n );
+DECLARE_VECTOR_OP( vull__vadd, + )
+DECLARE_VECTOR_OP( vull__vsub, - )
+DECLARE_VECTOR_OP( vull__vmul, * )
+#undef DECLARE_VECTOR_OP
+
+static void vull__vmul_sub( float *out, float *a, float x, float *b, int n );
+static void vull__vmul_add( float *out, float *a, float x, float *b, int n );
+static void vull__vcopy( float *out, float *x, int n );
+static float vull__dot( float *a, float *b, int n );
+static void vull__mmul( float *out, float *A, float *x, int n );
+static void vull__mmul_add( float *out, float *A, float *x, float *b, int n );
+static void vull__forward_substitute( float *out, float *A, float *b, int n );
+static void vull__backward_substitute( float *out, float *A, float *b, int n );
+
+//---------------
+// Solvers
+
+void vul_solve_conjugate_gradient_dense( float *out,
+										 float *A,
+										 float *initial_guess,
+										 float *b,
+										 int n,
+										 int max_iterations,
+										 float tolerance );
+void vul_solve_lu_decomposition_dense( float *out,
+									   float *A,
+									   float *initial_guess,
+									   float *b,
+									   int n,
+									   int max_iterations,
+									   float tolerance );
+/**
+ * Valid for positive-definite symmetric matrices
+ */
+void vul_solve_cholesky_decomposition_dense( float *out,
+											 float *A,
+											 float *initial_guess,
+											 float *b,
+											 int n,
+											 int max_iterations,
+											 float tolerance );
+void vul_solve_qr_decomposition_dense( float *out,
+									   float *A,
+									   float *initial_guess,
+									   float *b,
+									   int n,
+									   int max_iterations,
+									   float tolerance );
+void vul_solve_successive_over_relaxation_dense( float *out,
+												 float *A,
+												 float *initial_guess,
+												 float *b,
+												 float relaxation_factor,
+												 int n,
+												 int max_iterations,
+												 float tolerance );
+
+#ifdef _cplusplus
+		}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+	
+#ifdef VUL_LINEAR_SOLVERS_ROW_MAJOR
+#define IDX( A, r, c, n ) A[ ( r ) * ( n ) + ( c ) ]
+#else
+#define IDX( A, r, c, n ) A[ ( c ) * ( n ) + ( r ) ]
+#endif
+
+//---------------
+// Math helpers
+
+
 #define DEFINE_VECTOR_OP( name, op )\
 	void name( float *out, float *a, float *b, int n )\
 	{\
@@ -78,59 +152,38 @@
 			out[ i ] = a[ i ] op b[ i ];\
 		}\
 	}
+DEFINE_VECTOR_OP( vull__vadd, + )
+DEFINE_VECTOR_OP( vull__vsub, - )
+DEFINE_VECTOR_OP( vull__vmul, * )
 
-#ifdef VUL_DEFINE
-#define VECTOR_OP DEFINE_VECTOR_OP
-#else
-#define VECTOR_OP DECLARE_VECTOR_OP
-#endif
+#undef DEFINE_VECTOR_OP
 
-VECTOR_OP( vull__vadd, + )
-VECTOR_OP( vull__vsub, - )
-VECTOR_OP( vull__vmul, * )
-
-#ifndef VUL_DEFINE
-void vull__vmul_sub( float *out, float *a, float x, float *b, int n );
-#else
-void vull__vmul_sub( float *out, float *a, float x, float *b, int n )
+static void vull__vmul_sub( float *out, float *a, float x, float *b, int n )
 {
 	int i;
 	for( i = 0; i < n; ++i ) {
 		out[ i ] = a[ i ] * x - b[ i ];
 	}
 }
-#endif
 
-#ifndef VUL_DEFINE
-void vull__vmul_add( float *out, float *a, float x, float *b, int n );
-#else
-void vull__vmul_add( float *out, float *a, float x, float *b, int n )
+static void vull__vmul_add( float *out, float *a, float x, float *b, int n )
 {
 	int i;
 	for( i = 0; i < n; ++i ) {
 		out[ i ] = a[ i ] * x + b[ i ];
 	}
 }
-#endif
 		
 
-#ifndef VUL_DEFINE
-void vull__vcopy( float *out, float *x, int n );
-#else
-void vull__vcopy( float *out, float *x, int n )
+static void vull__vcopy( float *out, float *x, int n )
 {
 	int i;
 	for( i = 0; i < n; ++i ) {
 		out[ i ] = x[ i ];
 	}
 }
-#endif
 
-
-#ifndef VUL_DEFINE
-float vull__dot( float *a, float *b, int n );
-#else
-float vull__dot( float *a, float *b, int n )
+static float vull__dot( float *a, float *b, int n )
 {
 	float f;
 	int i;
@@ -141,12 +194,8 @@ float vull__dot( float *a, float *b, int n )
 	}
 	return f;
 }
-#endif
 
-#ifndef VUL_DEFINE
-void vull__mmul( float *out, float *A, float *x, int n );
-#else
-void vull__mmul( float *out, float *A, float *x, int n )
+static void vull__mmul( float *out, float *A, float *x, int n )
 {
 	int r, c;
 	for( r = 0; r < n; ++r ) {
@@ -156,12 +205,8 @@ void vull__mmul( float *out, float *A, float *x, int n )
 		}
 	}
 }
-#endif
 
-#ifndef VUL_DEFINE
-void vull__mmul_add( float *out, float *A, float *x, float *b, int n );
-#else
-void vull__mmul_add( float *out, float *A, float *x, float *b, int n )
+static void vull__mmul_add( float *out, float *A, float *x, float *b, int n )
 {
 	int r, c;
 	for( r = 0; r < n; ++r ) {
@@ -171,12 +216,8 @@ void vull__mmul_add( float *out, float *A, float *x, float *b, int n )
 		}
 	}
 }
-#endif
 
-#ifndef VUL_DEFINE
-void vull__forward_substitute( float *out, float *A, float *b, int n );
-#else
-void vull__forward_substitute( float *out, float *A, float *b, int n )
+static void vull__forward_substitute( float *out, float *A, float *b, int n )
 {
 	int r, c;
 
@@ -188,12 +229,8 @@ void vull__forward_substitute( float *out, float *A, float *b, int n )
 		out[ r ] = sum / IDX( A, r, r, n );
 	}
 }
-#endif
 
-#ifndef VUL_DEFINE
-void vull__backward_substitute( float *out, float *A, float *b, int n );
-#else
-void vull__backward_substitute( float *out, float *A, float *b, int n )
+static void vull__backward_substitute( float *out, float *A, float *b, int n )
 {
 	int r, c;
 
@@ -205,21 +242,10 @@ void vull__backward_substitute( float *out, float *A, float *b, int n )
 		out[ r ] = sum / IDX( A, r, r, n );
 	}
 }
-#endif
 
-//----------------------------------------------
-// Optimization functions (the API)
-//
+//---------------
+// Solvers
 
-#ifndef VUL_DEFINE
-void vul_solve_conjugate_gradient_dense( float *out,
-										 float *A,
-										 float *initial_guess,
-										 float *b,
-										 int n,
-										 int max_iterations,
-										 float tolerance );
-#else
 void vul_solve_conjugate_gradient_dense( float *out,
 										 float *A,
 										 float *initial_guess,
@@ -265,17 +291,7 @@ void vul_solve_conjugate_gradient_dense( float *out,
 	VUL_LINEAR_SOLVERS_FREE( r );
 	VUL_LINEAR_SOLVERS_FREE( Ap );
 }
-#endif
 
-#ifndef VUL_DEFINE
-void vul_solve_lu_decomposition_dense( float *out,
-									   float *A,
-									   float *initial_guess,
-									   float *b,
-									   int n,
-									   int max_iterations,
-									   float tolerance );
-#else
 void vul_solve_lu_decomposition_dense( float *out,
 									   float *A,
 									   float *initial_guess,
@@ -386,20 +402,7 @@ void vul_solve_lu_decomposition_dense( float *out,
 	VUL_LINEAR_SOLVERS_FREE( scale );
 	VUL_LINEAR_SOLVERS_FREE( indices );
 }
-#endif
 
-/**
- * Valid for positive-definite symmetric matrices
- */
-#ifndef VUL_DEFINE
-void vul_solve_cholesky_decomposition_dense( float *out,
-											 float *A,
-											 float *initial_guess,
-											 float *b,
-											 int n,
-											 int max_iterations,
-											 float tolerance );
-#else
 void vul_solve_cholesky_decomposition_dense( float *out,
 											 float *A,
 											 float *initial_guess,
@@ -480,17 +483,7 @@ void vul_solve_cholesky_decomposition_dense( float *out,
 	VUL_LINEAR_SOLVERS_FREE( D );
 	VUL_LINEAR_SOLVERS_FREE( r );
 }
-#endif
 
-#ifndef VUL_DEFINE
-void vul_solve_qr_decomposition_dense( float *out,
-									   float *A,
-									   float *initial_guess,
-									   float *b,
-									   int n,
-									   int max_iterations,
-									   float tolerance );
-#else
 void vul_solve_qr_decomposition_dense( float *out,
 									   float *A,
 									   float *initial_guess,
@@ -600,18 +593,7 @@ void vul_solve_qr_decomposition_dense( float *out,
 	VUL_LINEAR_SOLVERS_FREE( c );
 	VUL_LINEAR_SOLVERS_FREE( r );
 }
-#endif
 
-#ifndef VUL_DEFINE
-void vul_solve_successive_over_relaxation_dense( float *out,
-												 float *A,
-												 float *initial_guess,
-												 float *b,
-												 float relaxation_factor,
-												 int n,
-												 int max_iterations,
-												 float tolerance );
-#else
 void vul_solve_successive_over_relaxation_dense( float *out,
 												 float *A,
 												 float *initial_guess,
@@ -658,12 +640,11 @@ void vul_solve_successive_over_relaxation_dense( float *out,
 	
 	VUL_LINEAR_SOLVERS_FREE( r );
 }
-#endif
-
 
 #undef IDX
-#undef DECLARE_VECTOR_OP
-#undef DEFINE_VECTOR_OP
-#undef VECTOR_OP
+
+#ifdef _cplusplus
+}
+#endif
 
 #endif

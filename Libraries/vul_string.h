@@ -15,6 +15,9 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
 */
+#ifndef VUL_STRING_H
+#define VUL_STRING_H
+
 #include <string.h>
 #include <stdio.h>
 #ifndef VUL_OSX
@@ -25,28 +28,111 @@
 
 typedef wchar_t vul_wchar;
 
-typedef struct vul__string_search_table
+struct vul__string_search_table
 {
 	size_t size;
 	int *entries;
-} vul__string_search_table;
+};
 
-
-// Define this in ONE of your C/C++ files
-// #define VUL_DEFINE
-
+#ifdef _cplusplus
+extern "C" {
+#endif
 //--------------------------
-// UTF-8 handline
+// UTF-8 handling
+//
+/*
+ * Convert a utf8 string to utf16. The destination buffer must be allocated,
+ * n is the maximal length of the output string.
+ */
+vul_wchar *vul_wchar_from_utf8( vul_wchar *buffer, char *ostr, s32 n );
+/*
+ * Convert a utf16 string to utf8. The destination buffer must be allocated,
+ * n is the maximal length of the output string.
+ */
+char *vul_wchar_to_utf8( char *buffer, vul_wchar *str, s32 n );
+
+/*
+ * Convert a utf8 string to utf16. Strings up to 4096 characters, 
+ * lifetime until next call to this function. Not threadsafe!
+ */
+vul_wchar *vul_wchar_from_utf8_large( char *str );
+/*
+ * Convert a utf8 string to utf16. Strings up to 64 characters, 
+ * lifetime until next call to this function. Not threadsafe!
+ */
+vul_wchar *vul_wchar_from_utf8_small( char *str );
+/*
+ * Convert a utf16 string to utf8. Strings up to 4096 characters, 
+ * lifetime until next call to this function. Not threadsafe!
+ */
+char *vul_wchar_to_utf8_large( vul_wchar *str );
+/*
+ * Convert a utf16 string to utf8. Strings up to 64 characters, 
+ * lifetime until next call to this function. Not threadsafe!
+ */
+char *vul_wchar_to_utf8_small( vul_wchar *str );
+
+//--------------------------------------------
+// String searching / pattern matching.
+//
+/**
+ * Search for a pattern in a string. Uses Knuth-Morris-Pratt.
+ * Returns the zero-based index of the first character of the match,
+ * or the length of the string if not found.
+ */
+size_t vul_string_search( const char *str, const char *pattern );
+/**
+* Search for a pattern in a string. Uses Knuth-Morris-Pratt.
+* Returns the zero-based index of the first character of the match,
+* or the length of the string if not found.
+*/
+size_t vul_wstring_search( const vul_wchar *str, const vul_wchar *pattern );
+//-----------
+// Helpers
+
+static void vul__string_calculate_search_table( const char *pattern, struct vul__string_search_table *table );
+static void vul__wstring_calculate_search_table( const vul_wchar *pattern, struct vul__string_search_table *table );
+static size_t vul__string_search( const char *str, const char *pattern, size_t str_len, struct vul__string_search_table *table );
+static size_t vul__wstring_search( const vul_wchar *str, const vul_wchar *pattern, size_t str_len, struct vul__string_search_table *table );
+
+//-----------------------------
+// Useful substring functions
 //
 
-#ifndef VUL_DEFINE
-vul_wchar *vul__wchar_from_utf8( vul_wchar *buffer, char *ostr, int n );
-#else
-vul_wchar *vul__wchar_from_utf8( vul_wchar *buffer, char *ostr, int n)
+/**
+ * Returns a pointer to the first character after the last occurance of divisor.
+ */
+char *vul_string_divide_get_last( const char *str, const char divisor );
+/**
+ * Returns a pointer to the first character after the last occurance of divisor.
+ */
+vul_wchar *vul_wstring_divide_get_last( const vul_wchar *str, const vul_wchar divisor );
+/**
+ * Returns a pointer to the last character before the frist occurance of divisor.
+ */
+char *vul_string_divide_get_first( const char *str, const char divisor );
+/**
+ * Returns a pointer to the first character after the last occurance of divisor.
+ */
+vul_wchar *vul_wstring_divide_get_first( const vul_wchar *str, const vul_wchar divisor );
+
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+vul_wchar *vul_wchar_from_utf8( vul_wchar *buffer, char *ostr, s32 n)
 {
-   unsigned char *str = ( unsigned char* ) ostr;
-   unsigned int c;
-   int i=0;
+   u8 *str = ( u8* ) ostr;
+   u32 c;
+   s32 i = 0;
+
    --n;
    while (*str) {
       if (i >= n)
@@ -91,14 +177,11 @@ vul_wchar *vul__wchar_from_utf8( vul_wchar *buffer, char *ostr, int n)
    buffer[i] = 0;
    return buffer;
 }
-#endif
 
-#ifndef VUL_DEFINE
-char *vul__wchar_to_utf8( char *buffer, vul_wchar *str, int n );
-#else
-char *vul__wchar_to_utf8( char *buffer, vul_wchar *str, int n )
+char *vul_wchar_to_utf8( char *buffer, vul_wchar *str, s32 n )
 {
-   int i=0;
+   s32 i = 0;
+
    --n;
    while (*str) {
       if (*str < 0x80) {
@@ -131,59 +214,35 @@ char *vul__wchar_to_utf8( char *buffer, vul_wchar *str, int n )
    buffer[i] = 0;
    return buffer;
 }
-#endif
 
-#ifndef VUL_DEFINE
-vul_wchar *vul_wchar_from_utf8_large( char *str );
-#else
 vul_wchar *vul_wchar_from_utf8_large( char *str )
 {
 	static vul_wchar buffer[ 4096 ];
-	return vul__wchar_from_utf8( buffer, str, 4096 );
+	return vul_wchar_from_utf8( buffer, str, 4096 );
 }
-#endif
 
-#ifndef VUL_DEFINE
-vul_wchar *vul_wchar_from_utf8_small( char *str );
-#else
 vul_wchar *vul_wchar_from_utf8_small( char *str )
 {
 	static vul_wchar buffer[ 64 ];
-	return vul__wchar_from_utf8( buffer, str, 64 );
+	return vul_wchar_from_utf8( buffer, str, 64 );
 }
-#endif
 
-#ifndef VUL_DEFINE
-char *vul_wchar_to_utf8_large( vul_wchar *str );
-#else
 char *vul_wchar_to_utf8_large( vul_wchar *str )
 {
 	static char buffer [ 4096 ];
-	return vul__wchar_to_utf8( buffer, str, 4096 );
+	return vul_wchar_to_utf8( buffer, str, 4096 );
 }
-#endif
 
-#ifndef VUL_DEFINE
-char *vul_wchar_to_utf8_small( vul_wchar *str );
-#else
 char *vul_wchar_to_utf8_small( vul_wchar *str )
 {
 	static char buffer[ 64 ];
-	return vul__wchar_to_utf8( buffer, str, 64 );
+	return vul_wchar_to_utf8( buffer, str, 64 );
 }
-#endif
 
-//--------------------------------------------
-// String searching / pattern matching.
-//
-
-#ifndef VUL_DEFINE
-void vul__string_calculate_search_table( const char *pattern, vul__string_search_table *table );
-#else
-void vul__string_calculate_search_table( const char *pattern, vul__string_search_table *table )
+static void vul__string_calculate_search_table( const char *pattern, struct vul__string_search_table *table )
 {
-	unsigned int pos;
-	int cnd;
+	u32 pos;
+	s32 cnd;
 
 	pos = 2;
 	cnd = 0;
@@ -201,15 +260,11 @@ void vul__string_calculate_search_table( const char *pattern, vul__string_search
 		}
 	}
 }
-#endif
 
-#ifndef VUL_DEFINE
-void vul__wstring_calculate_search_table( const vul_wchar *pattern, vul__string_search_table *table );
-#else
-void vul__wstring_calculate_search_table( const vul_wchar *pattern, vul__string_search_table *table )
+static void vul__wstring_calculate_search_table( const vul_wchar *pattern, struct vul__string_search_table *table )
 {
-	unsigned int pos;
-	int cnd;
+	u32 pos;
+	s32 cnd;
 
 	pos = 2;
 	cnd = 0;
@@ -227,12 +282,8 @@ void vul__wstring_calculate_search_table( const vul_wchar *pattern, vul__string_
 		}
 	}
 }
-#endif
 
-#ifndef VUL_DEFINE
-size_t vul__string_search( const char *str, const char *pattern, size_t str_len, vul__string_search_table *table );
-#else
-size_t vul__string_search( const char *str, const char *pattern, size_t str_len, vul__string_search_table *table )
+static size_t vul__string_search( const char *str, const char *pattern, size_t str_len, struct vul__string_search_table *table )
 {
 	size_t m, i;
 
@@ -254,12 +305,8 @@ size_t vul__string_search( const char *str, const char *pattern, size_t str_len,
 	}
 	return str_len;
 }
-#endif
 
-#ifndef VUL_DEFINE
-size_t vul__wstring_search( const vul_wchar *str, const vul_wchar *pattern, size_t str_len, vul__string_search_table *table );
-#else
-size_t vul__wstring_search( const vul_wchar *str, const vul_wchar *pattern, size_t str_len, vul__string_search_table *table )
+static size_t vul__wstring_search( const vul_wchar *str, const vul_wchar *pattern, size_t str_len, struct vul__string_search_table *table )
 {
 	size_t m, i;
 
@@ -281,20 +328,11 @@ size_t vul__wstring_search( const vul_wchar *str, const vul_wchar *pattern, size
 	}
 	return str_len;
 }
-#endif
 
-/**
- * Search for a pattern in a string. Uses Knuth-Morris-Pratt.
- * Returns the zero-based index of the first character of the match,
- * or the length of the string if not found.
- */
-#ifndef VUL_DEFINE
-size_t vul_string_search( const char *str, const char *pattern );
-#else
 size_t vul_string_search( const char *str, const char *pattern )
 {
 	size_t ret, lenS;
-	vul__string_search_table table;
+	struct vul__string_search_table table;
 
 	lenS = strlen( str );
 
@@ -314,16 +352,7 @@ size_t vul_string_search( const char *str, const char *pattern )
 	
 	return ret;
 }
-#endif
 
-/**
-* Search for a pattern in a string. Uses Knuth-Morris-Pratt.
-* Returns the zero-based index of the first character of the match,
-* or the length of the string if not found.
-*/
-#ifndef VUL_DEFINE
-size_t vul_wstring_search( const vul_wchar *str, const vul_wchar *pattern );
-#else
 size_t vul_wstring_search( const vul_wchar *str, const vul_wchar *pattern )
 {
 	size_t ret, lenS;
@@ -347,18 +376,7 @@ size_t vul_wstring_search( const vul_wchar *str, const vul_wchar *pattern )
 	
 	return ret;
 }
-#endif
 
-//-----------------------------
-// Useful substring functions
-//
-
-/**
- * Returns a pointer to the first character after the last occurance of divisor.
- */
-#ifndef VUL_DEFINE
-char *vul_string_divide_get_last( const char *str, const char divisor );
-#else
 char *vul_string_divide_get_last( const char *str, const char divisor )
 {
 	size_t index;
@@ -369,12 +387,8 @@ char *vul_string_divide_get_last( const char *str, const char divisor )
 		--index;
 
 	return ( char* )( str + index );
-} 
-#endif
+}
 
-#ifndef VUL_DEFINE
-vul_wchar *vul_wstring_divide_get_last( const vul_wchar *str, const vul_wchar divisor );
-#else
 vul_wchar *vul_wstring_divide_get_last( const vul_wchar *str, const vul_wchar divisor )
 {
 	size_t index;
@@ -386,14 +400,7 @@ vul_wchar *vul_wstring_divide_get_last( const vul_wchar *str, const vul_wchar di
 
 	return ( vul_wchar* )( str + index );
 }
-#endif
 
-/**
- * Returns a pointer to the last character before the frist occurance of divisor.
- */
-#ifndef VUL_DEFINE
-char *vul_string_divide_get_first( const char *str, const char divisor );
-#else
 char *vul_string_divide_get_first( const char *str, const char divisor )
 {
 	size_t index, len;
@@ -406,11 +413,6 @@ char *vul_string_divide_get_first( const char *str, const char divisor )
 
 	return ( char* )( str + index );
 } 
-#endif
-
-#ifndef VUL_DEFINE
-vul_wchar *vul_wstring_divide_get_first( const vul_wchar *str, const vul_wchar divisor );
-#else
 vul_wchar *vul_wstring_divide_get_first( const vul_wchar *str, const vul_wchar divisor )
 {
 	size_t index, len;
@@ -423,4 +425,9 @@ vul_wchar *vul_wstring_divide_get_first( const vul_wchar *str, const vul_wchar d
 
 	return ( vul_wchar* )( str + index );
 }
+
+#ifdef _cplusplus
+}
+#endif
+
 #endif

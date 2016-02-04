@@ -33,29 +33,29 @@ namespace vul {
 	/* 
 	 * Trace a given bezier curve at a given interval and call callback for each point.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	void bezier_trace_linear( void ( *callback )( Vector< T, n > pt ), 
-									  Point< T, n > *pts, i32_t pt_count,
+									  Point< T, n > *pts, s32 pt_count,
 									  T step );
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	void bezier_trace_quad( void ( *callback )( Vector< T, n > pt ), 
-									Point< T, n > *pts, i32_t pt_count,
+									Point< T, n > *pts, s32 pt_count,
 									T step );
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	void bezier_trace_cubic( void ( *callback )( Vector< T, n > pt ), 
-									 Point< T, n > *pts, i32_t pt_count,
+									 Point< T, n > *pts, s32 pt_count,
 									 T step );
 
 	//---------------
 	// Definitions
 	//
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	void bezier_trace_linear( void ( *callback )( Vector< T, n > pt ), 
-									  Point< T, n > *pts, i32_t pt_count,
+									  Point< T, n > *pts, s32 pt_count,
 									  T step )
 	{
 		assert( pts );
-		for( i32_t i = 0; i < pt_count - 1; ++i ) {
+		for( s32 i = 0; i < pt_count - 1; ++i ) {
 			T d = norm( pts[ i + 1 ] - pts[ i ] );
 			for( T t = 0; t < d; t += step ) {
 				callback( lerp( pts[ i ], pts[ i + 1 ], t / d ) );
@@ -63,13 +63,13 @@ namespace vul {
 		}
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	void bezier_trace_quad( void ( *callback )( Vector< T, n > pt ), 
-									Point< T, n > *pts, i32_t pt_count,
+									Point< T, n > *pts, s32 pt_count,
 									T step )
 	{
 		assert( pts );
-		for( i32_t i = 0; i < pt_count - 2; i += 2 ) {
+		for( s32 i = 0; i < pt_count - 2; i += 2 ) {
 			T d = norm( pts[ i + 2 ] - pts[ i ] );
 			for( T t = 0; t < d; t += step ) {
 				T ft = t / d;
@@ -80,13 +80,13 @@ namespace vul {
 		}
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	void bezier_trace_cubic( void ( *callback )( Vector< T, n > pt ), 
-									 Point< T, n > *pts, i32_t pt_count,
+									 Point< T, n > *pts, s32 pt_count,
 									 T step )
 	{
 		assert( pts );
-		for( i32_t i = 0; i < pt_count - 3; i += 3 ) {
+		for( s32 i = 0; i < pt_count - 3; i += 3 ) {
 			T d = norm( pts[ i + 3 ] - pts[ i ] );
 			for( T t = 0; t < d; t += step ) {
 				T ft = t / d;

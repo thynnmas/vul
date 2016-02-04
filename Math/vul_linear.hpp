@@ -56,13 +56,13 @@ namespace vul {
 
 	// This exists to speed up common operations but isn't really needed elsewhere....
 	// @TODO(thynn): Just move it to vec/mat??
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	void mulAdd( Vector< T, n > &out,
 				 const Matrix< T, n, n > &A, 
 				 const Vector< T, n > &x,
 				 const Vector< T, n > &b )
 	{
-		i32_t i, j;
+		s32 i, j;
 		for( j = 0; j < n; ++j ) {
 			out.data[ j ] = b.data[ j ];
 			for( i = 0; i < n; ++i ) {
@@ -71,12 +71,12 @@ namespace vul {
 		}
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	void forwardSubstitute( Vector< T, n > &out,
 							const Matrix< T, n, n > &A,
 							const Vector< T, n > &b )
 	{
-		i32_t r, c;
+		s32 r, c;
 		for( r = 0; r < n; ++r ) {
 			T sum = b.data[ r ];
 			for( c = 0; c < r; ++c ) {
@@ -86,12 +86,12 @@ namespace vul {
 		}
 	}
 	
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	void backwardSubstitute( Vector< T, n > &out,
 							const Matrix< T, n, n > &A,
 							const Vector< T, n > &b )
 	{
-		i32_t r, c;
+		s32 r, c;
 		for( r = n - 1; r >= 0; --r ) {
 			T sum = b.data[ r ];
 			for( c = r + 1; c < n; ++c ) {
@@ -105,16 +105,16 @@ namespace vul {
 	// Linear solvers
 	//
 	
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > solveConjugateGradient( const Matrix< T, n, n > &A, 
 										   const Vector< T, n > &guess,
 										   const Vector< T, n > &b,
-										   i32_t maxIterations,
+										   s32 maxIterations,
 										   T tolerance )
 	{
 		Vector< T, n > p, r, Ap, x;
 		T rd, rd2, alpha, beta;
-		i32_t i;
+		s32 i;
 
 		x = guess;
 		mulAdd( r, A, x, -b );
@@ -140,18 +140,18 @@ namespace vul {
 		return x;
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > solveLUDecomposition( Matrix< T, n, n > &A,
 										 const Vector< T, n > &guess,
 										 const Vector< T, n > &b,
-										 i32_t maxIterations,
+										 s32 maxIterations,
 										 T tolerance )
 	{
 		Vector< T, n > x, r, scale;
-		Vector< i32_t, n > indices;
+		Vector< s32, n > indices;
 		Matrix< T, n, n > LU;		
 		T sum, rd, rd2, tmp, largest;
-		i32_t i, j, k, imax, iold;
+		s32 i, j, k, imax, iold;
 
 		/* Crout's LUP decomposition (without pivoting/scaling, which means it's unstable and bad...@TODO(thynn): Pivoting and scaling!) */
 		for( i = 0; i < n; ++i ) {
@@ -240,17 +240,17 @@ namespace vul {
 		return x;
 	}
 	
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > solveCholeskyDecomposition( Matrix< T, n, n > &A,
 											   const Vector< T, n > &guess,
 											   const Vector< T, n > &b,
-											   i32_t maxIterations,
+											   s32 maxIterations,
 											   T tolerance )
 	{
 		Vector< T, n > x, r;
 		Matrix< T, n, n > D;
 		T sum, rd, rd2;
-		i32_t i, j, k;
+		s32 i, j, k;
 
 		/* Copy the matrix to the work-matrix (@TODO(thynn): This should either be a straight memcpy, or only on the values we need to copy (and weaved in below?)) */
 		for( i = 0; i < n; ++i ) {
@@ -314,18 +314,18 @@ namespace vul {
 		return x;
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > solveQRDecomposition( Matrix< T, n, n > &A,
 										 const Vector< T, n > &guess,
 										 const Vector< T, n > &b,
-										 i32_t maxIterations,
+										 s32 maxIterations,
 										 T tolerance )
 	{
 		Vector< T, n > x, r, c, d;
 		Matrix< T, n, n > QR;		
 		T scale, sigma, tau, sum, rd, rd2;
-		i32_t i, j, k;
-		bool32_t singular;
+		s32 i, j, k;
+		b32 singular;
 
 		/* Copy the matrix to the work-matrix (@TODO(thynn): This should either be a straight memcpy, or only on the values we need to copy (and weaved in below?)) */
 		for( i = 0; i < n; ++i ) {
@@ -413,16 +413,16 @@ namespace vul {
 		return x;
 	}
 	
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > solveSOR( Matrix< T, n, n > &A,
 							 const Vector< T, n > &guess,
 							 const Vector< T, n > &b,
 							 T relaxationFactor,
-							 i32_t maxIterations,
+							 s32 maxIterations,
 							 T tolerance )
 	{
 		Vector< T, n > x, r;
-		i32_t i, j, k;
+		s32 i, j, k;
 		T omega, rd, rd2;
 		
 		x = guess;

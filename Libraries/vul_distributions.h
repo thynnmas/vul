@@ -2,8 +2,8 @@
  * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file contains several number distribution functions.
- * -vul_halton_t: Halton series of a given base number. Distributes values 
- *					uniformely in the range [0, 1]
+ * -vul_halton: Halton series of a given base number. Distributes values 
+ *				uniformely in the range [0, 1]
  * 
  * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
@@ -27,21 +27,43 @@
 /**
  * State of a vul_halton_parir
  */
-typedef struct {
-	f32_t value;
-	f32_t inv_base;
-} vul_halton_t;
+typedef struct vul_halton {
+	f32 value;
+	f32 inv_base;
+} vul_halton;
 
+#ifdef _cplusplus
+extern "C" {
+#endif
 /**
- * Create a vul_halton_t state.  Uses Thomas Wang's integer hash to 
+ * Create a vul_halton state.  Uses Thomas Wang's integer hash to 
  * initialize values from the seed.
  */
-#ifndef VUL_DEFINE
-vul_halton_t *vul_halton_series_create( ui32_t base1, ui32_t seed );
-#else
-vul_halton_t *vul_halton_series_create( ui32_t base1, ui32_t seed )
+vul_halton *vul_halton_series_create( u32 base1, u32 seed );
+/**
+ * Destroy a vul_halton_pair state.
+ */
+void vul_halton_series_destroy( vul_halton *r );
+/**
+ * Advances the state of the halton series and return 
+ * the next value.
+ */
+f32 vul_halton_series_next( vul_halton *rng );
+
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+vul_halton *vul_halton_series_create( u32 base1, u32 seed )
 {
-	vul_halton_t *r = ( vul_halton_t* )malloc( sizeof( vul_halton_t ) );
+	vul_halton *r = ( vul_halton* )malloc( sizeof( vul_halton ) );
 	assert( r != NULL );
 
 	seed = (seed ^ 61) ^ (seed >> 16);
@@ -49,43 +71,28 @@ vul_halton_t *vul_halton_series_create( ui32_t base1, ui32_t seed )
 	seed = seed ^ (seed >> 4);
 	seed *= 0x27d4eb2d;
 	seed = seed ^ (seed >> 15);
-	r->value = ( f32_t )seed / 4294967295.f;
+	r->value = ( f32 )seed / 4294967295.f;
 
 	r->inv_base = 1.f / base1;
 
 	return r;
 }
-#endif
 
-/**
- * Destroy a vul_halton_pair state.
- */
-#ifndef VUL_DEFINE
-void vul_halton_series_destroy( vul_halton_t *r );
-#else
-void vul_halton_series_destroy( vul_halton_t *r )
+void vul_halton_series_destroy( vul_halton *r )
 {
 	assert( r != NULL );
 	free( r );
 }
-#endif
 
-/**
- * Advances the state of the halton series and return 
- * the next value.
- */
-#ifndef VUL_DEFINE
-f32_t vul_halton_series_next( vul_halton_t *rng );
-#else
-f32_t vul_halton_series_next( vul_halton_t *rng )
+f32 vul_halton_series_next( vul_halton *rng )
 {
 	assert( rng != NULL );
 	
-	f32_t r = 1.f - rng->value - 0.0000001f;
+	f32 r = 1.f - rng->value - 0.0000001f;
 	if ( rng->inv_base < r ) {
 		rng->value += rng->inv_base;
 	} else {
-		f32_t h = rng->inv_base, h2;
+		f32 h = rng->inv_base, h2;
 		do{
 			h2 = h; 
 			h *= rng->inv_base;
@@ -93,6 +100,9 @@ f32_t vul_halton_series_next( vul_halton_t *rng )
 		rng->value += h2 + h - 1.f;
 	}
 	return rng->value;
+}
+
+#ifdef _cplusplus
 }
 #endif
 

@@ -30,7 +30,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 #ifndef VUL_COMPRESS_H
 #define VUL_COMPRESS_H
 
@@ -53,64 +52,20 @@
 												   n < 0x200000 ? 3 : \
 												   n < 0x8000000? 4 : 5 )
 
+#ifdef _cplusplus
+extern "C" {
+#endif
 /**
  * Helper function of vul_compress_rle. Encodes the given number in a series
  * of 7-bit numbers where the 8th bit (most significant) indicates if another number
  * follows.
  */
-#ifndef VUL_DEFINE
-void vul__compress_rle_encode_number( ui8_t *buf, ui32_t num );
-#else
-void vul__compress_rle_encode_number( ui8_t *buf, ui32_t num )
-{
-	if( num < 0x80 ) {
-		buf[ 0 ] = ( ui8_t )( num & 0x7f );
-	} else if( num < 0x4000 ) {
-		buf[ 1 ] = ( ui8_t )( ( num >> 7 ) & 0x7f ) | ( ui8_t )0x80;
-		buf[ 0 ] = ( ui8_t )( num & 0x7f );
-	} else if( num < 0x200000 ) {
-		buf[ 2 ] = ( ui8_t )( ( num >> 14 ) & 0x7f ) | ( ui8_t )0x80;
-		buf[ 1 ] = ( ui8_t )( ( num >> 7 ) & 0x7f ) | ( ui8_t )0x80;
-		buf[ 0 ] = ( ui8_t )( num & 0x7f );
-	} else if( num < 0x8000000 ) {
-		buf[ 3 ] = ( ui8_t )( ( num >> 21 ) & 0x7f ) | ( ui8_t )0x80;
-		buf[ 2 ] = ( ui8_t )( ( num >> 14 ) & 0x7f ) | ( ui8_t )0x80;
-		buf[ 1 ] = ( ui8_t )( ( num >> 7 ) & 0x7f ) | ( ui8_t )0x80;
-		buf[ 0 ] = ( ui8_t )( num & 0x7f );
-	} else {
-		buf[ 4 ] = ( ui8_t )( ( num >> 28 ) & 0x7f ) | ( ui8_t )0x80;
-		buf[ 3 ] = ( ui8_t )( ( num >> 21 ) & 0x7f ) | ( ui8_t )0x80;
-		buf[ 2 ] = ( ui8_t )( ( num >> 14 ) & 0x7f ) | ( ui8_t )0x80;
-		buf[ 1 ] = ( ui8_t )( ( num >> 7 ) & 0x7f ) | ( ui8_t )0x80;
-		buf[ 0 ] = ( ui8_t )( num & 0x7f );
-	}
-}
-#endif
-
+void vul__compress_rle_encode_number( u8 *buf, u32 num );
 /**
  * Helper function of vul_decompress_rle. Decodes the number in our RLE
  * format inside the given buffer.
  */
-#ifndef VUL_DEFINE
-ui32_t vul__compress_rle_decode_number( const ui8_t *buf );
-#else
-ui32_t vul__compress_rle_decode_number( const ui8_t *buf )
-{
-	ui32_t i, n;
-	
-	n = 0;
-	for( i = 0; i < 5; ++i )
-	{
-		n += ( ui32_t )( buf[ i ] & 0x7f );
-		if( !( buf[ i ] & 0x80 ) ){
-			break;
-		}
-	}
-
-	return n;
-}
-#endif
-
+u32 vul__compress_rle_decode_number( const u8 *buf );
 /**
  * Run Length encoding. The length of a sequence is encoded in a series
  * of 8-bit numbers, where the most-significant bit is set only if another
@@ -118,20 +73,90 @@ ui32_t vul__compress_rle_decode_number( const ui8_t *buf )
  * Dynamically allocates (malloc) the destination buffer and tightens it before returning.
  * The size of the returned buffer is written to the parameter dst_size.
  */
-#ifndef VUL_DEFINE
-const ui8_t *vul_compress_rle( const ui8_t *src, ui32_t src_size, ui32_t *dst_size );
-#else
-const ui8_t *vul_compress_rle( const ui8_t *src, ui32_t src_size, ui32_t *dst_size )
+const u8 *vul_compress_rle( const u8 *src, u32 src_size, u32 *dst_size );
+/**
+ * Run Length encoding. The length of a sequence is encoded in a series
+ * of 8-bit numbers, where the most-significant bit is set only if another
+ * number follows. Length of the source buffer is currently limited by 32-bit numbers.
+ * Takes the destination buffer as an input. If it is found too small, an assert will fail.
+ */
+void vul_compress_rle_inplace( u8 *dst, u32 dst_size, const u8 *src, u32 src_size );
+
+/**
+ * Run Length decoding.
+ * Dynamically allocates (malloc) the destination buffer and tightens it before returning.
+ * The size of the returned buffer is written to the parameter dst_size.
+ */
+const u8 *vul_decompress_rle( const u8 *src, u32 src_size, u32 *dst_size );
+/**
+ * Run Length decoding.
+ * Takes the destination buffer as an argument. If it is found too small an assert will fail.
+ */
+void vul_decompress_rle_inplace( u8 *dst, u32 dst_size, const u8 *src, u32 src_size );
+
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+void vul__compress_rle_encode_number( u8 *buf, u32 num )
 {
-	ui8_t *dst;
-	ui8_t last;
-	ui32_t local_count, total_count, dst_index, bytes;
+	if( num < 0x80 ) {
+		buf[ 0 ] = ( u8 )( num & 0x7f );
+	} else if( num < 0x4000 ) {
+		buf[ 1 ] = ( u8 )( ( num >> 7 ) & 0x7f ) | ( u8 )0x80;
+		buf[ 0 ] = ( u8 )( num & 0x7f );
+	} else if( num < 0x200000 ) {
+		buf[ 2 ] = ( u8 )( ( num >> 14 ) & 0x7f ) | ( u8 )0x80;
+		buf[ 1 ] = ( u8 )( ( num >> 7 ) & 0x7f ) | ( u8 )0x80;
+		buf[ 0 ] = ( u8 )( num & 0x7f );
+	} else if( num < 0x8000000 ) {
+		buf[ 3 ] = ( u8 )( ( num >> 21 ) & 0x7f ) | ( u8 )0x80;
+		buf[ 2 ] = ( u8 )( ( num >> 14 ) & 0x7f ) | ( u8 )0x80;
+		buf[ 1 ] = ( u8 )( ( num >> 7 ) & 0x7f ) | ( u8 )0x80;
+		buf[ 0 ] = ( u8 )( num & 0x7f );
+	} else {
+		buf[ 4 ] = ( u8 )( ( num >> 28 ) & 0x7f ) | ( u8 )0x80;
+		buf[ 3 ] = ( u8 )( ( num >> 21 ) & 0x7f ) | ( u8 )0x80;
+		buf[ 2 ] = ( u8 )( ( num >> 14 ) & 0x7f ) | ( u8 )0x80;
+		buf[ 1 ] = ( u8 )( ( num >> 7 ) & 0x7f ) | ( u8 )0x80;
+		buf[ 0 ] = ( u8 )( num & 0x7f );
+	}
+}
+
+u32 vul__compress_rle_decode_number( const u8 *buf )
+{
+	u32 i, n;
+	
+	n = 0;
+	for( i = 0; i < 5; ++i )
+	{
+		n += ( u32 )( buf[ i ] & 0x7f );
+		if( !( buf[ i ] & 0x80 ) ){
+			break;
+		}
+	}
+
+	return n;
+}
+
+const u8 *vul_compress_rle( const u8 *src, u32 src_size, u32 *dst_size )
+{
+	u8 *dst;
+	u8 last;
+	u32 local_count, total_count, dst_index, bytes;
 	
 	assert( src != NULL );
 	assert( src_size != 0 );
 
 	*dst_size = src_size / 16; // Somewhat optimistic first size estimate
-	dst = ( ui8_t* )malloc( *dst_size );
+	dst = ( u8* )malloc( *dst_size );
 	assert( dst != NULL ); // Make sure malloc doesn't fail
 
 	total_count = 0;
@@ -145,7 +170,7 @@ const ui8_t *vul_compress_rle( const ui8_t *src, ui32_t src_size, ui32_t *dst_si
 			bytes = vul__compress_rle_char_count_needed( local_count );
 			if ( dst_index + bytes + 1 > *dst_size ) {
 				*dst_size *= 2;	// Less optimistic, but we'll shrink it after, so rather go high here.
-				dst = ( ui8_t* )realloc( dst, *dst_size );
+				dst = ( u8* )realloc( dst, *dst_size );
 				assert( dst != NULL ); // Make sure realloc doesn't fail
 			}
 			vul__compress_rle_encode_number( &dst[ dst_index ], local_count );
@@ -162,7 +187,7 @@ const ui8_t *vul_compress_rle( const ui8_t *src, ui32_t src_size, ui32_t *dst_si
 	bytes = vul__compress_rle_char_count_needed( local_count );
 	if ( dst_index + bytes + 1 > *dst_size ) {
 		*dst_size *= 2;	// Less optimistic, but we'll shrink it after, so rather go high here.
-		dst = ( ui8_t* )realloc( dst, *dst_size );
+		dst = ( u8* )realloc( dst, *dst_size );
 		assert( dst != NULL ); // Make sure realloc doesn't fail
 	}
 	vul__compress_rle_encode_number( &dst[ dst_index ], local_count );
@@ -171,27 +196,16 @@ const ui8_t *vul_compress_rle( const ui8_t *src, ui32_t src_size, ui32_t *dst_si
 	dst[ dst_index++ ] = 0;
 
 	// Tighten the dst-buffer
-	dst = ( ui8_t* )realloc( dst, dst_index );
+	dst = ( u8* )realloc( dst, dst_index );
 	*dst_size = dst_index;
 
 	return dst;
 }
-#endif
 
-
-/**
- * Run Length encoding. The length of a sequence is encoded in a series
- * of 8-bit numbers, where the most-significant bit is set only if another
- * number follows. Length of the source buffer is currently limited by 32-bit numbers.
- * Takes the destination buffer as an input. If it is found too small, an assert will fail.
- */
-#ifndef VUL_DEFINE
-void vul_compress_rle_inplace( ui8_t *dst, ui32_t dst_size, const ui8_t *src, ui32_t src_size );
-#else
-void vul_compress_rle_inplace( ui8_t *dst, ui32_t dst_size, const ui8_t *src, ui32_t src_size )
+void vul_compress_rle_inplace( u8 *dst, u32 dst_size, const u8 *src, u32 src_size )
 {
-	ui8_t last;
-	ui32_t local_count, total_count, dst_index, bytes;
+	u8 last;
+	u32 local_count, total_count, dst_index, bytes;
 	
 	assert( src != NULL );
 	assert( src_size != 0 );
@@ -226,27 +240,17 @@ void vul_compress_rle_inplace( ui8_t *dst, ui32_t dst_size, const ui8_t *src, ui
 	dst[ dst_index++ ] = last;
 	dst[ dst_index ] = 0;
 }
-#endif
 
-
-/**
- * Run Length decoding.
- * Dynamically allocates (malloc) the destination buffer and tightens it before returning.
- * The size of the returned buffer is written to the parameter dst_size.
- */
-#ifndef VUL_DEFINE
-const ui8_t *vul_decompress_rle( const ui8_t *src, ui32_t src_size, ui32_t *dst_size );
-#else
-const ui8_t *vul_decompress_rle( const ui8_t *src, ui32_t src_size, ui32_t *dst_size )
+const u8 *vul_decompress_rle( const u8 *src, u32 src_size, u32 *dst_size )
 {
-	ui8_t *dst;
-	ui32_t local_count, total_count, dst_index, i;
+	u8 *dst;
+	u32 local_count, total_count, dst_index, i;
 	
 	assert( src != NULL );
 	assert( src_size != 0 );
 
 	*dst_size = src_size * 16; // Somewhat pessimistic first size estimate
-	dst = ( ui8_t* )malloc( *dst_size );
+	dst = ( u8* )malloc( *dst_size );
 	assert( dst != NULL ); // Make sure malloc doesn't fail
 
 	total_count = 0;
@@ -258,7 +262,7 @@ const ui8_t *vul_decompress_rle( const ui8_t *src, ui32_t src_size, ui32_t *dst_
 		total_count += vul__compress_rle_char_count_needed( local_count );
 		if( dst_index + local_count > *dst_size ) {
 			*dst_size *= 2; // Pessimistic, but we tighten after, so _should_ be fine.
-			dst = ( ui8_t* )realloc( dst, *dst_size );
+			dst = ( u8* )realloc( dst, *dst_size );
 			assert( dst != NULL ); // Make sure realloc doesn't fail
 		}
 		for( i = 0; i < local_count; ++i )
@@ -271,23 +275,15 @@ const ui8_t *vul_decompress_rle( const ui8_t *src, ui32_t src_size, ui32_t *dst_
 	*dst_size = dst_index;
 
 	// Tighten the dst-buffer
-	dst = ( ui8_t* )realloc( dst, dst_index );
+	dst = ( u8* )realloc( dst, dst_index );
 
 
 	return dst;
 }
-#endif
 
-/**
- * Run Length decoding.
- * Takes the destination buffer as an argument. If it is found too small an assert will fail.
- */
-#ifndef VUL_DEFINE
-void vul_decompress_rle_inplace( ui8_t *dst, ui32_t dst_size, const ui8_t *src, ui32_t src_size );
-#else
-void vul_decompress_rle_inplace( ui8_t *dst, ui32_t dst_size, const ui8_t *src, ui32_t src_size )
+void vul_decompress_rle_inplace( u8 *dst, u32 dst_size, const u8 *src, u32 src_size )
 {
-	ui32_t local_count, total_count, dst_index, i;
+	u32 local_count, total_count, dst_index, i;
 	
 	assert( src != NULL );
 	assert( src_size != 0 );
@@ -309,6 +305,9 @@ void vul_decompress_rle_inplace( ui8_t *dst, ui32_t dst_size, const ui8_t *src, 
 		++total_count;
 	}
 	dst[ dst_index ] = 0;
+}
+
+#ifdef _cplusplus
 }
 #endif
 

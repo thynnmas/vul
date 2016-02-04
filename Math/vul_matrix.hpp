@@ -34,11 +34,11 @@ namespace vul {
 	// Declarations
 	// 
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	struct Vector;
 
 	// Generic definition
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	struct Matrix {
 		// Data
 		T data[ cols ][ rows ];	// Column major
@@ -95,69 +95,69 @@ namespace vul {
 		/**
 		 * Indexing operator.
 		 */
-		T &operator( )( i32_t c, i32_t r );
+		T &operator( )( s32 c, s32 r );
 		/**
 		 * Constant indexing operator.
 		 */
-		T const &operator( )( i32_t c, i32_t r ) const;
+		T const &operator( )( s32 c, s32 r ) const;
 	};
 
 	// Typedefs
-	typedef Matrix< f16_t, 2, 2 > f16_22t;
-	typedef Matrix< f32_t, 2, 2 > f32_22t;
-	typedef Matrix< f64_t, 2, 2 > f64_22t;
-	typedef Matrix< f16_t, 3, 3 > f16_33t;
-	typedef Matrix< f32_t, 3, 3 > f32_33t;
-	typedef Matrix< f64_t, 3, 3 > f64_33t;
-	typedef Matrix< f16_t, 4, 4 > f16_44t;
-	typedef Matrix< f32_t, 4, 4 > f32_44t;
-	typedef Matrix< f64_t, 4, 4 > f64_44t;
+	typedef Matrix< f16, 2, 2 > f16x22;
+	typedef Matrix< f32, 2, 2 > f32x22;
+	typedef Matrix< f64, 2, 2 > f64x22;
+	typedef Matrix< f16, 3, 3 > f16x33;
+	typedef Matrix< f32, 3, 3 > f32x33;
+	typedef Matrix< f64, 3, 3 > f64x33;
+	typedef Matrix< f16, 4, 4 > f16x44;
+	typedef Matrix< f32, 4, 4 > f32x44;
+	typedef Matrix< f64, 4, 4 > f64x44;
 
-	typedef Matrix< fi32_t, 2, 2 > fi32_22t;
-	typedef Matrix< fi32_t, 3, 3 > fi32_33t;
-	typedef Matrix< fi32_t, 4, 4 > fi32_44t;
+	typedef Matrix< fi32, 2, 2 > fi32x22;
+	typedef Matrix< fi32, 3, 3 > fi32x33;
+	typedef Matrix< fi32, 4, 4 > fi32x44;
 
-	typedef Matrix< i8_t, 2, 2 > i8_22t;
-	typedef Matrix< i16_t, 2, 2 > i16_22t;
-	typedef Matrix< i32_t, 2, 2 > i32_22t;
-	typedef Matrix< i64_t, 2, 2 > i64_22t;
-	typedef Matrix< i8_t, 3, 3 > i8_33t;
-	typedef Matrix< i16_t, 3, 3 > i16_33t;
-	typedef Matrix< i32_t, 3, 3 > i32_33t;
-	typedef Matrix< i64_t, 3, 3 > i64_33t;
-	typedef Matrix< i8_t, 4, 4 > i8_44t;
-	typedef Matrix< i16_t, 4, 4 > i16_44t;
-	typedef Matrix< i32_t, 4, 4 > i32_44t;
-	typedef Matrix< i64_t, 4, 4 > i64_44t;
+	typedef Matrix< s8, 2, 2 > s8x22;
+	typedef Matrix< s16, 2, 2 > s16x22;
+	typedef Matrix< s32, 2, 2 > s32x22;
+	typedef Matrix< s64, 2, 2 > s64x22;
+	typedef Matrix< s8, 3, 3 > s8x33;
+	typedef Matrix< s16, 3, 3 > s16x33;
+	typedef Matrix< s32, 3, 3 > s32x33;
+	typedef Matrix< s64, 3, 3 > s64x33;
+	typedef Matrix< s8, 4, 4 > s8x44;
+	typedef Matrix< s16, 4, 4 > s16x44;
+	typedef Matrix< s32, 4, 4 > s32x44;
+	typedef Matrix< s64, 4, 4 > s64x44;
 
-	typedef Matrix< ui8_t, 2, 2 > ui8_22t;
-	typedef Matrix< ui16_t, 2, 2 > ui16_22t;
-	typedef Matrix< ui32_t, 2, 2 > ui32_22t;
-	typedef Matrix< ui64_t, 2, 2 > ui64_22t;
-	typedef Matrix< ui8_t, 3, 3 > ui8_33t;
-	typedef Matrix< ui16_t, 3, 3 > ui16_33t;
-	typedef Matrix< ui32_t, 3, 3 > ui32_33t;
-	typedef Matrix< ui64_t, 3, 3 > ui64_33t;
-	typedef Matrix< ui8_t, 4, 4 > ui8_44t;
-	typedef Matrix< ui16_t, 4, 4 > ui16_44t;
-	typedef Matrix< ui32_t, 4, 4 > ui32_44t;
-	typedef Matrix< ui64_t, 4, 4 > ui64_44t;
+	typedef Matrix< u8, 2, 2 > u8x22;
+	typedef Matrix< u16, 2, 2 > u16x22;
+	typedef Matrix< u32, 2, 2 > u32x22;
+	typedef Matrix< u64, 2, 2 > u64x22;
+	typedef Matrix< u8, 3, 3 > u8x33;
+	typedef Matrix< u16, 3, 3 > u16x33;
+	typedef Matrix< u32, 3, 3 > u32x33;
+	typedef Matrix< u64, 3, 3 > u64x33;
+	typedef Matrix< u8, 4, 4 > u8x44;
+	typedef Matrix< u16, 4, 4 > u16x44;
+	typedef Matrix< u32, 4, 4 > u32x44;
+	typedef Matrix< u64, 4, 4 > u64x44;
 
 	// Non-member constructors for pre C++11 versions
 #ifndef VUL_CPLUSPLUS11
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > makeMatrix( );								// Empty constructor
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > makeMatrix( T val );						// Initialize to a single value
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > makeMatrix( const Matrix< T, cols, rows > &m );	// Copy constructor
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > makeMatrix( T (& a)[ cols ][ rows ] ); 		// Generic array constructor
 #endif		
-	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > makeMatrix( f32_t (& a)[ rows * cols ] );	// From float array, to interface with other libraries
-	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > makeMatrix( i32_t (& a)[ rows * cols ] ); 	// From int array, to interface with other libraries
+	template< typename T, s32 cols, s32 rows >
+	Matrix< T, cols, rows > makeMatrix( f32 (& a)[ rows * cols ] );	// From float array, to interface with other libraries
+	template< typename T, s32 cols, s32 rows >
+	Matrix< T, cols, rows > makeMatrix( s32 (& a)[ rows * cols ] ); 	// From int array, to interface with other libraries
 	
 	template< typename T >
 	Matrix< T, 2, 2 > makeMatrix22( T c1r1, T c2r1, 
@@ -184,202 +184,202 @@ namespace vul {
 											   const Vector< T, 4 > &c3,
 											   const Vector< T, 4 > &c4 );
 	
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Matrix< T, n, n > makeIdentity( );
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > makeMatrixFromRows( const Vector< T, cols > r[ rows ] );
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > makeMatrixFromColumns( const Vector< T, rows > c[ cols ] );
 	/**
 	 * Copies the top left coloXrowo matrix of mat into a new matrix of size
 	 * colXrown, essentially truncating the top left submatrix of mat into a
 	 * new, smaller matrix.
 	 */
-	template< typename T, i32_t coln, i32_t rown, i32_t colo, i32_t rowo >
+	template< typename T, s32 coln, s32 rown, s32 colo, s32 rowo >
 	Matrix< T, coln, rown > truncate( const Matrix< T, colo, rowo > &mat );
 	/**
 	 * Copies the contents of matrix src (sized srcc X srcr) into the top left 
 	 * ( srcc X srcr ) submatrix of dst. Dst must be at least as big as src.
 	 */
-	template< typename T, i32_t dstc, i32_t dstr, i32_t srcc, i32_t srcr >
+	template< typename T, s32 dstc, s32 dstr, s32 srcc, s32 srcr >
 	void copy( Matrix< T, dstc, dstr > *dst, const Matrix< T, srcc, srcr > &src );
 	/**
 	 * Copies the contents of matrix src (sized srcc X srcr) into the 
 	 * ( srcc X srcr ) submatrix of dst starting at column firstcol and row
 	 * firstrow. Dst must be at least as big as <srcc + firstcol, srcr + firstrow>.
 	 */
-	template< typename T, i32_t dstc, i32_t dstr, i32_t srcc, i32_t srcr >
-	void copy( Matrix< T, dstc, dstr > *dst, const Matrix< T, srcc, srcr > &src, i32_t firstcol, i32_t firstrow );
+	template< typename T, s32 dstc, s32 dstr, s32 srcc, s32 srcr >
+	void copy( Matrix< T, dstc, dstr > *dst, const Matrix< T, srcc, srcr > &src, s32 firstcol, s32 firstrow );
 
 	// Operations
 	/**
 	 * Componentwise comparison. Returns a matrix of bools indicating if the compnents 
 	 * in the corresponding position are equal.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< bool, cols, rows > operator==( const Matrix< T, cols, rows > &a, const Matrix< T, cols, rows > &b );
 	/**
 	 * Componentwise comparison. Returns a matrix of bools indicating if the compnents 
 	 * in the corresponding position are not equal.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< bool, cols, rows > operator!=( const Matrix< T, cols, rows > &a, const Matrix< T, cols, rows > &b );
 
 	/**
 	 * Returns true if all compnents are true. Is valid for any type if( T ) is valid.
 	 * Equivalent of AND-ing together all compnents.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	bool all( const Matrix< T, cols, rows > &mat );
 	/**
 	 * Returns true if any compnents is true. Is valid for any type if( T ) is valid.
 	 * Equivalent of OR-ing together all compnents.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	bool any( const Matrix< T, cols, rows > &mat );
 	/**
 	 * Returns the first compnent that is evaluated to true by if( T ).
 	 * Equivalent to the ?: selector.
 	 * Operates row major; mat_row0_column1 comes before mat_row1_column0.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	T select( const Matrix< T, cols, rows > &mat ); 
 
 	/**
 	 * Componentwise addition.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > operator+( const Matrix< T, cols, rows >& mat, T scalar );
 	/**
 	 * Componentwise subtraction.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > operator-( const Matrix< T, cols, rows >& mat, T scalar );
 	/**
 	 * Componentwise multiplication.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > operator*( const Matrix< T, cols, rows >& mat, T scalar );
 	/**
 	 * Componentwise division.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > operator/( const Matrix< T, cols, rows >& mat, T scalar );
 
 	/**
 	 * Componentwise addition of matrices.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > operator+( const Matrix< T, cols, rows >& a, const Matrix< T, cols, rows > &b ); // Componentwise addition
 	/**
 	 * Componentwise subtraction of matrices.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > operator-( const Matrix< T, cols, rows >& a, const Matrix< T, cols, rows > &b ); // Componentwise subtraction
 	
 	/**
 	 * Componentwise min( compnent, b ).
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > min( const Matrix< T, cols, rows > &a, T b );
 	/**
 	 * Componentwise max( compnent, b ).
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > max( const Matrix< T, cols, rows > &a, T b );
 	/**
 	 * Componentwise absolute value.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > abs( const Matrix< T, cols, rows > &a );
 	/**
 	 * Compomentwise clamp( x, min, max ).
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > clamp( const Matrix< T, cols, rows > &a, T mini, T maxi );
 	/**
 	 * Compomentwise saturate, so clamp( x, 0, 1 ).
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > saturate( const Matrix< T, cols, rows > &a );
 	/** 
 	 * Componentwise linear interpolation based on t.
 	 */
-	template< typename T, i32_t cols, i32_t rows, typename T_t >
+	template< typename T, s32 cols, s32 rows, typename T_t >
 	Matrix< T, cols, rows > lerp( const Matrix< T, cols, rows > &mini, const Matrix< T, cols, rows > &maxi, T_t t );
 	/**
 	 * Returns the smalles compnent.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	T minComponent( const Matrix< T, cols, rows > &a );
 	/**
 	 * Returns the largest compnent.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	T maxComponent( const Matrix< T, cols, rows > &a );
 	
 	/**
 	 * Matrix multiplication. This is NOT componentwise, but proper matrix mul.
 	 */
-	template< typename T, i32_t cola, i32_t shared, i32_t rowb >
+	template< typename T, s32 cola, s32 shared, s32 rowb >
 	Matrix< T, cola, rowb > operator*( const Matrix< T, cola, shared > &a, const Matrix< T, shared, rowb > &b );
 	
 	/** 
 	 * Right-side multiplication of a matrix and a column vector.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Vector< T, rows > operator*( const Matrix< T, cols, rows >& mat, const Vector< T, cols > &vec );
 	/** 
 	 * Left-side multiplication of a matrix and a column vector.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Vector< T, cols > operator*( const Vector< T, rows > &vec , const Matrix< T, cols, rows >& mat);	
 	/** 
 	 * Right-side multiplication of a matrix and a point interpreted as a column vector.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Point< T, rows > operator*( const Matrix< T, cols, rows >& mat, const Point< T, cols > &vec );
 	/** 
 	 * Left-side multiplication of a matrix and a point interpreted as a column vector.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Point< T, cols > operator*( const Point< T, rows > &vec , const Matrix< T, cols, rows >& mat);
 	
 	// Functions
 	/**
 	 * Returns the inverse of the matrix.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Matrix< T, n, n > inverse( const Matrix< T, n, n > &mat );
 	/**
 	 * Returns the transpose of the matrix.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > transpose( const Matrix< T, cols, rows > &mat );
 	
 	/**
 	 * Calculates the determinant of the matrix. This is the 2x2 special case.
 	 */
 	template< typename T >
-	f32_t determinant( const Matrix< T, 2, 2 > &mat );
+	f32 determinant( const Matrix< T, 2, 2 > &mat );
 	/**
 	 * Calculates the determinant of the matrix. Recursively simplifies down to
 	 * the 2x2 case. Uses vul_matrix_find_most_zero at every level to recurse down
 	 * the path with the least sub-expressions at that level.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
-	f32_t determinant( const Matrix< T, cols, rows > &mat );
+	template< typename T, s32 cols, s32 rows >
+	f32 determinant( const Matrix< T, cols, rows > &mat );
 
 	/** 
 	 * Returns the column at index n in the given matrix.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
-	Vector< T, rows > column( const Matrix< T, cols, rows > &mat, i32_t n );
+	template< typename T, s32 cols, s32 rows >
+	Vector< T, rows > column( const Matrix< T, cols, rows > &mat, s32 n );
 	/** 
 	 * Returns the row at index n in the given matrix.
 	 */
-	template< typename T, i32_t cols, i32_t rows >
-	Vector< T, cols > row( const Matrix< T, cols, rows > &mat, i32_t n );
+	template< typename T, s32 cols, s32 rows >
+	Vector< T, cols > row( const Matrix< T, cols, rows > &mat, s32 n );
 
 	
 	/**
@@ -396,15 +396,15 @@ namespace vul {
 	 */
 	struct vul_matrix_zero_helper {
 		vul_matrix_zero_type type;
-		i32_t index;
-		i32_t count;
+		s32 index;
+		s32 count;
 	};
 	/** 
 	 * Helper function of detereminant.
 	 * Counts the number of zeros in each column and row. 
 	 * Returns a vul_matrix_zero_helper with row/column type, index and count
 	 */
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	vul_matrix_zero_helper vul_matrix_find_most_zero( const Matrix< T, cols, rows > &mat );
 	
 	//---------------------------
@@ -413,45 +413,45 @@ namespace vul {
 	
 #ifdef VUL_CPLUSPLUS11
 	// Constructor
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows >::Matrix( )
 	{
-		i32_t i, j;
+		s32 i, j;
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
 				data[ i ][ j ] = static_cast< T >( 0.f );
 			}
 		}
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows >::Matrix( T val )
 	{
-		i32_t i, j;
+		s32 i, j;
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
 				data[ i ][ j ] = val;
 			}
 		}
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows >::Matrix( const Matrix< T, cols, rows > &m )
 	{
-		i32_t i, j;
+		s32 i, j;
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
 				data[ i ][ j ] = m( i, j );
 			}
 		}
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows >::Matrix( T (& a)[ cols ][ rows ] )
 	{
 		memcpy( data, a, sizeof( T ) * rows * cols );
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows >::Matrix( std::initializer_list< T > list )
 	{
-		i32_t i;
+		s32 i;
 		typename std::initializer_list< T >::iterator it;
 
 		for( it = list.begin( ), i = 0; it != list.end( ) && i < cols * rows; ++it, ++i ) {
@@ -459,11 +459,11 @@ namespace vul {
 		}
 	}
 #else
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > makeMatrix( )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -474,11 +474,11 @@ namespace vul {
 		return m;
 	}
 	
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > makeMatrix( T val )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -489,11 +489,11 @@ namespace vul {
 		return m;
 	}
 	
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > makeMatrix( const Matrix< T, cols, rows > &m )
 	{
 		Matrix< T, cols, rows > r;
-		i32_t i, j;
+		s32 i, j;
 		
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -503,11 +503,11 @@ namespace vul {
 
 		return r;
 	}	
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > makeMatrix( T (& a)[ cols ][ rows ] )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -579,11 +579,11 @@ namespace vul {
 		return m;
 	}
 
-	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > makeMatrix( f32_t (& a)[ rows * cols ] )
+	template< typename T, s32 cols, s32 rows >
+	Matrix< T, cols, rows > makeMatrix( f32 (& a)[ rows * cols ] )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -593,11 +593,11 @@ namespace vul {
 		
 		return m;
 	}	
-	template< typename T, i32_t cols, i32_t rows >
-	Matrix< T, cols, rows > makeMatrix( i32_t (& a)[ rows * cols ] )
+	template< typename T, s32 cols, s32 rows >
+	Matrix< T, cols, rows > makeMatrix( s32 (& a)[ rows * cols ] )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -668,11 +668,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Matrix< T, n, n > makeIdentity( )
 	{
 		Matrix< T, n, n > m;
-		i32_t i;
+		s32 i;
 
 #ifdef VUL_CPLUSPLUS11
 		m = Matrix< T, n, n >( static_cast< T >( 0.f ) );
@@ -685,11 +685,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > makeMatrixFromRows( const Vector< T, cols > r[ rows ] )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -699,11 +699,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > makeMatrixFromColumns( const Vector< T, rows > c[ cols ] )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -713,11 +713,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t coln, i32_t rown, i32_t colo, i32_t rowo >
+	template< typename T, s32 coln, s32 rown, s32 colo, s32 rowo >
 	Matrix< T, coln, rown > truncate( const Matrix< T, colo, rowo > &mat )
 	{
 		Matrix< T, coln, rown > m;
-		i32_t i, j;
+		s32 i, j;
 
 		assert( colo >= coln && rowo >= rown );
 
@@ -729,10 +729,10 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t dstc, i32_t dstr, i32_t srcc, i32_t srcr >
+	template< typename T, s32 dstc, s32 dstr, s32 srcc, s32 srcr >
 	void copy( Matrix< T, dstc, dstr > *dst, const Matrix< T, srcc, srcr > &src )
 	{
-		i32_t i, j;
+		s32 i, j;
 
 		assert( dstc >= srcc && dstr >= srcr );
 
@@ -742,10 +742,10 @@ namespace vul {
 			}
 		}
 	}
-	template< typename T, i32_t dstc, i32_t dstr, i32_t srcc, i32_t srcr >
-	void copy( Matrix< T, dstc, dstr > *dst, const Matrix< T, srcc, srcr > &src, i32_t firstcol, i32_t firstrow )
+	template< typename T, s32 dstc, s32 dstr, s32 srcc, s32 srcr >
+	void copy( Matrix< T, dstc, dstr > *dst, const Matrix< T, srcc, srcr > &src, s32 firstcol, s32 firstrow )
 	{
-		i32_t i, j;
+		s32 i, j;
 
 		assert( dstc >= srcc + firstcol && dstr >= srcr + firstrow );
 
@@ -757,10 +757,10 @@ namespace vul {
 	}
 
 	// Operators
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows >& Matrix< T, cols, rows >::operator=( const Matrix< T, cols, rows > & rhs )
 	{
-		i32_t i, j;
+		s32 i, j;
 		
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -770,10 +770,10 @@ namespace vul {
 
 		return *this;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > &Matrix< T, cols, rows >::operator+=( T scalar )
 	{
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -783,10 +783,10 @@ namespace vul {
 
 		return *this;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > &Matrix< T, cols, rows >::operator-=( T scalar )
 	{
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -796,10 +796,10 @@ namespace vul {
 
 		return *this;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > &Matrix< T, cols, rows >::operator*=( T scalar )
 	{
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -809,10 +809,10 @@ namespace vul {
 
 		return *this;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > &Matrix< T, cols, rows >::operator/=( T scalar )
 	{
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -823,10 +823,10 @@ namespace vul {
 		return *this;
 	}
 
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > &Matrix< T, cols, rows >::operator+=( const Matrix< T, cols, rows > &rhs )
 	{
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -836,10 +836,10 @@ namespace vul {
 
 		return *this;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > &Matrix< T, cols, rows >::operator-=( const Matrix< T, cols, rows > &rhs )
 	{
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -849,11 +849,11 @@ namespace vul {
 
 		return *this;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > Matrix< T, cols, rows >::operator-( ) const
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 		
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -864,16 +864,16 @@ namespace vul {
 		return m;
 	}
 
-	template< typename T, i32_t cols, i32_t rows >
-	T &Matrix< T, cols, rows >::operator( )( i32_t i, i32_t j )
+	template< typename T, s32 cols, s32 rows >
+	T &Matrix< T, cols, rows >::operator( )( s32 i, s32 j )
 	{
 		assert( i < cols );
 		assert( j < rows );
 		return data[ i ][ j ];
 	}
 		
-	template< typename T, i32_t cols, i32_t rows >
-	T const &Matrix< T, cols, rows >::operator( )( i32_t i, i32_t j ) const
+	template< typename T, s32 cols, s32 rows >
+	T const &Matrix< T, cols, rows >::operator( )( s32 i, s32 j ) const
 	{
 		assert( i < cols );
 		assert( j < rows );
@@ -881,11 +881,11 @@ namespace vul {
 	}
 
 	// Operations
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< bool, cols, rows > operator==( const Matrix< T, cols, rows > &a, const Matrix< T, cols, rows > &b )
 	{
 		Matrix< bool, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -895,11 +895,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< bool, cols, rows > operator!=( const Matrix< T, cols, rows > &a, const Matrix< T, cols, rows > &b )
 	{
 		Matrix< bool, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -910,10 +910,10 @@ namespace vul {
 		return m;
 	}
 
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	bool all( const Matrix< T, cols, rows > &mat )
 	{
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -925,10 +925,10 @@ namespace vul {
 
 		return true;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	bool any( const Matrix< T, cols, rows > &mat )
 	{
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -940,10 +940,10 @@ namespace vul {
 
 		return false;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	T select( const Matrix< T, cols, rows > &mat )
 	{
-		i32_t i, j;
+		s32 i, j;
 		
 		for( j = 0; j < rows; ++j ) {
 			for( i = 0; i < cols; ++i ) {
@@ -956,11 +956,11 @@ namespace vul {
 		return static_cast< T >( 0.f );
 	}
 
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > operator+( const Matrix< T, cols, rows >& mat, T scalar )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -970,11 +970,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > operator-( const Matrix< T, cols, rows >& mat, T scalar )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -984,11 +984,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > operator*( const Matrix< T, cols, rows >& mat, T scalar )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -998,11 +998,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > operator/( const Matrix< T, cols, rows >& mat, T scalar )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -1013,11 +1013,11 @@ namespace vul {
 		return m;
 	}
 
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > operator+( const Matrix< T, cols, rows >& a, const Matrix< T, cols, rows > &b )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -1027,11 +1027,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > operator-( const Matrix< T, cols, rows >& a, const Matrix< T, cols, rows > &b )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -1043,11 +1043,11 @@ namespace vul {
 	}
 	
 	
-	template< typename T, i32_t cola, i32_t shared, i32_t rowb >
+	template< typename T, s32 cola, s32 shared, s32 rowb >
 	Matrix< T, cola, rowb > operator*( const Matrix< T, cola, shared > &a, const Matrix< T, shared, rowb > &b )
 	{
 		Matrix< T, cola, rowb > m;
-		i32_t i, j, k;
+		s32 i, j, k;
 		T sum;
 
 		for( i = 0; i < cola; ++i ) {
@@ -1063,11 +1063,11 @@ namespace vul {
 		return m;
 	}
 
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > min( const Matrix< T, cols, rows > &a, T b )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -1077,11 +1077,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > max( const Matrix< T, cols, rows > &a, T b )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -1091,11 +1091,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > abs( const Matrix< T, cols, rows > &a )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -1105,11 +1105,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > clamp( const Matrix< T, cols, rows > &a, T mini, T maxi )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -1121,11 +1121,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > saturate( const Matrix< T, cols, rows > &a )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -1137,11 +1137,11 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t cols, i32_t rows, typename T_t >
+	template< typename T, s32 cols, s32 rows, typename T_t >
 	Matrix< T, cols, rows > lerp( const Matrix< T, cols, rows > &mini, const Matrix< T, cols, rows > &maxi, T_t t )
 	{
 		Matrix< T, cols, rows > m;
-		i32_t i, j;
+		s32 i, j;
 		T_t t1;
 
 		t1 = static_cast< T >( 1.f ) - t;
@@ -1153,10 +1153,10 @@ namespace vul {
 
 		return m;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	T minComponent( const Matrix< T, cols, rows > &a )
 	{
-		i32_t i, j;
+		s32 i, j;
 		T mini = std::numeric_limits< T >::max( );
 
 		for( i = 0; i < cols; ++i ) {
@@ -1167,10 +1167,10 @@ namespace vul {
 
 		return mini;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	T maxComponent( const Matrix< T, cols, rows > &a )
 	{
-		i32_t i, j;
+		s32 i, j;
 		T maxi = -std::numeric_limits< T >::max( );
 
 		for( i = 0; i < cols; ++i ) {
@@ -1183,14 +1183,14 @@ namespace vul {
 	}
 	
 	/* @TODO: This is bad...we need reorganize so we don't neet to redeclare this */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > makeVector( T val );
 	
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Vector< T, rows > operator*( const Matrix< T, cols, rows >& mat, const Vector< T, cols > &vec )
 	{
 		Vector< T, rows > v;
-		i32_t i, j;
+		s32 i, j;
 
 #ifdef VUL_CPLUSPLUS11
 		v = Vector< T, rows >( static_cast< T >( 0.f ) );
@@ -1205,11 +1205,11 @@ namespace vul {
 
 		return v;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Vector< T, cols > operator*( const Vector< T, rows > &vec , const Matrix< T, cols, rows >& mat)
 	{
 		Vector< T, cols > v;
-		i32_t i, j;
+		s32 i, j;
 		
 #ifdef VUL_CPLUSPLUS11
 		v = Vector< T, cols >( static_cast< T >( 0.f ) );
@@ -1224,11 +1224,11 @@ namespace vul {
 
 		return v;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Point< T, rows > operator*( const Matrix< T, cols, rows >& mat, const Point< T, cols > &pt )
 	{
 		Point< T, rows > p;
-		i32_t i, j;
+		s32 i, j;
 
 #ifdef VUL_CPLUSPLUS11
 		p = Point< T, rows >( static_cast< T >( 0.f ) );
@@ -1243,11 +1243,11 @@ namespace vul {
 
 		return p;
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Point< T, cols > operator*( const Point< T, rows > &pt , const Matrix< T, cols, rows > &mat)
 	{
 		Point< T, cols > p;
-		i32_t i, j;
+		s32 i, j;
 		
 #ifdef VUL_CPLUSPLUS11
 		p = Point< T, cols >( static_cast< T >( 0.f ) );
@@ -1265,11 +1265,11 @@ namespace vul {
 	
 	// Functions
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Matrix< T, n, n > inverse( const Matrix< T, n, n > &mat )
 	{
-		f32_t det;
-		i32_t r, c, i, j, a, b;
+		f32 det;
+		s32 r, c, i, j, a, b;
 
 		// Find the adjugate
 		Matrix< T, n, n > adjugate;
@@ -1303,11 +1303,11 @@ namespace vul {
 		
 		return adjugate * ( 1.f / det );
 	}
-	template< typename T, i32_t cols, i32_t rows >
+	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > transpose( const Matrix< T, cols, rows > &mat )
 	{
 		Matrix< T, rows, cols > m;
-		i32_t i, j;
+		s32 i, j;
 
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
@@ -1319,18 +1319,18 @@ namespace vul {
 	}
 	
 	template< typename T >
-	f32_t determinant( const Matrix< T, 2, 2 > &mat )
+	f32 determinant( const Matrix< T, 2, 2 > &mat )
 	{
-		return ( f32_t )mat.data[ 0 ][ 0 ] * ( f32_t )mat.data[ 1 ][ 1 ]
-			 - ( f32_t )mat.data[ 0 ][ 1 ] * ( f32_t )mat.data[ 1 ][ 0 ];
+		return ( f32 )mat.data[ 0 ][ 0 ] * ( f32 )mat.data[ 1 ][ 1 ]
+			 - ( f32 )mat.data[ 0 ][ 1 ] * ( f32 )mat.data[ 1 ][ 0 ];
 	}
-	template< typename T, i32_t n >
-	f32_t determinant( const Matrix< T, n, n > &mat )
+	template< typename T, s32 n >
+	f32 determinant( const Matrix< T, n, n > &mat )
 	{
 		vul_matrix_zero_helper zero;
 		Matrix< T, n-1, n-1 > m;
-		i32_t i, j, k, a, b;
-		f32_t det;
+		s32 i, j, k, a, b;
+		f32 det;
 
 		det = 0;
 		zero = vul_matrix_find_most_zero( mat );
@@ -1374,11 +1374,11 @@ namespace vul {
 		return det;
 	}
 
-	template< typename T, i32_t cols, i32_t rows >
-	Vector< T, rows > column( const Matrix< T, cols, rows > &mat, i32_t n )
+	template< typename T, s32 cols, s32 rows >
+	Vector< T, rows > column( const Matrix< T, cols, rows > &mat, s32 n )
 	{
 		Vector< T, rows > v;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < rows; ++i ) {
 			v.data[ i ] = mat.data[ n ][ i ];
@@ -1386,11 +1386,11 @@ namespace vul {
 
 		return v;
 	}
-	template< typename T, i32_t cols, i32_t rows >
-	Vector< T, cols > row( const Matrix< T, cols, rows > &mat, i32_t n )
+	template< typename T, s32 cols, s32 rows >
+	Vector< T, cols > row( const Matrix< T, cols, rows > &mat, s32 n )
 	{
 		Vector< T, cols > v;
-		i32_t i;
+		s32 i;
 
 		for( i = 0; i < cols; ++i ) {
 			v.data[ i ] = mat.data[ i ][ n ];
@@ -1403,13 +1403,13 @@ namespace vul {
 	// Counts the number of zeros in each column & row, returning a the index 
 	// of the column or row awith most zeroes.
 	// If the matrix is small (cols and rows <= 4), it just return the first column
-	template< typename T, i32_t cols, i32_t rows > 
+	template< typename T, s32 cols, s32 rows > 
 	vul_matrix_zero_helper vul_matrix_find_most_zero( const Matrix< T, cols, rows > &mat )
 	{
-		i32_t i, j, c;
+		s32 i, j, c;
 		vul_matrix_zero_helper r;
 
-		r.count = std::numeric_limits< i32_t >::max( );
+		r.count = std::numeric_limits< s32 >::max( );
 		r.index = 0;
 
 		// Early out for small matrices (just first column)

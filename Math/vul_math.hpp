@@ -7,14 +7,14 @@
  * The library contains both a C++11 version and a C++98-version, the primary difference
  * being the way we construct our types. The C++11 style uses normal constructors
  * and initializer lists:
- *		Vector< f32_t, 3 > foo( a ), bar{ b, c, d };
- *		foo = Vector< f32_t, 3 >( a );
+ *		Vector< f32, 3 > foo( a ), bar{ b, c, d };
+ *		foo = Vector< f32, 3 >( a );
  * while the C++98-version uses a function style:
- *		Vector< f32_t, 3 > foo = makeVector< f32_t >( a, b, c );
- *		foo = makeVector< f32_t, 3 >( a );
+ *		Vector< f32, 3 > foo = makeVector< f32 >( a, b, c );
+ *		foo = makeVector< f32, 3 >( a );
  *
  * For SIMD work on our vectors we use an AOSOA architecture; we pack 2-8 vectors into
- * vectors of simd types, f.e. 4 Vector< f32_t, 3 >s into 1 Vector< __m128, 3 >, then operate
+ * vectors of simd types, f.e. 4 Vector< f32, 3 >s into 1 Vector< __m128, 3 >, then operate
  * on those. 128-bit (SSE, NEON) and 256-bit (AVX) vectors are supported, behind
  * guards VUL_AOSOA_SSE, VUL_AOSOA_NEON and VUL_AOSOA_AVX respectively. VUL_AOSOA_NEON only 
  * supports 32-bit floats.

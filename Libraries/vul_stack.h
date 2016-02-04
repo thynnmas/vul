@@ -32,7 +32,7 @@
 */
 //#define VUL_DEFINE
 
-typedef vul_svector_t vul_stack_t;
+typedef vul_svector vul_stack;
 
 #define vul_stack_create vul_svector_create
 #define vul_stack_destroy vul_svector_destroy
@@ -40,31 +40,43 @@ typedef vul_svector_t vul_stack_t;
 #define vul_stack_size vul_svector_size
 #define vul_stack_is_empty vul_svector_is_empty
 
+#ifdef _cplusplus
+extern "C" {
 #endif
-
 /**
  * Removes the last element from the stack and returns a copy of it in out
  */
-#ifndef VUL_DEFINE
-void vul_stack_pop( vul_stack_t *stack, void *out );
-#else
-void vul_stack_pop( vul_stack_t *stack, void *out )
+void vul_stack_pop( vul_stack *stack, void *out );
+/**
+* Returns the top element of the stack without altering the stack itself.
+*/
+void *vul_stack_peek( vul_stack *stack );
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+void vul_stack_pop( vul_stack *stack, void *out )
 {
-	ui32_t idx = vul_stack_size( stack ) - 1;
+	u32 idx = vul_stack_size( stack ) - 1;
 	void *ret = vul_svector_get( stack, idx );
 	memcpy( out, ret, stack->element_size );
 	vul_svector_remove_swap( stack, idx );
 }
-#endif
 
-/**
-* Returns the top element of the stack without altering the stack itself.
-*/
-#ifndef VUL_DEFINE
-void *vul_stack_peek( vul_stack_t *stack );
-#else
-void *vul_stack_peek( vul_stack_t *stack )
+void *vul_stack_peek( vul_stack *stack )
 {
 	return vul_svector_get( stack, vul_stack_size( stack ) - 1 );
 }
+
+#ifdef _cplusplus
+}
+#endif
+
 #endif

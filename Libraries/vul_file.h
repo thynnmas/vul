@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  */
 #ifndef VUL_FILE_H
+#define VUL_FILE_H
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -43,6 +44,7 @@
 #endif
 
 #include "vul_string.h"
+#include "vul_types.h"
 
 #define VUL_TRUE 1
 #define VUL_FALSE 0
@@ -64,36 +66,60 @@
 #define VUL_MMAP_MAP_PRIVATE 2
 #define VUL_MMAP_MAP_FIXED 4
 
-typedef struct vul_mmap_file_t {
+typedef struct vul_mmap_file {
 	void *map;
 	size_t length;
 #ifdef VUL_WINDOWS
 	HANDLE hMapping;
 	HANDLE hFile;
 #else
-	int fd;
+	s32 fd;
 #endif
-} vul_mmap_file_t;
+} vul_mmap_file;
 
-
-typedef struct {
+typedef struct vul_file {
 	FILE *file;
 	char *path;
 	char *tmp_path;
-} vul_file_t;
+} vul_file;
 
-enum vul_file_keep {
+typedef enum vul_file_keep {
 	vul_file_keep_no = 0,
 	vul_file_keep_yes = 1,
 	vul_file_keep_if_different = 2,
-};
+} vul_file_keep;
 
-#ifndef VUL_DEFINE
-vul_mmap_file_t vul_mmap_file( const char *path, void *base_addr, int prot, int flags, size_t file_offset, size_t map_length );
-#else
-vul_mmap_file_t vul_mmap_file( const char *path, void *base_addr, int prot, int flags, size_t file_offset, size_t map_length )
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+vul_mmap_file vul_mmap( const char *path, void *base_addr, s32 prot, s32 flags, size_t file_offset, size_t map_length );
+b32 vul_munmap( vul_mmap_file file );
+char *vul_file_find_postfix( char *filename );
+char *vul_file_name_without_path( char *filename );
+b32 vul_file_fullpath( char *abs_path, size_t abs_path_max_len, const char *rel_path );
+size_t vul_file_length( FILE *f );
+s32 vul_file_compare( FILE *f, FILE *g );
+s32 vul_file_equal( char *s1, char *s2 );
+s32 vul_file_exists( char *filename );
+vul_file *vul_file_open( char *filename, char *mode, void* ( *allocator )( size_t ) );
+s32 vul_file_close( vul_file *f, vul_file_keep keep, void( *deallcator )( void* ) );
+b32 vul_file_copy( char *src, char *dest );
+
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+vul_mmap_file vul_mmap( const char *path, void *base_addr, s32 prot, s32 flags, size_t file_offset, size_t map_length )
 {
-	vul_mmap_file_t ret;
+	vul_mmap_file ret;
 
 #ifdef VUL_WINDOWS
 	DWORD mode = GENERIC_READ 
@@ -115,7 +141,7 @@ vul_mmap_file_t vul_mmap_file( const char *path, void *base_addr, int prot, int 
 		map_length = GetFileSize( ret.hFile, NULL );
 	}
 
-	ui64_t ofs_high = ( ui64_t )file_offset;
+	u64 ofs_high = ( u64 )file_offset;
 	if( base_addr ) {
 		ret.map = MapViewOfFileEx( ret.hMapping,
 									prot,
@@ -144,14 +170,10 @@ vul_mmap_file_t vul_mmap_file( const char *path, void *base_addr, int prot, int 
 
 	return ret;
 }
-#endif
 
-#ifndef VUL_DEFINE
-bool32_t vul_munmap( vul_mmap_file_t file );
-#else
-bool32_t vul_munmap( vul_mmap_file_t file )
+b32 vul_munmap( vul_mmap_file file )
 {
-	bool32_t ret;
+	b32 ret;
 #ifdef VUL_WINDOWS
 	ret = UnmapViewOfFile( file.map );
 	if( !ret ) {
@@ -167,11 +189,7 @@ bool32_t vul_munmap( vul_mmap_file_t file )
 #endif
 	return ret;
 }
-#endif
 
-#ifndef VUL_DEFINE
-char *vul_file_find_postfix( char *filename );
-#else
 char *vul_file_find_postfix( char *filename )
 {
 	char *p = filename;
@@ -184,11 +202,7 @@ char *vul_file_find_postfix( char *filename )
 		 ? ( char* )( ( size_t )p + 1 )
 		 : p;
 }
-#endif
 
-#ifndef VUL_DEFINE
-char *vul_file_name_without_path( char *filename );
-#else
 char *vul_file_name_without_path( char *filename )
 {
 	char *p = filename;
@@ -201,27 +215,23 @@ char *vul_file_name_without_path( char *filename )
 		? ( char* )( ( size_t )p + 1 )
 		: p;		
 }
-#endif
 
-#ifndef VUL_DEFINE
-bool32_t vul_file_fullpath( char *abs_path, size_t abs_path_max_len, const char *rel_path );
-#else
-bool32_t vul_file_fullpath( char *abs_path, size_t abs_path_max_len, const char *rel_path )
+b32 vul_file_fullpath( char *abs_path, size_t abs_path_max_len, const char *rel_path )
 {
 #ifdef VUL_WINDOWS
 	return _fullpath( abs_path, rel_path, abs_path_max_len ) != NULL;
 #else
 	if( rel_path[ 0 ] == '/' || rel_path[ 0 ] == '~') {
-		if( ( int )strlen( rel_path ) >= abs_path_max_len ) {
+		if( ( s32 )strlen( rel_path ) >= abs_path_max_len ) {
 			return VUL_FALSE;
 		}
 		strcpy( abs_path, rel_path );
 		return VUL_TRUE;
 	} else {
-		int n;
+		s32 n;
 		getcwd( abs_path, abs_path_max_len );
 		n = strlen( abs_path );
-		if( n + ( int )strlen( rel_path ) + 2 <= abs_path_max_len ) {
+		if( n + ( s32 )strlen( rel_path ) + 2 <= abs_path_max_len ) {
 			abs_path[ n ] = '/';
 			strcpy( abs_path + n + 1, rel_path );
 			return VUL_TRUE;
@@ -231,15 +241,11 @@ bool32_t vul_file_fullpath( char *abs_path, size_t abs_path_max_len, const char 
 	}
 #endif
 }
-#endif
 
-#ifndef VUL_DEFINE
-size_t vul_file_length( FILE *f );
-#else
 size_t vul_file_length( FILE *f )
 {
 	size_t len;
-	long int pos;
+	long pos;
 
 	pos = ftell( f );
 	fseek( f, 0, SEEK_END );
@@ -247,16 +253,12 @@ size_t vul_file_length( FILE *f )
 	fseek( f, pos, SEEK_SET );
 	return len;
 }
-#endif
 
-#ifndef VUL_DEFINE
-int vul_file_compare( FILE *f, FILE *g );
-#else
-int vul_file_compare( FILE *f, FILE *g )
+s32 vul_file_compare( FILE *f, FILE *g )
 {
 	char buf1[ 1024 ], buf2[ 1024 ];
 	size_t n1, n2;
-	int res = 0;
+	s32 res = 0;
 
 	while( 1 ) {
 		n1 = fread( buf1, 1, sizeof( buf1 ), f );
@@ -276,12 +278,8 @@ int vul_file_compare( FILE *f, FILE *g )
 	fclose( g );
 	return res;
 }
-#endif
 
-#ifndef VUL_DEFINE
-int vul_file_equal( char *s1, char *s2 );
-#else
-int vul_file_equal( char *s1, char *s2 )
+s32 vul_file_equal( char *s1, char *s2 )
 {
 	FILE *f, *g;
 
@@ -309,12 +307,8 @@ int vul_file_equal( char *s1, char *s2 )
 
 	return !vul_file_compare( f, g );
 }
-#endif
 
-#ifndef VUL_DEFINE
-int vul_file_exists( char *filename );
-#else
-int vul_file_exists( char *filename )
+s32 vul_file_exists( char *filename )
 {
 #ifdef VUL_WINDOWS
 	struct _stat buf;
@@ -324,19 +318,15 @@ int vul_file_exists( char *filename )
 	return stat( filename, &buf ) == 0;
 #endif
 }
-#endif
 
-#ifndef VUL_DEFINE
-vul_file_t *vul_file_open( char *filename, char *mode, void* ( *allocator )( size_t ) );
-#else
-vul_file_t *vul_file_open( char *filename, char *mode, void* ( *allocator )( size_t ) )
+vul_file *vul_file_open( char *filename, char *mode, void* ( *allocator )( size_t ) )
 {
-	vul_file_t *f = ( vul_file_t* )allocator( sizeof( vul_file_t ) );
+	vul_file *f = ( vul_file* )allocator( sizeof( vul_file ) );
 	size_t p;
 	char name_full[ 4096 ];
 	char temp_full[ sizeof( name_full ) + 12 ];
 #ifdef VUL_WINDOWS
-	int j;
+	s32 j;
 #endif
 
 	/* Handle the read-only case */
@@ -379,7 +369,7 @@ vul_file_t *vul_file_open( char *filename, char *mode, void* ( *allocator )( siz
 	for( j = 0; j < 32; ++j ) {
 		// windows _mktemp sucks, so add a small random prefix ourselves
 		char name[ 15 ], c1, c2, c3;
-		int r = rand() % RAND_MAX;
+		s32 r = rand() % RAND_MAX;
 		c1 = 'a' + ( r & 0xf );
 		c2 = 'a' + ( ( r & 0xf0 ) >> 4 );
 		c3 = 'a' + ( ( r & 0xf00 ) >> 8 );
@@ -398,7 +388,7 @@ vul_file_t *vul_file_open( char *filename, char *mode, void* ( *allocator )( siz
 #else
 	{
 		strcpy( temp_full + p, "vtmpXXXXXX" );
-		int fd = mkstemp( temp_full );
+		s32 fd = mkstemp( temp_full );
 		if( fd == -1 ) return NULL;
 		f->file = fdopen( fd, mode );
 		if( f->file == NULL ) {
@@ -424,14 +414,10 @@ vul_file_t *vul_file_open( char *filename, char *mode, void* ( *allocator )( siz
 
    return NULL;
 }
-#endif
 
-#ifndef VUL_DEFINE
-int vul_file_close( vul_file_t *f, vul_file_keep keep, void( *deallcator )( void* ) );
-#else
-int vul_file_close( vul_file_t *f, vul_file_keep keep, void (*deallcator)( void* ) )
+s32 vul_file_close( vul_file *f, vul_file_keep keep, void (*deallcator)( void* ) )
 {
-	int ok = VUL_FALSE;
+	s32 ok = VUL_FALSE;
 	if( f->file == NULL ) {
 		return VUL_FALSE;
 	}
@@ -460,8 +446,8 @@ int vul_file_close( vul_file_t *f, vul_file_keep keep, void (*deallcator)( void*
 		} else {
 #ifdef VUL_WINDOWS
 			vul_wchar btmp[ 4096 ], bp[ 4096 ];
-			vul__wchar_from_utf8( btmp, f->tmp_path, 4096 );
-			vul__wchar_from_utf8( bp, f->path, 4096 );
+			vul_wchar_from_utf8( btmp, f->tmp_path, 4096 );
+			vul_wchar_from_utf8( bp, f->path, 4096 );
 			if( !_wrename( btmp, bp ) ) {
 #else
 			if( !rename( f->tmp_path, f->path ) ) {
@@ -482,18 +468,14 @@ int vul_file_close( vul_file_t *f, vul_file_keep keep, void (*deallcator)( void*
 
 	return ok;
 }
-#endif
 
-#ifndef VUL_DEFINE
-bool32_t vul_file_copy( char *src, char *dest );
-#else
-bool32_t vul_file_copy( char *src, char *dest, 
+b32 vul_file_copy( char *src, char *dest, 
 						void* ( *allocator )( size_t ),
 						void( *deallcator )( void* ) )
 {
 	char raw_buffer[ 1024 ];
 	char *buffer;
-	int buf_size = 65536;
+	s32 buf_size = 65536;
 
 	FILE *f, *g;
 
@@ -538,7 +520,9 @@ bool32_t vul_file_copy( char *src, char *dest,
 	fclose( g );
 	return VUL_TRUE;
 }
+
+#ifdef _cplusplus
+}
 #endif
 
-#define VUL_FILE_H
 #endif

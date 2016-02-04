@@ -29,56 +29,99 @@
  */
 //#define VUL_DEFINE
 
-typedef struct vul_skip_list_element
-{
+typedef struct vul_skip_list_element {
 	void *data;
-	unsigned int levels;
+	u32 levels;
 	vul_skip_list_element** nexts;
 } vul_skip_list_element;
 
-typedef struct vul_skip_list
-{
-	unsigned int levels;
+typedef struct vul_skip_list {
+	u32 levels;
 	vul_skip_list_element **heads;
-	unsigned int data_size;
-	int (*comparator)( void *a, void *b );
+	u32 data_size;
+	s32 (*comparator)( void *a, void *b );
 
 	/* Memory management functions */
 	void *( *allocator )( size_t size );
 	void( *deallocator )( void *ptr );
 } vul_skip_list;
 
+#ifdef _cplusplus
+extern "C" {
 #endif
-
 /**
  * Simulates a coin flip; .5 probability of 0, same for 1.
+ * Currently uses rand, because we need it to be fast, not secure.
  */
-#ifndef VUL_DEFINE
-int vul__skip_list_coin_flip( );
-#else
-int vul__skip_list_coin_flip( )
-{
-	return ( ( f32_t )rand( ) / ( f32_t )RAND_MAX ) > 0.5;
-}
-#endif
-
+static s32 vul__skip_list_coin_flip( );
 /**
  * Creates a new skip list. Takes the size of an element and a comparison function
  * as arguments and returns an empty list.
  */
-#ifndef VUL_DEFINE
-vul_skip_list *vul_skip_list_create(unsigned int data_size, 
-									 int( *comparator )( void *a, void *b ),
+vul_skip_list *vul_skip_list_create( u32 data_size, 
+									 s32( *comparator )( void *a, void *b ),
 									 void *( *allocator )( size_t size ),
 									 void( *deallocator )( void *ptr ) );
-#else
-vul_skip_list *vul_skip_list_create( unsigned int data_size,
-									 int( *comparator )( void *a, void *b ),
+/**
+ * Finds the element in the list which matches the given data key. If
+ * no match is found, returns NULL.
+ */
+vul_skip_list_element *vul_skip_list_find( vul_skip_list *list, void *data );
+/**
+ * Removes the given element from the list, and deletes it.
+ */
+void vul_skip_list_remove( vul_skip_list *list, vul_skip_list_element *e );
+/**
+ * Inserts the given data into the list, while keeping it sorted and stable.
+ * Copies the given data (of given size) to the element.
+ * Returns a pointer to the new element.
+ */
+vul_skip_list_element *vul_skip_list_insert( vul_skip_list *list, void *data );
+/**
+ * Returns the length of the given skip list.
+ */
+unsigned int vul_skip_list_size( vul_skip_list *list );
+/**
+ * General purpose iteration over a list.
+ * Executes the given function for each element in the list.
+ * @NOTE: If func alters the list, behaviour is undefined!
+ */
+void vul_skip_list_iterate( vul_skip_list *list, void( *func )( vul_skip_list_element *e ) );
+/**
+ * Deletes a the given list and all elements in it.
+ */
+void vul_skip_list_destroy( vul_skip_list *list );
+/**
+ * Creates a copy of the given skip list. It does NOT maintain the same lanes,
+ * meaning it copies the data and maintains the sorting invariant, but it may look
+ * differently internally, and thus may perform slightly different.
+ */
+vul_skip_list *vul_skip_list_copy( vul_skip_list *src,
+								   void *( *allocator )( size_t size ),
+								   void( *deallocator )( void *ptr ) );
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+static s32 vul__skip_list_coin_flip( )
+{
+	return ( ( f32 )rand( ) / ( f32 )RAND_MAX ) > 0.5;
+}
+
+vul_skip_list *vul_skip_list_create( u32 data_size,
+									 s32( *comparator )( void *a, void *b ),
 									 void *( *allocator )( size_t size ),
 									 void( *deallocator )( void *ptr ) )
 {
 	vul_skip_list *ret;
-	int l;
+	s32 l;
 
 	ret = ( vul_skip_list* )allocator( sizeof( vul_skip_list ) );
 	assert( ret != NULL ); // Make sure allocation didn't fail
@@ -97,18 +140,10 @@ vul_skip_list *vul_skip_list_create( unsigned int data_size,
 
 	return ret;
 }
-#endif
 
-/**
- * Finds the element in the list which matches the given data key. If
- * no match is found, returns NULL.
- */
-#ifndef VUL_DEFINE
-vul_skip_list_element *vul_skip_list_find( vul_skip_list *list, void *data );
-#else
 vul_skip_list_element *vul_skip_list_find( vul_skip_list *list, void *data )
 {
-	int l;
+	s32 l;
 	vul_skip_list_element *e = NULL;
 
 	if( list == NULL || list->heads == NULL ) return NULL;
@@ -125,17 +160,10 @@ vul_skip_list_element *vul_skip_list_find( vul_skip_list *list, void *data )
 	if( e && list->comparator( e->data, data ) == 0 ) return e;
 	return NULL;
 }
-#endif
 
-/**
- * Removes the given element from the list, and deletes it.
- */
-#ifndef VUL_DEFINE
-void vul_skip_list_remove( vul_skip_list *list, vul_skip_list_element *e );
-#else
 void vul_skip_list_remove( vul_skip_list *list, vul_skip_list_element *e )
 {
-	int l;
+	s32 l;
 	vul_skip_list_element *p, *h;
 
 	assert( e != NULL );
@@ -164,19 +192,10 @@ void vul_skip_list_remove( vul_skip_list *list, vul_skip_list_element *e )
 	e->nexts = NULL;
 	e = NULL;
 }
-#endif
 
-/**
- * Inserts the given data into the list, while keeping it sorted and stable.
- * Copies the given data (of given size) to the element.
- * Returns a pointer to the new element.
- */
-#ifndef VUL_DEFINE
-vul_skip_list_element *vul_skip_list_insert( vul_skip_list *list, void *data );
-#else
 vul_skip_list_element *vul_skip_list_insert( vul_skip_list *list, void *data )
 {
-	int l;
+	s32 l;
 	vul_skip_list_element **el, *e, *ret;
 
 	if( list == NULL || list->heads == NULL ) return NULL;
@@ -215,17 +234,10 @@ vul_skip_list_element *vul_skip_list_insert( vul_skip_list *list, void *data )
 	}
 	return NULL; // @NOTE: never reached due to the above todo: we assert false!
 }
-#endif
 
-/**
- * Returns the length of the given skip list.
- */
-#ifndef VUL_DEFINE
-unsigned int vul_skip_list_size( vul_skip_list *list );
-#else
 unsigned int vul_skip_list_size( vul_skip_list *list )
 {
-	int c;
+	s32 c;
 	vul_skip_list_element *e;
 
 	// Count elements in the lowest list.
@@ -239,16 +251,7 @@ unsigned int vul_skip_list_size( vul_skip_list *list )
 
 	return c;
 }
-#endif
 
-/**
- * General purpose iteration over a list.
- * Executes the given function for each element in the list.
- * @NOTE: If func alters the list, behaviour is undefined!
- */
-#ifndef VUL_DEFINE
-void vul_skip_list_iterate( vul_skip_list *list, void( *func )( vul_skip_list_element *e ) );
-#else
 void vul_skip_list_iterate( vul_skip_list *list, void( *func )( vul_skip_list_element *e ) )
 {
 	vul_skip_list_element *e;
@@ -259,14 +262,7 @@ void vul_skip_list_iterate( vul_skip_list *list, void( *func )( vul_skip_list_el
 		e = e->nexts[ 0 ];
 	}
 }
-#endif
 
-/**
- * Deletes a the given list and all elements in it.
- */
-#ifndef VUL_DEFINE
-void vul_skip_list_destroy( vul_skip_list *list );
-#else
 void vul_skip_list_destroy( vul_skip_list *list )
 {
 	vul_skip_list_element *e, *n;
@@ -297,18 +293,7 @@ void vul_skip_list_destroy( vul_skip_list *list )
 	list->heads = NULL;
 	list = NULL;
 }
-#endif
 
-/**
- * Creates a copy of the given skip list. It does NOT maintain the same lanes,
- * meaning it copies the data and maintains the sorting invariant, but it may look
- * differently internally, and thus may perform slightly different.
- */
-#ifndef VUL_DEFINE
-vul_skip_list *vul_skip_list_copy( vul_skip_list *src,
-								   void *( *allocator )( size_t size ),
-								   void( *deallocator )( void *ptr ) );
-#else
 vul_skip_list *vul_skip_list_copy( vul_skip_list *src,
 								   void *( *allocator )( size_t size ),
 								   void( *deallocator )( void *ptr ) )
@@ -327,4 +312,9 @@ vul_skip_list *vul_skip_list_copy( vul_skip_list *src,
 
 	return dst;
 }
+
+#ifdef _cplusplus
+}
+#endif
+
 #endif

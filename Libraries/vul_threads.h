@@ -6,6 +6,8 @@
  * create functions to be called in threads, the threads and joining them
  * for both layers without knowing which is being used.
  *
+ * @TODO(thynn): Is this needed with C11 threads?
+ *
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
@@ -17,7 +19,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 #ifndef VUL_THREADS_H
 #define VUL_THREADS_H
 
@@ -25,6 +26,32 @@
 #include <Windows.h>
 #else
 #include <pthreads.h>
+#endif
+
+// @TODO(thynn): Types etc.
+
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+// @TODO(thynn): Declarations
+	
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+// @TODO(thynn): Definitions
+
+#ifdef _cplusplus
+}
 #endif
 
 #endif

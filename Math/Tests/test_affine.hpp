@@ -48,48 +48,48 @@ namespace vul_test {
 
 	bool TestAffine::make( )
 	{
-		f32_t mat[ 64 ], vec[ 8 ], submat2[ 4 ], submat3[ 9 ], subvec2[ 2 ], subvec3[ 3 ];
-		for( ui32_t i = 0; i < 64; ++i ) {
+		f32 mat[ 64 ], vec[ 8 ], submat2[ 4 ], submat3[ 9 ], subvec2[ 2 ], subvec3[ 3 ];
+		for( u32 i = 0; i < 64; ++i ) {
 			mat[ i ] = VUL_TEST_RNG;
 		}
-		for( ui32_t i = 0; i < 8; ++i ) {
+		for( u32 i = 0; i < 8; ++i ) {
 			vec[ i ] = VUL_TEST_RNG;
 		}
-		for( ui32_t c = 0; c < 2; ++c ) {
-			for( ui32_t r = 0; r < 2; ++r ) {
+		for( u32 c = 0; c < 2; ++c ) {
+			for( u32 r = 0; r < 2; ++r ) {
 				submat2[ c * 2 + r ] = mat[ c * 2 + r ];
 			}
 			subvec2[ c ] = vec[ c ];
 		}
-		for( ui32_t c = 0; c < 3; ++c ) {
-			for( ui32_t r = 0; r < 3; ++r ) {
+		for( u32 c = 0; c < 3; ++c ) {
+			for( u32 r = 0; r < 3; ++r ) {
 				submat3[ c * 3 + r ] = mat[ c * 3 + r ];
 			}
 			subvec3[ c ] = vec[ c ];
 		}
 #ifdef VUL_CPLUSPLUS11
-		Affine< f32_t, 2 > i2, 
+		Affine< f32, 2 > i2, 
 						   a2( i2 ), 
-						   mv2( makeMatrix< f32_t, 2, 2 >( submat2 ), makeVector< f32_t, 2 >( subvec2 ) );
-		Affine< f32_t, 3 > i3, 
+						   mv2( makeMatrix< f32, 2, 2 >( submat2 ), makeVector< f32, 2 >( subvec2 ) );
+		Affine< f32, 3 > i3, 
 						   a3( i3 ), 
-						   mv3( makeMatrix< f32_t, 3, 3 >( submat3 ), makeVector< f32_t, 3 >( subvec3 ) );
-		Affine< f32_t, 8 > i8, 
+						   mv3( makeMatrix< f32, 3, 3 >( submat3 ), makeVector< f32, 3 >( subvec3 ) );
+		Affine< f32, 8 > i8, 
 						   a8( i8 ), 
-						   mv8( makeMatrix< f32_t, 8, 8 >( mat ), makeVector< f32_t, 8 >( vec ) );
+						   mv8( makeMatrix< f32, 8, 8 >( mat ), makeVector< f32, 8 >( vec ) );
 #else
-		Affine< f32_t, 2 > i2 = makeAffine< f32_t, 2 >( ), 
-						   a2  = makeAffine< f32_t, 2 >( i2 ), 
-						   mv2 = makeAffine< f32_t, 2 >( makeMatrix< f32_t, 2, 2 >( submat2 ), 
-														 makeVector< f32_t, 2 >( subvec2 ) );
-		Affine< f32_t, 3 > i3 = makeAffine< f32_t, 3 >( ), 
-						   a3  = makeAffine< f32_t, 3 >( i3 ), 
-						   mv3 = makeAffine< f32_t, 3 >( makeMatrix< f32_t, 3, 3 >( submat3 ), 
-														 makeVector< f32_t, 3 >( subvec3 ) );
-		Affine< f32_t, 8 > i8 = makeAffine< f32_t, 8 >( ), 
-						   a8  = makeAffine< f32_t, 8 >( i8 ), 
-						   mv8 = makeAffine< f32_t, 8 >( makeMatrix< f32_t, 8, 8 >( mat ), 
-														 makeVector< f32_t, 8 >( vec ) );
+		Affine< f32, 2 > i2 = makeAffine< f32, 2 >( ), 
+						   a2  = makeAffine< f32, 2 >( i2 ), 
+						   mv2 = makeAffine< f32, 2 >( makeMatrix< f32, 2, 2 >( submat2 ), 
+														 makeVector< f32, 2 >( subvec2 ) );
+		Affine< f32, 3 > i3 = makeAffine< f32, 3 >( ), 
+						   a3  = makeAffine< f32, 3 >( i3 ), 
+						   mv3 = makeAffine< f32, 3 >( makeMatrix< f32, 3, 3 >( submat3 ), 
+														 makeVector< f32, 3 >( subvec3 ) );
+		Affine< f32, 8 > i8 = makeAffine< f32, 8 >( ), 
+						   a8  = makeAffine< f32, 8 >( i8 ), 
+						   mv8 = makeAffine< f32, 8 >( makeMatrix< f32, 8, 8 >( mat ), 
+														 makeVector< f32, 8 >( vec ) );
 #endif
 
 		assert( i2.mat( 0, 0 ) == 1.f ); assert( a2.mat( 0, 0 ) == 1.f );
@@ -117,15 +117,15 @@ namespace vul_test {
 		assert( i3.vec[ 0 ] == 0.f ); assert( a3.vec[ 0 ] == 0.f );
 		assert( i3.vec[ 1 ] == 0.f ); assert( a3.vec[ 1 ] == 0.f );
 		assert( i3.vec[ 2 ] == 0.f ); assert( a3.vec[ 2 ] == 0.f );
-		for( ui32_t i = 0; i < 3; ++i ) {
-			for( ui32_t j = 0; j < 3; ++j ) {
+		for( u32 i = 0; i < 3; ++i ) {
+			for( u32 j = 0; j < 3; ++j ) {
 				assert( mv3.mat( i, j ) == mat[ i * 3 + j ] );
 			}
 			assert( mv3.vec[ i ] == vec[ i ] );
 		}
 
-		for( ui32_t i = 0; i < 8; ++i ) {
-			for( ui32_t j = 0; j < 8; ++j ) {
+		for( u32 i = 0; i < 8; ++i ) {
+			for( u32 j = 0; j < 8; ++j ) {
 				if( i == j ) {
 					assert( i8.mat( i, j ) == 1.f );
 					assert( a8.mat( i, j ) == 1.f );
@@ -146,31 +146,31 @@ namespace vul_test {
 		// We actually get proper testing of the functionality of this in TestAABB::transforms()
 		// so what we test here is that Point and Vector functionality is different, as it should be.
 #ifdef VUL_CPLUSPLUS11
-		Affine< f32_t, 2 > i2,
-						   mv2( makeMatrix22< f32_t >( cos( VUL_PI / 4 ), -sin( VUL_PI / 4 ),
+		Affine< f32, 2 > i2,
+						   mv2( makeMatrix22< f32 >( cos( VUL_PI / 4 ), -sin( VUL_PI / 4 ),
 													   sin( VUL_PI / 4 ),  cos( VUL_PI / 4 ) ),
-						   Vector< f32_t, 2 >{ 0.f, 1.f } );
-		Affine< f32_t, 3 > i3;
-		Affine< f32_t, 8 > i8;
-		Vector< f32_t, 2 > v2( 1.f );
-		Vector< f32_t, 3 > v3( 1.f );
-		Vector< f32_t, 8 > v8( 1.f );
-		Point< f32_t, 2 > p2( 1.f );
-		Point< f32_t, 3 > p3( 1.f );
-		Point< f32_t, 8 > p8( 1.f );
+						   Vector< f32, 2 >{ 0.f, 1.f } );
+		Affine< f32, 3 > i3;
+		Affine< f32, 8 > i8;
+		Vector< f32, 2 > v2( 1.f );
+		Vector< f32, 3 > v3( 1.f );
+		Vector< f32, 8 > v8( 1.f );
+		Point< f32, 2 > p2( 1.f );
+		Point< f32, 3 > p3( 1.f );
+		Point< f32, 8 > p8( 1.f );
 #else
-		Affine< f32_t, 2 > i2 = makeAffine< f32_t, 2 >( ), 
-						   mv2 = makeAffine< f32_t, 2 >( makeMatrix22< f32_t >( cos( ( f32_t )VUL_PI / 4.f ), -sin( ( f32_t )VUL_PI / 4.f ),
-																				sin( ( f32_t )VUL_PI / 4.f ),  cos( ( f32_t )VUL_PI / 4.f ) ),
-														 makeVector< f32_t >( 0.f, 1.f ) );
-		Affine< f32_t, 3 > i3 = makeAffine< f32_t, 3 >( );
-		Affine< f32_t, 8 > i8 = makeAffine< f32_t, 8 >( );
-		Vector< f32_t, 2 > v2 = makeVector< f32_t, 2 >( 1.f );
-		Vector< f32_t, 3 > v3 = makeVector< f32_t, 3 >( 1.f );
-		Vector< f32_t, 8 > v8 = makeVector< f32_t, 8 >( 1.f );
-		Point< f32_t, 2 > p2 = makePoint< f32_t, 2 >( 1.f );
+		Affine< f32, 2 > i2 = makeAffine< f32, 2 >( ), 
+						   mv2 = makeAffine< f32, 2 >( makeMatrix22< f32 >( cos( ( f32 )VUL_PI / 4.f ), -sin( ( f32 )VUL_PI / 4.f ),
+																				sin( ( f32 )VUL_PI / 4.f ),  cos( ( f32 )VUL_PI / 4.f ) ),
+														 makeVector< f32 >( 0.f, 1.f ) );
+		Affine< f32, 3 > i3 = makeAffine< f32, 3 >( );
+		Affine< f32, 8 > i8 = makeAffine< f32, 8 >( );
+		Vector< f32, 2 > v2 = makeVector< f32, 2 >( 1.f );
+		Vector< f32, 3 > v3 = makeVector< f32, 3 >( 1.f );
+		Vector< f32, 8 > v8 = makeVector< f32, 8 >( 1.f );
+		Point< f32, 2 > p2 = makePoint< f32, 2 >( 1.f );
 #endif
-		f32_t f32eps = 1e-5f;
+		f32 f32eps = 1e-5f;
 		
 		// Test identity transfomrations
 		v2 = i2 * v2;
@@ -183,7 +183,7 @@ namespace vul_test {
 		assert( v3[ 2 ] - 1.f < f32eps );
 
 		v8 = i8 * v8;
-		for( ui32_t i = 0; i < 8; ++i ) {
+		for( u32 i = 0; i < 8; ++i ) {
 			assert( v8[ i ] - 1.f < f32eps );
 		}
 
@@ -199,26 +199,26 @@ namespace vul_test {
 	}
 	bool TestAffine::makeMat44( )
 	{
-		f32_t mat[ 9 ], vec[ 3 ];
-		for( ui32_t i = 0; i < 3; ++i )	{
-			for( ui32_t j = 0; j < 3; ++j )	{
+		f32 mat[ 9 ], vec[ 3 ];
+		for( u32 i = 0; i < 3; ++i )	{
+			for( u32 j = 0; j < 3; ++j )	{
 				mat[ i * 3 + j ] = VUL_TEST_RNG;
 			}
 			vec[ i ] = VUL_TEST_RNG;
 		}
 #ifdef VUL_CPLUSPLUS11
-		Affine< f32_t, 3 > i3,
-						   mv3( makeMatrix< f32_t, 3, 3 >( mat ), makeVector< f32_t, 3 >( vec ) );
+		Affine< f32, 3 > i3,
+						   mv3( makeMatrix< f32, 3, 3 >( mat ), makeVector< f32, 3 >( vec ) );
 #else
-		Affine< f32_t, 3 > i3 = makeAffine< f32_t, 3 >( ), 
-						   mv3 = makeAffine< f32_t, 3 >( makeMatrix< f32_t, 3, 3 >( mat ),
-														 makeVector< f32_t, 3 >( vec ) );
+		Affine< f32, 3 > i3 = makeAffine< f32, 3 >( ), 
+						   mv3 = makeAffine< f32, 3 >( makeMatrix< f32, 3, 3 >( mat ),
+														 makeVector< f32, 3 >( vec ) );
 #endif
-		Matrix< f32_t, 4, 4 > ri = makeHomogeneousFromAffine( i3 );
-		Matrix< f32_t, 4, 4 > rmv = makeHomogeneousFromAffine( mv3 );
+		Matrix< f32, 4, 4 > ri = makeHomogeneousFromAffine( i3 );
+		Matrix< f32, 4, 4 > rmv = makeHomogeneousFromAffine( mv3 );
 
-		for( ui32_t i = 0; i < 3; ++i )	{
-			for( ui32_t j = 0; j < 3; ++j )	{
+		for( u32 i = 0; i < 3; ++i )	{
+			for( u32 j = 0; j < 3; ++j )	{
 				if( i == j ) {
 					assert( ri( i, j ) == 1.f );
 				} else {

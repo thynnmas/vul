@@ -59,141 +59,141 @@ namespace vul_test {
 	bool TestMatrix::make( )
 	{		
 #ifdef VUL_CPLUSPLUS11
-		Matrix< f32_t, 2, 2> m22;
-		Matrix< fi32_t, 3, 3> m33;
-		Matrix< i64_t, 4, 4> m44;
-		Matrix< f32_t, 6, 8> m68;
+		Matrix< f32, 2, 2> m22;
+		Matrix< fi32, 3, 3> m33;
+		Matrix< s64, 4, 4> m44;
+		Matrix< f32, 6, 8> m68;
 #else
-		Matrix< f32_t, 2, 2> m22 = makeMatrix< f32_t, 2, 2 >( );
-		Matrix< fi32_t, 3, 3> m33 = makeMatrix< fi32_t, 3, 3 >( );
-		Matrix< i64_t, 4, 4> m44 = makeMatrix< i64_t, 4, 4 >( );
-		Matrix< f32_t, 6, 8> m68 = makeMatrix< f32_t, 6, 8 >( );
+		Matrix< f32, 2, 2> m22 = makeMatrix< f32, 2, 2 >( );
+		Matrix< fi32, 3, 3> m33 = makeMatrix< fi32, 3, 3 >( );
+		Matrix< s64, 4, 4> m44 = makeMatrix< s64, 4, 4 >( );
+		Matrix< f32, 6, 8> m68 = makeMatrix< f32, 6, 8 >( );
 #endif
 		assert( m22( 0, 0 ) == 0.f );
 		assert( m22( 1, 0 ) ==  0.f );
 		assert( m22( 0, 1 ) ==  0.f );
 		assert( m22( 1, 1 ) == 0.f );
-		assert( m33( 0, 0 ) == fi32_t( 0.f ) );
-		assert( m33( 1, 0 ) == fi32_t( 0.f ) );
-		assert( m33( 2, 0 ) == fi32_t( 0.f ) );
-		assert( m33( 0, 1 ) == fi32_t( 0.f ) );
-		assert( m33( 1, 1 ) == fi32_t( 0.f ) );
-		assert( m33( 2, 1 ) == fi32_t( 0.f ) );
-		assert( m33( 0, 2 ) == fi32_t( 0.f ) );
-		assert( m33( 1, 2 ) == fi32_t( 0.f ) );
-		assert( m33( 2, 2 ) == fi32_t( 0.f ) );
-		for( ui32_t c = 0; c < 4; ++c ) {
-			for( ui32_t r = 0; r < 4; ++r ) {
+		assert( m33( 0, 0 ) == fi32( 0.f ) );
+		assert( m33( 1, 0 ) == fi32( 0.f ) );
+		assert( m33( 2, 0 ) == fi32( 0.f ) );
+		assert( m33( 0, 1 ) == fi32( 0.f ) );
+		assert( m33( 1, 1 ) == fi32( 0.f ) );
+		assert( m33( 2, 1 ) == fi32( 0.f ) );
+		assert( m33( 0, 2 ) == fi32( 0.f ) );
+		assert( m33( 1, 2 ) == fi32( 0.f ) );
+		assert( m33( 2, 2 ) == fi32( 0.f ) );
+		for( u32 c = 0; c < 4; ++c ) {
+			for( u32 r = 0; r < 4; ++r ) {
 				assert( m44( c, r ) == 0L );
 			}
 		}
-		for( ui32_t c = 0; c < 6; ++c ) {
-			for( ui32_t r = 0; r < 8; ++r ) {
+		for( u32 c = 0; c < 6; ++c ) {
+			for( u32 r = 0; r < 8; ++r ) {
 				assert( m68( c, r ) == 0.f );
 			}
 		}
 
 		// Repeat for all, but m22 and m68 should be fine
 #ifdef VUL_CPLUSPLUS11
-		m22 = Matrix< f32_t, 2, 2 >( 2.f );
-		m68 = Matrix< f32_t, 6, 8 >( -1.f );
+		m22 = Matrix< f32, 2, 2 >( 2.f );
+		m68 = Matrix< f32, 6, 8 >( -1.f );
 #else
-		m22 = makeMatrix< f32_t, 2, 2 >( 2.f );
-		m68 = makeMatrix< f32_t, 6, 8 >( -1.f );
+		m22 = makeMatrix< f32, 2, 2 >( 2.f );
+		m68 = makeMatrix< f32, 6, 8 >( -1.f );
 #endif
 		assert( m22( 0, 0 ) == 2.f );
 		assert( m22( 1, 0 ) == 2.f );
 		assert( m22( 0, 1 ) == 2.f );
 		assert( m22( 1, 1 ) == 2.f );
-		for( ui32_t c = 0; c < 6; ++c ) {
-			for( ui32_t r = 0; r < 8; ++r ) {
+		for( u32 c = 0; c < 6; ++c ) {
+			for( u32 r = 0; r < 8; ++r ) {
 				assert( m68( c, r ) == -1.f );
 			}
 		}
 
 #ifdef VUL_CPLUSPLUS11
-		m22 = Matrix< f32_t, 2, 2 >( Matrix< f32_t, 2, 2 >( ) );
-		m68 = Matrix< f32_t, 6, 8 >( Matrix< f32_t, 6, 8 >( ) );
+		m22 = Matrix< f32, 2, 2 >( Matrix< f32, 2, 2 >( ) );
+		m68 = Matrix< f32, 6, 8 >( Matrix< f32, 6, 8 >( ) );
 #else
-		m22 = makeMatrix< f32_t, 2, 2 >( makeMatrix< f32_t, 2, 2 >( ) );
-		m68 = makeMatrix< f32_t, 6, 8 >( makeMatrix< f32_t, 6, 8 >( ) );
+		m22 = makeMatrix< f32, 2, 2 >( makeMatrix< f32, 2, 2 >( ) );
+		m68 = makeMatrix< f32, 6, 8 >( makeMatrix< f32, 6, 8 >( ) );
 #endif
 		
 		assert( m22( 0, 0 ) == 0.f );
 		assert( m22( 1, 0 ) == 0.f );
 		assert( m22( 0, 1 ) == 0.f );
 		assert( m22( 1, 1 ) == 0.f );
-		for( ui32_t c = 0; c < 6; ++c ) {
-			for( ui32_t r = 0; r < 8; ++r ) {
+		for( u32 c = 0; c < 6; ++c ) {
+			for( u32 r = 0; r < 8; ++r ) {
 				assert( m68( c, r ) == 0.f );
 			}
 		}
 
-		// For this we need to test a non-f32 or i32 type, so we only test the m33 (fi32_t)
-		fi32_t a33[ 3 ][ 3 ];
-		for( ui32_t c = 0; c < 3; ++c ) {
-			for( ui32_t r = 0; r < 3; ++r ) {
-				a33[ c ][ r ] = fi32_t( VUL_TEST_RNG );
+		// For this we need to test a non-f32 or i32 type, so we only test the m33 (fi32)
+		fi32 a33[ 3 ][ 3 ];
+		for( u32 c = 0; c < 3; ++c ) {
+			for( u32 r = 0; r < 3; ++r ) {
+				a33[ c ][ r ] = fi32( VUL_TEST_RNG );
 			}
 		}
 #ifdef VUL_CPLUSPLUS11
-		m33 = Matrix< fi32_t, 3, 3 >( a33 );
+		m33 = Matrix< fi32, 3, 3 >( a33 );
 #else
-		m33 = makeMatrix< fi32_t, 3, 3 >( a33 );
+		m33 = makeMatrix< fi32, 3, 3 >( a33 );
 #endif
 		
-		for( ui32_t c = 0; c < 3; ++c ) {
-			for( ui32_t r = 0; r < 3; ++r ) {
+		for( u32 c = 0; c < 3; ++c ) {
+			for( u32 r = 0; r < 3; ++r ) {
 				assert( m33( c, r ) == a33[ c ][ r ] );
 			}
 		}
 		
-		f32_t af[ 6 ][ 8 ];
-		for( ui32_t c = 0; c < 6; ++c ) {
-			for( ui32_t r = 0; r < 8; ++r ) {
+		f32 af[ 6 ][ 8 ];
+		for( u32 c = 0; c < 6; ++c ) {
+			for( u32 r = 0; r < 8; ++r ) {
 				af[ c ][ r ] = VUL_TEST_RNG;
 			}
 		}
-		f32_t af22[ 2 ][ 2 ] = { { af[ 0 ][ 0 ], af[ 0 ][ 1 ] }, { af[ 1 ][ 0 ], af[ 1 ][ 1 ] } };
+		f32 af22[ 2 ][ 2 ] = { { af[ 0 ][ 0 ], af[ 0 ][ 1 ] }, { af[ 1 ][ 0 ], af[ 1 ][ 1 ] } };
 #ifdef VUL_CPLUSPLUS11
-		m22 = Matrix< f32_t, 2, 2 >( af22 );
-		m68 = Matrix< f32_t, 6, 8 >( af );
+		m22 = Matrix< f32, 2, 2 >( af22 );
+		m68 = Matrix< f32, 6, 8 >( af );
 #else
-		m22 = makeMatrix< f32_t, 2, 2 >( af22 );
-		m68 = makeMatrix< f32_t, 6, 8 >( af );
+		m22 = makeMatrix< f32, 2, 2 >( af22 );
+		m68 = makeMatrix< f32, 6, 8 >( af );
 #endif
 		assert( m22( 0, 0 ) == af22[ 0 ][ 0 ] );
 		assert( m22( 1, 0 ) == af22[ 1 ][ 0 ] );
 		assert( m22( 0, 1 ) == af22[ 0 ][ 1 ] );
 		assert( m22( 1, 1 ) == af22[ 1 ][ 1 ] );
-		for( ui32_t c = 0; c < 6; ++c ) {
-			for( ui32_t r = 0; r < 8; ++r ) {
+		for( u32 c = 0; c < 6; ++c ) {
+			for( u32 r = 0; r < 8; ++r ) {
 				assert( m68( c, r ) == af[ c ][ r ] );
 			}
 		}
 		
-		i64_t ai[ 4 ][ 4 ];
-		for( ui32_t c = 0; c < 4; ++c ) {
-			for( ui32_t r = 0; r < 4; ++r ) {
-				ai[ c ][ r ] = ( i64_t )rand( );
+		s64 ai[ 4 ][ 4 ];
+		for( u32 c = 0; c < 4; ++c ) {
+			for( u32 r = 0; r < 4; ++r ) {
+				ai[ c ][ r ] = ( s64 )rand( );
 			}
 		}
 
 
 #ifdef VUL_CPLUSPLUS11
-		m44 = Matrix< i64_t, 4, 4 >( ai );
+		m44 = Matrix< s64, 4, 4 >( ai );
 #else
-		m44 = makeMatrix< i64_t, 4, 4 >( ai );
+		m44 = makeMatrix< s64, 4, 4 >( ai );
 #endif
-		for( ui32_t c = 0; c < 4; ++c ) {
-			for( ui32_t r = 0; r < 4; ++r ) {
+		for( u32 c = 0; c < 4; ++c ) {
+			for( u32 r = 0; r < 4; ++r ) {
 				assert( m44( c, r ) == ai[ c ][ r ] );
 			}
 		}
 
 		// Only available in C++11
 #ifdef VUL_CPLUSPLUS11
-		Matrix< f32_t, 2, 2 > c11m22{ 1.f, -2.f,
+		Matrix< f32, 2, 2 > c11m22{ 1.f, -2.f,
 									  4.f, 3.f };
 		assert( c11m22( 0, 0 ) == 1.f );
 		assert( c11m22( 0, 1 ) == 4.f );
@@ -201,10 +201,10 @@ namespace vul_test {
 		assert( c11m22( 1, 1 ) == 3.f );
 #endif
 
-		m22 = makeIdentity< f32_t, 2 >( );
-		m44 = makeIdentity< i64_t, 4 >( );
-		for( ui32_t r = 0; r < 2; ++r ) {
-			for( ui32_t c = 0; c < 2; ++c ) {
+		m22 = makeIdentity< f32, 2 >( );
+		m44 = makeIdentity< s64, 4 >( );
+		for( u32 r = 0; r < 2; ++r ) {
+			for( u32 c = 0; c < 2; ++c ) {
 				if( c == r ) {
 					assert( m22( c, r )	== 1.f );
 					assert( m44( c, r )	== 1L );
@@ -216,72 +216,72 @@ namespace vul_test {
 		}
 
 
-		m22 = makeMatrix22< f32_t >(  1.f, 4.f, 
+		m22 = makeMatrix22< f32 >(  1.f, 4.f, 
 								     -2.f, 3.f );
 		assert( m22( 0, 0 ) == 1.f );
 		assert( m22( 0, 1 ) == -2.f );
 		assert( m22( 1, 0 ) == 4.f );
 		assert( m22( 1, 1 ) == 3.f );
 
-		m33 = makeMatrix33< fi32_t >( fi32_t( -4.f ), fi32_t( -3.f ), fi32_t( -2.f ),
-									  fi32_t( -1.f ), fi32_t(  0.f ), fi32_t(  1.f ),
-									  fi32_t(  2.f ), fi32_t(  3.f ), fi32_t(  4.f ) );
-		assert( m33( 0, 0 ) == fi32_t( -4.f ) );
-		assert( m33( 1, 0 ) == fi32_t( -3.f ) );
-		assert( m33( 2, 0 ) == fi32_t( -2.f ) );
-		assert( m33( 0, 1 ) == fi32_t( -1.f ) );
-		assert( m33( 1, 1 ) == fi32_t(  0.f ) );
-		assert( m33( 2, 1 ) == fi32_t(  1.f ) );
-		assert( m33( 0, 2 ) == fi32_t(  2.f ) );
-		assert( m33( 1, 2 ) == fi32_t(  3.f ) );
-		assert( m33( 2, 2 ) == fi32_t(  4.f ) );
+		m33 = makeMatrix33< fi32 >( fi32( -4.f ), fi32( -3.f ), fi32( -2.f ),
+									  fi32( -1.f ), fi32(  0.f ), fi32(  1.f ),
+									  fi32(  2.f ), fi32(  3.f ), fi32(  4.f ) );
+		assert( m33( 0, 0 ) == fi32( -4.f ) );
+		assert( m33( 1, 0 ) == fi32( -3.f ) );
+		assert( m33( 2, 0 ) == fi32( -2.f ) );
+		assert( m33( 0, 1 ) == fi32( -1.f ) );
+		assert( m33( 1, 1 ) == fi32(  0.f ) );
+		assert( m33( 2, 1 ) == fi32(  1.f ) );
+		assert( m33( 0, 2 ) == fi32(  2.f ) );
+		assert( m33( 1, 2 ) == fi32(  3.f ) );
+		assert( m33( 2, 2 ) == fi32(  4.f ) );
 
-		m44 = makeMatrix44< i64_t >( 1L, 5L,  9L, 13L,
+		m44 = makeMatrix44< s64 >( 1L, 5L,  9L, 13L,
 									 2L, 6L, 10L, 14L,
 									 3L, 7L, 11L, 15L,
 									 4L, 8L, 12L, 16L );
-		for( ui32_t c = 0; c < 4; ++c ) {
-			for( ui32_t r = 0; r < 4; ++r ) {
-				assert( m44( c, r ) == ( i64_t )( c * 4 + r + 1 ) );
+		for( u32 c = 0; c < 4; ++c ) {
+			for( u32 r = 0; r < 4; ++r ) {
+				assert( m44( c, r ) == ( s64 )( c * 4 + r + 1 ) );
 			}
 		}
 		
-		Vector< f32_t, 8 > cols[ 6 ];
-		Vector< f32_t, 6 > rows[ 8 ];
-		for( ui32_t i = 0; i < 8; ++i ) {
-			for( ui32_t j = 0; j < 6; ++j ) {
-				rows[ i ][ j ] = ( f32_t )rand( ) / ( f32_t )FLT_MAX;
-				cols[ j ][ i ] = ( f32_t )rand( ) / ( f32_t )FLT_MAX;
+		Vector< f32, 8 > cols[ 6 ];
+		Vector< f32, 6 > rows[ 8 ];
+		for( u32 i = 0; i < 8; ++i ) {
+			for( u32 j = 0; j < 6; ++j ) {
+				rows[ i ][ j ] = ( f32 )rand( ) / ( f32 )FLT_MAX;
+				cols[ j ][ i ] = ( f32 )rand( ) / ( f32 )FLT_MAX;
 			}
 		}
-		m68 = makeMatrixFromRows< f32_t, 6, 8 >( rows );
-		for( ui32_t i = 0; i < 8; ++i ) {
-			for( ui32_t j = 0; j < 6; ++j ) {
+		m68 = makeMatrixFromRows< f32, 6, 8 >( rows );
+		for( u32 i = 0; i < 8; ++i ) {
+			for( u32 j = 0; j < 6; ++j ) {
 				assert( m68( j, i ) == rows[ i ][ j ] );
 			}
 		}
-		m68 = makeMatrixFromColumns< f32_t, 6, 8 >( cols );
-		for( ui32_t i = 0; i < 6; ++i ) {
-			for( ui32_t j = 0; j < 8; ++j ) {
+		m68 = makeMatrixFromColumns< f32, 6, 8 >( cols );
+		for( u32 i = 0; i < 6; ++i ) {
+			for( u32 j = 0; j < 8; ++j ) {
 				assert( m68( i, j ) == cols[ i ][ j ] );
 			}
 		}
 
 #ifdef VUL_CPLUSPLUS11
-		Vector< f32_t, 2 > v21{ 0.f, 1.f }, v22{ 2.f, 3.f };
-		Vector< f32_t, 3 > v31{ 0.f, 1.f, 2.f }, v32{ 3.f, 4.f, 5.f }, v33{ 6.f, 7.f, 8.f };
-		Vector< f32_t, 4 > v41{ 0.f, 1.f, 2.f, 3.f }, v42{ 4.f, 5.f, 6.f, 7.f }, 
+		Vector< f32, 2 > v21{ 0.f, 1.f }, v22{ 2.f, 3.f };
+		Vector< f32, 3 > v31{ 0.f, 1.f, 2.f }, v32{ 3.f, 4.f, 5.f }, v33{ 6.f, 7.f, 8.f };
+		Vector< f32, 4 > v41{ 0.f, 1.f, 2.f, 3.f }, v42{ 4.f, 5.f, 6.f, 7.f }, 
 						   v43{ 8.f, 9.f, 10.f, 11.f }, v44{ 12.f, 13.f, 14.f, 15.f };
 #else
-		Vector< f32_t, 2 > v21 = makeVector< f32_t >( 0, 1 ), 
-						   v22 = makeVector< f32_t >( 2, 3 );
-		Vector< f32_t, 3 > v31 = makeVector< f32_t >( 0, 1, 2 ), 
-						   v32 = makeVector< f32_t >( 3, 4, 5 ), 
-						   v33 = makeVector< f32_t >( 6, 7, 8 );
-		Vector< f32_t, 4 > v41 = makeVector< f32_t >( 0, 1, 2, 3 ), 
-						   v42 = makeVector< f32_t >( 4, 5, 6, 7 ),
-						   v43 = makeVector< f32_t >( 8, 9, 10, 11 ), 
-						   v44 = makeVector< f32_t >( 12, 13, 14, 15 );
+		Vector< f32, 2 > v21 = makeVector< f32 >( 0, 1 ), 
+						   v22 = makeVector< f32 >( 2, 3 );
+		Vector< f32, 3 > v31 = makeVector< f32 >( 0, 1, 2 ), 
+						   v32 = makeVector< f32 >( 3, 4, 5 ), 
+						   v33 = makeVector< f32 >( 6, 7, 8 );
+		Vector< f32, 4 > v41 = makeVector< f32 >( 0, 1, 2, 3 ), 
+						   v42 = makeVector< f32 >( 4, 5, 6, 7 ),
+						   v43 = makeVector< f32 >( 8, 9, 10, 11 ), 
+						   v44 = makeVector< f32 >( 12, 13, 14, 15 );
 #endif
 
 		m22 = makeMatrix22FromColumns( v21, v22 );
@@ -290,7 +290,7 @@ namespace vul_test {
 		assert( m22( 1, 0 ) == v22[ 0 ] );
 		assert( m22( 1, 1 ) == v22[ 1 ] );
 
-		Matrix< f32_t, 3, 3 > mf33 = makeMatrix33FromColumns( v31, v32, v33 );
+		Matrix< f32, 3, 3 > mf33 = makeMatrix33FromColumns( v31, v32, v33 );
 		assert( mf33( 0, 0 ) == v31[ 0 ] );
 		assert( mf33( 0, 1 ) == v31[ 1 ] );
 		assert( mf33( 0, 2 ) == v31[ 2 ] );
@@ -301,8 +301,8 @@ namespace vul_test {
 		assert( mf33( 2, 1 ) == v33[ 1 ] );
 		assert( mf33( 2, 2 ) == v33[ 2 ] );
 
-		Matrix< f32_t, 4, 4 > mf44 = makeMatrix44FromColumns( v41, v42, v43, v44 );
-		for( ui32_t i = 0; i < 4; ++i ) {
+		Matrix< f32, 4, 4 > mf44 = makeMatrix44FromColumns( v41, v42, v43, v44 );
+		for( u32 i = 0; i < 4; ++i ) {
 			assert( mf44( 0, i ) == v41[ i ] );
 			assert( mf44( 1, i ) == v42[ i ] );
 			assert( mf44( 2, i ) == v43[ i ] );
@@ -324,11 +324,11 @@ namespace vul_test {
 		assert( !any( mf ) );
 
 #ifdef VUL_CPLUSPLUS11
-		Matrix< f32_t, 4, 4 > ma( 1.f );
-		Matrix< f32_t, 4, 4 > mb( 2.f );
+		Matrix< f32, 4, 4 > ma( 1.f );
+		Matrix< f32, 4, 4 > mb( 2.f );
 #else
-		Matrix< f32_t, 4, 4 > ma = makeMatrix< f32_t, 4, 4 >( 1.f );
-		Matrix< f32_t, 4, 4 > mb = makeMatrix< f32_t, 4, 4 >( 2.f );
+		Matrix< f32, 4, 4 > ma = makeMatrix< f32, 4, 4 >( 1.f );
+		Matrix< f32, 4, 4 > mb = makeMatrix< f32, 4, 4 >( 2.f );
 #endif
 		assert( all( ma == ma ) );
 		assert( any( ma == ma ) );
@@ -338,10 +338,10 @@ namespace vul_test {
 		assert( !any( ma == mb ) );
 
 #ifdef VUL_CPLUSPLUS11
-		Matrix< f32_t, 2, 2 > ms{  0.f, 2.f,
+		Matrix< f32, 2, 2 > ms{  0.f, 2.f,
 								  -2.f, 1.f };
 #else
-		Matrix< f32_t, 2, 2 > ms = makeMatrix22< f32_t >(  0.f, 2.f,
+		Matrix< f32, 2, 2 > ms = makeMatrix22< f32 >(  0.f, 2.f,
 														  -2.f, 1.f );
 #endif
 		assert( select( ms ) == 2.f ); // Row major, so ma( 0, 1 )comes before ma( 1, 0 )
@@ -350,7 +350,7 @@ namespace vul_test {
 	bool TestMatrix::member_ops( )
 	{
 		// Eveything will fail if this fails, pretty much
-		Matrix< f32_t, 3, 2 > m32, mtmp;
+		Matrix< f32, 3, 2 > m32, mtmp;
 		m32.data[ 0 ][ 0 ] = 1.f;
 		m32.data[ 0 ][ 1 ] = 2.f;
 
@@ -435,7 +435,7 @@ namespace vul_test {
 	}
 	bool TestMatrix::ops( )
 	{
-		Matrix< f32_t, 3, 2 > m32, mr;
+		Matrix< f32, 3, 2 > m32, mr;
 		m32.data[ 0 ][ 0 ] = 1.f;
 		m32.data[ 0 ][ 1 ] = 2.f;
 		m32.data[ 1 ][ 0 ] = 3.f;
@@ -443,7 +443,7 @@ namespace vul_test {
 		m32.data[ 2 ][ 0 ] = 5.f;
 		m32.data[ 2 ][ 1 ] = 6.f;
 
-		Matrix< f32_t, 2, 3 > m23;
+		Matrix< f32, 2, 3 > m23;
 		m23.data[ 0 ][ 0 ] = 0.5f;
 		m23.data[ 0 ][ 1 ] = 0.f;
 		m23.data[ 0 ][ 2 ] = -0.75f;
@@ -451,7 +451,7 @@ namespace vul_test {
 		m23.data[ 1 ][ 1 ] = -4.f;
 		m23.data[ 1 ][ 2 ] = 8.5f;
 
-		Matrix< f32_t, 2, 2 > m22;
+		Matrix< f32, 2, 2 > m22;
 		
 		m22 = m23 * m32;
 		assert( m22( 0, 0 ) == -3.25f );
@@ -461,7 +461,7 @@ namespace vul_test {
 		
 		m22( 0, 0 ) = 0.f; m22( 1, 0 ) = -1.f;
 		m22( 0, 1 ) = 1.f; m22( 1, 1 ) =  0.f;
-		Vector< f32_t, 2 > v2, vr;
+		Vector< f32, 2 > v2, vr;
 		v2.data[ 0 ] = 1.f;
 		v2.data[ 1 ] = 0.f;
 		vr = m22 * v2;
@@ -472,7 +472,7 @@ namespace vul_test {
 		assert( vr[ 0 ] == 0.f );
 		assert( vr[ 1 ] == -1.f );
 
-		Point< f32_t, 2 > pr;
+		Point< f32, 2 > pr;
 
 		pr = m22 * v2.as_point( );
 		assert( pr[ 0 ] == 0.f );
@@ -484,15 +484,15 @@ namespace vul_test {
 
 		// For matrix multiplication (and our vector specializations), we also compare to reference implementation.
 #ifdef VUL_TEST_REFERENCE
-		f32_t f32eps = 1e-5f;
-		for( ui32_t i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
-			Matrix< f32_t, 4, 4 > m44a, m44b, m44r;
+		f32 f32eps = 1e-5f;
+		for( u32 i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
+			Matrix< f32, 4, 4 > m44a, m44b, m44r;
 			glm::mat4x4 gm44a, gm44b, gm44r;
 
-			for( ui32_t c = 0; c < 4; ++c ) {
-				for( ui32_t r = 0; r < 4; ++r ) {
-					f32_t a = VUL_TEST_RNG;
-					f32_t b = VUL_TEST_RNG;
+			for( u32 c = 0; c < 4; ++c ) {
+				for( u32 r = 0; r < 4; ++r ) {
+					f32 a = VUL_TEST_RNG;
+					f32 b = VUL_TEST_RNG;
 					m44a( c, r ) = a;
 					m44b( c, r ) = b;
 					gm44a[ r ][ c ] = a;
@@ -501,27 +501,27 @@ namespace vul_test {
 			}
 			m44r = m44a * m44b;
 			gm44r = gm44a * gm44b;
-			for( ui32_t c = 0; c < 4; ++c ) {
-				for( ui32_t r = 0; r < 4; ++r ) {
+			for( u32 c = 0; c < 4; ++c ) {
+				for( u32 r = 0; r < 4; ++r ) {
 					assert( abs( m44r( c, r ) - gm44r[ r ][ c ] ) < f32eps );
 				}
 			}
 
-			Vector< f32_t, 4 > v4, v4r;
+			Vector< f32, 4 > v4, v4r;
 			glm::vec4 gv4, gv4r;
-			for( ui32_t r = 0; r < 4; ++r ) {
-				f32_t a = VUL_TEST_RNG;
+			for( u32 r = 0; r < 4; ++r ) {
+				f32 a = VUL_TEST_RNG;
 				gv4[ r ] = a;
 				v4[ r ] = a;
 			}
 			gv4r = gv4 * gm44a;
 			v4r = m44a * v4;
-			for( ui32_t j = 0; j < 4; ++j ) {
+			for( u32 j = 0; j < 4; ++j ) {
 				assert( abs( gv4r[ j ] - v4r[ j ] ) < f32eps );
 			}
 			gv4r = gm44a * gv4;
 			v4r = v4 * m44a;
-			for( ui32_t j = 0; j < 4; ++j ) {
+			for( u32 j = 0; j < 4; ++j ) {
 				assert( abs( gv4r[ j ] - v4r[ j ] ) < f32eps );
 			}
 		}	
@@ -589,40 +589,40 @@ namespace vul_test {
 	bool TestMatrix::functions( )
 	{
 #ifdef VUL_CPLUSPLUS11
-		Matrix< f32_t, 4, 3 > m43;
+		Matrix< f32, 4, 3 > m43;
 #else
-		Matrix< f32_t, 4, 3 > m43 = makeMatrix< f32_t, 4, 3 >( );
+		Matrix< f32, 4, 3 > m43 = makeMatrix< f32, 4, 3 >( );
 #endif
-		for( ui32_t c = 0; c < 4; ++c ) {
-			for( ui32_t r = 0; r < 3; ++r ) {
+		for( u32 c = 0; c < 4; ++c ) {
+			for( u32 r = 0; r < 3; ++r ) {
 				m43( c, r ) = VUL_TEST_RNG;
 			}
 		}
 		
-		for( ui32_t c = 0; c < 4; ++c ) {
-			Vector< f32_t, 3 > col = column( m43, c );
-			for( ui32_t r = 0; r < 3; ++r ) {
+		for( u32 c = 0; c < 4; ++c ) {
+			Vector< f32, 3 > col = column( m43, c );
+			for( u32 r = 0; r < 3; ++r ) {
 				assert( m43( c, r ) == col[ r ] );
 			}
 		}
-		for( ui32_t r = 0; r < 3; ++r ) {
-			Vector< f32_t, 4 > rw = row( m43, r );
-			for( ui32_t c = 0; c < 4; ++c ) {
+		for( u32 r = 0; r < 3; ++r ) {
+			Vector< f32, 4 > rw = row( m43, r );
+			for( u32 c = 0; c < 4; ++c ) {
 				assert( m43( c, r ) == rw[ c ] );
 			}
 		}
 
-		Matrix< f32_t, 3, 3 > m33 = truncate< f32_t, 3, 3 >( m43 );
-		for( ui32_t c = 0; c < 3; ++c ) {
-			for( ui32_t r = 0; r < 3; ++r ) {
+		Matrix< f32, 3, 3 > m33 = truncate< f32, 3, 3 >( m43 );
+		for( u32 c = 0; c < 3; ++c ) {
+			for( u32 r = 0; r < 3; ++r ) {
 				assert( m43( c, r ) == m33( c, r ) );
 				m33( c, r ) = VUL_TEST_RNG;
 			}
 		}
-		Vector< f32_t, 3 > col3 = column( m43, 3 );
+		Vector< f32, 3 > col3 = column( m43, 3 );
 		copy( &m43, m33 );
-		for( ui32_t c = 0; c < 3; ++c ) {
-			for( ui32_t r = 0; r < 3; ++r ) {
+		for( u32 c = 0; c < 3; ++c ) {
+			for( u32 r = 0; r < 3; ++r ) {
 				assert( m43( c, r ) == m33( c, r ) );
 			}
 		}
@@ -630,10 +630,10 @@ namespace vul_test {
 		assert( m43( 3, 1 ) == col3[ 1 ] );
 		assert( m43( 3, 2 ) == col3[ 2 ] );
 		
-		Vector< f32_t, 3 > col0 = column( m43, 0 );
+		Vector< f32, 3 > col0 = column( m43, 0 );
 		copy( &m43, m33, 1, 0 );
-		for( ui32_t c = 0; c < 3; ++c ) {
-			for( ui32_t r = 0; r < 3; ++r ) {
+		for( u32 c = 0; c < 3; ++c ) {
+			for( u32 r = 0; r < 3; ++r ) {
 				assert( m43( c + 1, r ) == m33( c, r ) );
 			}
 		}
@@ -641,7 +641,7 @@ namespace vul_test {
 		assert( m43( 0, 1 ) == col0[ 1 ] );
 		assert( m43( 0, 2 ) == col0[ 2 ] );
 		
-		Matrix< f32_t, 2, 2 > m22 = makeMatrix22< f32_t >( 7.f, -8.f,
+		Matrix< f32, 2, 2 > m22 = makeMatrix22< f32 >( 7.f, -8.f,
 														   4.f,  2.f ),
 						      m22r;
 		
@@ -674,13 +674,13 @@ namespace vul_test {
 		
 		assert( determinant( m22 ) == 46.f );
 
-		m33 = makeMatrix33< f32_t >( -1.f,  3.f, -3.f,
+		m33 = makeMatrix33< f32 >( -1.f,  3.f, -3.f,
 									  0.f, -6.f,  5.f,
 									 -5.f, -3.f,  1.f );
 		assert( determinant( m33 ) == 6.f );
 
-		Matrix< f32_t, 3, 3 > m33i = inverse( m33 );
-		f32_t f32eps = 1e-5f;
+		Matrix< f32, 3, 3 > m33i = inverse( m33 );
+		f32 f32eps = 1e-5f;
 		assert( abs( m33i( 0, 0 ) - 1.5f ) < f32eps );
 		assert( abs( m33i( 1, 0 ) - 1.f ) < f32eps );
 		assert( abs( m33i( 2, 0 ) - ( -0.5f ) ) < f32eps );

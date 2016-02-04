@@ -49,48 +49,101 @@
 /**
  * Adderss abstraction.
  */
-typedef struct vul_address_t {
+typedef struct vul_address {
 #ifdef VUL_WINDOWS
 	struct addrinfo hints;
 	struct addrinfo *addr;
 #else
 	struct sockaddr_in addr;
 #endif
-} vul_address_t;
+} vul_address;
 
 
 /**
  * Socket abstraction.
  */
-typedef struct vul_socket_t {
+typedef struct vul_socket {
 #ifdef VUL_WINDOWS
 	SOCKET socket;
 #else
 	int socket;
 #endif
-} vul_socket_t;
+} vul_socket;
 
 /**
  * Packet abstraction
  */
-typedef struct vul_packet_t {
+typedef struct vul_packet {
 	uint32_t size_bytes;
 	uint8_t *data;
-} vul_packet_t;
+} vul_packet;
 
+#ifdef _cplusplus
+extern "C" {
 #endif
-
 /**
  * Initialize winsock if on windows, does nothing on posix systems
  */
-#ifndef VUL_DEFINE
 int vul_socket_init( );
-#else
+/**
+ * Cleans up winsock, does nothing on posix systems
+ */
+void vul_socket_destroy( );
+/**
+ * Sends the given packet to the given socket.
+ * Includes an optional timeout value.
+ */
+int vul_socket_send( vul_socket *s, vul_packet *p, unsigned int timeout_millis, unsigned int no_delay );
+/**
+ * Recieves a packet from a socket. Allocates the packet data pointer inside.
+ * Includes an optional timeout value.
+ */
+int vul_socket_receive( vul_socket *s, vul_packet *p, unsigned int timeout_millis );
+/**
+ * Binds to the given port, opens a listening socket.
+ */
+int vul_socket_listen( vul_socket *s, vul_address *a );
+/**
+ * Accepts connections on the given port. Must be listening already,
+ * so call vul_socket_liste( 'listen' ) first.
+ */
+int vul_socket_accept( vul_socket *listen, vul_socket *ret );
+/**
+ * Closes a simple socket 
+ */
+void vul_socket_close( vul_socket *s );
+/**
+ * Closes a socket sending a shutdown signal first.
+ */
+int vul_socket_close_polite( vul_socket *s );
+/**
+ * Connects the given socket to the given address
+ */
+int vul_socket_connect( vul_socket *s, vul_address *a );
+/**
+ * Populate the given address struct with the given IP string and port.
+ */
+int vul_socket_address_create( vul_address *a, const char *ip, unsigned short port );
+/**
+ * Destroy and address struct
+ */
+void vul_socket_address_destroy( vul_address *a );
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
 int vul_socket_init( )
 {
 #ifdef VUL_WINDOWS
 	WSADATA wsa;
-	int res;
+	s32 res;
 
 	res = WSAStartup( MAKEWORD(2, 2), &wsa );
 	return res;
@@ -98,58 +151,34 @@ int vul_socket_init( )
 	return 0;
 #endif
 }
-#endif
 
-/**
- * Cleans up winsock, does nothing on posix systems
- */
-#ifndef VUL_DEFINE
-void vul_socket_destroy( );
-#else
 void vul_socket_destroy( )
 {
 #ifdef VUL_WINDOWS
 	WSACleanup( );
 #endif
 }
-#endif
 
-
-/**
- * Sends the given packet to the given socket.
- * Includes an optional timeout value.
- */
-#ifndef VUL_DEFINE
-int vul_socket_send( vul_socket_t *s, vul_packet_t *p, uint32_t timeout_millis, uint32_t no_delay );
-#else
-int vul_socket_send( vul_socket_t *s, vul_packet_t *p, uint32_t timeout_millis, uint32_t no_delay )
+int vul_socket_send( vul_socket *s, vul_packet *p, unsigned int timeout_millis, unsigned int no_delay )
 {
 	if( no_delay ) {
 		int flag = 1;
 		setsockopt( s->socket, IPPROTO_TCP, TCP_NODELAY, ( char* )&flag, sizeof( int ) );
 	}
 	if( timeout_millis ) {
-		setsockopt( s->socket, SOL_SOCKET, SO_SNDTIMEO, ( char* )&timeout_millis, sizeof( uint32_t ) );
+		setsockopt( s->socket, SOL_SOCKET, SO_SNDTIMEO, ( char* )&timeout_millis, sizeof( unsigned int ) );
 	}
 	return send( s->socket, p->data, p->size_bytes, 0 );
 }
-#endif
 
-/**
- * Recieves a packet from a socket. Allocates the packet data pointer inside.
- * Includes an optional timeout value.
- */
-#ifndef VUL_DEFINE
-int vul_socket_receive( vul_socket_t *s, vul_packet_t *p, uint32_t timeout_millis );
-#else
-int vul_socket_receive( vul_socket_t *s, vul_packet_t *p, uint32_t timeout_millis )
+int vul_socket_receive( vul_socket *s, vul_packet *p, unsigned int timeout_millis )
 {
 	char buffer[ VUL_SOCKET_DEFAULT_BUFFER_LENGTH ];
 	int res;
-	memset( p, 0, sizeof( vul_packet_t ) );
+	memset( p, 0, sizeof( vul_packet ) );
 
 	if( timeout_millis ) {
-		setsockopt( s->socket, SOL_SOCKET, SO_RCVTIMEO, ( char* )&timeout_millis, sizeof( uint32_t ) );
+		setsockopt( s->socket, SOL_SOCKET, SO_RCVTIMEO, ( char* )&timeout_millis, sizeof( unsigned int ) );
 	}
 	do {
 		res = recv( s->socket, buffer, VUL_SOCKET_DEFAULT_BUFFER_LENGTH, 0 );
@@ -180,16 +209,8 @@ int vul_socket_receive( vul_socket_t *s, vul_packet_t *p, uint32_t timeout_milli
 	} while ( res > 0 && res == VUL_SOCKET_DEFAULT_BUFFER_LENGTH );
 	return 0;
 }
-#endif
 
-
-/**
- * Binds to the given port, opens a listening socket.
- */
-#ifndef VUL_DEFINE
-int vul_socket_listen( vul_socket_t *s, vul_address_t *a );
-#else
-int vul_socket_listen( vul_socket_t *s, vul_address_t *a )
+int vul_socket_listen( vul_socket *s, vul_address *a )
 {
 	int ret;
 #ifdef VUL_WINDOWS
@@ -234,16 +255,8 @@ int vul_socket_listen( vul_socket_t *s, vul_address_t *a )
 	return ret;
 #endif
 }
-#endif
 
-/**
- * Accepts connections on the given port. Must be listening already,
- * so call vul_socket_liste( 'listen' ) first.
- */
-#ifndef VUL_DEFINE
-int vul_socket_accept( vul_socket_t *listen, vul_socket_t *ret );
-#else
-int vul_socket_accept( vul_socket_t *listen, vul_socket_t *ret )
+int vul_socket_accept( vul_socket *listen, vul_socket *ret )
 {
 #ifdef VUL_WINDOWS
 	ret->socket = accept( listen->socket, NULL, NULL );
@@ -258,15 +271,8 @@ int vul_socket_accept( vul_socket_t *listen, vul_socket_t *ret )
 	return 0;
 #endif
 }
-#endif
 
-/**
- * Closes a simple socket 
- */
-#ifndef VUL_DEFINE
-void vul_socket_close( vul_socket_t *s );
-#else
-void vul_socket_close( vul_socket_t *s )
+void vul_socket_close( vul_socket *s )
 {
 #ifdef VUL_WINDOWS
 	closesocket( s->socket );
@@ -274,16 +280,8 @@ void vul_socket_close( vul_socket_t *s )
 	close( s->socket );
 #endif
 }
-#endif
 
-
-/**
- * Closes a socket sending a shutdown signal first.
- */
-#ifndef VUL_DEFINE
-int vul_socket_close_polite( vul_socket_t *s );
-#else
-int vul_socket_close_polite( vul_socket_t *s )
+int vul_socket_close_polite( vul_socket *s )
 {
 #ifdef VUL_WINDOWS
 	int res;
@@ -300,16 +298,8 @@ int vul_socket_close_polite( vul_socket_t *s )
 	return 0;
 #endif
 }
-#endif
 
-
-/**
- * Connects the given socket to the given address
- */
-#ifndef VUL_DEFINE
-int vul_socket_connect( vul_socket_t *s, vul_address_t *a );
-#else
-int vul_socket_connect( vul_socket_t *s, vul_address_t *a )
+int vul_socket_connect( vul_socket *s, vul_address *a )
 {
 	int ret;
 #ifdef VUL_WINDOWS
@@ -334,15 +324,8 @@ int vul_socket_connect( vul_socket_t *s, vul_address_t *a )
 	return connect( s->socket, ( struct sockaddr * )&a->addr, sizeof( a->addr ) );
 #endif
 }
-#endif
 
-/**
- * Populate the given address struct with the given IP string and port.
- */
-#ifndef VUL_DEFINE
-int vul_socket_address_create( vul_address_t *a, const char *ip, uint16_t port );
-#else
-int vul_socket_address_create( vul_address_t *a, const char *ip, uint16_t port )
+int vul_socket_address_create( vul_address *a, const char *ip, unsigned short port )
 {
 #ifdef VUL_WINDOWS
 	char str[ 16 ];
@@ -365,16 +348,14 @@ int vul_socket_address_create( vul_address_t *a, const char *ip, uint16_t port )
 	a->addr.sin_port = htons( port );
 #endif
 }
-#endif
 
-/**
- * Destroy and address struct
- */
-#ifndef VUL_DEFINE
-void vul_socket_address_destroy( vul_address_t *a );
-#else
-void vul_socket_address_destroy( vul_address_t *a )
+void vul_socket_address_destroy( vul_address *a )
 {
 	freeaddrinfo( a->addr );
 }
+
+#ifdef _cplusplus
+}
+#endif
+
 #endif

@@ -27,26 +27,26 @@
 namespace vul {
 
 	// Floats
-	typedef half f16_t;
-	typedef float f32_t;
-	typedef double f64_t;
+	typedef half f16;
+	typedef float f32;
+	typedef double f64;
 
 	// Fixed precision
-	typedef fixed_32< 8 > fi32_t;	/* Q.24.8 */
+	typedef fixed_32< 8 > fi32;	/* Q.24.8 */
 
 	// Signed Integers
-	typedef int8_t i8_t;
-	typedef int16_t i16_t;
-	typedef int32_t i32_t;
-	typedef int64_t i64_t;
+	typedef int8_t s8;
+	typedef int16_t s16;
+	typedef int32_t s32;
+	typedef int64_t s64;
 
 	// Unsigned integers
-	typedef uint8_t ui8_t;
-	typedef uint16_t ui16_t;
-	typedef uint32_t ui32_t;
-	typedef uint64_t ui64_t;
+	typedef uint8_t u8;
+	typedef uint16_t u16;
+	typedef uint32_t u32;
+	typedef uint64_t u64;
 
-	typedef ui32_t bool32_t;
+	typedef u32 b32;
 }
 
 #endif

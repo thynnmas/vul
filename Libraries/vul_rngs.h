@@ -36,22 +36,153 @@
 /**
  * The state of the vul_rng_tu RNG.
  */
-typedef struct {
-	ui32_t q[ VUL_RNG_TU_SEED_COUNT ];
-	ui32_t i;
-	ui32_t c;
-} vul_rng_tu_t;
+typedef struct vul_rng_tu {
+	u32 q[ VUL_RNG_TU_SEED_COUNT ];
+	u32 i;
+	u32 c;
+} vul_rng_tu;
 
+#ifdef _cplusplus
+extern "C" {
+#endif
 /**
  * Creates a new vul_rng_tu RNG with the given seed.
  */
-#ifndef VUL_DEFINE
-vul_rng_tu_t *vul_rng_tu_create( ui32_t seed );
-#else
-vul_rng_tu_t *vul_rng_tu_create( ui32_t seed )
+vul_rng_tu *vul_rng_tu_create( u32 seed );
+/**
+ * Destroys a vul_rnd_tu state.
+ */
+void vul_rng_tu_destroy( vul_rng_tu *r );
+/**
+ * Gets the next unsigned integer from the given vul_rng_tu state, and advances it.
+ */
+u32 vul_rng_tu_next_unsigned( vul_rng_tu *r );
+/**
+ * Gets the next float from the given vul_rng_tu state, and advacnes it.
+ */
+f32 vul_rng_tu_next_float( vul_rng_tu *r );
+#ifdef _cplusplus
+}
+#endif
+
+//--------------------------------
+// vul_rng_xorshift
+//
+
+/** 
+ * State of the vul_rng_xorshift RNG.
+ */
+typedef struct vul_rng_xorshift {
+	u32 x, y, z, w;
+} vul_rng_xorshift;
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+/**
+ * Creates a new vul_rng_xorshift RNG.
+ */
+vul_rng_xorshift *vul_rng_xorshift_create( );
+/**
+ * Returns the next u32 in the given vul_rng_xorshift state, and advances it.
+ */
+u32 vul_rng_xorshift_next_unsigned( vul_rng_xorshift *r );
+/**
+ * Returns the next f32 in the given vul_rng_xorshift state, and advances it.
+ */
+f32 vul_rng_xorshift_next_float( vul_rng_xorshift *r );
+#ifdef _cplusplus
+}
+#endif
+
+//--------------------------------
+// vul_rng_xorhash
+//
+
+/**
+ * The vul_rng_xorhash RNG's state
+ */
+typedef struct vul_rng_xorhash {
+	u32 s;
+} vul_rng_xorhash;
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+/**
+ * Create a new vul_rng_xorhash state with the given seed.
+ * @NOTE: There are reports that it doesn't do well with seeds
+ * that are multiples of 34.
+ */
+vul_rng_xorhash *vul_rng_xorhash_create( u32 seed );
+/**
+ * Destroy a vul_rng_xorhash RNG state
+ */
+void vul_rng_xorhash_destroy( vul_rng_xorhash *r );
+/**
+ * Returns the next u32 in the given vul_rng_xorhash state, and advances it.
+ */
+u32 vul_rng_xorhash_next_unsigned( vul_rng_xorhash *r );
+/**
+ * Returns the next f32 in the given vul_rng_xorhash state, and advances it.
+ */
+f32 vul_rng_xorhash_next_float( vul_rng_xorhash *r );
+#ifdef _cplusplus
+}
+#endif
+
+//--------------------------------
+// vul_rng_mt19937
+//
+
+/**
+ * The vul_rng_mt19937 RNG's state
+ */
+typedef struct vul_rng_mt19937 {
+	s32 state[ 624 ];
+	u32 index;
+} vul_rng_mt19937;
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+/**
+ * Create a new vul_rng_mt19937 state with the given seed.
+ * @NOTE: There are reports that it doesn't do well with seeds
+ * that are multiples of 34.
+ */
+vul_rng_mt19937 *vul_rng_mt19937_create( u32 seed );
+/**
+ * Generate a new set of untampered numbers
+ */
+void vul_rng_mt19937_generate( vul_rng_mt19937 * r );
+/**
+ * Destroy a vul_rng_mt19937 RNG state
+ */
+void vul_rng_mt19937_destroy( vul_rng_mt19937 *r );
+/**
+ * Returns the next u32 in the given vul_rng_mt19937 state, and advances it.
+ */
+u32 vul_rng_mt19937_next_unsigned( vul_rng_mt19937 *r );
+/**
+ * Returns the next f32 in the given vul_rng_mt19937 state, and advances it.
+ */
+f32 vul_rng_mt19937_next_float( vul_rng_mt19937 *r );
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+vul_rng_tu *vul_rng_tu_create( u32 seed )
 {
-	ui32_t i, j;
-	vul_rng_tu_t *r = ( vul_rng_tu_t* )malloc( sizeof( vul_rng_tu_t ) );
+	u32 i, j;
+	vul_rng_tu *r = ( vul_rng_tu* )malloc( sizeof( vul_rng_tu ) );
 	assert( r != NULL );
 
 	j = seed;
@@ -66,37 +197,23 @@ vul_rng_tu_t *vul_rng_tu_create( ui32_t seed )
 
 	return r;
 }
-#endif
 
-/**
- * Destroys a vul_rnd_tu state.
- */
-#ifndef VUL_DEFINE
-void vul_rng_tu_destroy( vul_rng_tu_t *r );
-#else
-void vul_rng_tu_destroy( vul_rng_tu_t *r )
+void vul_rng_tu_destroy( vul_rng_tu *r )
 {
 	assert( r != NULL );
 	free( r );
 }
-#endif
 
-/**
- * Gets the next unsigned integer from the given vul_rng_tu state, and advances it.
- */
-#ifndef VUL_DEFINE
-ui32_t vul_rng_tu_next_unsigned( vul_rng_tu_t *r );
-#else
-ui32_t vul_rng_tu_next_unsigned( vul_rng_tu_t *r ) 
+u32 vul_rng_tu_next_unsigned( vul_rng_tu *r ) 
 {
-	ui64_t t;
-	ui32_t x, val;
+	u64 t;
+	u32 x, val;
 
 	assert( r != NULL );
 	r->i = (r->i + 1) & VUL_RNG_TU_SEED_COUNT - 1;
 	t = VUL_RNG_TU_SEED_A * r->q[ r->i ] + r->c;
-	r->c = ( ui32_t ) ( t >> 32 );
-	x = ( ui32_t ) ( t + r->c );
+	r->c = ( u32 ) ( t >> 32 );
+	x = ( u32 ) ( t + r->c );
 	if ( x < r->c ) {
 		x += 1;
 		r->c += 1;
@@ -106,41 +223,16 @@ ui32_t vul_rng_tu_next_unsigned( vul_rng_tu_t *r )
 	r->q[ r->i ] = val;
 	return val;
 }
-#endif
-/**
- * Gets the next float from the given vul_rng_tu state, and advacnes it.
- */
-#ifndef VUL_DEFINE
-f32_t vul_rng_tu_next_float( vul_rng_tu_t *r );
-#else
-f32_t vul_rng_tu_next_float( vul_rng_tu_t *r ) 
+
+f32 vul_rng_tu_next_float( vul_rng_tu *r ) 
 {
-	ui32_t val = vul_rng_tu_next_unsigned( r );
-	return ( f32_t ) ( val >> 8 ) / (16777216.0f - 1.0f);
+	u32 val = vul_rng_tu_next_unsigned( r );
+	return ( f32 ) ( val >> 8 ) / (16777216.0f - 1.0f);
 }
-#endif
 
-
-//--------------------------------
-// vul_rng_xorshift
-//
-
-/** 
- * State of the vul_rng_xorshift RNG.
- */
-typedef struct {
-	ui32_t x, y, z, w;
-} vul_rng_xorshift_t;
-
-/**
- * Creates a new vul_rng_xorshift RNG.
- */
-#ifndef VUL_DEFINE
-vul_rng_xorshift_t *vul_rng_xorshift_create( );
-#else
-vul_rng_xorshift_t *vul_rng_xorshift_create( )
+vul_rng_xorshift *vul_rng_xorshift_create( )
 {
-	vul_rng_xorshift_t *r = ( vul_rng_xorshift_t* )malloc( sizeof( vul_rng_xorshift_t ) );
+	vul_rng_xorshift *r = ( vul_rng_xorshift* )malloc( sizeof( vul_rng_xorshift ) );
 	assert( r );
 
 	r->x = 123456789;
@@ -150,59 +242,25 @@ vul_rng_xorshift_t *vul_rng_xorshift_create( )
 
 	return r;
 }
-#endif
 
-/**
- * Returns the next ui32_t in the given vul_rng_xorshift state, and advances it.
- */
-#ifndef VUL_DEFINE
-ui32_t vul_rng_xorshift_next_unsigned( vul_rng_xorshift_t *r );
-#else
-ui32_t vul_rng_xorshift_next_unsigned( vul_rng_xorshift_t *r )
+u32 vul_rng_xorshift_next_unsigned( vul_rng_xorshift *r )
 {
-	ui32_t t;
+	u32 t;
 	t = r->x ^ ( r->x << 11 );
 	r->x = r->y;
 	r->y = r->z;
 	r->z = r->w;
 	return ( r->w = (r->w ^ (r->w >> 19)) ^ (t ^ (t >> 8)));
 }
-#endif
 
-/**
- * Returns the next f32_t in the given vul_rng_xorshift state, and advances it.
- */
-#ifndef VUL_DEFINE
-f32_t vul_rng_xorshift_next_float( vul_rng_xorshift_t *r );
-#else
-f32_t vul_rng_xorshift_next_float( vul_rng_xorshift_t *r )
+f32 vul_rng_xorshift_next_float( vul_rng_xorshift *r )
 {
-	return ( f32_t )( vul_rng_xorshift_next_unsigned( r ) ) * ( 1.0f / 4294967296.0f );
+	return ( f32 )( vul_rng_xorshift_next_unsigned( r ) ) * ( 1.0f / 4294967296.0f );
 }
-#endif
 
-//--------------------------------
-// vul_rng_xorhash
-//
-
-/**
- * The vul_rng_xorhash RNG's state
- */
-typedef struct {
-	ui32_t s;
-} vul_rng_xorhash_t;
-
-/**
- * Create a new vul_rng_xorhash state with the given seed.
- * @NOTE: There are reports that it doesn't do well with seeds
- * that are multiples of 34.
- */
-#ifndef VUL_DEFINE
-vul_rng_xorhash_t *vul_rng_xorhash_create( ui32_t seed );
-#else
-vul_rng_xorhash_t *vul_rng_xorhash_create( ui32_t seed )
+vul_rng_xorhash *vul_rng_xorhash_create( u32 seed )
 {
-	vul_rng_xorhash_t *r = ( vul_rng_xorhash_t* )malloc( sizeof( vul_rng_xorhash_t ) );
+	vul_rng_xorhash *r = ( vul_rng_xorhash* )malloc( sizeof( vul_rng_xorhash ) );
 	assert( r != NULL );
 
 	seed = ( seed ^61 ) ^ ( seed >> 16 );
@@ -214,97 +272,47 @@ vul_rng_xorhash_t *vul_rng_xorhash_create( ui32_t seed )
 
 	return r;
 }
-#endif
 
-/**
- * Destroy a vul_rng_xorhash RNG state
- */
-#ifndef VUL_DEFINE
-void vul_rng_xorhash_destroy( vul_rng_xorhash_t *r );
-#else
-void vul_rng_xorhash_destroy( vul_rng_xorhash_t *r )
+void vul_rng_xorhash_destroy( vul_rng_xorhash *r )
 {
 	assert( r != NULL );
 	free( r );
 }
-#endif
 
-/**
- * Returns the next ui32_t in the given vul_rng_xorhash state, and advances it.
- */
-#ifndef VUL_DEFINE
-ui32_t vul_rng_xorhash_next_unsigned( vul_rng_xorhash_t *r );
-#else
-ui32_t vul_rng_xorhash_next_unsigned( vul_rng_xorhash_t *r )
+u32 vul_rng_xorhash_next_unsigned( vul_rng_xorhash *r )
 {
 	r->s ^= ( r->s << 13 );
 	r->s ^= ( r->s >> 17 );
 	r->s ^= ( r->s << 5 );
 	return r->s;
 }
-#endif
 
-/**
- * Returns the next f32_t in the given vul_rng_xorhash state, and advances it.
- */
-#ifndef VUL_DEFINE
-f32_t vul_rng_xorhash_next_float( vul_rng_xorhash_t *r );
-#else
-f32_t vul_rng_xorhash_next_float( vul_rng_xorhash_t *r )
+f32 vul_rng_xorhash_next_float( vul_rng_xorhash *r )
 {
-	return ( f32_t )( vul_rng_xorhash_next_unsigned( r ) ) * ( 1.0f / 4294967296.0f );
+	return ( f32 )( vul_rng_xorhash_next_unsigned( r ) ) * ( 1.0f / 4294967296.0f );
 }
-#endif
 
-
-//--------------------------------
-// vul_rng_mt19937
-//
-
-/**
- * The vul_rng_mt19937 RNG's state
- */
-typedef struct {
-	i32_t state[ 624 ];
-	ui32_t index;
-} vul_rng_mt19937_t;
-
-/**
- * Create a new vul_rng_mt19937 state with the given seed.
- * @NOTE: There are reports that it doesn't do well with seeds
- * that are multiples of 34.
- */
-#ifndef VUL_DEFINE
-vul_rng_mt19937_t *vul_rng_mt19937_create( ui32_t seed );
-#else
-vul_rng_mt19937_t *vul_rng_mt19937_create( ui32_t seed )
+vul_rng_mt19937 *vul_rng_mt19937_create( u32 seed )
 {
-	ui32_t i;
+	u32 i;
 
-	vul_rng_mt19937_t *r = ( vul_rng_mt19937_t* )malloc( sizeof( vul_rng_mt19937_t ) );
+	vul_rng_mt19937 *r = ( vul_rng_mt19937* )malloc( sizeof( vul_rng_mt19937 ) );
 	assert( r != NULL );
 
 	r->index = 0;
 	r->state[ 0 ] = seed;
 
 	for( i = 1; i < 624; ++i ) {
-		r->state[ i ] = ( int )( 1812433253LL 
-					  * ( (long long )r->state[ i -1 ] ^ ( ( long long )r->state[ i ] >> 30LL ) ) + i );
+		r->state[ i ] = ( s32 )( 1812433253LL 
+					  * ( ( s64 )r->state[ i -1 ] ^ ( ( s64 )r->state[ i ] >> 30LL ) ) + i );
 	}
 	return r;	
 }
-#endif
 
-/**
- * Generate a new set of untampered numbers
- */
-#ifndef VUL_DEFINE
-void vul_rng_mt19937_generate( vul_rng_mt19937_t * r );
-#else
-void vul_rng_mt19937_generate( vul_rng_mt19937_t * r )
+void vul_rng_mt19937_generate( vul_rng_mt19937 * r )
 {
-	ui32_t i;
-	i32_t y;
+	u32 i;
+	s32 y;
 
 	for ( i = 0; i < 624; ++ i ) {
 		y = ( r->state[ i ] & 0x80000000 ) + ( r->state[ ( i + 1 ) % 624 ] & 0x7fffffff );
@@ -314,36 +322,22 @@ void vul_rng_mt19937_generate( vul_rng_mt19937_t * r )
 		}
 	}
 }
-#endif
 
-/**
- * Destroy a vul_rng_mt19937 RNG state
- */
-#ifndef VUL_DEFINE
-void vul_rng_mt19937_destroy( vul_rng_mt19937_t *r );
-#else
-void vul_rng_mt19937_destroy( vul_rng_mt19937_t *r )
+void vul_rng_mt19937_destroy( vul_rng_mt19937 *r )
 {
 	assert( r != NULL );
 	free( r );
 }
-#endif
 
-/**
- * Returns the next ui32_t in the given vul_rng_mt19937 state, and advances it.
- */
-#ifndef VUL_DEFINE
-ui32_t vul_rng_mt19937_next_unsigned( vul_rng_mt19937_t *r );
-#else
-ui32_t vul_rng_mt19937_next_unsigned( vul_rng_mt19937_t *r )
+u32 vul_rng_mt19937_next_unsigned( vul_rng_mt19937 *r )
 {
-	ui32_t y;
+	u32 y;
 
 	if( r->index == 0 ) {
 		vul_rng_mt19937_generate( r );
 	}
 	
-	y = *((unsigned int* )&r->state[ r->index ]);
+	y = *( ( u32* )&r->state[ r->index ] );
 	y = y ^ ( y >> 11 );
 	y = y ^ ( ( y << 7 ) & 0x9d2c5680 );
 	y = y ^ ( ( y << 15 ) & 0xefc60000 );
@@ -353,21 +347,14 @@ ui32_t vul_rng_mt19937_next_unsigned( vul_rng_mt19937_t *r )
 	
 	return y;	
 }
-#endif
 
-/**
- * Returns the next f32_t in the given vul_rng_mt19937 state, and advances it.
- */
-#ifndef VUL_DEFINE
-f32_t vul_rng_mt19937_next_float( vul_rng_mt19937_t *r );
-#else
-f32_t vul_rng_mt19937_next_float( vul_rng_mt19937_t *r )
+f32 vul_rng_mt19937_next_float( vul_rng_mt19937 *r )
 {
-	return ( f32_t )( vul_rng_mt19937_next_unsigned( r ) ) * ( 1.0f / 4294967296.0f );
+	return ( f32 )( vul_rng_mt19937_next_unsigned( r ) ) * ( 1.0f / 4294967296.0f );
+}
+
+#ifdef _cplusplus
 }
 #endif
-
-
-
 
 #endif

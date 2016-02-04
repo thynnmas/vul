@@ -16,6 +16,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifdef _cplusplus
+extern "C" {
+#endif
+
 #ifndef VUL_CMATH_H
 #define VUL_CMATH_H
 
@@ -100,6 +104,8 @@ typedef struct m44 {
 		v4 c[ 4 ];
 	};
 } m44;
+
+#endif
 
 #ifndef VUL_DEFINE
 #define DEFINE_V2OP( name, op ) v2 name( const v2 a, const v2 b );
@@ -853,4 +859,6 @@ v4 vmulm4( const m44 *m, const v4 v ) {
 }
 #endif
 
+#ifdef _cplusplus
+}
 #endif

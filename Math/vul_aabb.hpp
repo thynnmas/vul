@@ -39,7 +39,7 @@ namespace vul {
 	// Declarations
 	// 	
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	struct AABB {
 		// @TODO(thynn): Consider changing this to center, extent
 		Point< T, n > _min;
@@ -59,73 +59,73 @@ namespace vul {
 	/**
 	 * Translate the AABB by a vector.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > translate( const AABB< T, n > &aabb, const Vector< T, n > &vec );
 	/**
 	 * Scale the AABB.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > scale( const AABB< T, n > &aabb, const Vector< T, n > &v );
 	/**
 	 * Perform an affine transformation on a single AABB.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > transform( const AABB< T, n > &aabb, const Affine< T, n > &a );
 
 	/**
 	 * Returns the center of an AABB
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > center( const AABB< T, n > &aabb );
 	/**
 	 * Returns half the extent of an AABB,
 	 * so corners are described by center( aabb ) +- extent( aabb ).
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > extent( const AABB< T, n > &aabb );
 	/**
 	 * Tests if a point is inside an AABB within a given epsilon
 	 * @TODO(thynn): Move from eps to ULP comparison, see https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	bool inside( const AABB< T, n > &aabb, const Point< T, n > &pt, T epsilon = T( 0.f ) );
 	/**
 	 * Tests if an AABB entirely contains another AABB
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	bool contains( const AABB< T, n > &outer, const AABB< T, n > &inner );
 	/**
 	 * Tests whether two AABBs intersect.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	bool intersect( const AABB< T, n > &a, const AABB< T, n > &b );
 	/**
 	 * Computes the union of two AABBs, the smallest AABB that contains both
 	 * AABBs given. Expects the AABBs to be well defined (_min < _max for both).
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > unionize( const AABB< T, n > &a, const AABB< T, n > &b );
 
 	/**
 	 * Test if the given AABB is inside the given frustum.
 	 */
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	bool insideFrustum( const AABB< T, n > &aabb, const Vector< T, n + 1 > planes[ n * 2 ] );
 
 #ifndef VUL_CPLUSPLUS11
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > makeAABB( );
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > makeAABB( const Point< T, n > &mini, const Point< T, n > &maxi );
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > makeAABB( const Vector< T, n > &mini, const Vector< T, n > &maxi );
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > makeAABB( T( &a )[ 2 ][ n ] );
 #endif
-	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( f32_t( &a )[ 2 ][ n ] );
-	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( i32_t( &a )[ 2 ][ n ] );
+	template< typename T, s32 n >
+	AABB< T, n > makeAABB( f32( &a )[ 2 ][ n ] );
+	template< typename T, s32 n >
+	AABB< T, n > makeAABB( s32( &a )[ 2 ][ n ] );
 
 #ifdef VUL_AOSOA_SSE
 	/**
@@ -133,25 +133,25 @@ namespace vul {
 	 * Each AABB here contains 4 AABBs, where the vector data has the format __m128[ 3 ]:
 	 * __m128[ 0 ] = xxxx, __m128[ 1 ] = yyyy, __m128[ 2 ] = zzzz
 	 */
-	void transform3D( AABB< __m128, 3 > *out, const AABB< __m128, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count );
+	void transform3D( AABB< __m128, 3 > *out, const AABB< __m128, 3 > *in, const Affine< f32, 3 > &trans, u32 count );
 	/**
 	 * Apply a 3D affine transform to multiple SSE packed AABBs with 3D-vectors.
 	 * Each AABB here contains 2 AABBs, where the vector data has the format __m128d[ 3 ]:
 	 * __m128d[ 0 ] = xx, __m128d[ 1 ] = yy, __m128d[ 2 ] = zz
 	 */
-	void transform3D( AABB< __m128d, 3 > *out, const AABB< __m128d, 3 > *in, const Affine< f64_t, 3 > &trans, ui32_t count );
+	void transform3D( AABB< __m128d, 3 > *out, const AABB< __m128d, 3 > *in, const Affine< f64, 3 > &trans, u32 count );
 	/**
 	* Test an array of packed AABBs against a frustum of 6 planes.
 	* Fill the result into the array out, where each result is 8 bytes.
 	* Single precision.
 	*/
-	void inside_test( ui32_t *out, const AABB< __m128, 3 > *aabbs, Vector< f32_t, 4 > planes[ 6 ], ui32_t count );
+	void inside_test( u32 *out, const AABB< __m128, 3 > *aabbs, Vector< f32, 4 > planes[ 6 ], u32 count );
 	/**
 	* Test an array of packed AABBs against a frustum of 6 planes.
 	* Fill the result into the array out, where each result is 8 bytes.
 	* Double precision.
 	*/
-	void inside_test( ui32_t *out, const AABB< __m128d, 3 > *aabbs, Vector< f64_t, 4 > planes[ 6 ], ui32_t count );
+	void inside_test( u32 *out, const AABB< __m128d, 3 > *aabbs, Vector< f64, 4 > planes[ 6 ], u32 count );
 #endif
 #ifdef VUL_AOSOA_AVX
 	/**
@@ -159,25 +159,25 @@ namespace vul {
 	 * Each AABB here contains 8 AABBs, where the vector data has the format __m256[ 3 ]:
 	 * __m256[ 0 ] = xxxxxxxx, __m256[ 1 ] = yyyyyyyy, __m256[ 2 ] = zzzzzzzz
 	 */
-	void transform3D( AABB< __m256, 3 > *out, const AABB< __m256, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count );
+	void transform3D( AABB< __m256, 3 > *out, const AABB< __m256, 3 > *in, const Affine< f32, 3 > &trans, u32 count );
 	/**
 	 * Apply a 3D affine transform to multiple SSE packed AABBs with 3D-vectors.
 	 * Each AABB here contains 4 AABBs, where the vector data has the format __m256d[ 3 ]:
 	 * __m256d[ 0 ] = xxxx, __m256d[ 1 ] = yyyy, __m256d[ 2 ] = zzzz
 	 */
-	void transform3D( AABB< __m256d, 3 > *out, const AABB< __m256d, 3 > *in, const Affine< f64_t, 3 > &trans, ui32_t count );
+	void transform3D( AABB< __m256d, 3 > *out, const AABB< __m256d, 3 > *in, const Affine< f64, 3 > &trans, u32 count );
 	/**
 	* Test an array of packed AABBs against a frustum of 6 planes.
 	* Fill the result into the array out, where each result is 8 bytes.
 	* Single precision.
 	*/
-	void inside_test( ui32_t *out, const AABB< __m256, 3 > *aabbs, Vector< f32_t, 4 > planes[ 6 ], ui32_t count );
+	void inside_test( u32 *out, const AABB< __m256, 3 > *aabbs, Vector< f32, 4 > planes[ 6 ], u32 count );
 	/**
 	* Test an array of packed AABBs against a frustum of 6 planes.
 	* Fill the result into the array out, where each result is 8 bytes.
 	* Double precision.
 	*/
-	void inside_test( ui32_t *out, const AABB< __m256d, 3 > *aabbs, Vector< f64_t, 4 > planes[ 6 ], ui32_t count );
+	void inside_test( u32 *out, const AABB< __m256d, 3 > *aabbs, Vector< f64, 4 > planes[ 6 ], u32 count );
 #endif
 #ifdef VUL_AOSOA_NEON
 	/**
@@ -185,12 +185,12 @@ namespace vul {
 	 * Each AABB here contains 4 AABBs, where the vector data has the format float32x4_t[ 3 ]:
 	 * float32x4_t[ 0 ] = xxxx, float32x4_[ 1 ] = yyyy, float32x4_t[ 2 ] = zzzz
 	 */
-	void transform3D( AABB< float32x4_t, 3 > *out, const AABB< float32x4_t, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count );
+	void transform3D( AABB< float32x4_t, 3 > *out, const AABB< float32x4_t, 3 > *in, const Affine< f32, 3 > &trans, u32 count );
 	/**
 	* Test an array of packed AABBs against a frustum of 6 planes.
 	* Fill the result into the array out, where each result is 8 bytes.
 	*/
-	void inside_test( ui32_t *out, const AABB< float32x4_t, 3 > *aabbs, Vector< f32_t, 4 > planes[ 6 ], ui32_t count );
+	void inside_test( u32 *out, const AABB< float32x4_t, 3 > *aabbs, Vector< f32, 4 > planes[ 6 ], u32 count );
 #endif
 	
 	//----------------
@@ -198,34 +198,34 @@ namespace vul {
 	//
 
 #ifdef VUL_CPLUSPLUS11
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n >::AABB( )
 	{
 		_min = Point< T, n >( );
 		_max = Point< T, n >( );
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n >::AABB( const Point< T, n > &mini, const Point< T, n > &maxi )
 	{
 		_min = mini;
 		_max = maxi;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n >::AABB( const Vector< T, n > &mini, const Vector< T, n > &maxi )
 	{
 		_min = mini.as_point( );
 		_max = maxi.as_point( );
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n >::AABB( T (& a)[ 2 ][ n ] )
 	{
 		_min = Point< T, n >( a[ 0 ] );
 		_max = Point< T, n >( a[ 1 ] );
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n >::AABB( std::initializer_list< T > list )
 	{
-		i32_t i;
+		s32 i;
 		typename std::initializer_list< T >::iterator it;
 
 		for( it = list.begin( ), i = 0; it != list.end( ) && i < n; ++it, ++i ) {
@@ -235,7 +235,7 @@ namespace vul {
 			_max.data[ i ] = *it;
 		}
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n >::AABB( const AABB< T, n > &rhs )
 	{		
 		_min = rhs._min;
@@ -243,7 +243,7 @@ namespace vul {
 	}
 #else
 #pragma warning(disable: 6001)
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > makeAABB( )
 	{
 		AABB< T, n > aabb;
@@ -253,7 +253,7 @@ namespace vul {
 
 		return aabb;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > makeAABB( const Point< T, n > &mini, const Point< T, n > &maxi )
 	{
 		AABB< T, n > aabb;
@@ -263,7 +263,7 @@ namespace vul {
 
 		return aabb;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > makeAABB( const Vector< T, n > &mini, const Vector< T, n > &maxi )
 	{
 		AABB< T, n > aabb;
@@ -273,7 +273,7 @@ namespace vul {
 
 		return aabb;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > makeAABB( T (& a)[ 2 ][ n ] )
 	{
 		AABB< T, n > aabb;
@@ -284,8 +284,8 @@ namespace vul {
 		return aabb;
 	}
 #endif
-	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( f32_t (& a)[ 2 ][ n ] )
+	template< typename T, s32 n >
+	AABB< T, n > makeAABB( f32 (& a)[ 2 ][ n ] )
 	{
 		AABB< T, n > aabb;
 		
@@ -294,8 +294,8 @@ namespace vul {
 
 		return aabb;
 	}
-	template< typename T, i32_t n >
-	AABB< T, n > makeAABB( i32_t (& a)[ 2 ][ n ] )
+	template< typename T, s32 n >
+	AABB< T, n > makeAABB( s32 (& a)[ 2 ][ n ] )
 	{
 		AABB< T, n > aabb;
 		
@@ -305,7 +305,7 @@ namespace vul {
 		return aabb;
 	}
 	
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > &AABB< T, n >::operator=( const AABB< T, n > &rhs )
 	{
 		_min = rhs._min;
@@ -313,7 +313,7 @@ namespace vul {
 		return *this;
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > translate( const AABB< T, n > &aabb, const Vector< T, n > &vec )
 	{
 		AABB< T, n > r;
@@ -323,7 +323,7 @@ namespace vul {
 
 		return r;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > scale( const AABB< T, n > &aabb, const Vector< T, n > &v )
 	{
 		AABB< T, n > r, tmp;
@@ -337,7 +337,7 @@ namespace vul {
 
 		return r;
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > transform( const AABB< T, n > &aabb, const Affine< T, n > &a )
 	{
 		AABB< T, n > res;
@@ -351,7 +351,7 @@ namespace vul {
 		newmin = makeVector< T, n >(  std::numeric_limits< T >::max( ) );
 		newmax = makeVector< T, n >( -std::numeric_limits< T >::max( ) );
 #endif
-		for( i = 0; i < ( ui32_t )pow( 2.f, n ); ++i )
+		for( i = 0; i < ( u32 )pow( 2.f, n ); ++i )
 		{
 			for( j = 0; j < n; ++j )
 			{
@@ -371,19 +371,19 @@ namespace vul {
 	}
 #pragma warning(default: 6001)
 	
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Point< T, n > center( const AABB< T, n > &aabb )
 	{
 		return ( ( aabb._max.as_vec( ) + aabb._min.as_vec( ) ) * static_cast< T >( 0.5f ) ).as_point( );
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	Vector< T, n > extent( const AABB< T, n > &aabb )
 	{
 		return ( aabb._max - aabb._min ) * static_cast< T >( 0.5f );
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	bool inside( const AABB< T, n > &aabb, const Point< T, n > &pt, T epsilon )
 	{
 		Vector< T, n > eps = makeVector< T, n >( epsilon );
@@ -392,19 +392,19 @@ namespace vul {
 				  - abs( extent( aabb ) )			// smaller than or equal to
 					<= eps );						// the size of the extent
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	bool contains( const AABB< T, n > &outer, const AABB< T, n > &inner )
 	{
 		return all( outer._min.as_vec( ) <= inner._min.as_vec( ) )
 			&& all( outer._max.as_vec( ) >= inner._max.as_vec( ) );
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	bool intersect( const AABB< T, n > &a, const AABB< T, n > &b )
 	{
 		return all( a._min.as_vec( ) <= b._max.as_vec( ) ) 
 			&& all( a._max.as_vec( ) >= b._min.as_vec( ) );
 	}
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	AABB< T, n > unionize( const AABB< T, n > &a, const AABB< T, n > &b )
 	{
 #ifdef VUL_CPLUSPLUS11
@@ -420,10 +420,10 @@ namespace vul {
 #endif
 	}
 
-	template< typename T, i32_t n >
+	template< typename T, s32 n >
 	bool insideFrustum( const AABB< T, n > &aabb, const Vector< T, n + 1 > planes[ n * 2 ] )
 	{
-		ui32_t i;
+		u32 i;
 		Vector< T, n > c, e, p;
 		
 		c = aabb._min.as_vec( ) + aabb._max.as_vec( );
@@ -446,9 +446,9 @@ namespace vul {
 	//
 #ifdef VUL_DEFINE
 #ifdef VUL_AOSOA_SSE
-	void transform3D( AABB< __m128, 3 > *out, const AABB< __m128, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count )
+	void transform3D( AABB< __m128, 3 > *out, const AABB< __m128, 3 > *in, const Affine< f32, 3 > &trans, u32 count )
 	{
-		ui32_t i, j, simdCount;
+		u32 i, j, simdCount;
 		__m128 mat[ 4 ][ 3 ];
 
 		// Fill the matrix from the Affine
@@ -509,9 +509,9 @@ namespace vul {
 			bb->_max.data[ 2 ] = zNewMaxes;
 		}
 	}
-	void transform3D( AABB< __m128d, 3 > *out, const AABB< __m128d, 3 > *in, const Affine< f64_t, 3 > &trans, ui32_t count )
+	void transform3D( AABB< __m128d, 3 > *out, const AABB< __m128d, 3 > *in, const Affine< f64, 3 > &trans, u32 count )
 	{
-		ui32_t i, j, simdCount;
+		u32 i, j, simdCount;
 		__m128d mat[ 4 ][ 3 ];
 
 		// Fill the matrix from the Affine
@@ -575,9 +575,9 @@ namespace vul {
 	}
 #endif // VUL_AOSOA_SSE
 #ifdef VUL_AOSOA_AVX
-	void transform3D( AABB< __m256, 3 > *out, const AABB< __m256, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count )
+	void transform3D( AABB< __m256, 3 > *out, const AABB< __m256, 3 > *in, const Affine< f32, 3 > &trans, u32 count )
 	{
-		ui32_t i, j, simdCount;
+		u32 i, j, simdCount;
 		__m256 mat[ 4 ][ 3 ];
 
 		// Fill the matrix from the Affine
@@ -639,9 +639,9 @@ namespace vul {
 			bb->_max.data[ 2 ] = zNewMaxes;
 		}
 	}
-	void transform3D( AABB< __m256d, 3 > *out, const AABB< __m256d, 3 > *in, const Affine< f64_t, 3 > &trans, ui32_t count )
+	void transform3D( AABB< __m256d, 3 > *out, const AABB< __m256d, 3 > *in, const Affine< f64, 3 > &trans, u32 count )
 	{
-		ui32_t i, j, simdCount;
+		u32 i, j, simdCount;
 		__m256d mat[ 4 ][ 3 ];
 
 		// Fill the matrix from the Affine
@@ -704,9 +704,9 @@ namespace vul {
 	}
 #endif // VUL_AOSOA_AVX
 #ifdef VUL_AOSOA_NEON
-	void transform3D( AABB< float32x4_t, 3 > *out, const AABB< float32x4_t, 3 > *in, const Affine< f32_t, 3 > &trans, ui32_t count )
+	void transform3D( AABB< float32x4_t, 3 > *out, const AABB< float32x4_t, 3 > *in, const Affine< f32, 3 > &trans, u32 count )
 	{
-		ui32_t i, j, simdCount;
+		u32 i, j, simdCount;
 		float32x4_t mat[ 4 ][ 3 ];
 
 		// Fill the matrix from the Affine
@@ -770,7 +770,7 @@ namespace vul {
 #endif // VUL_AOSOA_NEON
 
 #ifdef VUL_AOSOA_SSE
-	void inside_test( ui32_t *out, const AABB< __m128, 3 > *aabbs, Vector< f32_t, 4 > planes[ 6 ], ui32_t count )
+	void inside_test( u32 *out, const AABB< __m128, 3 > *aabbs, Vector< f32, 4 > planes[ 6 ], u32 count )
 	{
 		__m128 c[ 3 ];
 		__m128 e[ 3 ];
@@ -778,11 +778,11 @@ namespace vul {
 		__m128 signFlip[ 3 ], signBit;
 		__m128 t0[ 3 ];
 		__m128 t1[ 3 ];
-		ui32_t simdCount;
+		u32 simdCount;
 
 		signBit = _mm_set1_ps( 0x80000000 );
 
-		for( ui32_t j = 0; j < 6; ++j ) {
+		for( u32 j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = _mm_set1_ps( planes[ j ].data[ 0 ] );
 			p[ j ][ 1 ] = _mm_set1_ps( planes[ j ].data[ 1 ] );
 			p[ j ][ 2 ] = _mm_set1_ps( planes[ j ].data[ 2 ] );
@@ -790,7 +790,7 @@ namespace vul {
 		}
 		
 		simdCount = ( count + 3 ) / 4;
-		for( ui32_t i = 0; i < simdCount; ++i ) {
+		for( u32 i = 0; i < simdCount; ++i ) {
 			c[ 0 ] = _mm_add_ps( aabbs[ i ]._min.data[ 0 ], aabbs[ i ]._max.data[ 0 ] );
 			c[ 1 ] = _mm_add_ps( aabbs[ i ]._min.data[ 1 ], aabbs[ i ]._max.data[ 1 ] );
 			c[ 2 ] = _mm_add_ps( aabbs[ i ]._min.data[ 2 ], aabbs[ i ]._max.data[ 2 ] );
@@ -800,7 +800,7 @@ namespace vul {
 			e[ 2 ] = _mm_sub_ps( aabbs[ i ]._max.data[ 2 ], aabbs[ i ]._min.data[ 2 ] );
 
 			out[ i ] = 0x00000000;
-			for( ui32_t j = 0; j < 6; ++j ) {
+			for( u32 j = 0; j < 6; ++j ) {
 				signFlip[ 0 ] = _mm_and_ps( p[ j ][ 0 ], signBit );
 				signFlip[ 1 ] = _mm_and_ps( p[ j ][ 1 ], signBit );
 				signFlip[ 2 ] = _mm_and_ps( p[ j ][ 2 ], signBit );
@@ -825,7 +825,7 @@ namespace vul {
 				// t2 > -plane.w
 				union {
 					__m128 v;
-					f32_t a[ 4 ];
+					f32 a[ 4 ];
 				} t;
 				t.v = _mm_cmpgt_ps( t1[ 1 ], p[ j ][ 3 ] );
 
@@ -837,7 +837,7 @@ namespace vul {
 			}
 		}
 	}
-	void inside_test( ui32_t *out, const AABB< __m128d, 3 > *aabbs, Vector< f64_t, 4 > planes[ 6 ], ui32_t count )
+	void inside_test( u32 *out, const AABB< __m128d, 3 > *aabbs, Vector< f64, 4 > planes[ 6 ], u32 count )
 	{
 		__m128d c[ 3 ];
 		__m128d e[ 3 ];
@@ -845,11 +845,11 @@ namespace vul {
 		__m128d signFlip[ 3 ], signBit;
 		__m128d t0[ 3 ];
 		__m128d t1[ 3 ];
-		ui32_t simdCount;
+		u32 simdCount;
 
 		signBit = _mm_set1_pd( 0x80000000 );
 
-		for( ui32_t j = 0; j < 6; ++j ) {
+		for( u32 j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = _mm_set1_pd( planes[ j ].data[ 0 ] );
 			p[ j ][ 1 ] = _mm_set1_pd( planes[ j ].data[ 1 ] );
 			p[ j ][ 2 ] = _mm_set1_pd( planes[ j ].data[ 2 ] );
@@ -857,7 +857,7 @@ namespace vul {
 		}
 
 		simdCount = ( count + 1 ) / 2;
-		for( ui32_t i = 0; i < simdCount; ++i ) {
+		for( u32 i = 0; i < simdCount; ++i ) {
 			c[ 0 ] = _mm_add_pd( aabbs[ i ]._min.data[ 0 ], aabbs[ i ]._max.data[ 0 ] );
 			c[ 1 ] = _mm_add_pd( aabbs[ i ]._min.data[ 1 ], aabbs[ i ]._max.data[ 1 ] );
 			c[ 2 ] = _mm_add_pd( aabbs[ i ]._min.data[ 2 ], aabbs[ i ]._max.data[ 2 ] );
@@ -867,7 +867,7 @@ namespace vul {
 			e[ 2 ] = _mm_sub_pd( aabbs[ i ]._max.data[ 2 ], aabbs[ i ]._min.data[ 2 ] );
 
 			out[ i ] = 0x00000000;
-			for( ui32_t j = 0; j < 6; ++j ) {
+			for( u32 j = 0; j < 6; ++j ) {
 				signFlip[ 0 ] = _mm_and_pd( p[ j ][ 0 ], signBit );
 				signFlip[ 1 ] = _mm_and_pd( p[ j ][ 1 ], signBit );
 				signFlip[ 2 ] = _mm_and_pd( p[ j ][ 2 ], signBit );
@@ -892,17 +892,17 @@ namespace vul {
 				// t2 > -plane.w
 				union {
 					__m128d v;
-					f64_t a[ 2 ];
+					f64 a[ 2 ];
 				} t;
 				t.v = _mm_cmpgt_pd( t1[ 1 ], p[ j ][ 3 ] );
 
 				// Store result
 				if( i % 1 ) {
-					out[ i ] = ( *( ( ui64_t* )&t.a[ 0 ] ) == 0xffffffffffffffff ? 0x0000ff00 : 0x00000000 )
-							 | ( *( ( ui64_t* )&t.a[ 1 ] ) == 0xffffffffffffffff ? 0x000000ff : 0x00000000 );
+					out[ i ] = ( *( ( u64* )&t.a[ 0 ] ) == 0xffffffffffffffff ? 0x0000ff00 : 0x00000000 )
+							 | ( *( ( u64* )&t.a[ 1 ] ) == 0xffffffffffffffff ? 0x000000ff : 0x00000000 );
 				} else {
-					out[ i ] = ( *( ( ui64_t* )&t.a[ 0 ] ) == 0xffffffffffffffff ? 0xff000000 : 0x00000000 )
-							 | ( *( ( ui64_t* )&t.a[ 1 ] ) == 0xffffffffffffffff ? 0x00ff0000 : 0x00000000 );
+					out[ i ] = ( *( ( u64* )&t.a[ 0 ] ) == 0xffffffffffffffff ? 0xff000000 : 0x00000000 )
+							 | ( *( ( u64* )&t.a[ 1 ] ) == 0xffffffffffffffff ? 0x00ff0000 : 0x00000000 );
 				}
 			}
 		}
@@ -913,7 +913,7 @@ namespace vul {
 	* Test an array of packed AABBs against a frustum of 6 planes.
 	* Fill the result into the array out, where 0 is false and everything else is true.
 	*/
-	void inside_test( ui32_t *out, const AABB< __m256, 3 > *aabbs, Vector< f32_t, 4 > planes[ 6 ], ui32_t count )
+	void inside_test( u32 *out, const AABB< __m256, 3 > *aabbs, Vector< f32, 4 > planes[ 6 ], u32 count )
 	{
 		__m256 c[ 3 ];
 		__m256 e[ 3 ];
@@ -921,11 +921,11 @@ namespace vul {
 		__m256 signFlip[ 3 ], signBit;
 		__m256 t0[ 3 ];
 		__m256 t1[ 3 ];
-		ui32_t simdCount;
+		u32 simdCount;
 
 		signBit = _mm256_set1_ps( 0x80000000 );
 
-		for( ui32_t j = 0; j < 6; ++j ) {
+		for( u32 j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = _mm256_set1_ps( planes[ j ].data[ 0 ] );
 			p[ j ][ 1 ] = _mm256_set1_ps( planes[ j ].data[ 1 ] );
 			p[ j ][ 2 ] = _mm256_set1_ps( planes[ j ].data[ 2 ] );
@@ -933,7 +933,7 @@ namespace vul {
 		}
 
 		simdCount = ( count + 7 ) / 8;
-		for( ui32_t i = 0; i < simdCount; ++i ) {
+		for( u32 i = 0; i < simdCount; ++i ) {
 			c[ 0 ] = _mm256_add_ps( aabbs[ i ]._min.data[ 0 ], aabbs[ i ]._max.data[ 0 ] );
 			c[ 1 ] = _mm256_add_ps( aabbs[ i ]._min.data[ 1 ], aabbs[ i ]._max.data[ 1 ] );
 			c[ 2 ] = _mm256_add_ps( aabbs[ i ]._min.data[ 2 ], aabbs[ i ]._max.data[ 2 ] );
@@ -944,7 +944,7 @@ namespace vul {
 
 			out[ i * 2 ] = 0x00000000;
 			out[ i * 2 + 1 ] = 0x00000000;
-			for( ui32_t j = 0; j < 6; ++j ) {
+			for( u32 j = 0; j < 6; ++j ) {
 				signFlip[ 0 ] = _mm256_and_ps( p[ j ][ 0 ], signBit );
 				signFlip[ 1 ] = _mm256_and_ps( p[ j ][ 1 ], signBit );
 				signFlip[ 2 ] = _mm256_and_ps( p[ j ][ 2 ], signBit );
@@ -969,23 +969,23 @@ namespace vul {
 				// t2 > -plane.w
 				union {
 					__m256 v;
-					f32_t a[ 8 ];
+					f32 a[ 8 ];
 				} t;
 				t.v = _mm256_cmp_ps( t1[ 1 ], p[ j ][ 3 ], _CMP_GT_OQ );
 
 				// Store result
-				out[ i * 2 ] |= ( *( ( ui32_t* )&t.a[ 7 ] ) == 0.f ? 0x00000000 : 0xff000000 )
-							  | ( *( ( ui32_t* )&t.a[ 6 ] ) == 0.f ? 0x00000000 : 0x00ff0000 )
-							  | ( *( ( ui32_t* )&t.a[ 5 ] ) == 0.f ? 0x00000000 : 0x0000ff00 )
-							  | ( *( ( ui32_t* )&t.a[ 4 ] ) == 0.f ? 0x00000000 : 0x000000ff );
-				out[ i * 2 + 1 ] |= ( *( ( ui32_t* )&t.a[ 3 ] ) == 0.f ? 0x00000000 : 0xff000000 )
-								  | ( *( ( ui32_t* )&t.a[ 2 ] ) == 0.f ? 0x00000000 : 0x00ff0000 )
-								  | ( *( ( ui32_t* )&t.a[ 1 ] ) == 0.f ? 0x00000000 : 0x0000ff00 )
-								  | ( *( ( ui32_t* )&t.a[ 0 ] ) == 0.f ? 0x00000000 : 0x000000ff );
+				out[ i * 2 ] |= ( *( ( u32* )&t.a[ 7 ] ) == 0.f ? 0x00000000 : 0xff000000 )
+							  | ( *( ( u32* )&t.a[ 6 ] ) == 0.f ? 0x00000000 : 0x00ff0000 )
+							  | ( *( ( u32* )&t.a[ 5 ] ) == 0.f ? 0x00000000 : 0x0000ff00 )
+							  | ( *( ( u32* )&t.a[ 4 ] ) == 0.f ? 0x00000000 : 0x000000ff );
+				out[ i * 2 + 1 ] |= ( *( ( u32* )&t.a[ 3 ] ) == 0.f ? 0x00000000 : 0xff000000 )
+								  | ( *( ( u32* )&t.a[ 2 ] ) == 0.f ? 0x00000000 : 0x00ff0000 )
+								  | ( *( ( u32* )&t.a[ 1 ] ) == 0.f ? 0x00000000 : 0x0000ff00 )
+								  | ( *( ( u32* )&t.a[ 0 ] ) == 0.f ? 0x00000000 : 0x000000ff );
 			}
 		}
 	}
-	void inside_test( ui32_t *out, const AABB< __m256d, 3 > *aabbs, Vector< f64_t, 4 > planes[ 6 ], ui32_t count )
+	void inside_test( u32 *out, const AABB< __m256d, 3 > *aabbs, Vector< f64, 4 > planes[ 6 ], u32 count )
 	{
 		__m256d c[ 3 ];
 		__m256d e[ 3 ];
@@ -993,11 +993,11 @@ namespace vul {
 		__m256d signFlip[ 3 ], signBit;
 		__m256d t0[ 3 ];
 		__m256d t1[ 3 ];
-		ui32_t simdCount;
+		u32 simdCount;
 
 		signBit = _mm256_set1_pd( 0x80000000 );
 
-		for( ui32_t j = 0; j < 6; ++j ) {
+		for( u32 j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = _mm256_set1_pd( planes[ j ].data[ 0 ] );
 			p[ j ][ 1 ] = _mm256_set1_pd( planes[ j ].data[ 1 ] );
 			p[ j ][ 2 ] = _mm256_set1_pd( planes[ j ].data[ 2 ] );
@@ -1005,7 +1005,7 @@ namespace vul {
 		}
 
 		simdCount = ( count + 3 ) / 4;
-		for( ui32_t i = 0; i < simdCount; ++i ) {
+		for( u32 i = 0; i < simdCount; ++i ) {
 			c[ 0 ] = _mm256_add_pd( aabbs[ i ]._min.data[ 0 ], aabbs[ i ]._max.data[ 0 ] );
 			c[ 1 ] = _mm256_add_pd( aabbs[ i ]._min.data[ 1 ], aabbs[ i ]._max.data[ 1 ] );
 			c[ 2 ] = _mm256_add_pd( aabbs[ i ]._min.data[ 2 ], aabbs[ i ]._max.data[ 2 ] );
@@ -1015,7 +1015,7 @@ namespace vul {
 			e[ 2 ] = _mm256_sub_pd( aabbs[ i ]._max.data[ 2 ], aabbs[ i ]._min.data[ 2 ] );
 
 			out[ i ] = 0x00000000;
-			for( ui32_t j = 0; j < 6; ++j ) {
+			for( u32 j = 0; j < 6; ++j ) {
 				signFlip[ 0 ] = _mm256_and_pd( p[ j ][ 0 ], signBit );
 				signFlip[ 1 ] = _mm256_and_pd( p[ j ][ 1 ], signBit );
 				signFlip[ 2 ] = _mm256_and_pd( p[ j ][ 2 ], signBit );
@@ -1040,15 +1040,15 @@ namespace vul {
 				// t2 > -plane.w
 				union {
 					__m256d v;
-					f64_t a[ 4 ];
+					f64 a[ 4 ];
 				} t;
 				t.v = _mm256_cmp_pd( t1[ 1 ], p[ j ][ 3 ], _CMP_GT_OQ );
 
 				// Store result
-				out[ i ] |= ( *( ( ui32_t* )&t.a[ 3 ] ) == 0 ? 0x0000000000000000 : 0xff000000 )
-						  | ( *( ( ui32_t* )&t.a[ 2 ] ) == 0 ? 0x0000000000000000 : 0x00ff0000 )
-						  | ( *( ( ui32_t* )&t.a[ 1 ] ) == 0 ? 0x0000000000000000 : 0x0000ff00 )
-						  | ( *( ( ui32_t* )&t.a[ 0 ] ) == 0 ? 0x0000000000000000 : 0x000000ff );
+				out[ i ] |= ( *( ( u32* )&t.a[ 3 ] ) == 0 ? 0x0000000000000000 : 0xff000000 )
+						  | ( *( ( u32* )&t.a[ 2 ] ) == 0 ? 0x0000000000000000 : 0x00ff0000 )
+						  | ( *( ( u32* )&t.a[ 1 ] ) == 0 ? 0x0000000000000000 : 0x0000ff00 )
+						  | ( *( ( u32* )&t.a[ 0 ] ) == 0 ? 0x0000000000000000 : 0x000000ff );
 			}
 		}
 	}
@@ -1058,7 +1058,7 @@ namespace vul {
 	* Test an array of packed AABBs against a frustum of 6 planes.
 	* Fill the result into the array out, where 0 is false and everything else is true.
 	*/
-	void inside_test( ui32_t *out, const AABB< float32x4_t, 3 > *aabbs, Vector< f32_t, 4 > planes[ 6 ], ui32_t count )
+	void inside_test( u32 *out, const AABB< float32x4_t, 3 > *aabbs, Vector< f32, 4 > planes[ 6 ], u32 count )
 	{
 		float32x4_t c[ 3 ];
 		float32x4_t e[ 3 ];
@@ -1067,11 +1067,11 @@ namespace vul {
 		float32x4_t t0[ 3 ];
 		float32x4_t t1[ 3 ];
 		uint32x4_t res;
-		ui32_t simdCount;
+		u32 simdCount;
 
 		signBit = vdupq_n_s32( 0x80000000 );
 
-		for( ui32_t j = 0; j < 6; ++j ) {
+		for( u32 j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = vdupq_n_f32( planes[ j ].data[ 0 ] );
 			p[ j ][ 1 ] = vdupq_n_f32( planes[ j ].data[ 1 ] );
 			p[ j ][ 2 ] = vdupq_n_f32( planes[ j ].data[ 2 ] );
@@ -1079,7 +1079,7 @@ namespace vul {
 		}
 
 		simdCount = ( count + 3 ) / 4;
-		for( ui32_t i = 0; i < simdCount; ++i ) {
+		for( u32 i = 0; i < simdCount; ++i ) {
 			c[ 0 ] = vaddq_f32( aabbs[ i ]._min.data[ 0 ], aabbs[ i ]._max.data[ 0 ] );
 			c[ 1 ] = vaddq_f32( aabbs[ i ]._min.data[ 1 ], aabbs[ i ]._max.data[ 1 ] );
 			c[ 2 ] = vaddq_f32( aabbs[ i ]._min.data[ 2 ], aabbs[ i ]._max.data[ 2 ] );
@@ -1089,7 +1089,7 @@ namespace vul {
 			e[ 2 ] = vsubq_f32( aabbs[ i ]._max.data[ 2 ], aabbs[ i ]._min.data[ 2 ] );
 
 			out[ i ] = 0x00000000;
-			for( ui32_t j = 0; j < 6; ++j ) {
+			for( u32 j = 0; j < 6; ++j ) {
 				signFlip[ 0 ] = vandq_s32( *( ( int32x4_t* )&p[ j ][ 0 ]), signBit );
 				signFlip[ 1 ] = vandq_s32( *( ( int32x4_t* )&p[ j ][ 1 ]), signBit );
 				signFlip[ 2 ] = vandq_s32( *( ( int32x4_t* )&p[ j ][ 2 ]), signBit );

@@ -20,9 +20,9 @@ char *level = "(20, 20)"
 			  "(5, 5, 10, 10) (1, 2, 4, 1)";
 
 
-ui32_t astar__input_read_number_pair( ui32_t *x, ui32_t *y, char **p )
+u32 astar__input_read_number_pair( u32 *x, u32 *y, char **p )
 {
-	ui32_t num_count;
+	u32 num_count;
 
 	num_count = 0;
 	while( **p ) {
@@ -41,17 +41,17 @@ ui32_t astar__input_read_number_pair( ui32_t *x, ui32_t *y, char **p )
 	return 0;
 }
 
-void astar_free_bitfield( ui32_t *bitfield )
+void astar_free_bitfield( u32 *bitfield )
 {
 	free( bitfield );
 }
 
-void astar__bitfield_mark_block( ui32_t *bitfield,
-								 ui32_t bitfield_width,
-								 ui32_t x0, ui32_t y0,
-								 ui32_t w, ui32_t h )
+void astar__bitfield_mark_block( u32 *bitfield,
+								 u32 bitfield_width,
+								 u32 x0, u32 y0,
+								 u32 w, u32 h )
 {
-	ui32_t x, y, i, b;
+	u32 x, y, i, b;
 
 	for( y = y0; y < y0 + h; ++y ) {
 		for( x = x0; x < x0 + w; ++x ) {
@@ -61,21 +61,21 @@ void astar__bitfield_mark_block( ui32_t *bitfield,
 		}
 	}
 }
-ui32_t *astar_input_from_string( ui32_t *w, ui32_t *h,
-								 ui32_t *sx, ui32_t *sy,
-								 ui32_t *ex, ui32_t *ey,
+u32 *astar_input_from_string( u32 *w, u32 *h,
+								 u32 *sx, u32 *sy,
+								 u32 *ex, u32 *ey,
 								 char *str )
 {
-	ui32_t *bitfield, x0, y0, xw, yh, bitfield_length;
+	u32 *bitfield, x0, y0, xw, yh, bitfield_length;
 	char *c;
 
 	/* Read the size of the grid and allocate it */
 	c = str;
 	assert( astar__input_read_number_pair( w, h, &c ) );
-	bitfield_length = ( ui32_t )ceil( ( f32_t )( ( *w ) * ( *h ) ) / 32.f );
-	bitfield = ( ui32_t* )malloc( bitfield_length * sizeof( ui32_t ) );
+	bitfield_length = ( u32 )ceil( ( f32 )( ( *w ) * ( *h ) ) / 32.f );
+	bitfield = ( u32* )malloc( bitfield_length * sizeof( u32 ) );
 	/* Initialize it to 0 */
-	memset( bitfield, 0x00, bitfield_length * sizeof( ui32_t ) );
+	memset( bitfield, 0x00, bitfield_length * sizeof( u32 ) );
 	/* Read the start and end positions */
 	assert( astar__input_read_number_pair( sx, sy, &c ) );
 	assert( astar__input_read_number_pair( ex, ey, &c ) );
@@ -93,24 +93,24 @@ ui32_t *astar_input_from_string( ui32_t *w, ui32_t *h,
 }
 
 typedef struct astar_node_user_data {
-	ui32_t x, y, blocked;
+	u32 x, y, blocked;
 } astar_node_user_data;
 
 typedef struct astar_graph_user_data {
-	ui32_t width, height;
+	u32 width, height;
 } astar_graph_user_data;
 
 /*
 * Cost between neighbors is infinite if blocked, 1 otherwise (since we know the node's index is
 * calculated from it's location with (y * width) + x).
 */
-vul_astar_node_t *astar_get_node( vul_astar_graph_t *graph,
-								  void *data )
+vul_astar_node *astar_get_node( vul_astar_graph *graph,
+								void *data )
 {
-	ui32_t index;
+	u32 index;
 	astar_graph_user_data *graph_data;
 	astar_node_user_data *node_data;
-	vul_astar_node_t *node;
+	vul_astar_node *node;
 
 	node_data = ( astar_node_user_data* )data;
 	graph_data = ( astar_graph_user_data* )graph->user_data;
@@ -118,7 +118,7 @@ vul_astar_node_t *astar_get_node( vul_astar_graph_t *graph,
 	data = ( astar_graph_user_data* )graph->user_data;
 	index = ( node_data->y * graph_data->width ) + node_data->x;
 
-	node = ( vul_astar_node_t* )vul_svector_get( graph->nodes, index );
+	node = ( vul_astar_node* )vul_svector_get( graph->nodes, index );
 
 	return node;
 }
@@ -131,15 +131,15 @@ vul_astar_node_t *astar_get_node( vul_astar_graph_t *graph,
 * that goes through a wall, since it makes no guarantees to find the best path
 * and a wall is otherwise just a normal node with a very high (INF) cost).
 */
-ui64_t astar_neighbors( vul_astar_node_t **neighbors,
-						vul_astar_graph_t *graph,
-						vul_astar_node_t *root,
-						ui32_t max_neighbors )
+u64 astar_neighbors( vul_astar_node **neighbors,
+						vul_astar_graph *graph,
+						vul_astar_node *root,
+						u32 max_neighbors )
 {
 	astar_node_user_data *node_data, *n_data, new_node;
 	astar_graph_user_data *graph_data;
-	vul_astar_node_t * n;
-	ui32_t i;
+	vul_astar_node * n;
+	u32 i;
 
 	assert( max_neighbors >= 4 ); // No diagonals means 4 neighbors
 
@@ -188,8 +188,8 @@ ui64_t astar_neighbors( vul_astar_node_t **neighbors,
 * Cost between neighbors is infinite if blocked, 1 otherwise (since we
 * disallow diagonal moves.
 */
-f64_t astar_cost_neighbors( vul_astar_node_t *s,
-							vul_astar_node_t *t )
+f64 astar_cost_neighbors( vul_astar_node *s,
+							vul_astar_node *t )
 {
 	astar_node_user_data *node_data;
 
@@ -197,15 +197,15 @@ f64_t astar_cost_neighbors( vul_astar_node_t *s,
 	return node_data->blocked == 0 ? 1.0 : F64_INF;
 }
 
-void astar_grid_construct_graph( vul_astar_graph_t *graph,
-								 ui32_t width,
-								 ui32_t height,
-								 ui32_t *bitfield )
+void astar_grid_construct_graph( vul_astar_graph *graph,
+								 u32 width,
+								 u32 height,
+								 u32 *bitfield )
 {
-	ui32_t x, y, base;
+	u32 x, y, base;
 	astar_graph_user_data *graph_data;
 	astar_node_user_data *node_data;
-	vul_astar_node_t *node;
+	vul_astar_node *node;
 
 	graph->user_data = malloc( sizeof( astar_graph_user_data ) );
 	graph_data = ( astar_graph_user_data* )graph->user_data;
@@ -214,18 +214,18 @@ void astar_grid_construct_graph( vul_astar_graph_t *graph,
 	graph_data->height = height;
 
 	/* Allocate space for the nodes (we make the base buffer big enough for the board for speed) */
-	graph->nodes = vul_svector_create( sizeof( vul_astar_node_t ), 8, malloc, free );//width * height );
+	graph->nodes = vul_svector_create( sizeof( vul_astar_node ), 8, malloc, free );//width * height );
 
 	/* For all the nodes, set their cost */
 	for( y = 0u; y < height; ++y ) {
 		base = y * width;
 		for( x = 0u; x < width; ++x ) {
 			/* Index into our bitfield */
-			ui32_t blocked = ( bitfield[ ( base + x ) / 32 ]
+			u32 blocked = ( bitfield[ ( base + x ) / 32 ]
 							   & ( 1 << ( ( base + x ) % 32 ) ) )
 							   == 0u ? 0u : 0xffffffff;
 			/* Store whether it is blocked */
-			node = ( vul_astar_node_t* ) vul_svector_append_empty( graph->nodes );
+			node = ( vul_astar_node* ) vul_svector_append_empty( graph->nodes );
 			node->user_data = malloc( sizeof( astar_node_user_data ) );
 			node_data = ( astar_node_user_data* )node->user_data;
 			node_data->blocked = blocked;
@@ -242,20 +242,20 @@ void astar_grid_construct_graph( vul_astar_graph_t *graph,
 	}
 }
 
-void astar__grid_finalizer( void *node_ptr, ui32_t index, void *nothing )
+void astar__grid_finalizer( void *node_ptr, u32 index, void *nothing )
 {
-	vul_astar_node_t *node;
+	vul_astar_node *node;
 
-	node = ( vul_astar_node_t* )node_ptr;
+	node = ( vul_astar_node* )node_ptr;
 	free( node->user_data );
 }
 
-int astar_grid_is_final( vul_astar_node_t *c, vul_astar_node_t *e )
+int astar_grid_is_final( vul_astar_node *c, vul_astar_node *e )
 {
 	return c == e ? 1 : 0;
 }
 
-void astar_grid_finalize_graph( vul_astar_graph_t *graph )
+void astar_grid_finalize_graph( vul_astar_graph *graph )
 {
 	vul_svector_iterate( graph->nodes, astar__grid_finalizer, NULL );
 	vul_svector_destroy( graph->nodes );
@@ -263,34 +263,34 @@ void astar_grid_finalize_graph( vul_astar_graph_t *graph )
 	free( graph->user_data );
 }
 
-f64_t astar_grid_manhattan_dist( vul_astar_node_t *s, vul_astar_node_t *t )
+f64 astar_grid_manhattan_dist( vul_astar_node *s, vul_astar_node *t )
 {
 	astar_node_user_data *node_data_t, *node_data_s;
 
 	node_data_t = ( astar_node_user_data* )t->user_data;
 	node_data_s = ( astar_node_user_data* )s->user_data;
-	return abs( ( i32_t )node_data_t->x - ( i32_t )node_data_s->x ) + abs( ( i32_t )node_data_t->y - ( i32_t )node_data_s->y );
+	return abs( ( s32 )node_data_t->x - ( s32 )node_data_s->x ) + abs( ( s32 )node_data_t->y - ( s32 )node_data_s->y );
 }
 
-f64_t astar_grid_euclidian_dist( vul_astar_node_t *s, vul_astar_node_t *t )
+f64 astar_grid_euclidian_dist( vul_astar_node *s, vul_astar_node *t )
 {
 	astar_node_user_data *node_data_t, *node_data_s;
-	f64_t dx, dy, d;
+	f64 dx, dy, d;
 
 	node_data_t = ( astar_node_user_data* )t->user_data;
 	node_data_s = ( astar_node_user_data* )s->user_data;
 
-	dx = pow( ( f64_t )( ( f64_t )node_data_t->x - ( f64_t )node_data_s->x ), 2 );
-	dy = pow( ( f64_t )( ( f64_t )node_data_t->y - ( f64_t )node_data_s->y ), 2 );
+	dx = pow( ( f64 )( ( f64 )node_data_t->x - ( f64 )node_data_s->x ), 2 );
+	dy = pow( ( f64 )( ( f64 )node_data_t->y - ( f64 )node_data_s->y ), 2 );
 
 	d = sqrt( dx + dy );
 	return d;
 }
 
-ui32_t astar_grid_print_path( vul_astar_path_node_t *root, int quiet )
+u32 astar_grid_print_path( vul_astar_path_node *root, int quiet )
 {
 	astar_node_user_data *data;
-	ui32_t count;
+	u32 count;
 
 	if( !quiet ) {
 		printf( "Path: " );
@@ -311,11 +311,11 @@ ui32_t astar_grid_print_path( vul_astar_path_node_t *root, int quiet )
 	return count;
 }
 
-void astar_grid_visualize( vul_astar_graph_t *graph, vul_astar_node_t *start, vul_astar_node_t *end, vul_astar_node_t *current )
+void astar_grid_visualize( vul_astar_graph *graph, vul_astar_node *start, vul_astar_node *end, vul_astar_node *current )
 {
 	astar_node_user_data *node_data, *current_data, *start_data, *end_data;
-	vul_astar_path_node_t *path_root;
-	ui32_t len;
+	vul_astar_path_node *path_root;
+	u32 len;
 
 	current_data = ( astar_node_user_data* )current->user_data;
 	start_data = ( astar_node_user_data* )start->user_data;
@@ -336,17 +336,17 @@ void astar_grid_visualize( vul_astar_graph_t *graph, vul_astar_node_t *start, vu
 			current_data->x, current_data->y, len );
 }
 
-void graph_print( vul_astar_graph_t *graph )
+void graph_print( vul_astar_graph *graph )
 {
 	astar_graph_user_data *graph_data;
 	astar_node_user_data *node_data;
-	vul_astar_node_t *node;
-	i32_t x, y;
+	vul_astar_node *node;
+	s32 x, y;
 
 	graph_data = ( astar_graph_user_data* )graph->user_data;
-	for( y = ( i32_t )graph_data->height - 1; y >= 0; --y ) {
-		for( x = 0; x < ( i32_t )graph_data->width; ++x ) {
-			node = ( vul_astar_node_t* )vul_svector_get( graph->nodes, y * graph_data->width + x );
+	for( y = ( s32 )graph_data->height - 1; y >= 0; --y ) {
+		for( x = 0; x < ( s32 )graph_data->width; ++x ) {
+			node = ( vul_astar_node* )vul_svector_get( graph->nodes, y * graph_data->width + x );
 			node_data = ( astar_node_user_data* )node->user_data;
 			printf( "%d", node_data->blocked ? 1 : 0 );
 		}
@@ -369,10 +369,10 @@ void astar_strategy_print( vul_astar_strategy strategy )
 
 void vul_test_astar( )
 {
-	ui32_t *bitfield, w, h, sx, sy, ex, ey;
-	vul_astar_graph_t graph;
-	vul_astar_result_t result;
-	vul_astar_node_t *start, *end;
+	u32 *bitfield, w, h, sx, sy, ex, ey;
+	vul_astar_graph graph;
+	vul_astar_result result;
+	vul_astar_node *start, *end;
 	astar_node_user_data user_data;
 	vul_astar_strategy strat;
 

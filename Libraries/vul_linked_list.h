@@ -28,34 +28,84 @@
  */
 //#define VUL_DEFINE
 
-
-typedef struct vul_list_element_t vul_list_element_t;
-struct vul_list_element_t
+typedef struct vul_list_element
 {
 	void *data;
-	ui32_t data_size;
-	vul_list_element_t *prev;
-	vul_list_element_t *next;
-};
+	u32 data_size;
+	struct vul_list_element *prev;
+	struct vul_list_element *next;
+} vul_list_element;
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+/**
+ * Creates a new vul_list_element and adds it after the given element. Copies the given data.
+ * Should the given element be NULL, this is equivalent to creating a new list.
+ */
+vul_list_element *vul__list_add_after( vul_list_element *e, 
+									   void *data, u32 data_size,
+									   void *( *allocator )( size_t size ) );
+/**
+ * Removes the given vul_list_element from the list, and deletes it.
+ */
+void vul_list_remove( vul_list_element *e, void ( *deallocator )( void *ptr ) );
+/**
+ * Finds the last element in the list that is equal to the given data, or if not available, 
+ * the last one that is smaller. This is the element after which we would want to insert
+ * a new element with the given data. If the given data is smaller than the entire list,
+ * we return NULL.
+ */
+vul_list_element *vul_list_find( vul_list_element *head, void *data, int (*comparator)( void *a, void *b ) );
+/**
+ * Finds the first element in the list that is equal to the given data or NULL if not found.
+ */
+vul_list_element *vul_list_find_first( vul_list_element *head, void *data, int (*comparator)( void *a, void *b ) );
+/** 
+ * Inserts the given data into the list while keeping the list sorted and stable.
+ * If list_head is NULL this creates a new list!
+ */
+vul_list_element *vul_list_insert( vul_list_element *list_head, 
+									 void *data, u32 data_size, 
+									 int( *comparator )( void *a, void *b ),
+									 void *( *allocator )( size_t size ) );
+/**
+ * Returns the length of the given list.
+ */
+u32 vul_list_size( vul_list_element *list_head );
+/**
+ * General purpose iteration over a list.
+ * Executes the given function for each element in the list.
+ * @NOTE: If func alters the list, behaviour is undefined!
+ */
+void vul_list_iterate( vul_list_element *list_head, void (*func)( vul_list_element *e ) );
+/**
+ * Deletes a the given list and all elements in it.
+ */
+void vul_list_destroy( vul_list_element *list_head, void ( *deallocator )( void *ptr ) );
+/**
+ * Creates a copy of the given list.
+ */
+vul_list_element *vul_list_copy( vul_list_element *list_head, void *( *allocator )( size_t size ) );
+#ifdef _cplusplus
+}
+#endif
 
 #endif
 
-/**
- * Creates a new vul_list_element_t and adds it after the given element. Copies the given data.
- * Should the given element be NULL, this is equivalent to creating a new list.
- */
-#ifndef VUL_DEFINE
-vul_list_element_t *vul__list_add_after( vul_list_element_t *e, 
-										 void *data, ui32_t data_size,
-										 void *( *allocator )( size_t size ) );
-#else
-vul_list_element_t *vul__list_add_after( vul_list_element_t *e, 
-										 void *data, ui32_t data_size,
-										 void *( *allocator )( size_t size ) )
-{
-	vul_list_element_t *ret;
+#ifdef VUL_DEFINE
 
-	ret = ( vul_list_element_t* )allocator( sizeof( vul_list_element_t ) );
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+vul_list_element *vul__list_add_after( vul_list_element *e, 
+									   void *data, u32 data_size,
+									   void *( *allocator )( size_t size ) )
+{
+	vul_list_element *ret;
+
+	ret = ( vul_list_element* )allocator( sizeof( vul_list_element ) );
 	assert( ret != NULL ); // Make sure malloc didn't fail
 	ret->data = allocator( data_size );
 	assert( ret->data != NULL ); // Make sure malloc didn't fail
@@ -66,7 +116,7 @@ vul_list_element_t *vul__list_add_after( vul_list_element_t *e,
 	{
 		ret->prev = e;
 		if ( e->next != NULL ) {
-			vul_list_element_t *n = e->next;
+			vul_list_element *n = e->next;
 			e->next = ret;
 			ret->next = n;
 			n->prev = ret;
@@ -81,15 +131,8 @@ vul_list_element_t *vul__list_add_after( vul_list_element_t *e,
 
 	return ret;
 }
-#endif
 
-/**
- * Removes the given vul_list_element_t from the list, and deletes it.
- */
-#ifndef VUL_DEFINE
-void vul_list_remove( vul_list_element_t *e, void ( *deallocator )( void *ptr ) );
-#else
-void vul_list_remove( vul_list_element_t *e, void ( *deallocator )( void *ptr ) )
+void vul_list_remove( vul_list_element *e, void ( *deallocator )( void *ptr ) )
 {
 	assert( e != NULL );
 
@@ -106,18 +149,8 @@ void vul_list_remove( vul_list_element_t *e, void ( *deallocator )( void *ptr ) 
 	// By setting to null we are much more likely to trigger asserts if used after free.
 	e = NULL;
 }
-#endif
 
-/**
- * Finds the last element in the list that is equal to the given data, or if not available, 
- * the last one that is smaller. This is the element after which we would want to insert
- * a new element with the given data. If the given data is smaller than the entire list,
- * we return NULL.
- */
-#ifndef VUL_DEFINE
-vul_list_element_t *vul_list_find( vul_list_element_t *head, void *data, int (*comparator)( void *a, void *b ) );
-#else
-vul_list_element_t *vul_list_find( vul_list_element_t *head, void *data, int (*comparator)( void *a, void *b ) )
+vul_list_element *vul_list_find( vul_list_element *head, void *data, int (*comparator)( void *a, void *b ) )
 {
 	assert( head != NULL );
 	
@@ -134,15 +167,8 @@ vul_list_element_t *vul_list_find( vul_list_element_t *head, void *data, int (*c
 	}
 	return head;
 }
-#endif
 
-/**
- * Finds the first element in the list that is equal to the given data or NULL if not found.
- */
-#ifndef VUL_DEFINE
-vul_list_element_t *vul_list_find_first( vul_list_element_t *head, void *data, int (*comparator)( void *a, void *b ) );
-#else
-vul_list_element_t *vul_list_find_first( vul_list_element_t *head, void *data, int (*comparator)( void *a, void *b ) )
+vul_list_element *vul_list_find_first( vul_list_element *head, void *data, int (*comparator)( void *a, void *b ) )
 {
 	assert( head != NULL );
 	
@@ -153,24 +179,13 @@ vul_list_element_t *vul_list_find_first( vul_list_element_t *head, void *data, i
 	}
 	return head;
 }
-#endif
 
-/** 
- * Inserts the given data into the list while keeping the list sorted and stable.
- * If list_head is NULL this creates a new list!
- */
-#ifndef VUL_DEFINE
-vul_list_element_t *vul_list_insert( vul_list_element_t *list_head, 
-									 void *data, ui32_t data_size, 
-									 int( *comparator )( void *a, void *b ),
-									 void *( *allocator )( size_t size ) );
-#else
-vul_list_element_t *vul_list_insert( vul_list_element_t *list_head, 
-									 void *data, ui32_t data_size, 
+vul_list_element *vul_list_insert( vul_list_element *list_head, 
+									 void *data, u32 data_size, 
 									 int (*comparator)( void *a, void *b ),
 									 void *( *allocator )( size_t size ) )
 {
-	vul_list_element_t *before, *ret;
+	vul_list_element *before, *ret;
 	
 	// Find the smallest element smaller than or equal to it
 	if( list_head != NULL ) {
@@ -191,15 +206,8 @@ vul_list_element_t *vul_list_insert( vul_list_element_t *list_head,
 	}
 	return ret;
 }
-#endif
 
-/**
- * Returns the length of the given list.
- */
-#ifndef VUL_DEFINE
-ui32_t vul_list_size( vul_list_element_t *list_head );
-#else
-ui32_t vul_list_size( vul_list_element_t *list_head )
+u32 vul_list_size( vul_list_element *list_head )
 {
 	int c;
 
@@ -212,34 +220,18 @@ ui32_t vul_list_size( vul_list_element_t *list_head )
 
 	return c;
 }
-#endif
 
-/**
- * General purpose iteration over a list.
- * Executes the given function for each element in the list.
- * @NOTE: If func alters the list, behaviour is undefined!
- */
-#ifndef VUL_DEFINE
-void vul_list_iterate( vul_list_element_t *list_head, void (*func)( vul_list_element_t *e ) );
-#else
-void vul_list_iterate( vul_list_element_t *list_head, void (*func)( vul_list_element_t *e ) )
+void vul_list_iterate( vul_list_element *list_head, void (*func)( vul_list_element *e ) )
 {
 	while( list_head != NULL ) {
 		func( list_head );
 		list_head = list_head->next;
 	}
 }
-#endif
 
-/**
- * Deletes a the given list and all elements in it.
- */
-#ifndef VUL_DEFINE
-void vul_list_destroy( vul_list_element_t *list_head, void ( *deallocator )( void *ptr ) );
-#else
-void vul_list_destroy( vul_list_element_t *list_head, void ( *deallocator )( void *ptr ) )
+void vul_list_destroy( vul_list_element *list_head, void ( *deallocator )( void *ptr ) )
 {
-	vul_list_element_t *next;
+	vul_list_element *next;
 
 	while( list_head != NULL )
 	{
@@ -254,17 +246,10 @@ void vul_list_destroy( vul_list_element_t *list_head, void ( *deallocator )( voi
 		list_head = next;
 	}
 }
-#endif
 
-/**
- * Creates a copy of the given list.
- */
-#ifndef VUL_DEFINE
-vul_list_element_t *vul_list_copy( vul_list_element_t *list_head, void *( *allocator )( size_t size ) );
-#else
-vul_list_element_t *vul_list_copy( vul_list_element_t *list_head, void *( *allocator )( size_t size ) )
+vul_list_element *vul_list_copy( vul_list_element *list_head, void *( *allocator )( size_t size ) )
 {
-	vul_list_element_t *nhead, *n;
+	vul_list_element *nhead, *n;
 
 	nhead = vul__list_add_after( NULL, list_head->data, list_head->data_size, allocator );
 	n = nhead;
@@ -276,4 +261,9 @@ vul_list_element_t *vul_list_copy( vul_list_element_t *list_head, void *( *alloc
 
 	return nhead;
 }
+
+#ifdef _cplusplus
+}
+#endif
+
 #endif

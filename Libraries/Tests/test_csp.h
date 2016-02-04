@@ -1,5 +1,4 @@
 #include "../vul_csp.h"
-#include "../vul_resizable_array.h"
 
 #include <stdio.h>
 #include <malloc.h>
@@ -19,24 +18,24 @@ typedef struct csp_graph_color_t {
 	const char *name;
 	union {
 		struct {
-			f32_t r, g, b, a;
+			f32 r, g, b, a;
 		} rgba;
-		f32_t val[ 4 ];
+		f32 val[ 4 ];
 	};
 } csp_graph_color_t;
 
 typedef struct csp_graph_pos_t {
-	f32_t x, y;
+	f32 x, y;
 } csp_graph_pos_t;
 
 typedef struct csp_graph_node_t {
 	csp_graph_pos_t pos;
-	vul_vector_t *neighbors; // index into csp_graph_t->nodes. 
+	vul_vector *neighbors; // index into csp_graph_t->nodes. 
 } csp_graph_node_t;
 
 typedef struct csp_graph_t {
-	vul_svector_t *nodes; // csp_graph_node_t (variables in constraints are indices/pointers to these).
-	vul_svector_t *colors; // csp_graph_color_t (domains in constraints are indices/pointers to these).
+	vul_svector *nodes; // csp_graph_node_t (variables in constraints are indices/pointers to these).
+	vul_svector *colors; // csp_graph_color_t (domains in constraints are indices/pointers to these).
 } csp_graph_t;
 
 static const char *csp_static_color_names[ 6 ] = { "red", "green", "blue", "yellow", "purple", "teal" };
@@ -46,9 +45,9 @@ static float csp_static_colors[ 6 ][ 3 ] = { { 1.f, 0.2f, 0.2f },
 											 { 0.8f, 0.8f, 0.2f },
 											 { 0.8f, 0.2f, 0.8f },
 											 { 0.2f, 0.8f, 0.8f } };
-void csp_graph_create_k_colors( csp_graph_t *graph, ui32_t k )
+void csp_graph_create_k_colors( csp_graph_t *graph, u32 k )
 {
-	ui32_t i;
+	u32 i;
 	csp_graph_color_t *c;
 
 	if( k <= 6 )  {
@@ -65,9 +64,9 @@ void csp_graph_create_k_colors( csp_graph_t *graph, ui32_t k )
 		// Random colors
 		for( i = 0; i < k; ++i ) {
 			c = ( csp_graph_color_t* )vul_svector_append_empty( graph->colors );
-			c->rgba.r = ( f32_t )rand( ) / ( f32_t )RAND_MAX;
-			c->rgba.g = ( f32_t )rand( ) / ( f32_t )RAND_MAX;
-			c->rgba.b = ( f32_t )rand( ) / ( f32_t )RAND_MAX;
+			c->rgba.r = ( f32 )rand( ) / ( f32 )RAND_MAX;
+			c->rgba.g = ( f32 )rand( ) / ( f32 )RAND_MAX;
+			c->rgba.b = ( f32 )rand( ) / ( f32 )RAND_MAX;
 			c->rgba.a = 1.f;
 			c->name = "random";
 		}
@@ -81,9 +80,9 @@ void csp_graph_create_k_colors( csp_graph_t *graph, ui32_t k )
 
 }
 
-ui32_t graph__input_read_vertex( ui32_t *i, f32_t *x, f32_t *y, char **p )
+u32 graph__input_read_vertex( u32 *i, f32 *x, f32 *y, char **p )
 {
-	ui32_t num_count;
+	u32 num_count;
 
 	num_count = 0;
 	while( **p ) {
@@ -94,15 +93,15 @@ ui32_t graph__input_read_vertex( ui32_t *i, f32_t *x, f32_t *y, char **p )
 			} else {
 				if( num_count == 2 ) {
 					if( ( *( *p - 1 ) ) == '-' ) {
-						*x = -( f32_t )strtod( *p, p );
+						*x = -( f32 )strtod( *p, p );
 					} else {
-						*x = ( f32_t )strtod( *p, p );
+						*x = ( f32 )strtod( *p, p );
 					}
 				} else {
 					if( ( *( *p - 1 ) ) == '-' ) {
-						*y = -( f32_t )strtod( *p, p );
+						*y = -( f32 )strtod( *p, p );
 					} else {
-						*y = ( f32_t )strtod( *p, p );
+						*y = ( f32 )strtod( *p, p );
 					}
 					return 1;
 				}
@@ -113,9 +112,9 @@ ui32_t graph__input_read_vertex( ui32_t *i, f32_t *x, f32_t *y, char **p )
 	}
 	return 0;
 }
-ui32_t graph__input_read_edge( ui32_t *a, ui32_t *b, char **p )
+u32 graph__input_read_edge( u32 *a, u32 *b, char **p )
 {
-	ui32_t num_count;
+	u32 num_count;
 
 	num_count = 0;
 	while( **p ) {
@@ -133,12 +132,12 @@ ui32_t graph__input_read_edge( ui32_t *a, ui32_t *b, char **p )
 	}
 	return 0;
 }
-csp_graph_t *graph_input_from_string( ui32_t *vert_count, ui32_t *edge_count, ui32_t K, char *str )
+csp_graph_t *graph_input_from_string( u32 *vert_count, u32 *edge_count, u32 K, char *str )
 {
 	csp_graph_t *graph;
 	csp_graph_node_t *node;
-	ui32_t a, b, i;
-	f32_t x, y;
+	u32 a, b, i;
+	f32 x, y;
 
 	/* Read the graph size and allocate it */
 	assert( graph__input_read_edge( vert_count, edge_count, &str ) );
@@ -157,7 +156,7 @@ csp_graph_t *graph_input_from_string( ui32_t *vert_count, ui32_t *edge_count, ui
 		node = ( csp_graph_node_t* )vul_svector_get( graph->nodes, i );
 		node->pos.x = x;
 		node->pos.y = y;
-		node->neighbors = vul_vector_create( sizeof( ui32_t ), K,
+		node->neighbors = vul_vector_create( sizeof( u32 ), K,
 											 malloc, free, realloc ); // If solvable, we're bounded by K
 	}
 
@@ -184,7 +183,7 @@ int csp_color_comparator( void *a, void *b )
 			 && ( ca->rgba.a == cb->rgba.a ) ) ? 0 : 1;
 }
 
-int csp_color_test( ui32_t count, vul_csp_var_t *vars )
+int csp_color_test( u32 count, vul_csp_var *vars )
 {
 	assert( count == 2 );
 	assert( vars[ 0 ].bound_value->size == sizeof( csp_graph_color_t ) );
@@ -192,26 +191,26 @@ int csp_color_test( ui32_t count, vul_csp_var_t *vars )
 	return csp_color_comparator( vars[ 0 ].bound_value->data, vars[ 1 ].bound_value->data );
 }
 
-void csp_graph_create_astar( vul_astar_graph_t *agraph, csp_graph_t *graph, ui32_t K )
+void csp_graph_create_astar( vul_astar_graph *agraph, csp_graph_t *graph, u32 K )
 {
-	ui32_t i, j, idnode2;
+	u32 i, j, idnode2;
 	csp_graph_node_t *node;
-	vul_csp_var_t *var;
-	vul_csp_constraint_t *c;
-	vul_csp_type_t *t;
-	vul_svector_t *dom;
+	vul_csp_var *var;
+	vul_csp_constraint *c;
+	vul_csp_type *t;
+	vul_svector *dom;
 
 	vul_gac_astar_graph_user_data *udata;
 
-	agraph->nodes = vul_svector_create( sizeof( vul_astar_node_t ), 32, malloc, free );
+	agraph->nodes = vul_svector_create( sizeof( vul_astar_node ), 32, malloc, free );
 	agraph->user_data = ( vul_gac_astar_graph_user_data* )malloc( sizeof( vul_gac_astar_graph_user_data ) );
 	udata = ( vul_gac_astar_graph_user_data* )agraph->user_data;
 
 	udata->user_data = graph;
-	udata->cnet = ( vul_gac_cnet_t* )malloc( sizeof( vul_gac_cnet_t ) );
+	udata->cnet = ( vul_gac_cnet* )malloc( sizeof( vul_gac_cnet ) );
 
 	/* Each node is a variable */
-	udata->cnet->variables = vul_svector_create( sizeof( vul_csp_var_t ),
+	udata->cnet->variables = vul_svector_create( sizeof( vul_csp_var ),
 												 vul_svector_size( graph->nodes ), 
 												 malloc, free );
 	for( i = 0; i < vul_svector_size( graph->nodes ); ++i ) {
@@ -221,11 +220,11 @@ void csp_graph_create_astar( vul_astar_graph_t *agraph, csp_graph_t *graph, ui32
 	}
 
 	/* Each variable has a full domain at the start */
-	udata->cnet->domains = vul_svector_create( sizeof( vul_svector_t* ),
+	udata->cnet->domains = vul_svector_create( sizeof( vul_svector* ),
 													 vul_svector_size( graph->nodes ),
 													 malloc, free );
 	for( i = 0; i < vul_svector_size( graph->nodes ); ++i ) {
-		dom = vul_svector_create( sizeof( vul_csp_type_t ), K, malloc, free );
+		dom = vul_svector_create( sizeof( vul_csp_type ), K, malloc, free );
 		// The domains a csp_type_ts pointing to the the actual color values of graph->colors
 		for( j = 0; j < K; ++j ) {
 			t = vul_svector_append_empty( dom );
@@ -238,32 +237,32 @@ void csp_graph_create_astar( vul_astar_graph_t *agraph, csp_graph_t *graph, ui32
 	/* For each edge, we create a constraint (this assumes we get edges A-B only once,
 	and not both A-B and B-A). Our size estimate means we only have one allocation in this loop at 3 edges
 	per node. */
-	udata->cnet->constraints = vul_svector_create( sizeof( vul_csp_constraint_t ),
+	udata->cnet->constraints = vul_svector_create( sizeof( vul_csp_constraint ),
 														 vul_svector_size( graph->nodes ),
 														 malloc, free );
 	for( i = 0; i < vul_svector_size( graph->nodes ); ++i ) {
 		node = ( csp_graph_node_t* )vul_svector_get( graph->nodes, i );
 		for( j = 0; j < vul_vector_size( node->neighbors ); ++j ) {
-			idnode2 = *( ui32_t* )vul_vector_get( node->neighbors, j );
+			idnode2 = *( u32* )vul_vector_get( node->neighbors, j );
 
 			c = vul_svector_append_empty( udata->cnet->constraints );
 			// Each constraint has 2 variables, the two nodes, and accompanying domains
 			c->var_count = 2;
-			c->vars = ( vul_csp_var_t** )malloc( sizeof( vul_csp_var_t* ) * 2 );
-			c->vars[ 0 ] = ( vul_csp_var_t* )vul_svector_get( udata->cnet->variables, i );
-			c->vars[ 1 ] = ( vul_csp_var_t* )vul_svector_get( udata->cnet->variables, idnode2 );
-			c->doms = ( vul_svector_t** )malloc( sizeof( vul_svector_t* ) * 2 );
-			c->doms[ 0 ] = ( vul_svector_t* )vul_svector_get( udata->cnet->domains, i );
-			c->doms[ 1 ] = ( vul_svector_t* )vul_svector_get( udata->cnet->domains, j );
+			c->vars = ( vul_csp_var** )malloc( sizeof( vul_csp_var* ) * 2 );
+			c->vars[ 0 ] = ( vul_csp_var* )vul_svector_get( udata->cnet->variables, i );
+			c->vars[ 1 ] = ( vul_csp_var* )vul_svector_get( udata->cnet->variables, idnode2 );
+			c->doms = ( vul_svector** )malloc( sizeof( vul_svector* ) * 2 );
+			c->doms[ 0 ] = ( vul_svector* )vul_svector_get( udata->cnet->domains, i );
+			c->doms[ 1 ] = ( vul_svector* )vul_svector_get( udata->cnet->domains, j );
 			// Create the constraint test string
 			c->test = csp_color_test;
 		}
 	}
 }
 
-void csp_graph_finalize_astar( vul_astar_graph_t *graph )
+void csp_graph_finalize_astar( vul_astar_graph *graph )
 {
-	ui32_t i;
+	u32 i;
 	vul_gac_astar_graph_user_data *udata;
 	csp_graph_node_t *n;
 	csp_graph_t *cg;
@@ -294,7 +293,7 @@ void csp_graph_finalize_astar( vul_astar_graph_t *graph )
 	// For each node created in the graph, delete the gac node (the graph node is already gone), then destroy
 	// the node vector.
 	for( i = 0; i < vul_svector_size( graph->nodes ); ++i ) {
-		vul__csp_graph_finalize_astar_node( ( vul_astar_node_t* )vul_svector_get( graph->nodes, i ) );
+		vul__csp_graph_finalize_astar_node( ( vul_astar_node* )vul_svector_get( graph->nodes, i ) );
 	}
 	vul_svector_destroy( graph->nodes );
 
@@ -325,7 +324,7 @@ void print_usage_gac( )
 * Concatenate together all arguments from argv[ 2 ] onwards;
 * we don't want them separate.
 */
-char *concat_strings_gac( ui32_t count, char **args )
+char *concat_strings_gac( u32 count, char **args )
 {
 	size_t c, len, *lens;
 	char *str, *strp;
@@ -348,23 +347,23 @@ char *concat_strings_gac( ui32_t count, char **args )
 	return str;
 }
 
-void print_solution( vul_gac_node_data_t *node, ui32_t K )
+void print_solution( vul_gac_node_data *node, u32 K )
 {
-	ui32_t i;
+	u32 i;
 	csp_graph_color_t *c;
 
 	printf( "Solution\t(vertex: color ):\n" );
 	if( K <= 6 ) {
 		for( i = 0; i < vul_svector_size( node->var_insts ); ++i ) {
 			printf( "\t\t(%d: %s)\n", i,
-					( ( csp_graph_color_t* )( ( vul_csp_type_t* )vul_svector_get(
-					( ( vul_csp_variable_instance_t* )vul_svector_get( node->var_insts, i ) )->dom_inst,
+					( ( csp_graph_color_t* )( ( vul_csp_type* )vul_svector_get(
+					( ( vul_csp_variable_instance* )vul_svector_get( node->var_insts, i ) )->dom_inst,
 					0 ) )->data )->name );
 		}
 	} else {
 		for( i = 0; i < vul_svector_size( node->var_insts ); ++i ) {
-			c = ( csp_graph_color_t* )( ( vul_csp_type_t* )vul_svector_get(
-				( ( vul_csp_variable_instance_t* )vul_svector_get( node->var_insts, i ) )->dom_inst,
+			c = ( csp_graph_color_t* )( ( vul_csp_type* )vul_svector_get(
+				( ( vul_csp_variable_instance* )vul_svector_get( node->var_insts, i ) )->dom_inst,
 				0 ) )->data;
 			printf( "\t\t(%d: %s(%f,%f,%f))\n", i,
 					c->name, c->rgba.r, c->rgba.g, c->rgba.b );
@@ -513,11 +512,11 @@ int TEST_CSP_K = 4;
 
 void vul_test_csp( )
 {
-	ui32_t vc, ec, K, i, j, quiet, gui, all;
+	u32 vc, ec, K, i, j, quiet, gui, all;
 	csp_graph_t *csp_graph;
-	vul_astar_graph_t graph;
-	vul_astar_result_t result;
-	vul_astar_node_t *start, *end;
+	vul_astar_graph graph;
+	vul_astar_result result;
+	vul_astar_node *start, *end;
 	vul_gac_astar_node_user_data user_data;
 	vul_astar_strategy strat;
 	char *str, *p, in[ 2 ];

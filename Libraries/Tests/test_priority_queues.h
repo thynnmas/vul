@@ -30,8 +30,8 @@
 * Defines a linked list version of a priority heap.
 */
 typedef struct vul_priority_heap_reference_t {
-	vul_list_element_t *root;
-	ui32_t data_size;
+	vul_list_element *root;
+	u32 data_size;
 	int( *comparator )( void *a, void *b );
 	void *( *allocator )( size_t size );
 	void( *deallocator )( void *ptr );
@@ -45,12 +45,12 @@ typedef struct vul_priority_heap_reference_t {
  * memory management functions.
  */
 #ifndef VUL_DEFINE
-vul_priority_heap_reference_t *vul_priority_heap_reference_create( ui32_t data_size, 
+vul_priority_heap_reference_t *vul_priority_heap_reference_create( u32 data_size, 
 												 int( *comparison_func )( void* a, void* b ),
 												 void *( *allocator )( size_t size ),
 												 void( *deallocator )( void *ptr ) );
 #else
-vul_priority_heap_reference_t *vul_priority_heap_reference_create( ui32_t data_size,
+vul_priority_heap_reference_t *vul_priority_heap_reference_create( u32 data_size,
 											   int( *comparison_func )( void* a, void* b ),
 											   void *( *allocator )( size_t size ),
 											   void( *deallocator )( void *ptr ) )
@@ -93,7 +93,7 @@ void vul_priority_heap_reference_push( vul_priority_heap_reference_t *q, void *d
 #else
 void vul_priority_heap_reference_push( vul_priority_heap_reference_t *q, void *data )
 {
-	vul_list_element_t *e;
+	vul_list_element *e;
 
 	e = vul_list_insert( q->root, data, q->data_size, q->comparator, q->allocator );
 	if( e->prev == NULL ) {
@@ -110,7 +110,7 @@ void vul_priority_heap_reference_pop( vul_priority_heap_reference_t *q, void *da
 #else
 void vul_priority_heap_reference_pop( vul_priority_heap_reference_t *q, void *data_out )
 {
-	vul_list_element_t *e;
+	vul_list_element *e;
 
 	e = NULL;
 	if( q->root ) {
@@ -144,9 +144,9 @@ void *vul_priority_heap_reference_peek( vul_priority_heap_reference_t *q )
  * Returns true if the heap is empty 
  */
 #ifndef VUL_DEFINE
-bool32_t vul_priority_heap_reference_is_empty( vul_priority_heap_reference_t *q );
+b32 vul_priority_heap_reference_is_empty( vul_priority_heap_reference_t *q );
 #else
-bool32_t vul_priority_heap_reference_is_empty( vul_priority_heap_reference_t *q )
+b32 vul_priority_heap_reference_is_empty( vul_priority_heap_reference_t *q )
 {
 	return q->root ? 0 : 1;
 }
@@ -156,9 +156,9 @@ bool32_t vul_priority_heap_reference_is_empty( vul_priority_heap_reference_t *q 
  * Returns the number of elements in the heap.
  */	
 #ifndef VUL_DEFINE
-ui32_t vul_priority_heap_reference_size( vul_priority_heap_reference_t *q );
+u32 vul_priority_heap_reference_size( vul_priority_heap_reference_t *q );
 #else
-ui32_t vul_priority_heap_reference_size( vul_priority_heap_reference_t *q )
+u32 vul_priority_heap_reference_size( vul_priority_heap_reference_t *q )
 {
 	return vul_list_size( q->root );
 }
@@ -183,7 +183,7 @@ int vul_test_priority_heap_compare_floats( void *a, void *b )
 
 void vul_test_priority_heap( )
 {
-	vul_priority_heap_t *heap;
+	vul_priority_heap *heap;
 	vul_priority_heap_reference_t *reference;
 
 	heap = vul_priority_heap_create( sizeof( float ), vul_test_priority_heap_compare_floats, malloc, free );
@@ -191,7 +191,7 @@ void vul_test_priority_heap( )
 	
 	/* Insert a bunch of things */
 	float minimum = 1.f; // We're generating normalized floats, so 1 is max!
-	for( ui32_t i = 0; i < 1000; ++i ) {
+	for( u32 i = 0; i < 1000; ++i ) {
 		float f = ( float )rand( ) / ( float )RAND_MAX;
 		minimum = f < minimum ? f : minimum;
 		vul_priority_heap_push( heap, &f );
@@ -210,7 +210,7 @@ void vul_test_priority_heap( )
 	assert( !vul_priority_heap_reference_is_empty( reference ) );
 
 	/* Check that we agree on the rest */
-	for( ui32_t i = 0; i < 1000; ++i ) {
+	for( u32 i = 0; i < 1000; ++i ) {
 		float a, b;
 		vul_priority_heap_pop( heap, &a );
 		vul_priority_heap_reference_pop( reference, &b );

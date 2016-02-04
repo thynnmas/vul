@@ -33,59 +33,99 @@
 	#define VUL_QUEUE_BUFFER_BYTE_SIZE 1024
 #endif
 
-typedef struct vul__queue_buffer_t {
-	ui8_t data[ VUL_QUEUE_BUFFER_BYTE_SIZE ];
-	ui32_t first, next;
-	ui32_t buffer_id; // incrementally unique, used to sort in the dumiy
-} vul__queue_buffer_t;
+typedef struct vul__queue_buffer {
+	u8 data[ VUL_QUEUE_BUFFER_BYTE_SIZE ];
+	u32 first, next;
+	u32 buffer_id; // incrementally unique, used to sort in the dumiy
+} vul__queue_buffer;
 
 /**
  * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!
  */
 //#define VUL_DEFINE
 
-typedef struct vul_queue_t
+typedef struct vul_queue
 {
-	vul_list_element_t *first_root, *next_root; // List of vul__queue_buffer_t objects
-	ui32_t data_size;
-	ui32_t first;
-	ui32_t next;
+	vul_list_element *first_root, *next_root; // List of vul__queue_buffer objects
+	u32 data_size;
+	u32 first;
+	u32 next;
 
 	/* Memory management functions */
 	void *( *allocator )( size_t size );
 	void( *deallocator )( void *ptr );
-} vul_queue_t;
+} vul_queue;
 
+#ifdef _cplusplus
+extern "C" {
 #endif
-
 /**
  * Comparison function for the linked list used internally.
  */
-#ifndef VUL_DEFINE
-int vul__queue_comparator( void *a, void *b );
-#else
-int vul__queue_comparator( void *a, void *b )
-{
-	vul__queue_buffer_t *ba, *bb;
-
-	ba = ( vul__queue_buffer_t* )a;
-	bb = ( vul__queue_buffer_t* )b;
-
-	return ba->buffer_id - bb->buffer_id;
-}
-#endif
-
+s32 vul__queue_comparator( void *a, void *b );
 /**
  * Returns the size of the queue.
  */
-#ifndef VUL_DEFINE
-unsigned int vul_queue_size( vul_queue_t *q );
-#else
-unsigned int vul_queue_size( vul_queue_t *q )
+u32 vul_queue_size( vul_queue *q );
+/**
+ * Returns true if the queue is empty
+ */
+b32 vul_queue_is_empty( vul_queue *q );
+/**
+ * Creates a new queue. Takes the size of an element as an arguemnt.
+ * and the factor by which to grow it when needed.
+ */
+vul_queue *vul_queue_create( u32 element_size, 
+							 void *( *allocator )( size_t size ),
+							 void( *deallocator )( void *ptr ) );
+/**
+ * Pushes an element to the back of the queue. If the queue is full, this resizes it.
+ */
+void vul_queue_push( vul_queue *q, void *data );
+/**
+ * Pops an element from the front of the queue and returns it in
+ * out.
+ */
+void vul_queue_pop( vul_queue *q, void *out );
+/**
+ * Peeks at the front element of the queue.
+ * @NOTE: This does not copy the data back, meaning it is only
+ * guaranteed to be unaltered as long as the queue is not modified.
+ * If you want the data to persisit beyond the next q->push you must copy
+ * the data youself.
+ */
+void *vul_queue_peek( vul_queue *q );
+/**
+ * Destroys the given queue and deallocates it's memory
+ */
+void vul_queue_destroy( vul_queue *q );
+
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+s32 vul__queue_comparator( void *a, void *b )
 {
-	vul_list_element_t *e;
-	vul__queue_buffer_t *buf;
-	ui32_t count;
+	vul__queue_buffer *ba, *bb;
+
+	ba = ( vul__queue_buffer* )a;
+	bb = ( vul__queue_buffer* )b;
+
+	return ba->buffer_id - bb->buffer_id;
+}
+
+u32 vul_queue_size( vul_queue *q )
+{
+	vul_list_element *e;
+	vul__queue_buffer *buf;
+	u32 count;
 
 	assert( q );
 	if( !q->first_root || !q->next_root ) {
@@ -94,26 +134,19 @@ unsigned int vul_queue_size( vul_queue_t *q )
 	count = 0;
 	e = q->first_root;
 	while( e != q->next_root ) {
-		buf = ( vul__queue_buffer_t* )e->data;
+		buf = ( vul__queue_buffer* )e->data;
 		count += buf->next - buf->first;
 		e = e->next;
 	}
-	buf = ( vul__queue_buffer_t* )e->data;
+	buf = ( vul__queue_buffer* )e->data;
 	count += buf->next - buf->first;
 
 	return count;
 }
-#endif
 
-/**
- * Returns true if the queue is empty
- */
-#ifndef VUL_DEFINE
-bool32_t vul_queue_is_empty( vul_queue_t *q );
-#else
-bool32_t vul_queue_is_empty( vul_queue_t *q )
+b32 vul_queue_is_empty( vul_queue *q )
 {
-	vul__queue_buffer_t *bf, *bn;
+	vul__queue_buffer *bf, *bn;
 
 	assert( q );
 	if( !q->first_root || !q->next_root ) {
@@ -122,29 +155,19 @@ bool32_t vul_queue_is_empty( vul_queue_t *q )
 	if( q->first_root != q->next_root ) {
 		return 0;
 	}
-	bf = ( vul__queue_buffer_t* )q->first_root->data;
-	bn = ( vul__queue_buffer_t* )q->next_root->data;
+	bf = ( vul__queue_buffer* )q->first_root->data;
+	bn = ( vul__queue_buffer* )q->next_root->data;
 
 	return bn->next - bf->first == 0;
 }
-#endif
 
-/**
- * Creates a new queue. Takes the size of an element as an arguemnt.
- * and the factor by which to grow it when needed.
- */
-#ifndef VUL_DEFINE
-vul_queue_t *vul_queue_create( unsigned int element_size, 
-							   void *( *allocator )( size_t size ),
-							   void( *deallocator )( void *ptr ) );
-#else
-vul_queue_t *vul_queue_create( unsigned int element_size,
-							   void *( *allocator )( size_t size ),
-							   void( *deallocator )( void *ptr ) )
+vul_queue *vul_queue_create( u32 element_size,
+							 void *( *allocator )( size_t size ),
+							 void( *deallocator )( void *ptr ) )
 {
-	vul_queue_t *ret;
+	vul_queue *ret;
 
-	ret = ( vul_queue_t* )allocator( sizeof( vul_queue_t ) );
+	ret = ( vul_queue* )allocator( sizeof( vul_queue ) );
 	ret->data_size = element_size;
 	ret->first = 0;
 	ret->next = 0;
@@ -156,17 +179,10 @@ vul_queue_t *vul_queue_create( unsigned int element_size,
 
 	return ret;
 }
-#endif
 
-/**
- * Pushes an element to the back of the queue. If the queue is full, this resizes it.
- */
-#ifndef VUL_DEFINE
-void vul_queue_push( vul_queue_t *q, void *data );
-#else
-void vul_queue_push( vul_queue_t *q, void *data )
+void vul_queue_push( vul_queue *q, void *data )
 {
-	vul__queue_buffer_t *buf, nbuf;
+	vul__queue_buffer *buf, nbuf;
 
 	assert( q );
 	// If no next buffer, create it
@@ -177,7 +193,7 @@ void vul_queue_push( vul_queue_t *q, void *data )
 		nbuf.buffer_id = 0;
 		q->next_root = vul_list_insert( NULL, 
 										&nbuf, 
-										sizeof( vul__queue_buffer_t ), 
+										sizeof( vul__queue_buffer ), 
 										vul__queue_comparator,
 										q->allocator );
 		// If first root is null, it should be this
@@ -186,36 +202,28 @@ void vul_queue_push( vul_queue_t *q, void *data )
 		}
 	}
 	// If no more room, create a new buffer
-	buf = ( vul__queue_buffer_t* )q->next_root->data;
+	buf = ( vul__queue_buffer* )q->next_root->data;
 	if( buf->next >= ( VUL_QUEUE_BUFFER_BYTE_SIZE / q->data_size ) - q->data_size )
 	{
 		nbuf.buffer_id = buf->buffer_id + 1;
 		q->next_root = vul_list_insert( q->next_root, 
 										&nbuf, 
-										sizeof( vul__queue_buffer_t ), 
+										sizeof( vul__queue_buffer ), 
 										vul__queue_comparator,
 										q->allocator );
-		buf = ( vul__queue_buffer_t* )q->next_root->data;
+		buf = ( vul__queue_buffer* )q->next_root->data;
 	}
 	// Insert it
 	memcpy( buf->data + ( buf->next++ * q->data_size ), data, q->data_size );
 }
-#endif
 
-/**
- * Pops an element from the front of the queue and returns it in
- * out.
- */
-#ifndef VUL_DEFINE
-void vul_queue_pop( vul_queue_t *q, void *out );
-#else
-void vul_queue_pop( vul_queue_t *q, void *out )
+void vul_queue_pop( vul_queue *q, void *out )
 {
-	vul__queue_buffer_t *buf;
+	vul__queue_buffer *buf;
 
 	assert( q );
 	if( q->first_root ) {
-		buf = ( vul__queue_buffer_t* )q->first_root->data;
+		buf = ( vul__queue_buffer* )q->first_root->data;
 		memcpy( out, buf->data + ( buf->first * q->data_size ), q->data_size );
 		++buf->first;
 		if( buf->first >= ( VUL_QUEUE_BUFFER_BYTE_SIZE / q->data_size ) - q->data_size ) {
@@ -233,38 +241,20 @@ void vul_queue_pop( vul_queue_t *q, void *out )
 		}
 	}
 }
-#endif
 
-/**
- * Peeks at the front element of the queue.
- * @NOTE: This does not copy the data back, meaning it is only
- * guaranteed to be unaltered as long as the queue is not modified.
- * If you want the data to persisit beyond the next q->push you must copy
- * the data youself.
- */
-#ifndef VUL_DEFINE
-void *vul_queue_peek( vul_queue_t *q );
-#else
-void *vul_queue_peek( vul_queue_t *q )
+void *vul_queue_peek( vul_queue *q )
 {
-	vul__queue_buffer_t *buf;
+	vul__queue_buffer *buf;
 
 	assert( q );
 	if( q->first_root ) {
-		buf = ( vul__queue_buffer_t* )q->first_root->data;
+		buf = ( vul__queue_buffer* )q->first_root->data;
 		return ( buf->data + ( buf->first * q->data_size ) );
 	}
 	return NULL;
 }
-#endif
 
-/**
- * Destroys the given queue and deallocates it's memory
- */
-#ifndef VUL_DEFINE
-void vul_queue_destroy( vul_queue_t *q );
-#else
-void vul_queue_destroy( vul_queue_t *q )
+void vul_queue_destroy( vul_queue *q )
 {
 	if( q ) {
 		if( q->first_root ) {
@@ -273,4 +263,9 @@ void vul_queue_destroy( vul_queue_t *q )
 		q->deallocator( q );
 	}
 }
+
+#ifdef _cplusplus
+}
+#endif
+
 #endif

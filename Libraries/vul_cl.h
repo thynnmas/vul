@@ -16,6 +16,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef VUL_CL_H
+#define VUL_CL_H
 
 #include <stdio.h>
 #include <assert.h>
@@ -68,8 +70,8 @@ typedef struct vul__cl_context {
 	cl_device_id *device_list;
 	cl_command_queue *queue_list;	
 	
-	vul_svector_t *programs; // List of all programs built in this context
-	vul_svector_t *buffers;  // List of all buffers allocated in this context
+	vul_svector *programs; // List of all programs built in this context
+	vul_svector *buffers;  // List of all buffers allocated in this context
 } vul__cl_context;
 
 static size_t vul__cl_context_count = 0;
@@ -86,7 +88,7 @@ typedef struct vul_cl_program {
 		char *source;			// The full source if of source type
 		unsigned char *binary;			// The full binary if of binary type
 	};
-	vul_svector_t *kernels;		// List of all kernels belonging to this program
+	vul_svector *kernels;		// List of all kernels belonging to this program
 } vul_cl_program;
 
 /**
@@ -96,7 +98,7 @@ typedef struct vul_cl_kernel {
 	cl_kernel kernel;
 	vul_cl_program *program;
 	char *entry_point;
-	vul_svector_t *arguments;
+	vul_svector *arguments;
 } vul_cl_kernel;
 
 /**
@@ -125,9 +127,187 @@ typedef struct vul_cl_buffer {
 	cl_mem_flags flags;
 } vul_cl_buffer;
 
+#ifdef _cplusplus
+extern "C" {
+#endif
 /**
  * Returns a string describing the given error code
  */
+const char *vul_cl_get_error_string( cl_int err );
+/**
+ * Creates the OpenCL context, sets up all available devices and
+ * creates command queues for them all.
+ * If errors are encountered, everything that needs cleaning up
+ * is cleaned up before returning!
+ * MUST be called before any other functions in this file are used,
+ * and vul_cl_cleanup() MUST be called before the program exits.
+ * 
+ * Defaults parameters are ( NULL, 0 )
+ */
+void vul_cl_setup( cl_context_properties *context_properties, cl_command_queue_properties command_queue_properites );
+/**
+ * Cleans up the contexts set up in vul_cl_setup and
+ * all programs and kernels loaded in vul_cl_create_program/_kernel.
+ */
+void vul_cl_cleanup( );
+/**
+ * Write the output from a compile to the given output stream.
+ */
+void vul_cl_write_compile_output( vul_cl_program *prog, FILE *out );
+/**
+ * Loads a program. Requires vul_cl_setup to have been called prior.
+ * platform_id indicates which platform to create & build the program on.
+ * If no build options are wanted, set to an empty string.
+ * If is_binary is non-zero, the source is assumed to be in binary format.
+ * If async_build_callback is not NULL, the build does not wait until completions,
+ * and the callback is called once it is done. See http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clBuildProgram.html
+ * user_data is passed to async_build_callback. Set to NULL to ignore.
+ * Do NOT manually clean this up, it is cleaned up with vul_cl_cleanup!
+ */
+vul_cl_program *vul_cl_create_program( cl_platform_id platform_id, 
+													char *file_path, 
+													const char *build_options, 
+													int is_binary,
+													void ( *async_build_callback )( cl_program, void* ), 
+													void *user_data );
+/**
+ * Creates a new kernel in the given program with the given entry point name.
+ * Copies the entry point name!
+ * Do NOT manually clean this up, it is cleaned up with vul_cl_cleanup!
+ */
+vul_cl_kernel *vul_cl_create_kernel( vul_cl_program *program, const char *entry_point );
+/**
+ * Adds an argument to a kernel.
+ */
+void vul_cl_kernel_add_argument( vul_cl_kernel *kernel, size_t data_size, const void *data_ptr );
+/**
+ * Allocates a new buffer on the given OpenCL platform from data in the host's memory.
+ * host_ptr should point to a buffer of equal or greater size than the given size parameter
+ * indicates, but may or may not already be allocated. It must however be allocated before
+ * a read or write is attempted!
+ * For flags, see http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clCreateBuffer.html
+ */
+vul_cl_buffer *vul_cl_create_buffer( cl_platform_id platform_id, cl_mem_flags flags, size_t size, void *host_ptr );
+/**
+ * Allocates a new buffer on the given OpenCL platform from data in the host's memory.
+ * gl_buffer is the OpenGL identifier of the shared buffer. If must already have been created
+ * with a call to glBufferData, but needs not be initialized prior to this call.
+ * For flags, see http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clCreateBuffer.html
+ */
+vul_cl_buffer *vul_cl_create_gl_buffer( cl_platform_id platform_id, cl_mem_flags flags, unsigned int gl_buffer );
+/**
+ * Writes data to the given buffer.
+ * queue_index is the index of the desired command_queue in the buffer's context.
+ * If no host_ptr is set, the one in buffer is used, with
+ * buffer->size as size, and 0 offset.
+ * wait_event is the reference object to this event; it's the one to wait 
+ * for when waiting for this write is desired.
+ * Returns 0 if successful, !0 otherwise.
+ */
+int vul_cl_write_buffer( size_t device_index, 
+								 vul_cl_buffer *buffer, 
+								 void *host_ptr, 
+								 size_t offset, 
+								 size_t size_of_write, 
+								 int blocking_write, // Acts as bool
+								 cl_uint event_wait_list_size,
+								 cl_event *event_wait_list, 
+								 cl_event *wait_event );
+/**
+ * Copies data between the given buffers.
+ * queue_index is the index of the desired command_queue in the buffer's context.
+ * If no size_of_copy is set, the smaller of the two buffer's size is used.
+ * wait_event is the reference object to this event; it's the one to wait 
+ * for when waiting for this copy is desired.
+ * Returns 0 if successful, !0 otherwise.
+ */
+int vul_cl_copy_buffer( size_t queue_index, 
+								vul_cl_buffer *src_buffer, 
+								vul_cl_buffer *dst_buffer, 
+								size_t src_offset,
+								size_t dst_offset, 
+								size_t size_of_copy, 
+								cl_uint event_wait_list_size, 
+								cl_event *event_wait_list, 
+								cl_event *wait_event );
+/**
+ * Reads data from the given buffer.
+ * queue_index is the index of the desired command_queue in the buffer's context.
+ * If no size_of_read is set, entire buffer's size is used, which means host_ptr
+ * must point to a buffer of minimum size of either size_to_read or buffer->size.
+ * wait_event is the reference object to this event; it's the one to wait 
+ * for when waiting for this read is desired.
+ * Returns 0 if successful, !0 otherwise.
+ */
+int vul_cl_read_buffer( size_t device_index, 
+								vul_cl_buffer *buffer, 
+								void *host_ptr, 
+								size_t offset,
+								size_t size_of_read, 
+								int blocking_read, // Acts as bool
+								cl_uint event_wait_list_size,
+								cl_event *event_wait_list, 
+								cl_event *wait_event );
+/** 
+ * Resizes the given buffer.
+ */
+int vul_cl_resize_buffer( vul_cl_buffer *buffer, size_t new_size, void *host_ptr );
+/**
+ * Uploads arguments, determines work group size and executes
+ * the given kernel. The device to execute it on is determined
+ * by the given device index, and index into the device_lsit of the 
+ * context in which the program this kernel belongs to was created.
+ * global_size is the maximum work group size, i.e. the number of
+ * instances of this kernel to spawn. 
+ * wait_event is the reference object to this event; it's the one to wait 
+ * for when waiting for this execution is desired.
+ * @NOTE: This function only handles 1-dimensional work groups
+ */
+cl_int vul_cl_call_kernel( vul_cl_kernel *kernel, 
+									size_t device_index, 
+									size_t global_size, 
+									cl_uint event_wait_list_size, 
+									cl_event *event_wait_list, 
+									cl_event *wait_event );
+/**
+ * Syncs the command queue for the device of given index in the kernel's context.
+ */
+cl_int vul_cl_sync( vul_cl_kernel *kernel, size_t device_index );
+/**
+ * Retrieves the first platform found that matches the vendor string given.
+ * \return cl_platform_id of the platform, NULL if none found.
+ */
+cl_platform_id vul_cl_get_platform_by_vendor_string( const char *vendor_string );
+/**
+ * Retrieves the cl_platform_id of the context at the given index.
+ */
+cl_platform_id vul_cl_get_platform_by_context_index( u32 index );
+/**
+ * Prints all platforms found
+ */
+void vul_cl_print_platform_info( );
+
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#define vul_cl_check( err ) {\
+	const char *estr;\
+	if( err != CL_SUCCESS ) {\
+		estr = vul_cl_get_error_string( err );\
+		fprintf( stderr, "[%s:%d] OpenCL error: '%s' (%d).\n", __FILE__, __LINE__, estr, err );\
+		assert(0);\
+	}\
+}
+// @TODO(thynn): Make sure we don't assert in release builds...
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+	
 const char *vul_cl_get_error_string( cl_int err )
 {
 	const char *str = "Unknown error";
@@ -187,28 +367,7 @@ const char *vul_cl_get_error_string( cl_int err )
 	return str;
 }
 
-#define vul_cl_check( err ) {\
-	const char *estr;\
-	if( err != CL_SUCCESS ) {\
-		estr = vul_cl_get_error_string( err );\
-		fprintf( stderr, "[%s:%d] OpenCL error: '%s' (%d).\n", __FILE__, __LINE__, estr, err );\
-		assert(0);\
-	}\
-}
-// @TODO(thynn): Make sure we don't assert in release builds...
-	
-/**
- * Creates the OpenCL context, sets up all available devices and
- * creates command queues for them all.
- * If errors are encountered, everything that needs cleaning up
- * is cleaned up before returning!
- * MUST be called before any other functions in this file are used,
- * and vul_cl_cleanup() MUST be called before the program exits.
- * 
- * Defaults parameters are ( NULL, 0 )
- */
-void vul_cl_setup( cl_context_properties *context_properties, 
-						 cl_command_queue_properties command_queue_properites )
+void vul_cl_setup( cl_context_properties *context_properties, cl_command_queue_properties command_queue_properites )
 {
 	cl_int err;
 	cl_platform_id *platforms;
@@ -305,10 +464,6 @@ void vul_cl_setup( cl_context_properties *context_properties,
 	free( platforms );
 }
 
-/**
- * Cleans up the contexts set up in vul_cl_setup and
- * all programs and kernels loaded in vul_cl_create_program/_kernel.
- */
 void vul_cl_cleanup( )
 {
 	size_t i, k, l, size, size2;
@@ -404,15 +559,12 @@ void vul_cl_cleanup( )
 	free( vul__cl_contexts );
 }
 
-/**
- * Write the output from a compile to the given output stream.
- */
 void vul_cl_write_compile_output( vul_cl_program *prog, FILE *out )
 {
 	size_t len;
 	char buffer[ 65536 ];
 
-	for( ui32_t i = 0; i < prog->context->device_count; ++i ) {
+	for( u32 i = 0; i < prog->context->device_count; ++i ) {
 		fprintf( out, "Writing compile output for device %d:\n", i );
 		clGetProgramBuildInfo( prog->program,
 							   prog->context->device_list[ i ],
@@ -424,16 +576,6 @@ void vul_cl_write_compile_output( vul_cl_program *prog, FILE *out )
 	}
 }
 
-/**
- * Loads a program. Requires vul_cl_setup to have been called prior.
- * platform_id indicates which platform to create & build the program on.
- * If no build options are wanted, set to an empty string.
- * If is_binary is non-zero, the source is assumed to be in binary format.
- * If async_build_callback is not NULL, the build does not wait until completions,
- * and the callback is called once it is done. See http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clBuildProgram.html
- * user_data is passed to async_build_callback. Set to NULL to ignore.
- * Do NOT manually clean this up, it is cleaned up with vul_cl_cleanup!
- */
 vul_cl_program *vul_cl_create_program( cl_platform_id platform_id, 
 													char *file_path, 
 													const char *build_options, 
@@ -543,11 +685,6 @@ vul_cl_program *vul_cl_create_program( cl_platform_id platform_id,
 	return ret;
 }
 
-/**
- * Creates a new kernel in the given program with the given entry point name.
- * Copies the entry point name!
- * Do NOT manually clean this up, it is cleaned up with vul_cl_cleanup!
- */
 vul_cl_kernel *vul_cl_create_kernel( vul_cl_program *program, const char *entry_point )
 {
 	vul_cl_kernel *ret;
@@ -572,9 +709,6 @@ vul_cl_kernel *vul_cl_create_kernel( vul_cl_program *program, const char *entry_
 	return ret;
 }
 
-/**
- * Adds an argument to a kernel.
- */
 void vul_cl_kernel_add_argument( vul_cl_kernel *kernel, size_t data_size, const void *data_ptr )
 {
 	vul_cl_kernel_argument *arg;
@@ -584,13 +718,6 @@ void vul_cl_kernel_add_argument( vul_cl_kernel *kernel, size_t data_size, const 
 	arg->size = data_size;
 }
 
-/**
- * Allocates a new buffer on the given OpenCL platform from data in the host's memory.
- * host_ptr should point to a buffer of equal or greater size than the given size parameter
- * indicates, but may or may not already be allocated. It must however be allocated before
- * a read or write is attempted!
- * For flags, see http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clCreateBuffer.html
- */
 vul_cl_buffer *vul_cl_create_buffer( cl_platform_id platform_id, cl_mem_flags flags, size_t size, void *host_ptr )
 {
 	size_t j, platform_index;
@@ -633,13 +760,6 @@ vul_cl_buffer *vul_cl_create_buffer( cl_platform_id platform_id, cl_mem_flags fl
 	return ret;
 }
 
-
-/**
- * Allocates a new buffer on the given OpenCL platform from data in the host's memory.
- * gl_buffer is the OpenGL identifier of the shared buffer. If must already have been created
- * with a call to glBufferData, but needs not be initialized prior to this call.
- * For flags, see http://www.khronos.org/registry/cl/sdk/1.0/docs/man/xhtml/clCreateBuffer.html
- */
 vul_cl_buffer *vul_cl_create_gl_buffer( cl_platform_id platform_id, cl_mem_flags flags, unsigned int gl_buffer )
 {
 	size_t j, platform_index;
@@ -679,15 +799,6 @@ vul_cl_buffer *vul_cl_create_gl_buffer( cl_platform_id platform_id, cl_mem_flags
 	return ret;
 }
 
-/**
- * Writes data to the given buffer.
- * queue_index is the index of the desired command_queue in the buffer's context.
- * If no host_ptr is set, the one in buffer is used, with
- * buffer->size as size, and 0 offset.
- * wait_event is the reference object to this event; it's the one to wait 
- * for when waiting for this write is desired.
- * Returns 0 if successful, !0 otherwise.
- */
 int vul_cl_write_buffer( size_t device_index, 
 								 vul_cl_buffer *buffer, 
 								 void *host_ptr, 
@@ -717,14 +828,6 @@ int vul_cl_write_buffer( size_t device_index,
 	return err;
 }
 
-/**
- * Copies data between the given buffers.
- * queue_index is the index of the desired command_queue in the buffer's context.
- * If no size_of_copy is set, the smaller of the two buffer's size is used.
- * wait_event is the reference object to this event; it's the one to wait 
- * for when waiting for this copy is desired.
- * Returns 0 if successful, !0 otherwise.
- */
 int vul_cl_copy_buffer( size_t queue_index, 
 								vul_cl_buffer *src_buffer, 
 								vul_cl_buffer *dst_buffer, 
@@ -758,15 +861,6 @@ int vul_cl_copy_buffer( size_t queue_index,
 	return err;
 }
 
-/**
- * Reads data from the given buffer.
- * queue_index is the index of the desired command_queue in the buffer's context.
- * If no size_of_read is set, entire buffer's size is used, which means host_ptr
- * must point to a buffer of minimum size of either size_to_read or buffer->size.
- * wait_event is the reference object to this event; it's the one to wait 
- * for when waiting for this read is desired.
- * Returns 0 if successful, !0 otherwise.
- */
 int vul_cl_read_buffer( size_t device_index, 
 								vul_cl_buffer *buffer, 
 								void *host_ptr, 
@@ -795,9 +889,6 @@ int vul_cl_read_buffer( size_t device_index,
 	return err;
 }
 
-/** 
- * Resizes the given buffer.
- */
 int vul_cl_resize_buffer( vul_cl_buffer *buffer, size_t new_size, void *host_ptr ) 
 {
 	cl_int err;
@@ -824,17 +915,6 @@ int vul_cl_resize_buffer( vul_cl_buffer *buffer, size_t new_size, void *host_ptr
 	return 0;
 }
 
-/**
- * Uploads arguments, determines work group size and executes
- * the given kernel. The device to execute it on is determined
- * by the given device index, and index into the device_lsit of the 
- * context in which the program this kernel belongs to was created.
- * global_size is the maximum work group size, i.e. the number of
- * instances of this kernel to spawn. 
- * wait_event is the reference object to this event; it's the one to wait 
- * for when waiting for this execution is desired.
- * @NOTE: This function only handles 1-dimensional work groups
- */
 cl_int vul_cl_call_kernel( vul_cl_kernel *kernel, 
 									size_t device_index, 
 									size_t global_size, 
@@ -890,9 +970,6 @@ cl_int vul_cl_call_kernel( vul_cl_kernel *kernel,
 	return err;
 }
 
-/**
- * Syncs the command queue for the device of given index in the kernel's context.
- */
 cl_int vul_cl_sync( vul_cl_kernel *kernel, size_t device_index )
 {
 	cl_int err = clFlush( kernel->program->context->queue_list[ device_index ] );
@@ -903,15 +980,10 @@ cl_int vul_cl_sync( vul_cl_kernel *kernel, size_t device_index )
 	return err;
 }
 
-
-/**
- * Retrieves the first platform found that matches the vendor string given.
- * \return cl_platform_id of the platform, NULL if none found.
- */
 cl_platform_id vul_cl_get_platform_by_vendor_string( const char *vendor_string )
 {
 	cl_int err;
-	ui32_t i;
+	u32 i;
 	size_t size;
 	char *name;
 
@@ -935,26 +1007,20 @@ cl_platform_id vul_cl_get_platform_by_vendor_string( const char *vendor_string )
 	return NULL;
 }
 
-/**
- * Retrieves the cl_platform_id of the context at the given index.
- */
-cl_platform_id vul_cl_get_platform_by_context_index( ui32_t index )
+cl_platform_id vul_cl_get_platform_by_context_index( u32 index )
 {
 	assert( index <= vul__cl_context_count );
 
 	return vul__cl_contexts[ index ]->platform;
 }
 
-/**
- * Prints all platforms found
- */
 void vul_cl_print_platform_info( )
 {
 	cl_int err;
-	ui32_t i, j;
+	u32 i, j;
 	size_t size;
 	char *name;
-	ui64_t type;
+	u64 type;
 
 	for( i = 0; i < vul__cl_context_count; ++i ) {
 		if( !vul__cl_contexts[ i ]  ) {
@@ -1011,3 +1077,9 @@ void vul_cl_print_platform_info( )
 // @TODO: Useful auxilliary functions, like "do_we_support_this_extesion_on_given_device"
 // or "type_of_given_device" to find the best devices for a certain thing.
 // Also better support GL interop by having aquire/release GL resources abstracted!
+
+#ifdef _cplusplus
+}
+#endif
+
+#endif

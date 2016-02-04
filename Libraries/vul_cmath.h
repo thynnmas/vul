@@ -16,10 +16,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifdef _cplusplus
-extern "C" {
-#endif
-
 #ifndef VUL_CMATH_H
 #define VUL_CMATH_H
 
@@ -105,13 +101,182 @@ typedef struct m44 {
 	};
 } m44;
 
+#ifdef _cplusplus
+extern "C" {
 #endif
-
-#ifndef VUL_DEFINE
+	
 #define DEFINE_V2OP( name, op ) v2 name( const v2 a, const v2 b );
 #define DEFINE_V3OP( name, op ) v3 name( const v3 a, const v3 b );
 #define DEFINE_V4OP( name, op ) v4 name( const v4 a, const v4 b );
-#else
+
+#define DEFINE_S2OP( name, op ) v2 name( const v2 a, const f32 c );
+#define DEFINE_S3OP( name, op ) v3 name( const v3 a, const f32 c );
+#define DEFINE_S4OP( name, op ) v4 name( const v4 a, const f32 c );
+
+	
+DEFINE_V2OP( vadd2, + );
+DEFINE_V2OP( vsub2, - );
+DEFINE_V2OP( vmul2, * );
+DEFINE_V2OP( vdiv2, / );
+DEFINE_V3OP( vadd3, + );
+DEFINE_V3OP( vsub3, - );
+DEFINE_V3OP( vmul3, * );
+DEFINE_V3OP( vdiv3, / );
+DEFINE_V4OP( vadd4, + );
+DEFINE_V4OP( vsub4, - );
+DEFINE_V4OP( vmul4, * );
+DEFINE_V4OP( vdiv4, / );
+
+DEFINE_S2OP( vadds2, + );
+DEFINE_S2OP( vsubs2, - );
+DEFINE_S2OP( vmuls2, * );
+DEFINE_S2OP( vdivs2, / );
+DEFINE_S3OP( vadds3, + );
+DEFINE_S3OP( vsubs3, - );
+DEFINE_S3OP( vmuls3, * );
+DEFINE_S3OP( vdivs3, / );
+DEFINE_S4OP( vadds4, + );
+DEFINE_S4OP( vsubs4, - );
+DEFINE_S4OP( vmuls4, * );
+DEFINE_S4OP( vdivs4, / );
+
+#undef DEFINE_V2OP
+#undef DEFINE_V3OP
+#undef DEFINE_V4OP
+
+#undef DEFINE_S2OP
+#undef DEFINE_S3OP
+#undef DEFINE_S4OP
+
+v2 vec2( const f32 x, const f32 y );
+v3 vec3( const f32 x, const f32 y, const f32 z );
+v4 vec4( const f32 x, const f32 y, const f32 z, const f32 w );
+
+v2 vcopy2( const v2 v );
+v3 vcopy3( const v3 v );
+v4 vcopy4( const v4 v );
+
+f32 vdot2( const v2 a, const v2 b);
+f32 vdot3( const v3 a, const v3 b);
+f32 vdot4( const v4 a, const v4 b);
+
+f32 vnorm2( const v2 v );
+f32 vnorm3( const v3 v );
+f32 vnorm4( const v4 v );
+
+v2 vnormalize2( const v2 v );
+v3 vnormalize3( const v3 v );
+v4 vnormalize4( const v4 v );
+
+v2 vcross2( const v2 v );
+v3 vcross3( const v3 a, const v3 b );
+
+v2 vclamp2( const v2 v, const f32 a, const f32 b );
+v3 vclamp3( const v3 v, const f32 a, const f32 b );
+v4 vclamp4( const v4 v, const f32 a, const f32 b );
+
+#define vsaturate2( v ) vclamp2( v, 0.f, 1.f )
+#define vsaturate3( v ) vclamp3( v, 0.f, 1.f )
+#define vsaturate4( v ) vclamp4( v, 0.f, 1.f )
+
+v2 vlerp2( const v2 a, const v2 b, const f32 t );
+v3 vlerp3( const v3 a, const v3 b, const f32 t );
+v4 vlerp4( const v4 a, const v4 b, const f32 t );
+
+v2 vmin2( const v2 a, const v2 b );
+v3 vmin3( const v3 a, const v3 b );
+v4 vmin4( const v4 a, const v4 b );
+
+v2 vmax2( const v2 a, const v2 b );
+v3 vmax3( const v3 a, const v3 b );
+v4 vmax4( const v4 a, const v4 b );
+
+v2 vreflect2( const v2 v, const v2 n );
+v3 vreflect3( const v3 v, const v3 n );
+v4 vreflect4( const v4 v, const v4 n );
+
+#define DEFINE_M22COMPWISE_OP( name, op ) m22 name( const m22 *a, const m22 *b );
+#define DEFINE_M33COMPWISE_OP( name, op ) m33 name( const m33 *a, const m33 *b );
+#define DEFINE_M44COMPWISE_OP( name, op ) m44 name( const m44 *a, const m44 *b );
+
+DEFINE_M22COMPWISE_OP( madd22, + )
+DEFINE_M22COMPWISE_OP( msub22, - )
+
+DEFINE_M33COMPWISE_OP( madd33, + )
+DEFINE_M33COMPWISE_OP( msub33, - )
+
+DEFINE_M44COMPWISE_OP( madd44, + )
+DEFINE_M44COMPWISE_OP( msub44, - )
+
+#undef DEFINE_M22COMPWISE_OP
+#undef DEFINE_M33COMPWISE_OP
+#undef DEFINE_M44COMPWISE_OP
+
+#define DEFINE_S22COMPWISE_OP( name, op ) m22 name( const m22 *a, const f32 c );
+#define DEFINE_S33COMPWISE_OP( name, op ) m33 name( const m33 *a, const f32 c );
+#define DEFINE_S44COMPWISE_OP( name, op ) m44 name( const m44 *a, const f32 c );
+
+DEFINE_S22COMPWISE_OP( madds22, + )
+DEFINE_S22COMPWISE_OP( msubs22, - )
+DEFINE_S22COMPWISE_OP( mdivs22, / )
+DEFINE_S22COMPWISE_OP( mmuls22, * )
+
+DEFINE_S33COMPWISE_OP( madds33, + )
+DEFINE_S33COMPWISE_OP( msubs33, - )
+DEFINE_S33COMPWISE_OP( mdivs33, / )
+DEFINE_S33COMPWISE_OP( mmuls33, * )
+
+DEFINE_S44COMPWISE_OP( madds44, + )
+DEFINE_S44COMPWISE_OP( msubs44, - )
+DEFINE_S44COMPWISE_OP( mdivs44, / )
+DEFINE_S44COMPWISE_OP( mmuls44, * )
+
+#undef DEFINE_S22COMPWISE_OP
+#undef DEFINE_S33COMPWISE_OP
+#undef DEFINE_S44COMPWISE_OP
+
+m22 mmul22( const m22 *a, const m22 *b );
+m33 mmul33( const m33 *a, const m33 *b );
+m44 mmul44( const m44 *a, const m44 *b );
+
+m22 mlerp22( const m22 *a, const m22 *b, const f32 t );
+m33 mlerp33( const m33 *a, const m33 *b, const f32 t );
+m44 mlerp44( const m44 *a, const m44 *b, const f32 t );
+
+m22 mtranspose22( const m22 *m );
+m33 mtranspose33( const m33 *m );
+m44 mtranspose44( const m44 *m );
+
+f32 mdeterminant22( const m22 *m );
+f32 mdeterminant33( const m33 *m );
+f32 mdeterminant44( const m44 *m );
+
+m22 minverse22( const m22 *m );
+m33 minverse33( const m33 *m );
+m44 minverse44( const m44 *m );
+
+m22 mtruncate32( const m33 *m );
+m22 mtruncate42( const m44 *m );
+m33 mtruncate43( const m44 *m );
+
+/* Right side matrix-vector multiplication */
+v2 vmulm2( const m22 *m, const v2 v );
+/* Right side matrix-vector multiplication */
+v3 vmulm3( const m33 *m, const v3 v );
+/* Right side matrix-vector multiplication */
+v4 vmulm4( const m44 *m, const v4 v );
+
+#ifdef _cplusplus
+}
+#endif
+#endif
+
+#ifdef VUL_DEFINE
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
 #define DEFINE_V2OP( name, op )\
 	v2 name( const v2 a, const v2 b ) {\
 		v2 r;\
@@ -136,13 +301,7 @@ typedef struct m44 {
 		r.w = a.w op b.w;\
 		return r;\
 	}
-#endif
 
-#ifndef VUL_DEFINE
-#define DEFINE_S2OP( name, op ) v2 name( const v2 a, const f32 c );
-#define DEFINE_S3OP( name, op ) v3 name( const v3 a, const f32 c );
-#define DEFINE_S4OP( name, op ) v4 name( const v4 a, const f32 c );
-#else
 #define DEFINE_S2OP( name, op )\
 	v2 name( const v2 a, const f32 c ) {\
 		v2 r;\
@@ -167,7 +326,6 @@ typedef struct m44 {
 		r.w = a.w op c;\
 		return r;\
 	}
-#endif
 
 DEFINE_V2OP( vadd2, + );
 DEFINE_V2OP( vsub2, - );
@@ -195,69 +353,40 @@ DEFINE_S4OP( vsubs4, - );
 DEFINE_S4OP( vmuls4, * );
 DEFINE_S4OP( vdivs4, / );
 
-#ifndef VUL_DEFINE
-v2 vec2( const f32 x, const f32 y );
-v3 vec3( const f32 x, const f32 y, const f32 z );
-v4 vec4( const f32 x, const f32 y, const f32 z, const f32 w );
-#else
+#undef DEFINE_V2OP
+#undef DEFINE_V3OP
+#undef DEFINE_V4OP
+
+#undef DEFINE_S2OP
+#undef DEFINE_S3OP
+#undef DEFINE_S4OP
+
 v2 vec2( const f32 x, const f32 y ) { v2 r; r.x = x; r.y = y; return r; }
 v3 vec3( const f32 x, const f32 y, const f32 z ) { v3 r; r.x = x; r.y = y; r.z = z; return r; }
 v4 vec4( const f32 x, const f32 y, const f32 z, const f32 w ) { v4 r; r.x = x; r.y = y; r.z = z; r.w = w; return r; }
-#endif
 
-#ifndef VUL_DEFINE
-v2 vcopy2( const v2 v );
-v3 vcopy3( const v3 v );
-v4 vcopy4( const v4 v );
-#else
 v2 vcopy2( const v2 v ) { v2 r; r.x = v.x; r.y = v.y; return r; }
 v3 vcopy3( const v3 v ) { v3 r; r.x = v.x; r.y = v.y; r.z = v.z; return r; }
 v4 vcopy4( const v4 v ) { v4 r; r.x = v.x; r.y = v.y; r.z = v.z; r.w = v.w; return r; }
-#endif
 
-#ifndef VUL_DEFINE
-f32 vdot2( const v2 a, const v2 b);
-f32 vdot3( const v3 a, const v3 b);
-f32 vdot4( const v4 a, const v4 b);
-#else
 f32 vdot2( const v2 a, const v2 b) { return a.x * b.x + a.y * b.y; }
 f32 vdot3( const v3 a, const v3 b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
 f32 vdot4( const v4 a, const v4 b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
-#endif
 
-#ifndef VUL_DEFINE
-f32 vnorm2( const v2 v );
-f32 vnorm3( const v3 v );
-f32 vnorm4( const v4 v );
-#else
 f32 vnorm2( const v2 v ) { return sqrtf( vdot2( v, v ) ); }
 f32 vnorm3( const v3 v ) { return sqrtf( vdot3( v, v ) ); }
 f32 vnorm4( const v4 v ) { return sqrtf( vdot4( v, v ) ); }
-#endif
 
-#ifndef VUL_DEFINE
-v2 vnormalize2( const v2 v );
-v3 vnormalize3( const v3 v );
-v4 vnormalize4( const v4 v );
-#else
 v2 vnormalize2( const v2 v ) { return vmuls2( v, 1.f / vnorm2( v ) ); }
 v3 vnormalize3( const v3 v ) { return vmuls3( v, 1.f / vnorm3( v ) ); }
 v4 vnormalize4( const v4 v ) { return vmuls4( v, 1.f / vnorm4( v ) ); }
-#endif
 
-#ifndef VUL_DEFINE
-v2 vcross2( const v2 v );
-#else
 v2 vcross2( const v2 v ) {
 	v2 r;
 	r.x = v.y;
 	r.y = -v.x;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-v3 vcross3( const v3 a, const v3 b );
-#else
 v3 vcross3( const v3 a, const v3 b ) {
 	v3 r;
 	r.x = a.y * b.z - b.y * a.z;
@@ -265,21 +394,13 @@ v3 vcross3( const v3 a, const v3 b ) {
 	r.z = a.x * b.y - b.x * a.y;
 	return r;
 }
-#endif
 
-#ifndef VUL_DEFINE
-v2 vclamp2( const v2 v, const f32 a, const f32 b );
-#else
 v2 vclamp2( const v2 v, const f32 a, const f32 b ) {
 	v2 r;
 	r.x = v.x < a ? a : v.x > b ? b : v.x;
 	r.y = v.y < a ? a : v.y > b ? b : v.y;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-v3 vclamp3( const v3 v, const f32 a, const f32 b );
-#else
 v3 vclamp3( const v3 v, const f32 a, const f32 b ) {
 	v3 r;
 	r.x = v.x < a ? a : v.x > b ? b : v.x;
@@ -287,10 +408,6 @@ v3 vclamp3( const v3 v, const f32 a, const f32 b ) {
 	r.z = v.z < a ? a : v.z > b ? b : v.z;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-v4 vclamp4( const v4 v, const f32 a, const f32 b );
-#else
 v4 vclamp4( const v4 v, const f32 a, const f32 b ) {
 	v4 r;
 	r.x = v.x < a ? a : v.x > b ? b : v.x;
@@ -299,15 +416,7 @@ v4 vclamp4( const v4 v, const f32 a, const f32 b ) {
 	r.w = v.w < a ? a : v.w > b ? b : v.w;
 	return r;
 }
-#endif
 
-#define vsaturate2( v ) vclamp2( v, 0.f, 1.f )
-#define vsaturate3( v ) vclamp3( v, 0.f, 1.f )
-#define vsaturate4( v ) vclamp4( v, 0.f, 1.f )
-
-#ifndef VUL_DEFINE
-v2 vlerp2( const v2 a, const v2 b, const f32 t );
-#else
 v2 vlerp2( const v2 a, const v2 b, const f32 t ) {
 	v2 r;
 	f32 t1 = 1.f - t;
@@ -315,10 +424,6 @@ v2 vlerp2( const v2 a, const v2 b, const f32 t ) {
 	r.y = a.y * t + b.y * t1;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-v3 vlerp3( const v3 a, const v3 b, const f32 t );
-#else
 v3 vlerp3( const v3 a, const v3 b, const f32 t ) {
 	v3 r;
 	f32 t1 = 1.f - t;
@@ -327,10 +432,6 @@ v3 vlerp3( const v3 a, const v3 b, const f32 t ) {
 	r.z = a.z * t + b.z * t1;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-v4 vlerp4( const v4 a, const v4 b, const f32 t );
-#else
 v4 vlerp4( const v4 a, const v4 b, const f32 t ) {
 	v4 r;
 	f32 t1 = 1.f - t;
@@ -340,21 +441,13 @@ v4 vlerp4( const v4 a, const v4 b, const f32 t ) {
 	r.w = a.w * t + b.w * t1;
 	return r;
 }
-#endif
 
-#ifndef VUL_DEFINE
-v2 vmin2( const v2 a, const v2 b );
-#else
 v2 vmin2( const v2 a, const v2 b ) {
 	v2 r;
 	r.x = a.x <= b.x ? a.x : b.x;
 	r.y = a.y <= b.y ? a.y : b.y;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-v3 vmin3( const v3 a, const v3 b );
-#else
 v3 vmin3( const v3 a, const v3 b ) {
 	v3 r;
 	r.x = a.x <= b.x ? a.x : b.x;
@@ -362,10 +455,6 @@ v3 vmin3( const v3 a, const v3 b ) {
 	r.z = a.z <= b.z ? a.z : b.z;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-v4 vmin4( const v4 a, const v4 b );
-#else
 v4 vmin4( const v4 a, const v4 b ) {
 	v4 r;
 	r.x = a.x <= b.x ? a.x : b.x;
@@ -374,20 +463,13 @@ v4 vmin4( const v4 a, const v4 b ) {
 	r.w = a.w <= b.w ? a.w : b.w;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-v2 vmax2( const v2 a, const v2 b );
-#else
+
 v2 vmax2( const v2 a, const v2 b ) {
 	v2 r;
 	r.x = a.x >= b.x ? a.x : b.x;
 	r.y = a.y >= b.y ? a.y : b.y;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-v3 vmax3( const v3 a, const v3 b );
-#else
 v3 vmax3( const v3 a, const v3 b ) {
 	v3 r;
 	r.x = a.x >= b.x ? a.x : b.x;
@@ -395,10 +477,6 @@ v3 vmax3( const v3 a, const v3 b ) {
 	r.z = a.z >= b.z ? a.z : b.z;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-v4 vmax4( const v4 a, const v4 b );
-#else
 v4 vmax4( const v4 a, const v4 b ) {
 	v4 r;
 	r.x = a.x >= b.x ? a.x : b.x;
@@ -407,34 +485,18 @@ v4 vmax4( const v4 a, const v4 b ) {
 	r.w = a.w >= b.w ? a.w : b.w;
 	return r;
 }
-#endif
 
-#ifndef VUL_DEFINE
-v2 vreflect2( const v2 v, const v2 n );
-#else
 v2 vreflect2( const v2 v, const v2 n ) {
 	return vsub2( vmuls2( n, 2.f * vdot2( v, n ) ), v );
 }
-#endif
-#ifndef VUL_DEFINE
-v3 vreflect3( const v3 v, const v3 n );
-#else
 v3 vreflect3( const v3 v, const v3 n ) {
 	return vsub3( vmuls3( n, 2.f * vdot3( v, n ) ), v );
 }
-#endif
-#ifndef VUL_DEFINE
-v4 vreflect4( const v4 v, const v4 n );
-#else
 v4 vreflect4( const v4 v, const v4 n ) {
 	return vsub4( vmuls4( n, 2.f * vdot4( v, n ) ), v );
 }
-#endif
 
 #ifndef VUL_DEFINE
-#define DEFINE_M22COMPWISE_OP( name, op ) m22 name( const m22 *a, const m22 *b );
-#define DEFINE_M33COMPWISE_OP( name, op ) m33 name( const m33 *a, const m33 *b );
-#define DEFINE_M44COMPWISE_OP( name, op ) m44 name( const m44 *a, const m44 *b );
 #else
 #define DEFINE_M22COMPWISE_OP( name, op )\
 	m22 name( const m22 *a, const m22 *b ) {\
@@ -482,11 +544,6 @@ v4 vreflect4( const v4 v, const v4 n ) {
 	}
 #endif
 
-#ifndef VUL_DEFINE
-#define DEFINE_S22COMPWISE_OP( name, op ) m22 name( const m22 *a, const f32 c );
-#define DEFINE_S33COMPWISE_OP( name, op ) m33 name( const m33 *a, const f32 c );
-#define DEFINE_S44COMPWISE_OP( name, op ) m44 name( const m44 *a, const f32 c );
-#else
 #define DEFINE_S22COMPWISE_OP( name, op )\
 	m22 name( const m22 *a, const f32 c ) {\
 		m22 r;\
@@ -531,7 +588,6 @@ v4 vreflect4( const v4 v, const v4 n ) {
 		r.a33 = a->a33 op c;\
 		return r;\
 	}
-#endif
 
 DEFINE_M22COMPWISE_OP( madd22, + )
 DEFINE_M22COMPWISE_OP( msub22, - )
@@ -557,9 +613,10 @@ DEFINE_S44COMPWISE_OP( msubs44, - )
 DEFINE_S44COMPWISE_OP( mdivs44, / )
 DEFINE_S44COMPWISE_OP( mmuls44, * )
 
-#ifndef VUL_DEFINE
-m22 mmul22( const m22 *a, const m22 *b );
-#else
+#undef DEFINE_M22COMPWISE_OP
+#undef DEFINE_M33COMPWISE_OP
+#undef DEFINE_M44COMPWISE_OP
+
 m22 mmul22( const m22 *a, const m22 *b ) {
 	m22 r;
 	r.a00 = a->a00 * b->a00 + a->a10 * b->a01;
@@ -568,11 +625,6 @@ m22 mmul22( const m22 *a, const m22 *b ) {
 	r.a11 = a->a01 * b->a10 + a->a11 * b->a11;
 	return r;
 }
-#endif
-
-#ifndef VUL_DEFINE
-m33 mmul33( const m33 *a, const m33 *b );
-#else
 m33 mmul33( const m33 *a, const m33 *b ) {
 	m33 r;
 	r.a00 = a->a00 * b->a00 + a->a10 * b->a01 + a->a20 * b->a02;
@@ -586,11 +638,6 @@ m33 mmul33( const m33 *a, const m33 *b ) {
 	r.a22 = a->a02 * b->a20 + a->a12 * b->a21 + a->a22 * b->a22;
 	return r;
 }
-#endif
-
-#ifndef VUL_DEFINE
-m44 mmul44( const m44 *a, const m44 *b );
-#else
 m44 mmul44( const m44 *a, const m44 *b ) {
 	m44 r;
 	r.a00 = a->a00 * b->a00 + a->a10 * b->a01 + a->a20 * b->a02 + a->a30 * b->a03;
@@ -611,11 +658,7 @@ m44 mmul44( const m44 *a, const m44 *b ) {
 	r.a33 = a->a03 * b->a30 + a->a13 * b->a31 + a->a23 * b->a32 + a->a33 * b->a33;
 	return r;
 }
-#endif
 
-#ifndef VUL_DEFINE
-m22 mlerp22( const m22 *a, const m22 *b, const f32 t );
-#else
 m22 mlerp22( const m22 *a, const m22 *b, const f32 t ) {
 	m22 r;
 	f32 t1 = 1.f - t;
@@ -625,10 +668,6 @@ m22 mlerp22( const m22 *a, const m22 *b, const f32 t ) {
 	r.a11 = a->a11 * t + b->a11 * t1;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-m33 mlerp33( const m33 *a, const m33 *b, const f32 t );
-#else
 m33 mlerp33( const m33 *a, const m33 *b, const f32 t ) {
 	m33 r;
 	f32 t1 = 1.f - t;
@@ -637,10 +676,6 @@ m33 mlerp33( const m33 *a, const m33 *b, const f32 t ) {
 	}
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-m44 mlerp44( const m44 *a, const m44 *b, const f32 t );
-#else
 m44 mlerp44( const m44 *a, const m44 *b, const f32 t ) {
 	m44 r;
 	f32 t1 = 1.f - t;
@@ -649,21 +684,13 @@ m44 mlerp44( const m44 *a, const m44 *b, const f32 t ) {
 	}
 	return r;
 }
-#endif
 
-#ifndef VUL_DEFINE
-m22 mtranspose22( const m22 *m );
-#else
 m22 mtranspose22( const m22 *m ) {
 	m22 r;
 	r.a00 = m->a00; r.a10 = m->a01;
 	r.a01 = m->a10; r.a11 = m->a11;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-m33 mtranspose33( const m33 *m );
-#else
 m33 mtranspose33( const m33 *m ) {
 	m33 r;
 	r.a00 = m->a00; r.a10 = m->a01; r.a20 = m->a02;
@@ -671,10 +698,6 @@ m33 mtranspose33( const m33 *m ) {
 	r.a02 = m->a20; r.a12 = m->a21; r.a22 = m->a22;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-m44 mtranspose44( const m44 *m );
-#else
 m44 mtranspose44( const m44 *m ) {
 	m44 r;
 	r.a00 = m->a00; r.a10 = m->a01; r.a20 = m->a02; r.a30 = m->a03;
@@ -683,27 +706,15 @@ m44 mtranspose44( const m44 *m ) {
 	r.a03 = m->a30; r.a13 = m->a31; r.a23 = m->a32; r.a33 = m->a33;
 	return r;
 }
-#endif
 
-#ifndef VUL_DEFINE
-f32 mdeterminant22( const m22 *m );
-#else
 f32 mdeterminant22( const m22 *m ) {
 	return m->a00 * m->a11 - m->a10 * m->a01;
 }
-#endif
-#ifndef VUL_DEFINE
-f32 mdeterminant33( const m33 *m );
-#else
 f32 mdeterminant33( const m33 *m ) {
 	return ( m->a11 * m->a22 - m->a21 * m->a12 )
 		 - ( m->a01 * m->a22 - m->a21 * m->a12 )
 		 + ( m->a01 * m->a12 - m->a11 * m->a02 );
 }
-#endif
-#ifndef VUL_DEFINE
-f32 mdeterminant44( const m44 *m );
-#else
 f32 mdeterminant44( const m44 *m ) {
 	f32 det = 0.f;
 	for( word i = 0; i < 4; ++i ) {
@@ -718,11 +729,7 @@ f32 mdeterminant44( const m44 *m ) {
 	}
 	return det;
 }
-#endif
 
-#ifndef VUL_DEFINE
-m22 minverse22( const m22 *m );
-#else
 m22 minverse22( const m22 *m ) {
 	m22 r;
 	f32 f = 1.f / mdeterminant22( m );
@@ -732,10 +739,6 @@ m22 minverse22( const m22 *m ) {
 	r.a11 = f *  m->a00;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-m33 minverse33( const m33 *m );
-#else
 m33 minverse33( const m33 *m ) {
 	m22 tmp;
 	m33 cofac;
@@ -755,10 +758,6 @@ m33 minverse33( const m33 *m ) {
 	}
 	return mmuls33( &cofac, 1.f / d );
 }
-#endif
-#ifndef VUL_DEFINE
-m44 minverse44( const m44 *m );
-#else
 m44 minverse44( const m44 *m ) {
 	m33 tmp;
 	m44 cofac;
@@ -778,11 +777,7 @@ m44 minverse44( const m44 *m ) {
 	}
 	return mmuls44( &cofac, 1.f / d );
 }
-#endif
 
-#ifndef VUL_DEFINE
-m22 mtruncate32( const m33 *m );
-#else
 m22 mtruncate32( const m33 *m ) {
 	m22 r;
 	r.a00 = m->a00;
@@ -791,10 +786,6 @@ m22 mtruncate32( const m33 *m ) {
 	r.a11 = m->a11;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-m22 mtruncate42( const m44 *m );
-#else
 m22 mtruncate42( const m44 *m ) {
 	m22 r;
 	r.a00 = m->a00;
@@ -803,10 +794,6 @@ m22 mtruncate42( const m44 *m ) {
 	r.a11 = m->a11;
 	return r;
 }
-#endif
-#ifndef VUL_DEFINE
-m33 mtruncate43( const m44 *m );
-#else
 m33 mtruncate43( const m44 *m ) {
 	m33 r;
 	r.a00 = m->a00;
@@ -820,23 +807,13 @@ m33 mtruncate43( const m44 *m ) {
 	r.a22 = m->a22;
 	return r;
 }
-#endif
 
-/* Right side matrix-vector multiplication */
-#ifndef VUL_DEFINE
-v2 vmulm2( const m22 *m, const v2 v );
-#else
 v2 vmulm2( const m22 *m, const v2 v ) {
 	v2 r;
 	r.x = m->a00 * v.x + m->a10 * v.y;
 	r.y = m->a01 * v.x + m->a11 * v.y;
 	return r;
 }
-#endif
-/* Right side matrix-vector multiplication */
-#ifndef VUL_DEFINE
-v3 vmulm3( const m33 *m, const v3 v );
-#else
 v3 vmulm3( const m33 *m, const v3 v ) {
 	v3 r;
 	r.x = m->a00 * v.x + m->a10 * v.y + m->a20 * v.z;
@@ -844,11 +821,6 @@ v3 vmulm3( const m33 *m, const v3 v ) {
 	r.z = m->a02 * v.x + m->a12 * v.y + m->a22 * v.z;
 	return r;
 }
-#endif
-/* Right side matrix-vector multiplication */
-#ifndef VUL_DEFINE
-v4 vmulm4( const m44 *m, const v4 v );
-#else
 v4 vmulm4( const m44 *m, const v4 v ) {
 	v4 r;
 	r.x = m->a00 * v.x + m->a10 * v.y + m->a20 * v.z + m->a30 * v.w;
@@ -857,8 +829,9 @@ v4 vmulm4( const m44 *m, const v4 v ) {
 	r.w = m->a03 * v.x + m->a13 * v.y + m->a23 * v.z + m->a33 * v.w;
 	return r;
 }
-#endif
 
 #ifdef _cplusplus
 }
+#endif
+
 #endif

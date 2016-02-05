@@ -2,7 +2,8 @@
  * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
  *
  * A scalar linear math library containing Vectors, Matrices, Points, Quaternions, AABBs
- * general affine transformations as well as fixed and half precision floating point types.
+ * general affine transformations as well as fixed point and half precision floating 
+ * point types.
  *
  * The library contains both a C++11 version and a C++98-version, the primary difference
  * being the way we construct our types. The C++11 style uses normal constructors
@@ -37,22 +38,13 @@
  *		-clang 3.0-6.2										|	C++98 only; C++11 requires initializer_list 
  *															|	which is introduced in clang 3.1
  * 
- * @TODO: The todos in vul_half.hpp
- * @TODO: Write pass-by-value versions of everything; is faster up to about 64 byte parameters in
- *		  local benchmarks, and much better for the optimizer. Probably worth changing for our usage.
  * @TODO: Planned features:
  *		-Linear solvers
  *		-64-bit fixed type
- *		-Faster matrix multiplication for large matrices.
- *		-Specializations for 2-, 3- & 4-vectors with swizzles and
- *		 .x-style access. Need to duplicate all general vector code per
- *		 specialization though, so do this in separate files for cleanliness,
- *		 and use opportunity to write faster functions for these versions.
- *		 Possibly write full specializations instead for the normal types;
- *		 consider which will give less code duplication.
+ *		-Faster matrix multiplication for large matrices (which ties into sparse matrices)
  *		-2x2, 3x3 & 4x4 matrix inversions as special cases for speed.
  *		-Bezier curves, B-splines (as extensions, behind guards to avoid bloat?)
- *		-More SIMDification where it makes sense.
+ *			-vul_vezier exists, incomplete
  * 
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)

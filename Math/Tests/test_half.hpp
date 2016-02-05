@@ -3,8 +3,6 @@
  *
  * This file contains tests for the half precision floating point 
  * type in vul_half.hpp. We perform exhaustive testing where we can.
- * We test all three versions for the half-float conversions (VUL_HALF_TABLE,
- * VUL_HALF_SSE and standard).
  * 
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
@@ -40,6 +38,8 @@ namespace vul_test {
 		static bool compares( );
 		static bool ops( );
 		static bool masses( );
+
+		static bool comparefloats( float a, float b, float max_rel_diff );
 	};
 
 	bool TestHalf::test( )
@@ -104,8 +104,8 @@ namespace vul_test {
 		h = f;
 		hm = -fabs( f );
 		f32 f16eps = std::numeric_limits< half >::epsilon( );
-		assert( ( f32 )fabs( ( f32 )h ) - ( f32 )fabs( f ) < f16eps );
-		assert( ( f32 )fabs( ( f32 )hm ) - ( f32 )fabs( ( f32 )h ) < f16eps );
+		assert( comparefloats( ( f32 )fabs( ( f32 )h ), ( f32 )fabs( f ), f16eps ) );
+		assert( comparefloats( ( f32 )fabs( ( f32 )hm ), ( f32 )fabs( ( f32 )h ), f16eps ) );
 		
 		for( u32 i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
 			half a, b, r;
@@ -118,65 +118,65 @@ namespace vul_test {
 			}
 
 			r = a + b;
-			f = ( f32 )a + ( f32 )b;			
-			assert( ( f32 )fabs( ( f32 )r - f ) <= ( f32 )( f16eps + f16eps * ( f32 )fabs( ( f32 )r ) ) );
+			f = ( f32 )a + ( f32 )b;		
+			assert( comparefloats( r, f, f16eps ) );
 			r = a - b;
 			f = ( f32 )a - ( f32 )b;
-			assert( ( f32 )fabs( ( f32 )r - f ) <= ( f32 )( f16eps + f16eps * ( f32 )fabs( ( f32 )r ) ) );
+			assert( comparefloats( r, f, f16eps ) );
 			r = a * b;
 			f = ( f32 )a * ( f32 )b;
-			assert( ( f32 )fabs( ( f32 )r - f ) <= ( f32 )( f16eps + f16eps * ( f32 )fabs( ( f32 )r ) ) );
+			assert( comparefloats( r, f, f16eps ) );
 			r = a / b;
 			f = ( f32 )a / ( f32 )b;
-			assert( ( f32 )fabs( ( f32 )r - f ) <= ( f32 )( f16eps + f16eps * ( f32 )fabs( ( f32 )r ) ) );
+			assert( comparefloats( r, f, f16eps ) );
 			
 			r = a;
 			a += b;
-			assert( r + b == a );
+			assert( comparefloats( r + b, a, f16eps ) );
 			r = a;
 			a -= b;
-			assert( r - b == a );
+			assert( comparefloats( r - b, a, f16eps ) );
 			r = a;
 			a *= b;
-			assert( r * b == a );
+			assert( comparefloats( r * b, a, f16eps ) );
 			r = a;
 			a /= b;
-			assert( r / b == a );
-
+			assert( comparefloats( r / b, a, f16eps ) );
+			
 			r = a;
 			a += ( f32 )b;
-			assert( r + b == a );
+			assert( comparefloats( r + b, a, f16eps ) );
 			r = a;
 			a -= ( f32 )b;
-			assert( r - b == a );
+			assert( comparefloats( r - b, a, f16eps ) );
 			r = a;
 			a *= ( f32 )b;
-			assert( r * b == a );
+			assert( comparefloats( r * b, a, f16eps ) );
 			r = a;
 			a /= ( f32 )b;
-			assert( r / b == a );
+			assert( comparefloats( r / b, a, f16eps ) );
 			
 			r = a;
 			a += ( fixed_32< 8 > )b;
-			assert( r + ( fixed_32< 8 > )b == a );
+			assert( comparefloats( r + ( fixed_32< 8 > )b, a, f16eps ) );
 			r = a;
 			a -= ( fixed_32< 8 > )b;
-			assert( r - ( fixed_32< 8 > )b == a );
+			assert( comparefloats( r - ( fixed_32< 8 > )b, a, f16eps ) );
 			r = a;
 			a *= ( fixed_32< 8 > )b;
-			assert( r * ( fixed_32< 8 > )b == a );
+			assert( comparefloats( r * ( fixed_32< 8 > )b, a, f16eps ) );
 			r = a;
 			a /= ( fixed_32< 8 > )b;
-			assert( r / ( fixed_32< 8 > )b == a );
+			assert( comparefloats( r / ( fixed_32< 8 > )b, a, f16eps ) );
 		}
 		
 		f = VUL_TEST_RNG;
 		h = ( half )f;
 		half h_old = h;
-		assert( ( f32 )( ++h ) - ( ( f32 )h_old + 1.f ) < f16eps );
-		assert( ( f32 )( --h ) - ( f32 )h_old < f16eps );
-		assert( ( f32 )( -h - half( -f ) ) < f16eps );
-		assert( ( f32 )( +h - half( +f ) ) < f16eps );
+		assert( comparefloats( ( f32 )( ++h ), ( ( f32 )h_old + 1.f ), f16eps ) );
+		assert( comparefloats( ( f32 )( --h ), ( f32 )h_old, f16eps ) );
+		assert( comparefloats( ( f32 )( -h - half( -f ) ), 0.f, f16eps ) );
+		assert(comparefloats(  ( f32 )( +h - half( +f ) ), 0.f, f16eps ) );
 
 		return true;
 	}
@@ -196,12 +196,12 @@ namespace vul_test {
 
 		vul_single_to_half_array( halfs, floats, VUL_TEST_FUZZ_COUNT );
 		for( u32 i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
-			assert( ( f32 )fabs( ( f32 )halfs[ i ] - floats[ i ] ) < ( f32 )( f16eps + f16eps * ( f32 )fabs( ( f32 )halfs[ i ] ) ) );
+			assert( comparefloats( ( f32 )halfs[ i ], floats[ i ], f16eps ) );
 		}
 
 		vul_double_to_half_array( halfs, doubles, VUL_TEST_FUZZ_COUNT );
 		for( u32 i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
-			assert( ( f32 )fabs( ( f64 )halfs[ i ] - doubles[ i ] ) < ( f32 )( f16eps + f16eps * ( f32 )fabs( ( f32 )halfs[ i ] ) ) );
+			assert( comparefloats( ( f32 )halfs[ i ], ( f32 )doubles[ i ], f16eps ) );
 		}
 
 		// Exhaustive
@@ -215,9 +215,10 @@ namespace vul_test {
 		vul_half_to_single_array( all_halfs_f32s, all_halfs, 1 << 16 );
 		vul_half_to_double_array( all_halfs_f64s, all_halfs, 1 << 16 );
 		
-		for( u32 i = 1; i < 1 << 16; ++i ) {
-			assert( ( f32 )fabs( ( f32 )all_halfs[ i ] - all_halfs_f32s[ i ] ) < ( f32 )( f16eps + f16eps * ( f32 )fabs( ( f32 )all_halfs[ i ] ) ) );
-			assert( ( f32 )fabs( ( f64 )all_halfs[ i ] - all_halfs_f64s[ i ] ) < ( f32 )( f16eps + f16eps * ( f32 )fabs( ( f32 )all_halfs[ i ] ) ) );		
+		for( u32 i = 0; i < 1 << 16; ++i ) {
+			if( ( all_halfs[ i ].data & 0x7c00 ) == 0x7c00 ) continue; // Skip INFs and NaNs
+			assert( comparefloats( all_halfs[ i ], all_halfs_f32s[ i ], f16eps ) );
+			assert( comparefloats( all_halfs[ i ], ( f32 )all_halfs_f64s[ i ], f16eps ) );
 		}
 
 		delete[ ] all_halfs;
@@ -229,6 +230,29 @@ namespace vul_test {
 		delete[ ] halfs;
 		
 		return true;
+	}
+
+	bool TestHalf::comparefloats( float a, float b, float max_rel_diff )
+	{
+		float d, l;
+		
+		/* For our exhaustive tests, we want inf to equal inf */
+		if( a == INFINITY ) {
+			return b == INFINITY;
+		}
+		/* For our exhaustive tests, we want nan to equal nan */
+		if( a == NAN ) {
+			return b == NAN;
+		}
+
+		d = fabs( a - b );
+		a = fabs( a );
+		b = fabs( b );
+		l = ( b > a ) ? b : a;
+
+		if( d <= l * max_rel_diff ) 
+			return true;
+		return false;
 	}
 };
 

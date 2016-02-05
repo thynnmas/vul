@@ -41,7 +41,6 @@ namespace vul {
 
 	template< typename T, s32 n >
 	struct AABB {
-		// @TODO(thynn): Consider changing this to center, extent
 		Point< T, n > _min;
 		Point< T, n > _max;
 

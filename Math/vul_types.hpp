@@ -46,6 +46,7 @@ namespace vul {
 	typedef uint32_t u32;
 	typedef uint64_t u64;
 
+	// 32-bit Boolean
 	typedef u32 b32;
 }
 

@@ -144,7 +144,7 @@ namespace vul_test {
 		
 #ifdef VUL_CPLUSPLUS11
 		v2 = Vector< fi32, 2 >( fi32( 7.f ) );
-		v9 = Vector< s64, 9 >( -3.f );
+		v9 = Vector< s64, 9 >( -3 );
 #else
 		v2 = makeVector< fi32, 2 >( fi32( 7.f ) );
 		v9 = makeVector< s64, 9 >( -3.f );

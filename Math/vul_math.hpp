@@ -33,6 +33,7 @@
  * Tested compilers											|	Notes
  *		-gcc (Debian 4.7.2-5) 4.7.2							|	C++98 & C++11. AVX builds, is not tested
  *		-MS VC 2010 Express									|	C++98 only
+ *		-MS VC 2015 Community								|
  *		-clang 3.0-6.2										|	C++98 only; C++11 requires initializer_list 
  *															|	which is introduced in clang 3.1
  * 

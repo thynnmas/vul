@@ -147,8 +147,8 @@ namespace vul_test {
 		// so what we test here is that Point and Vector functionality is different, as it should be.
 #ifdef VUL_CPLUSPLUS11
 		Affine< f32, 2 > i2,
-						   mv2( makeMatrix22< f32 >( cos( VUL_PI / 4 ), -sin( VUL_PI / 4 ),
-													   sin( VUL_PI / 4 ),  cos( VUL_PI / 4 ) ),
+						   mv2( makeMatrix22< f32 >( ( f32 )cos( VUL_PI / 4 ), -( f32 )sin( VUL_PI / 4 ),
+													 ( f32 )sin( VUL_PI / 4 ),  ( f32 )cos( VUL_PI / 4 ) ),
 						   Vector< f32, 2 >{ 0.f, 1.f } );
 		Affine< f32, 3 > i3;
 		Affine< f32, 8 > i8;

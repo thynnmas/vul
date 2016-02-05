@@ -1,7 +1,7 @@
 /*
  * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
  *
- * This file contains tests for the matrix struct in vul_matrix.hpp
+ * This file contains tests for the quaternion struct in vul_quaternion.hpp
  * 
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
@@ -127,31 +127,31 @@ namespace vul_test {
 #ifdef VUL_CPLUSPLUS11
 		v3c[ 0 ] = Vector< f32, 3 >{ -1.f/sqrtf( 6.f ),  1.f/sqrtf( 2.f ), 1.f/sqrtf( 3.f ) };
 		v3c[ 1 ] = Vector< f32, 3 >{ -1.f/sqrtf( 6.f ), -1.f/sqrtf( 2.f ), 1.f/sqrtf( 3.f ) };
-		v3c[ 2 ] = Vector< f32, 3 >{  2.f/sqrtf( 6.f ),		  0, 1.f/sqrtf( 3.f ) };
+		v3c[ 2 ] = Vector< f32, 3 >{  2.f/sqrtf( 6.f ),					0, 1.f/sqrtf( 3.f ) };
 		v3r[ 0 ] = Vector< f32, 3 >{ -1.f/sqrtf( 6.f ), -1.f/sqrtf( 6.f ), 2.f/sqrtf( 6.f ) };
 		v3r[ 1 ] = Vector< f32, 3 >{  1.f/sqrtf( 2.f ), -1.f/sqrtf( 2.f ), 0 };
 		v3r[ 2 ] = Vector< f32, 3 >{  1.f/sqrtf( 3.f ),  1.f/sqrtf( 3.f ), 1.f/sqrtf( 3.f ) };
 #else
 		v3c[ 0 ] = makeVector< f32 >( -1.f/sqrtf( 6.f ),  1.f/sqrtf( 2.f ), 1.f/sqrtf( 3.f ) );
 		v3c[ 1 ] = makeVector< f32 >( -1.f/sqrtf( 6.f ), -1.f/sqrtf( 2.f ), 1.f/sqrtf( 3.f ) );
-		v3c[ 2 ] = makeVector< f32 >(  2.f/sqrtf( 6.f ),		   0, 1.f/sqrtf( 3.f ) );
+		v3c[ 2 ] = makeVector< f32 >(  2.f/sqrtf( 6.f ),				 0, 1.f/sqrtf( 3.f ) );
 		v3r[ 0 ] = makeVector< f32 >( -1.f/sqrtf( 6.f ), -1.f/sqrtf( 6.f ), 2.f/sqrtf( 6.f ) );
 		v3r[ 1 ] = makeVector< f32 >(  1.f/sqrtf( 2.f ), -1.f/sqrtf( 2.f ), 0 );
 		v3r[ 2 ] = makeVector< f32 >(  1.f/sqrtf( 3.f ),  1.f/sqrtf( 3.f ), 1.f/sqrtf( 3.f ) );
 #endif
 		qf = makeQuatFromAxes( v3c[ 0 ], v3c[ 1 ], v3c[ 2 ] );
-		f32 root = sqrtf( 1.f / sqrtf( 3.f ) + 1.f / sqrtf( 6.f ) + 1.f / sqrtf( 2.f ) + 1.f );
-		assert( abs( qf.x - ( 0.5f / root ) * (  2.f / sqrtf( 6.f ) - 1.f / sqrtf( 3.f ) ) ) < f32eps );
-		assert( abs( qf.y - ( 0.5f / root ) * ( -1.f / sqrtf( 3.f ) ) ) < f32eps );
-		assert( abs( qf.z - root / 2.f ) < f32eps );
-		assert( abs( qf.w - ( 0.5f / root ) * (  1.f / sqrtf( 2.f ) + 1.f / sqrtf( 6.f ) ) ) < f32eps );
+		f32 root = sqrtf( 1.0f + 1.f / sqrtf( 6.f ) + 1.f / sqrtf( 2.f ) + 1.f / sqrt( 3.f ) );
+		assert( abs( qf.x - ( 0.5f / root ) * (  2.f / sqrtf( 6.f ) + 1.f / sqrtf( 3.f ) ) ) < f32eps );
+		assert( abs( qf.y - ( 0.5f / root ) * (  1.f / sqrtf( 3.f ) ) ) < f32eps );
+		assert( abs( qf.z - ( 0.5f * root ) ) < f32eps );
+		assert( abs( qf.w - ( 0.5f / root ) * ( -1.f / sqrtf( 6.f ) - 1.f / sqrtf( 2.f ) ) ) < f32eps );
 		
 		Matrix< f32, 3, 3 > m33 = makeMatrixFromRows< f32, 3, 3 >( v3r );
 		qf = makeQuatFromMatrix( m33 );
-		assert( abs( qf.x - ( 0.5f / root ) * (  2.f / sqrtf( 6.f ) - 1.f / sqrtf( 3.f ) ) ) < f32eps );
-		assert( abs( qf.y - ( 0.5f / root ) * ( -1.f / sqrtf( 3.f ) ) ) < f32eps );
-		assert( abs( qf.z - root / 2.f ) < f32eps );
-		assert( abs( qf.w - ( 0.5f / root ) * (  1.f / sqrtf( 2.f ) + 1.f / sqrtf( 6.f ) ) ) < f32eps );
+		assert( abs( qf.x - ( 0.5f / root ) * (  2.f / sqrtf( 6.f ) + 1.f / sqrtf( 3.f ) ) ) < f32eps );
+		assert( abs( qf.y - ( 0.5f / root ) * (  1.f / sqrtf( 3.f ) ) ) < f32eps );
+		assert( abs( qf.z - ( 0.5f * root ) ) < f32eps );
+		assert( abs( qf.w - ( 0.5f / root ) * ( -1.f / sqrtf( 6.f ) - 1.f / sqrtf( 2.f ) ) ) < f32eps );
 				
 		qf = makeZero< f32 >( );
 		assert( qf[ 0 ] == 0.f ); assert( qf[ 1 ] == 0.f ); assert( qf[ 2 ] == 0.f ); assert( qf[ 3 ] == 0.f );

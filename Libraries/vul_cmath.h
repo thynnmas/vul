@@ -22,8 +22,10 @@
 #include <stdint.h>
 #include <math.h>
 
+#ifndef VUL_TYPES_H
 typedef float f32;
 typedef double f64;
+#endif
 typedef size_t word;
 
 typedef struct v2 {

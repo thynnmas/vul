@@ -1,10 +1,10 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file describes a singly linked skip list. The current implementation is
  * not indexable.
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -32,7 +32,7 @@
 typedef struct vul_skip_list_element {
 	void *data;
 	u32 levels;
-	vul_skip_list_element** nexts;
+	struct vul_skip_list_element** nexts;
 } vul_skip_list_element;
 
 typedef struct vul_skip_list {

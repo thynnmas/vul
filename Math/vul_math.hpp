@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * A scalar linear math library containing Vectors, Matrices, Points, Quaternions, AABBs
  * general affine transformations as well as fixed point and half precision floating 
@@ -32,9 +32,9 @@
  * Library format inspired by http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/
  * 
  * Tested compilers											|	Notes
+ *		-MS VC 2015 Community								|
  *		-gcc (Debian 4.7.2-5) 4.7.2							|	C++98 & C++11. AVX builds, is not tested
  *		-MS VC 2010 Express									|	C++98 only
- *		-MS VC 2015 Community								|
  *		-clang 3.0-6.2										|	C++98 only; C++11 requires initializer_list 
  *															|	which is introduced in clang 3.1
  * 
@@ -45,8 +45,9 @@
  *		-2x2, 3x3 & 4x4 matrix inversions as special cases for speed.
  *		-Bezier curves, B-splines (as extensions, behind guards to avoid bloat?)
  *			-vul_vezier exists, incomplete
+ *		-Potentially rewrite with SIMD-types as primitives, as this is apparently better now.
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR

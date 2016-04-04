@@ -1,10 +1,10 @@
 /*
-* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
 *
 * This file describes a generic priority queue, implemented as a
 * fibonacci heap.
 *
-* ¹ If public domain is not legally valid in your legal jurisdiction
+* ? If public domain is not legally valid in your legal jurisdiction
 *   the MIT licence applies (see the LICENCE file)
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -59,7 +59,7 @@ typedef struct vul_priority_heap {
 	int ( *comparator )( void *a, void *b );
 
 	void *( *allocator )( size_t size );
-	void( *deallocator )( void *ptr );
+	void ( *deallocator )( void *ptr );
 } vul_priority_heap;
 
 

@@ -353,3 +353,4 @@ b32 vul_svector_is_empty( vul_svector *vec )
 #endif
 
 #endif
+

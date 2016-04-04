@@ -22,6 +22,7 @@
 #include <immintrin.h>
 #elif defined( VUL_AOSOA_AVX )
 #include <immintrin.h>
+#include <avxintrin.h>
 #endif
 #ifdef VUL_AOSOA_NEON
 #include <arm_neon.h>

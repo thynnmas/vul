@@ -1,10 +1,10 @@
 /*
-* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
 *
 * This file contains useful string-handling functions. The UTF-8 handling
 * is from stb.h, while the search/pattern matching is our own.
 *
-* ¹ If public domain is not legally valid in your legal jurisdiction
+* ? If public domain is not legally valid in your legal jurisdiction
 *   the MIT licence applies (see the LICENCE file)
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -127,7 +127,7 @@ vul_wchar *vul_wstring_divide_get_first( const vul_wchar *str, const vul_wchar d
 extern "C" {
 #endif
 
-vul_wchar *vul_wchar_from_utf8( vul_wchar *buffer, char *ostr, s32 n)
+vul_wchar *vul_wchar_from_utf8( vul_wchar *buffer, char *ostr, s32 n )
 {
    u8 *str = ( u8* ) ostr;
    u32 c;

@@ -55,7 +55,7 @@ namespace vul {
 		unsigned short data;
 
 #ifdef VUL_CPLUSPLUS11
-		constexpr half( );
+		half( );
 #else
 		half( );	
 #endif
@@ -110,11 +110,7 @@ namespace vul {
 	half operator*( half a, half b );
 	half operator/( half a, half b );
 
-#ifdef VUL_CPLUSPLUS11
-	half constexpr operator+( half a );
-#else
 	half operator+( half a );
-#endif
 	half operator-( half a );
 	
 	// Mass conversion functions. These use 4-wide SSE if VUL_HALF_SSE are defined.
@@ -129,7 +125,7 @@ namespace vul {
 	//
 #ifdef VUL_DEFINE
 #ifdef VUL_CPLUSPLUS11
-	constexpr half::half( ) : data( 0 )
+	half::half( ) : data( 0 )
 	{
 	}
 #else
@@ -478,17 +474,10 @@ namespace vul {
 		return half( r );
 	}
 
-#ifdef VUL_CPLUSPLUS11
-	half constexpr operator+( half a )
-	{
-		return half( a );
-	}
-#else
 	half operator+( half a )
 	{
 		return half( a );
 	}
-#endif
 	half operator-( half a )
 	{
 		half r;

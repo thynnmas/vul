@@ -1,9 +1,9 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file describes a doubly linked list.
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -237,11 +237,9 @@ void vul_list_destroy( vul_list_element *list_head, void ( *deallocator )( void 
 	{
 		next = list_head->next;
 
-		deallocator( list_head->data );
-		deallocator( list_head );
 		// By setting to null we are much more likely to trigger asserts if used after free.
-		list_head->data = NULL;
-		list_head = NULL;
+		deallocator( list_head->data ); list_head->data = NULL;
+		deallocator( list_head ); list_head = NULL;
 		
 		list_head = next;
 	}
@@ -267,3 +265,4 @@ vul_list_element *vul_list_copy( vul_list_element *list_head, void *( *allocator
 #endif
 
 #endif
+

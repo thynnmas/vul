@@ -40,7 +40,7 @@ namespace vul {
 		int data;
 
 #ifdef VUL_CPLUSPLUS11
-		constexpr fixed_32< Q >( );
+		fixed_32< Q >( );
 #else
 		fixed_32< Q >( );
 #endif
@@ -131,7 +131,7 @@ namespace vul {
 	
 #ifdef VUL_CPLUSPLUS11
 	template< int Q >
-	constexpr fixed_32< Q >::fixed_32( ) : data( 0 )
+	fixed_32< Q >::fixed_32( ) : data( 0 )
 	{
 	}
 #else

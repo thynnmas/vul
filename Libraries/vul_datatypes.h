@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file includes the various datatypes of vul. At the moment, this includes:
  *	-General graph
@@ -9,17 +9,13 @@
  *	-Resizable array (vector)
  *	-Hash map (albeit without hash functions)
  * While not including:
- *	-Fibonacci heap (@TODO)
- *	-Simpler heap (@TODO)
  *	-Stack; since the vector can be used for this with no extra work.
  * As of now proper iteration is not supported. This is however on my todo list, see:
  * @TODO: Proper iterators for all data types, see http://nothings.org/computer/iterate.html
  *		  Might want to write fast, simple iterators as well, expose them as const_iterate
  *		  and require that the underlying data structure is unaltered by the iteration.
  *
- * @TODO: Properly test all of these!
- * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR

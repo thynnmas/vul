@@ -48,6 +48,8 @@ namespace vul {
 
 	// 32-bit Boolean
 	typedef u32 b32;
+	#define VUL_TRUE 1
+	#define VUL_FALSE 0
 }
 
 #endif

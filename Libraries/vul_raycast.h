@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <malloc.h> // @TODO(thynn): Not on OS X
 #include <math.h>
-#include <immintrin.h>
+#include <x86intrin.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -95,8 +95,8 @@ inline v3w v3wcross( v3w a, v3w b ) {
 }
 inline __m128 v3wdot( v3w a, v3w b ) {
 	return _mm_add_ps( _mm_mul_ps( a.x, b.x ),
-		   _mm_add_ps( _mm_mul_ps( a.y, b.y ),
-					   _mm_mul_ps( a.z, b.z ) ) );
+			_mm_add_ps( _mm_mul_ps( a.y, b.y ),
+						_mm_mul_ps( a.z, b.z ) ) );
 }
 
 #define sse_select( mask, t, f ) _mm_or_ps( _mm_and_ps( mask, t ), _mm_andnot_ps( mask, f ) )
@@ -153,7 +153,7 @@ __m128 vul__raycast_triangle_intersect_wide( v3w *v0, v3w *v1, v3w *v2, ray r )
 	v3w e0, e1;
 	v3w P, Q, T, rd, ro;
 	__m128 det, invdet, u, v, t, eps, negeps, zero, one, inf, 
-		   cd, cu, cv, ct, cr; // Comparisons
+			cd, cu, cv, ct, cr; // Comparisons
 
 	inf = _mm_set1_ps( FLT_MAX );
 	eps = _mm_set1_ps( 1e-6 );
@@ -227,7 +227,7 @@ f32 vul__raycast_sphere_intersect( sphere *s, ray r )
 	return t0; // First hit is ahead
 }
 
-/* The dump way, just cast against all of them in order. Fills in the closes match and the distance to it, or NULL if none */
+/* The dump way, just cast against all of them in order. Fills in the closest match and the distance to it, or NULL if none */
 int vul_raycast_triangle_soup_dumb( tri **closest, f32 *dist, ray r, tri *soup, word count )
 {
 	f32 dmin, d;
@@ -253,7 +253,7 @@ int vul_raycast_triangle_soup_dumb( tri **closest, f32 *dist, ray r, tri *soup, 
 	}
 }
 
-/* The dump way, just cast against all of them in order. Fills in the closes match and the distance to it, or NULL if none */
+/* The dump way, just cast against all of them in order. Fills in the closest match and the distance to it, or NULL if none */
 int vul_raycast_triangle_soup_dumb_simd( tri **closest, f32 *dist, ray r, tri *soup, word count )
 {
 	__m128 dmin, d, c;

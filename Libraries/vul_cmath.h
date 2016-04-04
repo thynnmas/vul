@@ -193,6 +193,10 @@ v2 vmax2( const v2 a, const v2 b );
 v3 vmax3( const v3 a, const v3 b );
 v4 vmax4( const v4 a, const v4 b );
 
+v2 vabs2( const v2 a );
+v3 vabs3( const v3 a );
+v4 vabs4( const v4 a );
+
 v2 vreflect2( const v2 v, const v2 n );
 v3 vreflect3( const v3 v, const v3 n );
 v4 vreflect4( const v4 v, const v4 n );
@@ -485,6 +489,28 @@ v4 vmax4( const v4 a, const v4 b ) {
 	r.y = a.y >= b.y ? a.y : b.y;
 	r.z = a.z >= b.z ? a.z : b.z;
 	r.w = a.w >= b.w ? a.w : b.w;
+	return r;
+}
+
+v2 vabs2( const v2 v ) {
+	v2 r;
+	r.x = ( f32 )fabs( v.x );
+	r.y = ( f32 )fabs( v.y );
+	return r;
+}
+v3 vabs3( const v3 v ) {
+	v3 r;
+	r.x = ( f32 )fabs( v.x );
+	r.y = ( f32 )fabs( v.y );
+	r.z = ( f32 )fabs( v.z );
+	return r;
+}
+v4 vabs4( const v4 v ) {
+	v4 r;
+	r.x = ( f32 )fabs( v.x );
+	r.y = ( f32 )fabs( v.y );
+	r.z = ( f32 )fabs( v.z );
+	r.w = ( f32 )fabs( v.w );
 	return r;
 }
 

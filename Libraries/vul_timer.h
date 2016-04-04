@@ -279,7 +279,6 @@ unsigned int vul_sleep( unsigned int milliseconds )
 #elif defined( VUL_LINUX ) || defined( VUL_OSX )
 	struct timespec rem, req;
 	s32 err;
-	u64 tmp;
 
 	req.tv_sec = ( time_t )milliseconds / 1000;
 	req.tv_nsec = ( u64 )( milliseconds % 1000l ) * 1000000l;

@@ -124,106 +124,46 @@ namespace vul {
 		const Matrix< T, n, 1 > &as_row( ) const;
 	};
 	
-
-	// @TODO: Specializations for 2, 3, 4
-	/*template < typename T >
-	struct Vector< T, 2 > { 
-		union { 
-			T data[ 2 ]; 
-			struct { T x, y; };
-		};
-
-#ifdef VUL_CPLUSPLUS11
-		Vector< T, 2 >( T x, T y ); 
-		Vector< T, 2 >( float x, float y ); 
-#endif
-	};
-	template < typename T >
-	struct Vector< T, 3 > { 
-		union { 
-			T data[ 3 ]; 
-			struct { T x, y, z; };
-			struct { T r, g, b; };
-#ifdef VUL_CPLUSPLUS11
-			Vector< T, 2 > xy;
-#endif
-		};
-#ifdef VUL_CPLUSPLUS11
-		Vector< T, 3 >( T x, T y, T z ); 
-		Vector< T, 3 >( Vector< T, 2 > xy, T z );
-		Vector< T, 3 >( float x, float y, float z ); 
-#else
-		Vector< T, 2 > & xy( ) { return reinterpret_cast< Vector< T, 2 > & >( data ); }
-		const Vector< T, 2 > & xy( ) const { return reinterpret_cast< const Vector< T, 2 > & >( data ); }
-#endif
-	};
-	template < typename T >
-	struct Vector< T, 4 > { 
-		union { 
-			T data[ 4 ]; 
-			struct { T x, y, z, w; };
-			struct { T r, g, b, a; };
-#ifdef VUL_CPLUSPLUS11
-			Vector< T, 2 > xy;
-			Vector< T, 3 > xyz;
-			Vector< T, 3 > rgb;
-#endif
-		};
-#ifdef VUL_CPLUSPLUS11
-		Vector< T, 4 >( T x, T y, T z, T w ); 
-		Vector< T, 4 >( Vector< T, 2 > xy, Vector< T, 2 > zw ); 
-		Vector< T, 4 >( Vector< T, 3 > xyz, T w ); 
-		Vector< T, 4 >( float x, float y, float z, float w ); 
-#else
-		Vector< T, 2 > & xy( ) { return reinterpret_cast< Vector< T, 2 > & >( data ); }
-		const Vector< T, 2 > & xy( ) const { return reinterpret_cast< const Vector< T, 2 > & >( data ); }
-		Vector< T, 3 > & xyz( ) { return reinterpret_cast< Vector< T, 3 > & >( data ); }
-		const Vector< T, 3 > & xyz( ) const { return reinterpret_cast< const Vector< T, 3 > & >( data ); }
-		Vector< T, 3 > & rgb( ) { return reinterpret_cast< Vector< T, 3 > & >( data ); }
-		const Vector< T, 3 > & rgb( ) const { return reinterpret_cast< const Vector< T, 3 > & >( data ); }
-#endif
-	};*/
-
 	// Typedefs for these specializations
-	typedef Vector< f16, 2 > f16_2t;
-	typedef Vector< f16, 3 > f16_3t;
-	typedef Vector< f16, 4 > f16_4t;
-	typedef Vector< f32, 2 > f32_2t;
-	typedef Vector< f32, 3 > f32_3t;
-	typedef Vector< f32, 4 > f32_4t;
-	typedef Vector< f64, 2 > f64_2t;
-	typedef Vector< f64, 3 > f64_3t;
-	typedef Vector< f64, 4 > f64_4t;
+	typedef Vector< f16, 2 > f16x2;
+	typedef Vector< f16, 3 > f16x3;
+	typedef Vector< f16, 4 > f16x4;
+	typedef Vector< f32, 2 > f32x2;
+	typedef Vector< f32, 3 > f32x3;
+	typedef Vector< f32, 4 > f32x4;
+	typedef Vector< f64, 2 > f64x2;
+	typedef Vector< f64, 3 > f64x3;
+	typedef Vector< f64, 4 > f64x4;
 
-	typedef Vector< fi32, 2 > fi32_2t;
-	typedef Vector< fi32, 3 > fi32_3t;
-	typedef Vector< fi32, 4 > fi32_4t;
+	typedef Vector< fi32, 2 > fi32x2;
+	typedef Vector< fi32, 3 > fi32x3;
+	typedef Vector< fi32, 4 > fi32x4;
 
-	typedef Vector< s8, 2 > i8_2t;
-	typedef Vector< s8, 3 > i8_3t;
-	typedef Vector< s8, 4 > i8_4t;
-	typedef Vector< s16, 2 > i16_2t;
-	typedef Vector< s16, 3 > i16_3t;
-	typedef Vector< s16, 4 > i16_4t;
-	typedef Vector< s32, 2 > i32_2t;
-	typedef Vector< s32, 3 > i32_3t;
-	typedef Vector< s32, 4 > i32_4t;
-	typedef Vector< s64, 2 > i64_2t;
-	typedef Vector< s64, 3 > i64_3t;
-	typedef Vector< s64, 4 > i64_4t;
+	typedef Vector< s8, 2 > s8x2;
+	typedef Vector< s8, 3 > s8x3;
+	typedef Vector< s8, 4 > s8x4;
+	typedef Vector< s16, 2 > s16x2;
+	typedef Vector< s16, 3 > s16x3;
+	typedef Vector< s16, 4 > s16x4;
+	typedef Vector< s32, 2 > s32x2;
+	typedef Vector< s32, 3 > s32x3;
+	typedef Vector< s32, 4 > s32x4;
+	typedef Vector< s64, 2 > s64x2;
+	typedef Vector< s64, 3 > s64x3;
+	typedef Vector< s64, 4 > s64x4;
 
-	typedef Vector< u8, 2 > ui8_2t;
-	typedef Vector< u8, 3 > ui8_3t;
-	typedef Vector< u8, 4 > ui8_4t;
-	typedef Vector< u16, 2 > ui16_2t;
-	typedef Vector< u16, 3 > ui16_3t;
-	typedef Vector< u16, 4 > ui16_4t;
-	typedef Vector< u32, 2 > ui32_2t;
-	typedef Vector< u32, 3 > ui32_3t;
-	typedef Vector< u32, 4 > ui32_4t;
-	typedef Vector< u64, 2 > ui64_2t;
-	typedef Vector< u64, 3 > ui64_3t;
-	typedef Vector< u64, 4 > ui64_4t;
+	typedef Vector< u8, 2 > u8x2;
+	typedef Vector< u8, 3 > u8x3;
+	typedef Vector< u8, 4 > u8x4;
+	typedef Vector< u16, 2 > u16x2;
+	typedef Vector< u16, 3 > u16x3;
+	typedef Vector< u16, 4 > u16x4;
+	typedef Vector< u32, 2 > u32x2;
+	typedef Vector< u32, 3 > u32x3;
+	typedef Vector< u32, 4 > u32x4;
+	typedef Vector< u64, 2 > u64x2;
+	typedef Vector< u64, 3 > u64x3;
+	typedef Vector< u64, 4 > u64x4;
 
 	// Member functions if not C++11, since we otherwise couldn't have vectors in unions
 #ifndef VUL_CPLUSPLUS11
@@ -258,15 +198,15 @@ namespace vul {
 	Vector< T, 4 > makeVector( Vector< T, 3 > xyz, T w );
 	// Specialization variations with float arguments	
 	template< typename T >
-	Vector< T, 2 > makeVector( float x, float y );
+	Vector< T, 2 > makeVector( f32 x, f32 y );
 	template< typename T >
-	Vector< T, 3 > makeVector( float x, float y, float z );
+	Vector< T, 3 > makeVector( f32 x, f32 y, f32 z );
 	template< typename T >
-	Vector< T, 4 > makeVector( float x, float y, float z, float w );
+	Vector< T, 4 > makeVector( f32 x, f32 y, f32 z, f32 w );
 
 	// Anything from float and int arrays; to interface with other libraries
 	template< typename T, s32 n >
-	Vector< T, n > makeVector( float val );
+	Vector< T, n > makeVector( f32 val );
 	
 	template< typename T, s32 n >
 	Vector< T, n > makeVector( f32 (& a)[ n ] );
@@ -652,7 +592,7 @@ namespace vul {
 		return v; 
 	}
 	template< typename T >
-	Vector< T, 2 > makeVector( float x, float y )
+	Vector< T, 2 > makeVector( f32 x, f32 y )
 	{
 		Vector< T, 2 > v;
 		v.data[ 0 ] = T( x );
@@ -660,7 +600,7 @@ namespace vul {
 		return v;
 	}
 	template< typename T >
-	Vector< T, 3 > makeVector( float x, float y, float z )
+	Vector< T, 3 > makeVector( f32 x, f32 y, f32 z )
 	{
 		Vector< T, 3 > v;
 		v.data[ 0 ] = T( x );
@@ -669,7 +609,7 @@ namespace vul {
 		return v;
 	}
 	template< typename T >
-	Vector< T, 4 > makeVector( float x, float y, float z, float w )
+	Vector< T, 4 > makeVector( f32 x, f32 y, f32 z, f32 w )
 	{
 		Vector< T, 4 > v;
 		v.data[ 0 ] = T( x );
@@ -681,7 +621,7 @@ namespace vul {
 	
 	// Anything from float and int arrays; to interface with other libraries
 	template < typename T, s32 n >
-	Vector< T, n > makeVector( float val )
+	Vector< T, n > makeVector( f32 val )
 	{
 		Vector< T, n > v;
 		s32 i;

@@ -888,8 +888,8 @@ static void vul__sort_merge_collapse( vul_vector *list, s32 (*comparator)( const
 	{
 		n = vul_vector_size( stack ) - 2;
 		
-		en = ( const vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n );
-		en1 = ( const vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n + 1 );
+		en = ( const struct vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n );
+		en1 = ( const struct vul__sort_merge_stack_pair* )vul_vector_get_const( stack, n + 1 );
 		
 		// Some compiler really want this, so give it to them, even though it's not needed
 		enm1 = NULL; enm2 = NULL;

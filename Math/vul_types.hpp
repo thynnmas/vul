@@ -46,7 +46,10 @@ namespace vul {
 	typedef uint32_t u32;
 	typedef uint64_t u64;
 
+	// 32-bit Boolean
 	typedef u32 b32;
+	#define VUL_TRUE 1
+	#define VUL_FALSE 0
 }
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file contains a platform agnostic layer/defines for threading.
  * It wraps win32 threads and pthreads and supplies some defines to
@@ -8,7 +8,7 @@
  *
  * @TODO(thynn): Is this needed with C11 threads?
  *
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -25,7 +25,7 @@
 #ifdef VUL_WINDOWS
 #include <Windows.h>
 #else
-#include <pthreads.h>
+#include <pthread.h>
 #endif
 
 // @TODO(thynn): Types etc.

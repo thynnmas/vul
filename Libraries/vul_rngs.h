@@ -7,6 +7,7 @@
  * -vul_rng_xorhash: Thomas Wang's XorHash as reported by Bob Jenkins here: http://burtleburtle.net/bob/hash/integer.html
  *					 is used to initialize. We use an alternate XorShift to advance the state.
  * -vul_rng_mt19937: Mersenne twister 19937.
+ * -vul_rng_pcg32: See http://www.pcg-random.org/ @NOTE(thynn): The core of this is Apache 2.0 licenced, see the comment on the definition of vul_rng_pcg32_nex_unsigned)
  *
  * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
@@ -21,6 +22,7 @@
 #include <malloc.h>
 #endif
 #include <assert.h>
+#include <math.h> // For ldexp
 
 /**
  * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!
@@ -58,7 +60,8 @@ void vul_rng_tu_destroy( vul_rng_tu *r );
  */
 u32 vul_rng_tu_next_unsigned( vul_rng_tu *r );
 /**
- * Gets the next float from the given vul_rng_tu state, and advacnes it.
+ * Gets the next float in range [0,1) from the given vul_rng_tu state, and advacnes it.
+ * The float has been rounded down to the neares multiple of 1/2^32
  */
 f32 vul_rng_tu_next_float( vul_rng_tu *r );
 #ifdef _cplusplus
@@ -88,7 +91,8 @@ vul_rng_xorshift *vul_rng_xorshift_create( );
  */
 u32 vul_rng_xorshift_next_unsigned( vul_rng_xorshift *r );
 /**
- * Returns the next f32 in the given vul_rng_xorshift state, and advances it.
+ * Returns the next f32 in range [0,1) in the given vul_rng_xorshift state, and advances it.
+ * The float has been rounded down to the neares multiple of 1/2^32
  */
 f32 vul_rng_xorshift_next_float( vul_rng_xorshift *r );
 #ifdef _cplusplus
@@ -124,7 +128,7 @@ void vul_rng_xorhash_destroy( vul_rng_xorhash *r );
  */
 u32 vul_rng_xorhash_next_unsigned( vul_rng_xorhash *r );
 /**
- * Returns the next f32 in the given vul_rng_xorhash state, and advances it.
+ * Returns the next f32 in range [0,1) in the given vul_rng_xorhash state, and advances it.
  */
 f32 vul_rng_xorhash_next_float( vul_rng_xorhash *r );
 #ifdef _cplusplus
@@ -165,9 +169,51 @@ void vul_rng_mt19937_destroy( vul_rng_mt19937 *r );
  */
 u32 vul_rng_mt19937_next_unsigned( vul_rng_mt19937 *r );
 /**
- * Returns the next f32 in the given vul_rng_mt19937 state, and advances it.
+ * Returns the next f32 in range [0,1) in the given vul_rng_mt19937 state, and advances it.
+ * The float has been rounded down to the neares multiple of 1/2^32
  */
 f32 vul_rng_mt19937_next_float( vul_rng_mt19937 *r );
+#ifdef _cplusplus
+}
+#endif
+
+//-------------------------------
+// vul_rng_pcg32
+//
+
+/**
+ * The vul_rng_pcg32 RNG's state
+ */
+typedef struct vul_rng_pcg32 {
+	u64 state;
+	u64 inc;
+} vul_rng_pcg32;
+
+#ifdef _cplusplus
+extern "C" {
+#endif
+
+/**
+ * Create a new vul_rng_pcg32 state with the given seed and initial
+ * sequence.
+ * initstate specifies where in the 2^64 period we are. The initseq 
+ * specified which stream we will use.
+ */
+vul_rng_pcg32 *vul_rng_pcg32_create( u64 initstate, u64 initseq );
+/**
+ * Destroy the state 
+ */
+void vul_rng_pcg32_destroy( vul_rng_pcg32 *r );
+/**
+ * Returns the next u32 in the given state.
+ */
+u32 vul_rng_pcg32_next_unsigned( vul_rng_pcg32 *r );
+/**
+ * Returns the next f32 in range [0,1) in the given state.
+ * The float has been rounded down to the neares multiple of 1/2^32
+ */
+f32 vul_rng_pcg32_next_float( vul_rng_pcg32 *r );
+
 #ifdef _cplusplus
 }
 #endif
@@ -255,7 +301,7 @@ u32 vul_rng_xorshift_next_unsigned( vul_rng_xorshift *r )
 
 f32 vul_rng_xorshift_next_float( vul_rng_xorshift *r )
 {
-	return ( f32 )( vul_rng_xorshift_next_unsigned( r ) ) * ( 1.0f / 4294967296.0f );
+	return ( f32 )ldexp( vul_rng_xorshift_next_unsigned( r ), -32 );
 }
 
 vul_rng_xorhash *vul_rng_xorhash_create( u32 seed )
@@ -289,7 +335,7 @@ u32 vul_rng_xorhash_next_unsigned( vul_rng_xorhash *r )
 
 f32 vul_rng_xorhash_next_float( vul_rng_xorhash *r )
 {
-	return ( f32 )( vul_rng_xorhash_next_unsigned( r ) ) * ( 1.0f / 4294967296.0f );
+	return ( f32 )ldexp( vul_rng_xorhash_next_unsigned( r ), -32 );
 }
 
 vul_rng_mt19937 *vul_rng_mt19937_create( u32 seed )
@@ -350,9 +396,43 @@ u32 vul_rng_mt19937_next_unsigned( vul_rng_mt19937 *r )
 
 f32 vul_rng_mt19937_next_float( vul_rng_mt19937 *r )
 {
-	return ( f32 )( vul_rng_mt19937_next_unsigned( r ) ) * ( 1.0f / 4294967296.0f );
+	return ( f32 )ldexp( vul_rng_mt19937_next_unsigned( r ), -32 );
 }
 
+vul_rng_pcg32 *vul_rng_pcg32_create( u64 initstate, u64 initseq )
+{
+	vul_rng_pcg32 *r = ( vul_rng_pcg32* )malloc( sizeof( vul_rng_pcg32 ) );
+	assert( r != NULL );
+
+	r->state = initstate;
+	r->initseq = initseq;
+
+	return r;
+}
+
+void vul_rng_pcg32_destroy( vul_rng_pcg32 *r )
+{
+	free( r );
+}
+
+/**
+ * The following function follows it's own licence:
+ * *Really* minimal PCG32 code / (c) 2014 M.E. O'Neill / pcg-random.org
+ * Licensed under Apache License 2.0 (NO WARRANTY, etc. see website)
+ */
+u32 vul_rng_pcg32_next_unsigned( vul_rng_pcg32 *r )
+{
+	u64 old = r->state;
+	r->state = old * 6364136223846793005ULL + ( r->inc | 1 );
+	u32 xsh = ( ( old >> 18u ) ^ old ) >> 27u;
+	u32 rot = old >> 59u;
+	return ( xsh >> rot ) | ( xsh << ( ( -rot ) & 31 ) );
+}
+
+f32 vul_rng_pcg32_next_float( vul_rng_pcg32 *r )
+{
+	return ( f32 )ldexp( vul_rng_pcg32_next_unsigned( r ), -32 );
+}
 #ifdef _cplusplus
 }
 #endif

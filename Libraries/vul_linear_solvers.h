@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * Some commonly useful linear system solvers (solvers of the linear system
  * Ax = b). The following solvers are supported:
@@ -32,7 +32,7 @@
  *
  * WARNING: Errors (invalid calls and potential divide-by-zeroes) trigger asserts!
  *
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -124,7 +124,7 @@ void vul_solve_successive_over_relaxation_dense( float *out,
 												 float tolerance );
 
 #ifdef _cplusplus
-		}
+}
 #endif
 #endif
 

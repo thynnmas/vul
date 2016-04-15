@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file describes hash map implementation.
  * Buckets are implemented as linked lists to deal with collissions.
@@ -15,7 +15,7 @@
  * There is also SpookyHash, which is a lot faster, but 64-bit only:
  *  - http://burtleburtle.net/bob/hash/spooky.html : Publidc Domain
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * @TODO(thynn): Keep keys locally (use a stable array to store ll-elements,
@@ -107,6 +107,12 @@ const vul_hash_map_element *vul_map_get_const( vul_hash_map *map, void *key, u32
  * Destroys the given has map, deallocating all it's used memory.
  */
 void vul_map_destroy( vul_hash_map *map );
+/**
+ * Iterate over all elements in the map. Useful for destruction etc.
+ * @NOTE: If func alters the list (the element e, not the data
+ * e contains), behaviour is undefined!
+ */
+void vul_map_iterate( vul_hash_map *map, void ( *func )( vul_list_element *e ) );
 
 #ifdef _cplusplus
 }
@@ -201,7 +207,7 @@ vul_hash_map_element *vul_map_get( vul_hash_map *map, void *key, u32 key_size )
 
 	e.key = key;
 	e.key_size = key_size;
-
+	
 	// Find bucket
 	bucket = map->hash( ( u8* )key, key_size ) % map->bucket_count;
 
@@ -245,8 +251,21 @@ void vul_map_destroy( vul_hash_map *map )
 	map = NULL;
 }
 
+void vul_map_iterate( vul_hash_map *map, void ( *func )( vul_list_element *e ) )
+{
+	u32 b;
+	for( b = 0; b < map->bucket_count; ++b )
+	{
+		if( map->buckets[ b ] != NULL )
+		{
+			vul_list_iterate( map->buckets[ b ], func );
+		}
+	}
+}
+
 #ifdef _cplusplus
 }
 #endif
 
 #endif
+

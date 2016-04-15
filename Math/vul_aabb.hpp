@@ -22,6 +22,7 @@
 #include <immintrin.h>
 #elif defined( VUL_AOSOA_AVX )
 #include <immintrin.h>
+#include <avxintrin.h>
 #endif
 #ifdef VUL_AOSOA_NEON
 #include <arm_neon.h>
@@ -41,7 +42,6 @@ namespace vul {
 
 	template< typename T, s32 n >
 	struct AABB {
-		// @TODO(thynn): Consider changing this to center, extent
 		Point< T, n > _min;
 		Point< T, n > _max;
 

@@ -19,6 +19,7 @@
 #ifndef VUL_CMATH_H
 #define VUL_CMATH_H
 
+#include <stddef.h>
 #include <stdint.h>
 #include <math.h>
 
@@ -27,6 +28,7 @@ typedef float f32;
 typedef double f64;
 #endif
 typedef size_t word;
+#endif
 
 typedef struct v2 {
 	union {

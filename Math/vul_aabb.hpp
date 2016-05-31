@@ -22,7 +22,7 @@
 #include <immintrin.h>
 #elif defined( VUL_AOSOA_AVX )
 #include <immintrin.h>
-#include <avxintrin.h>
+//#include <avxintrin.h>
 #endif
 #ifdef VUL_AOSOA_NEON
 #include <arm_neon.h>
@@ -780,7 +780,7 @@ namespace vul {
 		__m128 t1[ 3 ];
 		u32 simdCount;
 
-		signBit = _mm_set1_ps( 0x80000000 );
+		signBit = *( __m128* )&_mm_set1_epi32( 0x80000000 );
 
 		for( u32 j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = _mm_set1_ps( planes[ j ].data[ 0 ] );
@@ -846,8 +846,8 @@ namespace vul {
 		__m128d t0[ 3 ];
 		__m128d t1[ 3 ];
 		u32 simdCount;
-
-		signBit = _mm_set1_pd( 0x80000000 );
+		
+		signBit = *( __m128d* )&_mm_set1_epi64( 0x80000000 );
 
 		for( u32 j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = _mm_set1_pd( planes[ j ].data[ 0 ] );
@@ -923,7 +923,7 @@ namespace vul {
 		__m256 t1[ 3 ];
 		u32 simdCount;
 
-		signBit = _mm256_set1_ps( 0x80000000 );
+		signBit = *( __m256* )&_mm256_set1_epi32( 0x80000000 );
 
 		for( u32 j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = _mm256_set1_ps( planes[ j ].data[ 0 ] );
@@ -995,7 +995,7 @@ namespace vul {
 		__m256d t1[ 3 ];
 		u32 simdCount;
 
-		signBit = _mm256_set1_pd( 0x80000000 );
+		signBit = *( __m256d* )&_mm256_set1_epi64x( 0x80000000 );
 
 		for( u32 j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = _mm256_set1_pd( planes[ j ].data[ 0 ] );

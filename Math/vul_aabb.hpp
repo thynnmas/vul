@@ -780,7 +780,7 @@ namespace vul {
 		__m128 t1[ 3 ];
 		u32 simdCount;
 
-		signBit = *( __m128* )&_mm_set1_epi32( 0x80000000 );
+		signBit = _mm_set1_ps( -0.f );
 
 		for( u32 j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = _mm_set1_ps( planes[ j ].data[ 0 ] );
@@ -847,7 +847,7 @@ namespace vul {
 		__m128d t1[ 3 ];
 		u32 simdCount;
 		
-		signBit = *( __m128d* )&_mm_set1_epi64( 0x80000000 );
+		signBit = _mm_set1_pd( -0.f );
 
 		for( u32 j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = _mm_set1_pd( planes[ j ].data[ 0 ] );
@@ -923,7 +923,7 @@ namespace vul {
 		__m256 t1[ 3 ];
 		u32 simdCount;
 
-		signBit = *( __m256* )&_mm256_set1_epi32( 0x80000000 );
+		signBit = _mm256_set1_ps( -0.f );
 
 		for( u32 j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = _mm256_set1_ps( planes[ j ].data[ 0 ] );
@@ -995,7 +995,7 @@ namespace vul {
 		__m256d t1[ 3 ];
 		u32 simdCount;
 
-		signBit = *( __m256d* )&_mm256_set1_epi64x( 0x80000000 );
+		signBit = _mm256_set1_pd( -0.f );
 
 		for( u32 j = 0; j < 6; ++j ) {
 			p[ j ][ 0 ] = _mm256_set1_pd( planes[ j ].data[ 0 ] );

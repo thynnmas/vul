@@ -428,7 +428,7 @@ namespace vul {
 		int K;
 		long long temp;
 
-		K = ( 2 << ( Q - 1 ) );
+		K = ( 1 << ( Q - 1 ) );
 		temp = ( long long )a.data * ( long long )b.data;
 		temp += K;
 
@@ -515,20 +515,6 @@ namespace std {
 
 #endif
 	};
-	
-#ifdef VUL_CPLUSPLUS11
-	template< int Q > 
-	struct hash< vul::fixed_32< Q > >
-	{
-		typedef vul::fixed_32< Q > argument_type;
-		typedef size_t result_type;
-		
-		size_t operator( )( vul::fixed_32< Q > arg ) const
-		{
-			return hash< vul::fixed_32< Q > >( ) ( static_cast< unsigned int >( arg.data ) & -(arg.data != 0x80000000 ) );
-		}
-	};
-#endif
 }
 
 

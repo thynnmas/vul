@@ -959,18 +959,6 @@ namespace std {
 #endif
 	};
 	
-#ifdef VUL_CPLUSPLUS11
-	template< > struct hash< vul::half >
-	{
-		typedef vul::half argument_type;
-		typedef size_t result_type;
-		
-		std::size_t operator( )( vul::half arg ) const
-		{
-			return hash< unsigned short >( ) ( static_cast< unsigned int >( arg.data ) & -(arg.data != 0x8000 ) );
-		}
-	};
-#endif
 #endif
 }
 

@@ -44,33 +44,33 @@ extern "C" {
  * Convert a utf8 string to utf16. The destination buffer must be allocated,
  * n is the maximal length of the output string.
  */
-vul_wchar *vul_wchar_from_utf8( vul_wchar *buffer, char *ostr, s32 n );
+vul_wchar *vul_wchar_from_utf8( vul_wchar *buffer, const char *ostr, s32 n );
 /*
  * Convert a utf16 string to utf8. The destination buffer must be allocated,
  * n is the maximal length of the output string.
  */
-char *vul_wchar_to_utf8( char *buffer, vul_wchar *str, s32 n );
+char *vul_wchar_to_utf8( char *buffer, const vul_wchar *str, s32 n );
 
 /*
  * Convert a utf8 string to utf16. Strings up to 4096 characters, 
  * lifetime until next call to this function. Not threadsafe!
  */
-vul_wchar *vul_wchar_from_utf8_large( char *str );
+vul_wchar *vul_wchar_from_utf8_large( const char *str );
 /*
  * Convert a utf8 string to utf16. Strings up to 64 characters, 
  * lifetime until next call to this function. Not threadsafe!
  */
-vul_wchar *vul_wchar_from_utf8_small( char *str );
+vul_wchar *vul_wchar_from_utf8_small( const char *str );
 /*
  * Convert a utf16 string to utf8. Strings up to 4096 characters, 
  * lifetime until next call to this function. Not threadsafe!
  */
-char *vul_wchar_to_utf8_large( vul_wchar *str );
+char *vul_wchar_to_utf8_large( const vul_wchar *str );
 /*
  * Convert a utf16 string to utf8. Strings up to 64 characters, 
  * lifetime until next call to this function. Not threadsafe!
  */
-char *vul_wchar_to_utf8_small( vul_wchar *str );
+char *vul_wchar_to_utf8_small( const vul_wchar *str );
 
 //--------------------------------------------
 // String searching / pattern matching.
@@ -127,7 +127,7 @@ vul_wchar *vul_wstring_divide_get_first( const vul_wchar *str, const vul_wchar d
 extern "C" {
 #endif
 
-vul_wchar *vul_wchar_from_utf8( vul_wchar *buffer, char *ostr, s32 n )
+vul_wchar *vul_wchar_from_utf8( vul_wchar *buffer, const char *ostr, s32 n )
 {
    u8 *str = ( u8* ) ostr;
    u32 c;
@@ -178,7 +178,7 @@ vul_wchar *vul_wchar_from_utf8( vul_wchar *buffer, char *ostr, s32 n )
    return buffer;
 }
 
-char *vul_wchar_to_utf8( char *buffer, vul_wchar *str, s32 n )
+char *vul_wchar_to_utf8( char *buffer, const vul_wchar *str, s32 n )
 {
    s32 i = 0;
 
@@ -215,25 +215,25 @@ char *vul_wchar_to_utf8( char *buffer, vul_wchar *str, s32 n )
    return buffer;
 }
 
-vul_wchar *vul_wchar_from_utf8_large( char *str )
+vul_wchar *vul_wchar_from_utf8_large( const char *str )
 {
 	static vul_wchar buffer[ 4096 ];
 	return vul_wchar_from_utf8( buffer, str, 4096 );
 }
 
-vul_wchar *vul_wchar_from_utf8_small( char *str )
+vul_wchar *vul_wchar_from_utf8_small( const char *str )
 {
 	static vul_wchar buffer[ 64 ];
 	return vul_wchar_from_utf8( buffer, str, 64 );
 }
 
-char *vul_wchar_to_utf8_large( vul_wchar *str )
+char *vul_wchar_to_utf8_large( const vul_wchar *str )
 {
 	static char buffer [ 4096 ];
 	return vul_wchar_to_utf8( buffer, str, 4096 );
 }
 
-char *vul_wchar_to_utf8_small( vul_wchar *str )
+char *vul_wchar_to_utf8_small( const vul_wchar *str )
 {
 	static char buffer[ 64 ];
 	return vul_wchar_to_utf8( buffer, str, 64 );
@@ -356,7 +356,7 @@ size_t vul_string_search( const char *str, const char *pattern )
 size_t vul_wstring_search( const vul_wchar *str, const vul_wchar *pattern )
 {
 	size_t ret, lenS;
-	vul__string_search_table table;
+	struct vul__string_search_table table;
 
 	lenS = wcslen( str );
 

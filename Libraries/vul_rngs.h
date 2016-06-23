@@ -405,7 +405,7 @@ vul_rng_pcg32 *vul_rng_pcg32_create( u64 initstate, u64 initseq )
 	assert( r != NULL );
 
 	r->state = initstate;
-	r->initseq = initseq;
+	r->inc = initseq;
 
 	return r;
 }
@@ -424,9 +424,9 @@ u32 vul_rng_pcg32_next_unsigned( vul_rng_pcg32 *r )
 {
 	u64 old = r->state;
 	r->state = old * 6364136223846793005ULL + ( r->inc | 1 );
-	u32 xsh = ( ( old >> 18u ) ^ old ) >> 27u;
+	u32 xsh = ( u32 )( ( ( old >> 18u ) ^ old ) >> 27u );
 	u32 rot = old >> 59u;
-	return ( xsh >> rot ) | ( xsh << ( ( -rot ) & 31 ) );
+	return ( xsh >> rot ) | ( xsh << ( ( -( s32 )rot ) & 31 ) );
 }
 
 f32 vul_rng_pcg32_next_float( vul_rng_pcg32 *r )

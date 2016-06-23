@@ -95,16 +95,18 @@ extern "C" {
 
 vul_mmap_file vul_mmap( const char *path, void *base_addr, s32 prot, s32 flags, size_t file_offset, size_t map_length );
 b32 vul_munmap( vul_mmap_file file );
-char *vul_file_find_postfix( char *filename );
-char *vul_file_name_without_path( char *filename );
+char *vul_file_find_postfix( const char *filename );
+char *vul_file_name_without_path( const char *filename );
 b32 vul_file_fullpath( char *abs_path, size_t abs_path_max_len, const char *rel_path );
 size_t vul_file_length( FILE *f );
 s32 vul_file_compare( FILE *f, FILE *g );
-s32 vul_file_equal( char *s1, char *s2 );
-s32 vul_file_exists( char *filename );
-vul_file *vul_file_open( char *filename, char *mode, void* ( *allocator )( size_t ) );
+s32 vul_file_equal( const char *s1, const char *s2 );
+s32 vul_file_exists( const char *filename );
+vul_file *vul_file_open( const char *filename, const char *mode, void* ( *allocator )( size_t ) );
 s32 vul_file_close( vul_file *f, vul_file_keep keep, void( *deallcator )( void* ) );
-b32 vul_file_copy( char *src, char *dest );
+b32 vul_file_copy( char *src, char *dest,
+						 void* ( *allocator )( size_t ),
+						 void( *deallcator )( void* ) );
 
 #ifdef _cplusplus
 }
@@ -190,9 +192,9 @@ b32 vul_munmap( vul_mmap_file file )
 	return ret;
 }
 
-char *vul_file_find_postfix( char *filename )
+char *vul_file_find_postfix( const char *filename )
 {
-	char *p = filename;
+	char *p = ( char* )filename;
 	while( *( p++ ) )
 		; // Find the end
 	--p;
@@ -203,9 +205,9 @@ char *vul_file_find_postfix( char *filename )
 		 : p;
 }
 
-char *vul_file_name_without_path( char *filename )
+char *vul_file_name_without_path( const char *filename )
 {
-	char *p = filename;
+	char *p = ( char* )filename;
 	while( *( p++ ) )
 		; // Move to the end of the string
 	--p;
@@ -279,7 +281,7 @@ s32 vul_file_compare( FILE *f, FILE *g )
 	return res;
 }
 
-s32 vul_file_equal( char *s1, char *s2 )
+s32 vul_file_equal( const char *s1, const char *s2 )
 {
 	FILE *f, *g;
 
@@ -308,7 +310,7 @@ s32 vul_file_equal( char *s1, char *s2 )
 	return !vul_file_compare( f, g );
 }
 
-s32 vul_file_exists( char *filename )
+s32 vul_file_exists( const char *filename )
 {
 #ifdef VUL_WINDOWS
 	struct _stat buf;
@@ -319,7 +321,7 @@ s32 vul_file_exists( char *filename )
 #endif
 }
 
-vul_file *vul_file_open( char *filename, char *mode, void* ( *allocator )( size_t ) )
+vul_file *vul_file_open( const char *filename, const char *mode, void* ( *allocator )( size_t ) )
 {
 	vul_file *f = ( vul_file* )allocator( sizeof( vul_file ) );
 	size_t p;

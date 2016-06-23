@@ -1,9 +1,9 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2015. Public domain?
  *
  * This file contains a wrapper for sockets, abstracting OS differences away.
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -35,17 +35,24 @@
 #pragma comment(lib, "Ws2_32.lib")
 #elif defined( VUL_LINUX )
 	#include <malloc.h>
+	#include <unistd.h>
 	#include <sys/types.h>
 	#include <sys/socket.h>
-    #include <arpa/inet.h>
-    #include <netinet/in.h>
+   #include <arpa/inet.h>
+   #include <netinet/in.h>
 	#include <netinet/tcp.h>
+	#include <netdb.h>
 #elif defined( VUL_OSX )
-	BAH
+	#include <CoreFoundation/CoreFoundation.h>
+	#include <sys/types.h>
+	#include <sys/socket.h>
+   #include <arpa/inet.h>
+   #include <netinet/in.h>
+	#include <netinet/tcp.h>
 #endif
 
 #define VUL_SOCKET_DEFAULT_BUFFER_LENGTH 512
-		
+
 /**
  * Adderss abstraction.
  */
@@ -342,16 +349,26 @@ int vul_socket_address_create( vul_address *a, const char *ip, unsigned short po
 	a->addr.sin_family = AF_INET;
 	if( ip ) {
 		a->addr.sin_addr.s_addr = inet_addr( ip );
+		if( a->addr.sin_addr.s_addr == INADDR_NONE ) {
+			struct hostent *he;
+			if( ( he = gethostbyname( ip ) ) == NULL ) {
+				return -1;
+			}
+			memcpy( &a->addr.sin_addr, he->h_addr_list[ 0 ], he->h_length );
+		}
 	} else {
 		a->addr.sin_addr.s_addr = htonl( INADDR_ANY );
 	}
 	a->addr.sin_port = htons( port );
+	return a->addr.sin_addr.s_addr == INADDR_NONE;
 #endif
 }
 
 void vul_socket_address_destroy( vul_address *a )
 {
+#ifdef VUL_WINDOWS
 	freeaddrinfo( a->addr );
+#endif
 }
 
 #ifdef _cplusplus

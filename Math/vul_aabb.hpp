@@ -830,10 +830,10 @@ namespace vul {
 				t.v = _mm_cmpgt_ps( t1[ 1 ], p[ j ][ 3 ] );
 
 				// Store result
-				out[ i ] = ( t.a[ 0 ] == 0xffffffff ? 0xff000000 : 0x00000000 )
-						 | ( t.a[ 1 ] == 0xffffffff ? 0x00ff0000 : 0x00000000 )
-						 | ( t.a[ 2 ] == 0xffffffff ? 0x0000ff00 : 0x00000000 )
-						 | ( t.a[ 3 ] == 0xffffffff ? 0x000000ff : 0x00000000 );
+				out[ i ] = ( t.a[ 3 ] == 0xffffffff ? 0xff000000 : 0x00000000 )
+						 | ( t.a[ 2 ] == 0xffffffff ? 0x00ff0000 : 0x00000000 )
+						 | ( t.a[ 1 ] == 0xffffffff ? 0x0000ff00 : 0x00000000 )
+						 | ( t.a[ 0 ] == 0xffffffff ? 0x000000ff : 0x00000000 );
 			}
 		}
 	}

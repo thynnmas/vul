@@ -31,6 +31,7 @@
 
 #ifdef VUL_WINDOWS
 #include <Windows.h>
+#include <tchar.h>
 #include <io.h>
 #else
 #include <stdio.h>
@@ -41,6 +42,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#endif
+
+#ifdef VUL_LINUX
+#include <sys/inotify.h>
 #endif
 
 #include "vul_string.h"
@@ -89,6 +94,18 @@ typedef enum vul_file_keep {
 	vul_file_keep_if_different = 2,
 } vul_file_keep;
 
+typedef struct vul_file_watch {
+#ifdef VUL_LINUX
+	int fd, wd;
+#elif VUL_OSX
+NOT IMPLEMENTED
+#elif VUL_WINDOWS
+	HANDLE h;
+#else
+	Error: Must specify an OS
+#endif
+} vul_file_watch;
+
 #ifdef _cplusplus
 extern "C" {
 #endif
@@ -107,6 +124,9 @@ s32 vul_file_close( vul_file *f, vul_file_keep keep, void( *deallcator )( void* 
 b32 vul_file_copy( char *src, char *dest,
 						 void* ( *allocator )( size_t ),
 						 void( *deallcator )( void* ) );
+vul_file_watch vul_file_monitor_change( const char *path );
+b32 vul_file_monitor_check( vul_file_watch w );
+b32 vul_file_monitor_stop( vul_file_watch w );
 
 #ifdef _cplusplus
 }
@@ -521,6 +541,105 @@ b32 vul_file_copy( char *src, char *dest,
 
 	fclose( g );
 	return VUL_TRUE;
+}
+
+#include <errno.h>
+/* Blocking monitoring */
+b32 vul_file_monitor_wait( const char* path )
+{
+	b32 ret = 0;
+#ifdef VUL_LINUX
+	int fd = inotify_init( );
+	assert( fd );
+	int wd = inotify_add_watch( fd, path, IN_MODIFY );
+	assert( wd );
+	struct inotify_event e;
+	int s;
+	while( ( s = read( fd, &e, sizeof( e ) ) ) > 0 ) {
+		if( e.wd == wd ) {
+			ret = 1;
+			break;
+		}
+	}
+	inotify_rm_watch( fd, wd );
+	close( fd );
+#elif VUL_WINDOWS
+	HANDLE h = FindFirstChangeNotification( path, FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE );
+	assert( h != INVALID_HANDLE_VALUE );
+	DWORD status = WaitForSingleObject( h, INFINITE );
+	switch( status ) {
+	WAIT_OBJECT_0:
+		ret = 1;
+	default:
+		ret = 0;
+	}
+#else
+	NOT IMPLEMENTED
+#endif
+	return ret;
+}
+
+/* Non-blocking monitoring */
+vul_file_watch vul_file_monitor_change( const char *path )
+{
+	vul_file_watch ret;
+#ifdef VUL_LINUX
+	ret.fd = inotify_init1( IN_NONBLOCK );
+	assert( ret.fd );
+
+	ret.wd = inotify_add_watch( ret.fd, path, IN_MODIFY );
+	assert( ret.wd );
+#elif VUL_OSX
+	NOT IMPLEMENTED
+#elif VUL_WINDOWS
+	ret.h = FindFirstChangeNotification( path, FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE );
+	assert( ret.h );
+#else
+	Error: must specify OS
+#endif
+	return ret;
+}
+
+b32 vul_file_monitor_check( vul_file_watch w )
+{
+#ifdef VUL_LINUX
+	struct inotify_event e;
+	int s = 0;
+	while( ( s = read( w.fd, &e, sizeof( e ) ) ) > 0 ) {
+		if( s != sizeof( e ) ) {
+			printf("size %d (expected %lu)\n", s, sizeof( e ) );
+		}
+		if( e.wd == w.wd ) return 1;
+	}
+	return 0;
+#elif VUL_OSX
+	NOT IMPLEMENTED
+#elif VUL_WINDOWS
+	DWORD status = WaitForSingleObject( w.h, 0 );
+	switch( status ) {
+	WAIT_OBJECT_0:
+		return 1;
+	default:
+		return 0;
+	}
+#else
+	Error: must specify OS
+#endif
+}
+
+b32 vul_file_monitor_stop( vul_file_watch w )
+{
+#ifdef VUL_LINUX
+	int r = inotify_rm_watch( w.fd, w.wd );
+	close( w.fd );
+	return r == 0;
+#elif VUL_OSX
+	NOT IMPLEMENTED
+#elif VUL_WINDOWS
+	// Do nothing...
+#else
+	Error: Must specify OS
+#endif
 }
 
 #ifdef _cplusplus

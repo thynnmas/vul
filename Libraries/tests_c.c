@@ -4,8 +4,9 @@
 //#include "Tests/test_gl.h" // This doesn't appear to work yet...
 //#include "Tests/test_astar.h"
 //#include "Tests/test_csp.h"
-#include "Tests/test_linear_solvers.h"
+//#include "Tests/test_linear_solvers.h"
 //#include "Tests/test_priority_queues.h"
+#include "Tests/test_file.h"
 
 #include <stdio.h>
 /*
@@ -354,9 +355,12 @@ int main( int argv, char **argc )
 
 	//vul_test_csp( );
 
-	vul_test_linear_solvers( );
+	//vul_test_linear_solvers( );
 
 	//vul_test_priority_heap( );
+
+	//vul_test_file_monitor_blocking( );
+	vul_test_file_monitor( );
 
 	return 0;
 }

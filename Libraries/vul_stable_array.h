@@ -36,9 +36,9 @@
 //#define VUL_DEFINE
 
 /**
-* If enabled, iterators look for undefined/illegal behaviour during loops.
-* Slower, but might help track down ugly bugs!
-* @TODO(thynn): We don't currently do this!
+* If enabled, iterate checks that the buffer address of each accessed
+* element is unchanged (helps tracking down remove-during-iteration bugs).
+* Slightly slower.
 */
 //#define VUL_DEBUG
 
@@ -310,7 +310,13 @@ void vul_svector_iterate( vul_svector *vec,
 	for( bi = 0; bi < vec->buffer_count; ++bi ) {
 		bs = ( u32 )pow( ( f32 )vec->buffer_base_size, ( s32 )bi + 1 );
 		for( i = 0; i < bs && ai < vec->size; ++i, ++ai ) {
+#ifdef VUL_DEBUG
+			void *addr = vec->buffers[ bi ];
+#endif
 			func( ( void* )( ( u8* )vec->buffers[ bi ] + ( vec->element_size * i ) ), ai, func_data );
+#ifdef VUL_DEBUG
+			assert( addr == vec->buffers[ bi ] ); // Make sure we didn't alter the buffer (reallocate or free it)
+#endif
 		}
 	}
 }

@@ -33,7 +33,6 @@
 /**
  * This must be included prior to this file, but may have to be included in a
  * particular order to enable OpenCL/GL interop, so we leave it to the user!
- * @TODO: Comment this out!
  */
 //#include <CL/opencl.h>
 

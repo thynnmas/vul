@@ -1,11 +1,11 @@
 /*
-* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
 *
 * This file describes a generic A* implementation for any graph.
 * Define VUL_ASTAR_ALLOC and VUL_ASTAR_FREE to your own allocator
 * if you don't want to use malloc/free.
 *
-* ¹ If public domain is not legally valid in your legal jurisdiction
+* ? If public domain is not legally valid in your legal jurisdiction
 *   the MIT licence applies (see the LICENCE file)
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -70,7 +70,9 @@ typedef struct vul_astar_node {
 * The graph representation is problem specific, but we move this to the
 * specification of the nodes. In general we have two operations on the graph,
 * finding a node by a given vul_astar_location, and finding the neighbors of
-* a given node. Both of these operations should be fast, so TODO: Use a map!
+* a given node. Both of these operations should be fast, so TODO: Use a map,
+* although we iterate over it when resetting it, so maybe a skip-list (or
+* at least a map that allows fast iteration)
 */
 typedef struct vul_astar_graph {
 	void *user_data;

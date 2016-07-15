@@ -568,7 +568,7 @@ b32 vul_file_monitor_wait( const char* path )
 	assert( h != INVALID_HANDLE_VALUE );
 	DWORD status = WaitForSingleObject( h, INFINITE );
 	switch( status ) {
-	WAIT_OBJECT_0:
+	case WAIT_OBJECT_0:
 		ret = 1;
 	default:
 		ret = 0;
@@ -617,7 +617,7 @@ b32 vul_file_monitor_check( vul_file_watch w )
 #elif VUL_WINDOWS
 	DWORD status = WaitForSingleObject( w.h, 0 );
 	switch( status ) {
-	WAIT_OBJECT_0:
+	case WAIT_OBJECT_0:
 		return 1;
 	default:
 		return 0;

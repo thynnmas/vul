@@ -106,6 +106,8 @@ typedef struct m44 {
 #ifdef _cplusplus
 extern "C" {
 #endif
+
+f32 fract( f32 v );
 	
 #define DEFINE_V2OP( name, op ) v2 name( const v2 a, const v2 b );
 #define DEFINE_V3OP( name, op ) v3 name( const v3 a, const v3 b );
@@ -205,6 +207,22 @@ v2 vmod2( const v2 a, const v2 d );
 v3 vmod3( const v3 a, const v3 d );
 v4 vmod4( const v4 a, const v4 d );
 
+v2 vfloor2( const v2 v );
+v3 vfloor3( const v3 v );
+v4 vfloor4( const v4 v );
+
+v2 vceil2( const v2 v );
+v3 vceil3( const v3 v );
+v4 vceil4( const v4 v );
+
+v2 vfract2( const v2 v );
+v3 vfract3( const v3 v );
+v4 vfract4( const v4 v );
+
+v2 vsqrt2( const v2 v );
+v3 vsqrt3( const v3 v );
+v4 vsqrt4( const v4 v );
+
 v2 vreflect2( const v2 v, const v2 n );
 v3 vreflect3( const v3 v, const v3 n );
 v4 vreflect4( const v4 v, const v4 n );
@@ -290,6 +308,10 @@ v4 vmulm4( const m44 *m, const v4 v );
 #ifdef _cplusplus
 extern "C" {
 #endif
+
+f32 fract( f32 v )	{
+	return v - ( long )v;
+}
 
 #define DEFINE_V2OP( name, op )\
 	v2 name( const v2 a, const v2 b ) {\
@@ -563,6 +585,94 @@ v4 vmod4( const v4 a, const v4 d ) {
 	r.y = ( f32 )fmodf( a.y, d.y );
 	r.z = ( f32 )fmodf( a.z, d.z );
 	r.w = ( f32 )fmodf( a.w, d.w );
+	return r;
+}
+
+v2 vfloor2( const v2 v ) {
+	v2 r;
+	r.x = floor( v.x );
+	r.y = floor( v.y );
+	return r;
+}
+v3 vfloor3( const v3 v ) {
+	v3 r;
+	r.x = floor( v.x );
+	r.y = floor( v.y );
+	r.z = floor( v.z );
+	return r;
+}
+v4 vfloor4( const v4 v ) {
+	v4 r;
+	r.x = floor( v.x );
+	r.y = floor( v.y );
+	r.z = floor( v.z );
+	r.w = floor( v.w );
+	return r;
+}
+
+v2 vceil2( const v2 v ) {
+	v2 r;
+	r.x = ceil( v.x );
+	r.y = ceil( v.y );
+	return r;
+}
+v3 vceil3( const v3 v ) {
+	v3 r;
+	r.x = ceil( v.x );
+	r.y = ceil( v.y );
+	r.z = ceil( v.z );
+	return r;
+}
+v4 vceil4( const v4 v ) {
+	v4 r;
+	r.x = ceil( v.x );
+	r.y = ceil( v.y );
+	r.z = ceil( v.z );
+	r.w = ceil( v.w );
+	return r;
+}
+
+v2 vfract2( const v2 v ) {
+	v2 r;
+	r.x = fract( v.x );
+	r.y = fract( v.y );
+	return r;
+}
+v3 vfract3( const v3 v ) {
+	v3 r;
+	r.x = fract( v.x );
+	r.y = fract( v.y );
+	r.z = fract( v.z );
+	return r;
+}
+v4 vfract4( const v4 v ) {
+	v4 r;
+	r.x = fract( v.x );
+	r.y = fract( v.y );
+	r.z = fract( v.z );
+	r.w = fract( v.w );
+	return r;
+}
+
+v2 vsqrt2( const v2 v ) {
+	v2 r;
+	r.x = sqrtf( v.x );
+	r.y = sqrtf( v.y );
+	return r;
+}
+v3 vsqrt3( const v3 v ) {
+	v3 r;
+	r.x = sqrtf( v.x );
+	r.y = sqrtf( v.y );
+	r.z = sqrtf( v.z );
+	return r;
+}
+v4 vsqrt4( const v4 v ) {
+	v4 r;
+	r.x = sqrtf( v.x );
+	r.y = sqrtf( v.y );
+	r.z = sqrtf( v.z );
+	r.w = sqrtf( v.w );
 	return r;
 }
 

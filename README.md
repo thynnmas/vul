@@ -45,12 +45,31 @@ probably be extensively tested before it is used in production.
 - &#9888; indicates it has neither been tested nor used, and is probably a WIP.
 
 ## Math
-A C++ math library. Here, all files are expected to be present for use. 
+A scalar linear math library containing Vectors, Matrices, Points, Quaternions, AABBs
+general affine transformations as well as fixed point and half precision floating 
+point types.
 
-TODO: More complete description
-NOTE: vul_linear.hpp is broken. The library shares the problems and limitations of 
-vul_linear_solvers.h, and it shows worse stability for the solvers that *do* work than the C equivalent.
-Consider it a WIP, and avoid for now.
+The library contains both a C++11 version and a C++98-version, the primary difference
+being the way we construct our types. The C++11 style uses normal constructors
+and initializer lists:
+```
+	Vector< f32, 3 > foo( a ), bar{ b, c, d };
+	foo = Vector< f32, 3 >( a );
+```
+while the C++98-version uses a function style:
+```
+	Vector< f32, 3 > foo = makeVector< f32 >( a, b, c );
+	foo = makeVector< f32, 3 >( a );
+```
+
+For SIMD work on our vectors we use an AOSOA architecture; we pack 2-8 vectors into
+vectors of simd types, f.e. 4 ```Vector< f32, 3 >```s into 1 ```Vector< __m128, 3 >```, then operate
+on those. 
+
+Include *vul_math.hpp* only to use the normal features. For the bare-bones bezier tracing functionality
+or linear solvers, these headers must be included separately after *vul_math.hpp*. Note that vul_linear.hpp 
+is broken (it shares the problems and limitations of vul_linear_solvers.h, and it shows worse stability for 
+the solvers that *do* work than the C equivalent). Consider it a WIP, and avoid for now.
 
 ## Collission
 Contains a file filled with a variation of primitive collission checks (direct, n^2 tests). Not intended for use 

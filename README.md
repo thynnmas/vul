@@ -1,6 +1,7 @@
 # Villain's Utility Library
-TODO: Write this stuff.
-TODO: Mention dual license (public domain or MIT)
+My general-purpose libraries and reusable code written and stored over the years. Except 
+where specifically mentioned, these are avilable under a dual licence: public domain
+where such a thing exists, and MIT otherwise. See the LICENSE file for the MIT-license.
 
 ## Libraries
 The various single-file libraries. The following table describes them, and how "fit for production" they are, as well as which other single-file libraries they rely on. Most support custom allocators if relevant.
@@ -67,8 +68,8 @@ vectors of simd types, f.e. 4 ```Vector< f32, 3 >```s into 1 ```Vector< __m128, 
 on those. 
 
 Include *vul_math.hpp* only to use the normal features. For the bare-bones bezier tracing functionality
-or linear solvers, these headers must be included separately after *vul_math.hpp*. Note that vul_linear.hpp 
-is broken (it shares the problems and limitations of vul_linear_solvers.h, and it shows worse stability for 
+or linear solvers, these headers must be included separately after *vul_math.hpp*. Note that *vul_linear.hpp* 
+is broken (it shares the problems and limitations of *vul_linear_solvers.h*, and it shows worse stability for 
 the solvers that *do* work than the C equivalent). Consider it a WIP, and avoid for now.
 
 ## Collission

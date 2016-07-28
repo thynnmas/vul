@@ -44,7 +44,7 @@
  *		-Faster matrix multiplication for large matrices (which ties into sparse matrices)
  *		-2x2, 3x3 & 4x4 matrix inversions as special cases for speed.
  *		-Bezier curves, B-splines (as extensions, behind guards to avoid bloat?)
- *			-vul_vezier exists, incomplete
+ *			-vul_bezier exists, incomplete
  *		-Potentially rewrite with SIMD-types as primitives, as this is apparently better now.
  * 
  * ? If public domain is not legally valid in your legal jurisdiction

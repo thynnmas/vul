@@ -1,15 +1,19 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
+ * @NOTE: This is not a library yet, more of a repository to copy collission tests
+ * from for when you need it. If you find yourself writing n^2 collission test
+ * functions (like below) you should probably do something smarter, but if you only
+ * need a few of them, here they are to be copied from and adapted.
+ *
+ *
+ * Old comment from when I thought it'd make a decent library follows:
  * This file contains collission tests for a number of primitives.
  * In contrast to using CSO or the likes, these are absolute tests
  * that are design to be fast. @NOTE: This is not really fast yet,
  * it is only copied from my engine that actually uses CSO etc...
  *
- * @TODO: This doens't compile, it's not actually written/done, just copied from
- * an invironment in which it did compile (but wasn't complete)...
- * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -291,7 +295,6 @@ Vector< preal, 2 > Collider::project( const ColliderBox &box, const pvec &axis, 
 }
 //-------------------------------------------------------------------------------
 // Intersection algorithms.
-// WARNING: This is (n^2)/2 algos and not for the faint of heart...
 //
 
 bool Collider::intersect( const ColliderPlane &a, const ColliderPlane &b )

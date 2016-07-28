@@ -166,10 +166,17 @@ namespace vul {
 #endif
 		// Negative shifts are undefined, so branch
 		if( Q > Q32 ) {
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshift-count-negative"
+#endif
 			data = a.data << ( Q - Q32 );
 		} else {
 			data = a.data >> ( Q32 - Q );
 		}
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 #ifdef VUL_WINDOWS
 	#pragma warning ( default: 4293 )
 #endif

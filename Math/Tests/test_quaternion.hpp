@@ -1,9 +1,9 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file contains tests for the quaternion struct in vul_quaternion.hpp
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -118,10 +118,10 @@ namespace vul_test {
 		qf = makeQuatFromAxisAngle( makeVector< f32, 3 >( el ),
 								    ( f32 )VUL_PI / 4.f);
 #endif
-		assert( abs( qf.x - el * sin( ( f32 )VUL_PI / 8.f ) ) < f32eps );
-		assert( abs( qf.y - el * sin( ( f32 )VUL_PI / 8.f ) ) < f32eps );
-		assert( abs( qf.z - el * sin( ( f32 )VUL_PI / 8.f ) ) < f32eps );
-		assert( abs( qf.w - cos( ( f32 )VUL_PI / 8.f ) ) < f32eps );
+		assert( fabs( qf.x - el * sin( ( f32 )VUL_PI / 8.f ) ) < f32eps );
+		assert( fabs( qf.y - el * sin( ( f32 )VUL_PI / 8.f ) ) < f32eps );
+		assert( fabs( qf.z - el * sin( ( f32 )VUL_PI / 8.f ) ) < f32eps );
+		assert( fabs( qf.w - cos( ( f32 )VUL_PI / 8.f ) ) < f32eps );
 
 		Vector< f32, 3 > v3c[ 3 ], v3r[ 3 ];
 #ifdef VUL_CPLUSPLUS11
@@ -141,17 +141,17 @@ namespace vul_test {
 #endif
 		qf = makeQuatFromAxes( v3c[ 0 ], v3c[ 1 ], v3c[ 2 ] );
 		f32 root = sqrtf( 1.0f + 1.f / sqrtf( 6.f ) + 1.f / sqrtf( 2.f ) + 1.f / sqrt( 3.f ) );
-		assert( abs( qf.x - ( 0.5f / root ) * (  2.f / sqrtf( 6.f ) + 1.f / sqrtf( 3.f ) ) ) < f32eps );
-		assert( abs( qf.y - ( 0.5f / root ) * (  1.f / sqrtf( 3.f ) ) ) < f32eps );
-		assert( abs( qf.z - ( 0.5f * root ) ) < f32eps );
-		assert( abs( qf.w - ( 0.5f / root ) * ( -1.f / sqrtf( 6.f ) - 1.f / sqrtf( 2.f ) ) ) < f32eps );
+		assert( fabs( qf.x - ( 0.5f / root ) * (  2.f / sqrtf( 6.f ) + 1.f / sqrtf( 3.f ) ) ) < f32eps );
+		assert( fabs( qf.y - ( 0.5f / root ) * (  1.f / sqrtf( 3.f ) ) ) < f32eps );
+		assert( fabs( qf.z - ( 0.5f * root ) ) < f32eps );
+		assert( fabs( qf.w - ( 0.5f / root ) * ( -1.f / sqrtf( 6.f ) - 1.f / sqrtf( 2.f ) ) ) < f32eps );
 		
 		Matrix< f32, 3, 3 > m33 = makeMatrixFromRows< f32, 3, 3 >( v3r );
 		qf = makeQuatFromMatrix( m33 );
-		assert( abs( qf.x - ( 0.5f / root ) * (  2.f / sqrtf( 6.f ) + 1.f / sqrtf( 3.f ) ) ) < f32eps );
-		assert( abs( qf.y - ( 0.5f / root ) * (  1.f / sqrtf( 3.f ) ) ) < f32eps );
-		assert( abs( qf.z - ( 0.5f * root ) ) < f32eps );
-		assert( abs( qf.w - ( 0.5f / root ) * ( -1.f / sqrtf( 6.f ) - 1.f / sqrtf( 2.f ) ) ) < f32eps );
+		assert( fabs( qf.x - ( 0.5f / root ) * (  2.f / sqrtf( 6.f ) + 1.f / sqrtf( 3.f ) ) ) < f32eps );
+		assert( fabs( qf.y - ( 0.5f / root ) * (  1.f / sqrtf( 3.f ) ) ) < f32eps );
+		assert( fabs( qf.z - ( 0.5f * root ) ) < f32eps );
+		assert( fabs( qf.w - ( 0.5f / root ) * ( -1.f / sqrtf( 6.f ) - 1.f / sqrtf( 2.f ) ) ) < f32eps );
 				
 		qf = makeZero< f32 >( );
 		assert( qf[ 0 ] == 0.f ); assert( qf[ 1 ] == 0.f ); assert( qf[ 2 ] == 0.f ); assert( qf[ 3 ] == 0.f );
@@ -214,26 +214,26 @@ namespace vul_test {
 #else
 		q += makeQuat< f32 >( 0.2f, -1.f, 1.3f, 0.f );
 #endif
-		assert( abs( q[ 0 ] - 0.2f ) < f32eps );
-		assert( abs( q[ 1 ] - 3.f ) < f32eps );
-		assert( abs( q[ 2 ] - 1.6f ) < f32eps );
-		assert( abs( q[ 3 ] - 1.f ) < f32eps );
+		assert( fabs( q[ 0 ] - 0.2f ) < f32eps );
+		assert( fabs( q[ 1 ] - 3.f ) < f32eps );
+		assert( fabs( q[ 2 ] - 1.6f ) < f32eps );
+		assert( fabs( q[ 3 ] - 1.f ) < f32eps );
 		
 #ifdef VUL_CPLUSPLUS11
 		q -= Quaternion< f32 >{ 0.1f, 1.f, -0.3f, 0.4f };
 #else
 		q -= makeQuat< f32 >( 0.1f, 1.f, -0.3f, 0.4f );
 #endif
-		assert( abs( q[ 0 ] - 0.1f ) < f32eps );
-		assert( abs( q[ 1 ] - 2.f ) < f32eps );
-		assert( abs( q[ 2 ] - 1.9f ) < f32eps );
-		assert( abs( q[ 3 ] - 0.6f ) < f32eps );
+		assert( fabs( q[ 0 ] - 0.1f ) < f32eps );
+		assert( fabs( q[ 1 ] - 2.f ) < f32eps );
+		assert( fabs( q[ 2 ] - 1.9f ) < f32eps );
+		assert( fabs( q[ 3 ] - 0.6f ) < f32eps );
 		
 		q *= 1.5f;
-		assert( abs( q[ 0 ] - 0.15f ) < f32eps );
-		assert( abs( q[ 1 ] - 3.f ) < f32eps );
-		assert( abs( q[ 2 ] - 2.85f ) < f32eps );
-		assert( abs( q[ 3 ] - 0.9f ) < f32eps );
+		assert( fabs( q[ 0 ] - 0.15f ) < f32eps );
+		assert( fabs( q[ 1 ] - 3.f ) < f32eps );
+		assert( fabs( q[ 2 ] - 2.85f ) < f32eps );
+		assert( fabs( q[ 3 ] - 0.9f ) < f32eps );
 
 		Quaternion< f32 > a, b;
 #ifdef VUL_CPLUSPLUS11
@@ -244,15 +244,15 @@ namespace vul_test {
 		b = makeQuat< f32 >( 3.f, 2.f, 3.f, 2.f );
 #endif
 		a *= b;
-		assert( abs( a.x - 18.f ) < f32eps );
-		assert( abs( a.y - 12.f ) < f32eps );
-		assert( abs( a.z -  8.f ) < f32eps );
-		assert( abs( a.w + 12.f ) < f32eps );
+		assert( fabs( a.x - 18.f ) < f32eps );
+		assert( fabs( a.y - 12.f ) < f32eps );
+		assert( fabs( a.z -  8.f ) < f32eps );
+		assert( fabs( a.w + 12.f ) < f32eps );
 
-		assert( abs( b.x - 3.f ) < f32eps ); // Make sure b is unchanged
-		assert( abs( b.y - 2.f ) < f32eps );
-		assert( abs( b.z - 3.f ) < f32eps );
-		assert( abs( b.w - 2.f ) < f32eps );
+		assert( fabs( b.x - 3.f ) < f32eps ); // Make sure b is unchanged
+		assert( fabs( b.y - 2.f ) < f32eps );
+		assert( fabs( b.z - 3.f ) < f32eps );
+		assert( fabs( b.w - 2.f ) < f32eps );
 				
 		return true;
 	}
@@ -340,9 +340,9 @@ namespace vul_test {
 		Vector< f32, 3 > rv, v = makeVector< f32 >( 1.f, 0.f, 0.f );
 #endif
 		rv = a * v;
-		assert( abs( rv[ 0 ] - 1.f / sqrt( 2.f ) ) < f32eps );
-		assert( abs( rv[ 1 ] - 0.f ) < f32eps );
-		assert( abs( rv[ 2 ] + 1.f / sqrt( 2.f ) ) < f32eps );
+		assert( fabs( rv[ 0 ] - 1.f / sqrt( 2.f ) ) < f32eps );
+		assert( fabs( rv[ 1 ] - 0.f ) < f32eps );
+		assert( fabs( rv[ 2 ] + 1.f / sqrt( 2.f ) ) < f32eps );
 		
 		return true;
 	}
@@ -380,29 +380,29 @@ namespace vul_test {
 #endif
 		Quaternion< f32 > r = normalize( q );
 		f32 qn = norm( q );
-		assert( abs( r[ 0 ] - q[ 0 ] / qn ) < f32eps );
-		assert( abs( r[ 1 ] - q[ 1 ] / qn ) < f32eps );
-		assert( abs( r[ 2 ] - q[ 2 ] / qn ) < f32eps );
-		assert( abs( r[ 3 ] - q[ 3 ] / qn ) < f32eps );
+		assert( fabs( r[ 0 ] - q[ 0 ] / qn ) < f32eps );
+		assert( fabs( r[ 1 ] - q[ 1 ] / qn ) < f32eps );
+		assert( fabs( r[ 2 ] - q[ 2 ] / qn ) < f32eps );
+		assert( fabs( r[ 3 ] - q[ 3 ] / qn ) < f32eps );
 
 #ifdef VUL_CPLUSPLUS11
-		assert( abs( dot( q, q ) - dot( q.as_vec4, q.as_vec4 ) ) < f32eps );
+		assert( fabs( dot( q, q ) - dot( q.as_vec4, q.as_vec4 ) ) < f32eps );
 #else
-		assert( abs( dot( q, q ) - dot( q.as_vec4( ), q.as_vec4( ) ) ) < f32eps );
+		assert( fabs( dot( q, q ) - dot( q.as_vec4( ), q.as_vec4( ) ) ) < f32eps );
 #endif
 
 		r = inverse( q );
-		assert( abs( r[ 0 ] - -q[ 0 ] / qn ) < f32eps );
-		assert( abs( r[ 1 ] - -q[ 1 ] / qn ) < f32eps );
-		assert( abs( r[ 2 ] - -q[ 2 ] / qn ) < f32eps );
-		assert( abs( r[ 3 ] -  q[ 3 ] / qn ) < f32eps );
+		assert( fabs( r[ 0 ] - -q[ 0 ] / qn ) < f32eps );
+		assert( fabs( r[ 1 ] - -q[ 1 ] / qn ) < f32eps );
+		assert( fabs( r[ 2 ] - -q[ 2 ] / qn ) < f32eps );
+		assert( fabs( r[ 3 ] -  q[ 3 ] / qn ) < f32eps );
 
 		q = normalize( q );
 		r = unitInverse( q );
-		assert( abs( r[ 0 ] + q[ 0 ] ) < f32eps );
-		assert( abs( r[ 1 ] + q[ 1 ] ) < f32eps );
-		assert( abs( r[ 2 ] + q[ 2 ] ) < f32eps );
-		assert( abs( r[ 3 ] - q[ 3 ] ) < f32eps );
+		assert( fabs( r[ 0 ] + q[ 0 ] ) < f32eps );
+		assert( fabs( r[ 1 ] + q[ 1 ] ) < f32eps );
+		assert( fabs( r[ 2 ] + q[ 2 ] ) < f32eps );
+		assert( fabs( r[ 3 ] - q[ 3 ] ) < f32eps );
 
 #ifdef VUL_CPLUSPLUS11
 		Quaternion< f32 > a{  0.0f, 1.0f, -0.5f, 0.0f },
@@ -440,7 +440,7 @@ namespace vul_test {
 		b = makeIdentity< f32 >( );
 
 		r = slerp( a, b, 0.33f, false );
-		assert( r[ 0 ] == 0.f ); assert( r[ 1 ] == 0.f ); assert( abs( r[ 2 ] - 0.5055f ) < 1e-3f ); assert( abs( r[ 3 ] - 0.86285f ) < 1e-3f );
+		assert( r[ 0 ] == 0.f ); assert( r[ 1 ] == 0.f ); assert( fabs( r[ 2 ] - 0.5055f ) < 1e-3f ); assert( fabs( r[ 3 ] - 0.86285f ) < 1e-3f );
 		
 		q = slerp( a,  b, 0.66f, false );
 		assert( equals( q, slerp( a, -b, 0.66f, true ), 1e-3f ) );

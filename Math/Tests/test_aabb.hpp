@@ -679,15 +679,15 @@ namespace vul_test {
 	bool TestAABB::inside_tests( )
 	{
 #ifdef VUL_AOSOA_SSE
-		AABB< __m128, 3 > m128[ 4 ], r128[ 4 ];
-		AABB< __m128d, 3 > m128d[ 2 ], r128d[ 2 ];
+		//AABB< __m128, 3 > m128[ 4 ], r128[ 4 ];
+		//AABB< __m128d, 3 > m128d[ 2 ], r128d[ 2 ];
 #endif
 #ifdef VUL_AOSOA_AVX
-		AABB< __m256, 3 > m256[ 8 ], r256[ 8 ];
-		AABB< __m256d, 3 > m256d[ 4 ], r256d[ 4 ];
+		//AABB< __m256, 3 > m256[ 8 ], r256[ 8 ];
+		//AABB< __m256d, 3 > m256d[ 4 ], r256d[ 4 ];
 #endif
 #ifdef VUL_AOSOA_NEON
-		AABB< float32x4_t, 3 > m32x4[ 4 ], r32x4[ 4 ];
+		//AABB< float32x4_t, 3 > m32x4[ 4 ], r32x4[ 4 ];
 #endif
 		//AABB< f32, 3 > in32[ 8 ];
 		//AABB< f64, 3 > in64[ 4 ];

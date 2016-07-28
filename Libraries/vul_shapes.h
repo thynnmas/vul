@@ -1,9 +1,30 @@
-// Creates procedural shapes
+/*
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
+ *
+ * This file contains functions to generate common 3D shapes for rendering.
+ * Currently implemented:
+ * - Spheres by subdivision from tetrahedron.
+ * TODO(thynn): Should really also include:
+ * - Box
+ * - Plane
+ * - Cylinder
+ * - Cone
+ * - Capsule
+ * - Torus
+ *
+ * ? If public domain is not legally valid in your legal jurisdiction
+ *   the MIT licence applies (see the LICENCE file)
+ */
+#ifndef VUL_SHAPES_H
+#define VUL_SHAPES_H
 
 #include "vul_types.h"
 #include <assert.h>
 
-#define idx_type u32
+#ifndef VUL_SHAPES_INDEX_TYPE
+#define VUL_SHAPES_INDEX_TYPE u32
+#endif
+#define idx_type VUL_SHAPES_INDEX_TYPE
 
 /**
  * Generate a tetrahedron with the given side length. Centered at origin.
@@ -135,3 +156,4 @@ void vul_shape_sphere_refine_tetrahedron( f32 **verts, idx_type **indices, u32 r
 }
 
 #undef idx_type
+#endif

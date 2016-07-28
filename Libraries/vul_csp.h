@@ -1,5 +1,5 @@
 /*
-* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
 *
 * This file describes a constraint satisfaciton solver using the an implementation
 * of the general arc consistency algorithm and vul_astar for a best-first
@@ -8,9 +8,9 @@
 * It uses the allocators defined in vul_astar, that is VUL_ASTAR_ALLOC to allocate,
 * and VUL_ASTAR_FREE to deallocate.
 *
-* @TODO(thynn): Copy the more full description from the exercise.
+* See Tests/test_csp.c for an example of usage.
 *
-* ¹ If public domain is not legally valid in your legal jurisdiction
+* ? If public domain is not legally valid in your legal jurisdiction
 *   the MIT licence applies (see the LICENCE file)
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR

@@ -1,9 +1,9 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file contains tests for the AOSOA packing/unpacking functions in vul_aosoa.hpp
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -78,12 +78,15 @@ namespace vul_test {
 			f32 vec[ 9 ] = { ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, 
 							   ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, 
 							   ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG };
+			f64 vecd[ 9 ] = { ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, 
+							   ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, 
+							   ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG };
 #ifdef VUL_CPLUSPLUS11
 			v32[ i ] = Vector< f32, 9 >( vec );
-			v64[ i ] = Vector< f64, 9 >( vec );
+			v64[ i ] = Vector< f64, 9 >( vecd );
 #else
 			v32[ i ] = makeVector< f32, 9 >( vec );
-			v64[ i ] = makeVector< f64, 9 >( vec );
+			v64[ i ] = makeVector< f64, 9 >( vecd );
 #endif
 		}
 		
@@ -93,7 +96,7 @@ namespace vul_test {
 		for( u32 j = 0; j < 9; ++j ) {
 			for( u32 i = 0; i < 8; ++i ) {
 #ifdef __GNUC__
-				f64 arr[ 2 ];
+				f64 arr[ 2 ] __attribute__((aligned(16)));
 				_mm_store_pd( arr, p64_2[ i ][ j ] );
 				assert( arr[ 1 ] == v64[ i * 2     ][ j ] );
 				assert( arr[ 0 ] == v64[ i * 2 + 1 ][ j ] );
@@ -104,7 +107,7 @@ namespace vul_test {
 			}
 			for( u32 i = 0; i < 4; ++i ) {
 #ifdef __GNUC__
-				f32 arr[ 4 ];
+				f32 arr[ 4 ] __attribute__((aligned(16)));
 				_mm_store_ps( arr, p32_4[ i ][ j ] );
 				assert( arr[ 3 ] == v32[ i * 4     ][ j ] );
 				assert( arr[ 2 ] == v32[ i * 4 + 1 ][ j ] );
@@ -141,12 +144,15 @@ namespace vul_test {
 			f32 vec[ 9 ] = { ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, 
 							   ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, 
 							   ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG };
+			f64 vecd[ 9 ] = { ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, 
+							   ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, 
+							   ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG };
 #ifdef VUL_CPLUSPLUS11
 			v32[ i ] = Vector< f32, 9 >( vec );
-			v64[ i ] = Vector< f64, 9 >( vec );
+			v64[ i ] = Vector< f64, 9 >( vecd );
 #else
 			v32[ i ] = makeVector< f32, 9 >( vec );
-			v64[ i ] = makeVector< f64, 9 >( vec );
+			v64[ i ] = makeVector< f64, 9 >( vecd );
 #endif
 		}
 		
@@ -156,7 +162,7 @@ namespace vul_test {
 		for( u32 j = 0; j < 9; ++j ) {
 			for( u32 i = 0; i < 4; ++i ) {
 #ifdef __GNUC__
-				f64 arr2[ 4 ];
+				f64 arr2[ 4 ] __attribute__((aligned(16)));
 				_mm256_store_pd( arr2, p64_4[ i ][ j ] );
 				assert( arr2[ 3 ] == v64[ i * 4     ][ j ] );
 				assert( arr2[ 2 ] == v64[ i * 4 + 1 ][ j ] );
@@ -171,7 +177,7 @@ namespace vul_test {
 			}
 			for( u32 i = 0; i < 2; ++i ) {
 #ifdef __GNUC__
-				f32 arr[ 8 ];
+				f32 arr[ 8 ] __attribute__((aligned(16)));
 				_mm256_store_ps( arr, p32_8[ i ][ j ] );
 				assert( arr[ 7 ] == v64[ i * 8     ][ j ] );
 				assert( arr[ 6 ] == v64[ i * 8 + 1 ][ j ] );
@@ -256,12 +262,18 @@ namespace vul_test {
 			f32 maxi[ 9 ] = { ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, 
 								( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, 
 								( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG };
+			f64 minid[ 9 ] = { ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, 
+								( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, 
+								( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG };
+			f64 maxid[ 9 ] = { ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, 
+								( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, 
+								( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG };
 #ifdef VUL_CPLUSPLUS11
 			v32[ i ] = AABB< f32, 9 >( Vector< f32, 9 >( mini ), Vector< f32, 9 >( maxi ) );
-			v64[ i ] = AABB< f64, 9 >( Vector< f64, 9 >( mini ), Vector< f64, 9 >( maxi ) );
+			v64[ i ] = AABB< f64, 9 >( Vector< f64, 9 >( minid ), Vector< f64, 9 >( maxid ) );
 #else
 			v32[ i ] = makeAABB< f32, 9 >( makeVector< f32, 9 >( mini ), makeVector< f32, 9 >( maxi ) );
-			v64[ i ] = makeAABB< f64, 9 >( makeVector< f64, 9 >( mini ), makeVector< f64, 9 >( maxi ) );
+			v64[ i ] = makeAABB< f64, 9 >( makeVector< f64, 9 >( minid ), makeVector< f64, 9 >( maxid ) );
 #endif
 		}
 
@@ -271,7 +283,7 @@ namespace vul_test {
 		for( u32 j = 0; j < 9; ++j ) {
 			for( u32 i = 0; i < 8; ++i ) {
 #ifdef __GNUC__
-				f64 arr[ 2 ];
+				f64 arr[ 2 ] __attribute__((aligned(16)));
 				_mm_store_pd( arr, p64_2[ i ]._min[ j ] );
 				assert( arr[ 1 ] == v64[ i * 2     ]._min[ j ] );
 				assert( arr[ 0 ] == v64[ i * 2 + 1 ]._min[ j ] );
@@ -289,7 +301,7 @@ namespace vul_test {
 			}
 			for( u32 i = 0; i < 4; ++i ) {
 #ifdef __GNUC__
-				f32 arr[ 4 ];
+				f32 arr[ 4 ] __attribute__((aligned(16)));
 				_mm_store_ps( arr, p32_4[ i ]._min[ j ] );
 				assert( arr[ 3 ] == v32[ i * 4     ]._min[ j ] );
 				assert( arr[ 2 ] == v32[ i * 4 + 1 ]._min[ j ] );
@@ -344,12 +356,18 @@ namespace vul_test {
 			f32 maxi[ 9 ] = { ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, 
 								( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, 
 								( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG, ( f32 )VUL_TEST_RNG };
+			f64 minid[ 9 ] = { ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, 
+								( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, 
+								( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG };
+			f64 maxid[ 9 ] = { ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, 
+								( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, 
+								( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG, ( f64 )VUL_TEST_RNG };
 #ifdef VUL_CPLUSPLUS11
 			v32[ i ] = AABB< f32, 9 >( Vector< f32, 9 >( mini ), Vector< f32, 9 >( maxi ) );
-			v64[ i ] = AABB< f64, 9 >( Vector< f64, 9 >( mini ), Vector< f64, 9 >( maxi ) );
+			v64[ i ] = AABB< f64, 9 >( Vector< f64, 9 >( minid ), Vector< f64, 9 >( maxid ) );
 #else
 			v32[ i ] = makeAABB< f32, 9 >( makeVector< f32, 9 >( mini ), makeVector< f32, 9 >( maxi ) );
-			v64[ i ] = makeAABB< f64, 9 >( makeVector< f64, 9 >( mini ), makeVector< f64, 9 >( maxi ) );
+			v64[ i ] = makeAABB< f64, 9 >( makeVector< f64, 9 >( minid ), makeVector< f64, 9 >( maxid ) );
 #endif
 		}
 
@@ -359,7 +377,7 @@ namespace vul_test {
 		for( u32 j = 0; j < 9; ++j ) {
 			for( u32 i = 0; i < 4; ++i ) {
 #ifdef __GNUC__
-				f64 arr2[ 4 ];
+				f64 arr2[ 4 ] __attribute__((aligned(16)));
 				_mm256_store_pd( arr2, p64_4[ i ]._min[ j ] );
 				assert( arr2[ 3 ] == v64[ i * 4     ]._min[ j ] );
 				assert( arr2[ 2 ] == v64[ i * 4 + 1 ]._min[ j ] );
@@ -385,7 +403,7 @@ namespace vul_test {
 			}
 			for( u32 i = 0; i < 2; ++i ) {
 #ifdef __GNUC__
-				f32 arr[ 8 ];
+				f32 arr[ 8 ] __attribute__((aligned(16)));
 				_mm256_store_ps( arr, p32_8[ i ]._min[ j ] );
 				assert( arr[ 7 ] == v32[ i * 8     ]._min[ j ] );
 				assert( arr[ 6 ] == v32[ i * 8 + 1 ]._min[ j ] );

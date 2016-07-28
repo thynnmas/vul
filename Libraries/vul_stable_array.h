@@ -3,8 +3,7 @@
 *
 * This file describes a vector class that never moves elements upon
 * resize. It is implemented as an series of exponentially growing buffers
-* into which pointers will remain constant. @NOTE: Functionality is
-* currently somewhat limited as it's use is quite specific atm.
+* into which pointers will remain constant. 
 *
 * ? If public domain is not legally valid in your legal jurisdiction
 *   the MIT licence applies (see the LICENCE file)

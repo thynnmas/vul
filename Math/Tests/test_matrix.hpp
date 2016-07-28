@@ -1,9 +1,9 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file contains tests for the matrix struct in vul_matrix.hpp
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -503,7 +503,7 @@ namespace vul_test {
 			gm44r = gm44a * gm44b;
 			for( u32 c = 0; c < 4; ++c ) {
 				for( u32 r = 0; r < 4; ++r ) {
-					assert( abs( m44r( c, r ) - gm44r[ r ][ c ] ) < f32eps );
+					assert( fabs( m44r( c, r ) - gm44r[ r ][ c ] ) < f32eps );
 				}
 			}
 
@@ -517,12 +517,12 @@ namespace vul_test {
 			gv4r = gv4 * gm44a;
 			v4r = m44a * v4;
 			for( u32 j = 0; j < 4; ++j ) {
-				assert( abs( gv4r[ j ] - v4r[ j ] ) < f32eps );
+				assert( fabs( gv4r[ j ] - v4r[ j ] ) < f32eps );
 			}
 			gv4r = gm44a * gv4;
 			v4r = v4 * m44a;
 			for( u32 j = 0; j < 4; ++j ) {
-				assert( abs( gv4r[ j ] - v4r[ j ] ) < f32eps );
+				assert( fabs( gv4r[ j ] - v4r[ j ] ) < f32eps );
 			}
 		}	
 #endif
@@ -681,15 +681,15 @@ namespace vul_test {
 
 		Matrix< f32, 3, 3 > m33i = inverse( m33 );
 		f32 f32eps = 1e-5f;
-		assert( abs( m33i( 0, 0 ) - 1.5f ) < f32eps );
-		assert( abs( m33i( 1, 0 ) - 1.f ) < f32eps );
-		assert( abs( m33i( 2, 0 ) - ( -0.5f ) ) < f32eps );
-		assert( abs( m33i( 0, 1 ) - ( -25.f / 6.f ) ) < f32eps ); 
-		assert( abs( m33i( 1, 1 ) - (-16.f / 6.f ) ) < f32eps ); 
-		assert( abs( m33i( 2, 1 ) - ( 5.f / 6.f ) ) < f32eps );
-		assert( abs( m33i( 0, 2 ) - ( -30.f / 6.f ) ) < f32eps );
-		assert( abs( m33i( 1, 2 ) - ( -3.f ) ) < f32eps );
-		assert( abs( m33i( 2, 2 ) - 1.f ) < f32eps );
+		assert( fabs( m33i( 0, 0 ) - 1.5f ) < f32eps );
+		assert( fabs( m33i( 1, 0 ) - 1.f ) < f32eps );
+		assert( fabs( m33i( 2, 0 ) - ( -0.5f ) ) < f32eps );
+		assert( fabs( m33i( 0, 1 ) - ( -25.f / 6.f ) ) < f32eps ); 
+		assert( fabs( m33i( 1, 1 ) - (-16.f / 6.f ) ) < f32eps ); 
+		assert( fabs( m33i( 2, 1 ) - ( 5.f / 6.f ) ) < f32eps );
+		assert( fabs( m33i( 0, 2 ) - ( -30.f / 6.f ) ) < f32eps );
+		assert( fabs( m33i( 1, 2 ) - ( -3.f ) ) < f32eps );
+		assert( fabs( m33i( 2, 2 ) - 1.f ) < f32eps );
 		
 		return true;
 	}

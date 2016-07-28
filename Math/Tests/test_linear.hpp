@@ -1,11 +1,11 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file contains tests for the linear solvers in vul_linear.hpp
  * It compares results against expected results based on offline math,
  * @TODO(thynn): as well as reference implementations (ceres, eigen).
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -51,6 +51,13 @@ namespace vul_test {
 		
 		return true;
 	}
+	
+
+	#define testWithinEpsilon( x, s, n, eps )\
+		for( int i = 0; i < n; ++i ) {\
+			printf("%f = %f, %f\n", x[i], s[i], fabs(x[i]-s[i]));\
+			assert( fabs( x[ i ] - s[ i ] ) < eps );\
+		}\
 
 	bool TestLinear::conjugateGradient( )
 	{
@@ -63,6 +70,10 @@ namespace vul_test {
 		Vector< f32, 3 > init = makeVector< f32, 3 >( 0.f );
 
 		Vector< f32, 3 > x = solveConjugateGradient( A, init, b, iters, eps );
+		
+		Vector< f32, 3 > solution = makeVector< f32 >( 17.f/ 255.f, 14.f / 135.f, 22.f / 45.f );
+		testWithinEpsilon( x, solution, 3, 1e-7f );
+
 		return true;
 	}
 	bool TestLinear::luDecomposition( )
@@ -76,6 +87,10 @@ namespace vul_test {
 		Vector< f32, 3 > init = makeVector< f32, 3 >( 0.f );
 
 		Vector< f32, 3 > x = solveLUDecomposition( A, init, b, iters, eps );
+		
+		Vector< f32, 3 > solution = makeVector< f32 >( 17.f/ 255.f, 14.f / 135.f, 22.f / 45.f );
+		testWithinEpsilon( x, solution, 3, 1e-8f );
+		
 		return true;
 	}
 	bool TestLinear::choleskyDecomposition( )
@@ -89,6 +104,10 @@ namespace vul_test {
 		Vector< f32, 3 > init = makeVector< f32, 3 >( 0.f );
 
 		Vector< f32, 3 > x = solveCholeskyDecomposition( A, init, b, iters, eps );
+		
+		Vector< f32, 3 > solution = makeVector< f32 >( 17.f/ 255.f, 14.f / 135.f, 22.f / 45.f );
+		testWithinEpsilon( x, solution, 3, 1e-7f );
+		
 		return true;
 	}
 	bool TestLinear::qrDecomposition( )
@@ -102,6 +121,10 @@ namespace vul_test {
 		Vector< f32, 3 > init = makeVector< f32, 3 >( 0.f );
 
 		Vector< f32, 3 > x = solveQRDecomposition( A, init, b, iters, eps );
+		
+		Vector< f32, 3 > solution = makeVector< f32 >( 17.f/ 255.f, 14.f / 135.f, 22.f / 45.f );
+		testWithinEpsilon( x, solution, 3, 1e-8f );
+		
 		return true;
 	}
 	bool TestLinear::successiveOverRelaxation( )
@@ -115,6 +138,10 @@ namespace vul_test {
 		Vector< f32, 3 > init = makeVector< f32, 3 >( 0.f );
 
 		Vector< f32, 3 > x = solveSOR( A, init, b, 1.1f, iters, eps );
+		
+		Vector< f32, 3 > solution = makeVector< f32 >( 17.f/ 255.f, 14.f / 135.f, 22.f / 45.f );
+		testWithinEpsilon( x, solution, 3, 1e-5 );
+		
 		return true;
 	}
 };

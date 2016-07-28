@@ -2,9 +2,6 @@
  * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file contains auxilliary functions for benchmarking.
- * @TODO: Proper statistics; at the moment this does the programmer's
- * hacky equivalent; specify iteration count and calculate mean,
- * median and standard deviation.
  * @TODO: Plotting (bar diagram of all iterations, histogram, smooth graf)
  * nanovg should be useful for this; hide the whole thing behind a define.
  * 

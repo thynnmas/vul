@@ -1,9 +1,9 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file contains tests for the fixed point type in vul_fixed.hpp
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -110,12 +110,12 @@ namespace vul_test {
 		
 		f32 f = VUL_TEST_RNG, 
 			  f32eps = 1e-5f;
-		while( abs( f ) >= 1 << ( 32 - 16 ) ) {
+		while( fabs( f ) >= 1 << ( 32 - 16 ) ) {
 			f = VUL_TEST_RNG;
 		}
-		fixed_32< 16 > fi( f ), fim( -( ( f32 )abs( f ) ) );
-		assert( abs( ( f32 )abs( ( f32 )fi ) - ( f32 )abs( f ) ) < f32eps);
-		assert( abs( ( f32 )abs( ( f32 )fim ) - ( f32 )abs( ( f32 )fi ) ) < f32eps );
+		fixed_32< 16 > fi( f ), fim( -( ( f32 )fabs( f ) ) );
+		assert( fabs( ( f32 )fabs( ( f32 )fi ) - ( f32 )fabs( f ) ) < f32eps);
+		assert( fabs( ( f32 )fabs( ( f32 )fim ) - ( f32 )fabs( ( f32 )fi ) ) < f32eps );
 		
 		for( u32 i = 0; i < VUL_TEST_FUZZ_COUNT; ++i ) {
 			fixed_32< 24 > f24_1, f24_2, r24, old24;
@@ -156,67 +156,67 @@ namespace vul_test {
 			rf = ( f32 )f10_1 + ( f32 )f10_2;
 			assert( ( f32 )abs( r10 ) > ( f32 )( 1 << ( 32 - 10 ) )
 				 || ( f32 )abs( r10 ) < ( f32 )( 1.f / pow( 2.f, 10 ) )
-				 || ( f32 )abs( ( f32 )r10 - rf ) < ( ( 1.f / pow( 2.f, 10 ) ) + f32eps * ( f32 )abs( rf ) ) );
+				 || ( f32 )fabs( ( f32 )r10 - rf ) < ( ( 1.f / pow( 2.f, 10 ) ) + f32eps * ( f32 )fabs( rf ) ) );
 			r16 = f16_1 + f16_2;
 			rf = ( f32 )f16_1 + ( f32 )f16_2;
 			assert( ( f32 )abs( r16 ) > ( f32 )( 1 << ( 32 - 16 ) )
 				 || ( f32 )abs( r16 ) < ( f32 )( 1.f / pow( 2.f, 16 ) )
-				 || ( f32 )abs( ( f32 )r16 - rf ) < ( ( 1.f / pow( 2.f, 16 ) ) + f32eps * ( f32 )abs( rf ) ) );
+				 || ( f32 )fabs( ( f32 )r16 - rf ) < ( ( 1.f / pow( 2.f, 16 ) ) + f32eps * ( f32 )fabs( rf ) ) );
 			r24 = f24_1 + f24_2;
 			rf = ( f32 )f24_1 + ( f32 )f24_2;
 			assert( ( f32 )abs( r24 ) > ( f32 )( 1 << ( 32 - 24 ) )
 				 || ( f32 )abs( r24 ) < ( f32 )( 1.f / pow( 2.f, 24 ) )
-				 || ( f32 )abs( ( f32 )r24 - rf ) < ( ( 1.f / pow( 2.f, 24 ) ) + f32eps * ( f32 )abs( rf ) ) );
+				 || ( f32 )fabs( ( f32 )r24 - rf ) < ( ( 1.f / pow( 2.f, 24 ) ) + f32eps * ( f32 )fabs( rf ) ) );
 
 			
 			r10 = f10_1 - f10_2;
 			rf = ( f32 )f10_1 - ( f32 )f10_2;
 			assert( ( f32 )abs( r10 ) > ( f32 )( 1 << ( 32 - 10 ) )
 				 || ( f32 )abs( r10 ) < ( f32 )( 1.f / pow( 2.f, 10 ) )
-				 || ( f32 )abs( ( f32 )r10 - rf ) < ( ( 1.f / pow( 2.f, 10 ) ) + f32eps * ( f32 )abs( rf ) ) );
+				 || ( f32 )fabs( ( f32 )r10 - rf ) < ( ( 1.f / pow( 2.f, 10 ) ) + f32eps * ( f32 )fabs( rf ) ) );
 			r16 = f16_1 - f16_2;
 			rf = ( f32 )f16_1 - ( f32 )f16_2;
 			assert( ( f32 )abs( r16 ) > ( f32 )( 1 << ( 32 - 16 ) )
 				 || ( f32 )abs( r16 ) < ( f32 )( 1.f / pow( 2.f, 16 ) )
-				 || ( f32 )abs( ( f32 )r16 - rf ) < ( ( 1.f / pow( 2.f, 16 ) ) + f32eps * ( f32 )abs( rf ) ) );
+				 || ( f32 )fabs( ( f32 )r16 - rf ) < ( ( 1.f / pow( 2.f, 16 ) ) + f32eps * ( f32 )fabs( rf ) ) );
 			r24 = f24_1 - f24_2;
 			rf = ( f32 )f24_1 - ( f32 )f24_2;
 			assert( ( f32 )abs( r24 ) > ( f32 )( 1 << ( 32 - 24 ) )
 				 || ( f32 )abs( r24 ) < ( f32 )( 1.f / pow( 2.f, 24 ) )
-				 || ( f32 )abs( ( f32 )r24 - rf ) < ( ( 1.f / pow( 2.f, 24 ) ) + f32eps * ( f32 )abs( rf ) ) );
+				 || ( f32 )fabs( ( f32 )r24 - rf ) < ( ( 1.f / pow( 2.f, 24 ) ) + f32eps * ( f32 )fabs( rf ) ) );
 			
 			r10 = f10_1 * f10_2;
 			rf = ( f32 )f10_1 * ( f32 )f10_2;
 			assert( ( f32 )abs( r10 ) > ( f32 )( 1 << ( 32 - 10 ) )
 				 || ( f32 )abs( r10 ) < ( f32 )( 1.f / pow( 2.f, 10 ) )
-				 || ( f32 )abs( ( f32 )r10 - rf ) < ( ( 1.f / pow( 2.f, 10 ) ) + f32eps * ( f32 )abs( rf ) ) );
+				 || ( f32 )fabs( ( f32 )r10 - rf ) < ( ( 1.f / pow( 2.f, 10 ) ) + f32eps * ( f32 )fabs( rf ) ) );
 			r16 = f16_1 * f16_2;
 			rf = ( f32 )f16_1 * ( f32 )f16_2;
 			assert( ( f32 )abs( r16 ) > ( f32 )( 1 << ( 32 - 16 ) )
 				 || ( f32 )abs( r16 ) < ( f32 )( 1.f / pow( 2.f, 16 ) )
-				 || ( f32 )abs( ( f32 )r16 - rf ) < ( ( 1.f / pow( 2.f, 16 ) ) + f32eps * ( f32 )abs( rf ) ) );
+				 || ( f32 )fabs( ( f32 )r16 - rf ) < ( ( 1.f / pow( 2.f, 16 ) ) + f32eps * ( f32 )fabs( rf ) ) );
 			r24 = f24_1 * f24_2;
 			rf = ( f32 )f24_1 * ( f32 )f24_2;
 			assert( ( f32 )abs( r24 ) > ( f32 )( 1 << ( 32 - 24 ) )
 				 || ( f32 )abs( r24 ) < ( f32 )( 1.f / pow( 2.f, 24 ) )
-				 || ( f32 )abs( ( f32 )r24 - rf ) < ( ( 1.f / pow( 2.f, 24 ) ) + f32eps * ( f32 )abs( rf ) ) );
+				 || ( f32 )fabs( ( f32 )r24 - rf ) < ( ( 1.f / pow( 2.f, 24 ) ) + f32eps * ( f32 )fabs( rf ) ) );
 
 			
 			r10 = f10_1 / f10_2;
 			rf = ( f32 )f10_1 / ( f32 )f10_2;
 			assert( ( f32 )abs( r10 ) > ( f32 )( 1 << ( 32 - 10 ) )
 				 || ( f32 )abs( r10 ) < ( f32 )( 1.f / pow( 2.f, 10 ) )
-				 || ( f32 )abs( ( f32 )r10 - rf ) < ( ( 1.f / pow( 2.f, 10 ) ) + f32eps * ( f32 )abs( rf ) ) );
+				 || ( f32 )fabs( ( f32 )r10 - rf ) < ( ( 1.f / pow( 2.f, 10 ) ) + f32eps * ( f32 )fabs( rf ) ) );
 			r16 = f16_1 / f16_2;
 			rf = ( f32 )f16_1 / ( f32 )f16_2;
 			assert( ( f32 )abs( r16 ) > ( f32 )( 1 << ( 32 - 16 ) )
 				 || ( f32 )abs( r16 ) < ( f32 )( 1.f / pow( 2.f, 16 ) )
-				 || ( f32 )abs( ( f32 )r16 - rf ) < ( ( 1.f / pow( 2.f, 16 ) ) + f32eps * ( f32 )abs( rf ) ) );
+				 || ( f32 )fabs( ( f32 )r16 - rf ) < ( ( 1.f / pow( 2.f, 16 ) ) + f32eps * ( f32 )fabs( rf ) ) );
 			r24 = f24_1 / f24_2;
 			rf = ( f32 )f24_1 / ( f32 )f24_2;
 			assert( ( f32 )abs( r24 ) > ( f32 )( 1 << ( 32 - 24 ) )
 				 || ( f32 )abs( r24 ) < ( f32 )( 1.f / pow( 2.f, 24 ) )
-				 || ( f32 )abs( ( f32 )r24 - rf ) < ( ( 1.f / pow( 2.f, 24 ) ) + f32eps * ( f32 )abs( rf ) ) );
+				 || ( f32 )fabs( ( f32 )r24 - rf ) < ( ( 1.f / pow( 2.f, 24 ) ) + f32eps * ( f32 )fabs( rf ) ) );
 
 			old10 = f10_1;
 			f10_1 += f10_2;
@@ -238,15 +238,16 @@ namespace vul_test {
 			f24_1 -= f24_2;
 			assert( f24_1 == old24 - f24_2 );
 
+			f32 muleps = 1e-3;
 			old10 = f10_1;
 			f10_1 *= f10_2;
-			assert( f10_1 == old10 * f10_2 );
+			assert( fabs( ( f32 )( f10_1 - ( old10 * f10_2 ) ) ) < muleps );
 			old16 = f16_1;
 			f16_1 *= f16_2;
-			assert( f16_1 == old16 * f16_2 );
+			assert( fabs( ( f32 )( f16_1 - ( old16 * f16_2 ) ) ) < muleps );
 			old24 = f24_1;
 			f24_1 *= f24_2;
-			assert( f24_1 == old24 * f24_2 );
+			assert( fabs( ( f32 )( f24_1 - ( old24 * f24_2 ) ) ) < muleps );
 
 			old10 = f10_1;
 			f10_1 /= f10_2;

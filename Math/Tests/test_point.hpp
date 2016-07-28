@@ -1,9 +1,9 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file contains tests for the matrix struct in vul_matrix.hpp
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -266,8 +266,8 @@ namespace vul_test {
 		f32 f32eps = 1e-5f;
 
 		for( u32 i = 0; i < 19; ++i ) {
-			assert( abs( pr[ i ] - ( p9a[ i ] + v9[ i ] ) ) < f32eps );
-			assert( abs( vr[ i ] - ( p9b[ i ] - p9a[ i ] ) ) < f32eps );
+			assert( fabs( pr[ i ] - ( p9a[ i ] + v9[ i ] ) ) < f32eps );
+			assert( fabs( vr[ i ] - ( p9b[ i ] - p9a[ i ] ) ) < f32eps );
 		}
 
 		return true;
@@ -342,9 +342,9 @@ namespace vul_test {
 		assert( v9[ 6 ] ==  0.f );  assert( v9[ 7 ] ==  1.f );  assert( v9[ 8 ] == 1.f );
 
 		v9 = lerp( p9a, p9b, 0.5f );
-		assert( abs( v9[ 0 ] + 1.6f )  < f32eps ); assert( abs( v9[ 1 ] + 1.1f )  < f32eps ); assert( abs( v9[ 2 ] - 0.f ) < f32eps );
-		assert( abs( v9[ 3 ] - 0.05f ) < f32eps ); assert( abs( v9[ 4 ] - 0.05f ) < f32eps ); assert( abs( v9[ 5 ] - 0.125f ) < f32eps );
-		assert( abs( v9[ 6 ] - 0.2f )  < f32eps ); assert( abs( v9[ 7 ] - 3.5f )  < f32eps ); assert( abs( v9[ 8 ] - 3.f ) < f32eps );
+		assert( fabs( v9[ 0 ] + 1.6f )  < f32eps ); assert( fabs( v9[ 1 ] + 1.1f )  < f32eps ); assert( fabs( v9[ 2 ] - 0.f ) < f32eps );
+		assert( fabs( v9[ 3 ] - 0.05f ) < f32eps ); assert( fabs( v9[ 4 ] - 0.05f ) < f32eps ); assert( fabs( v9[ 5 ] - 0.125f ) < f32eps );
+		assert( fabs( v9[ 6 ] - 0.2f )  < f32eps ); assert( fabs( v9[ 7 ] - 3.5f )  < f32eps ); assert( fabs( v9[ 8 ] - 3.f ) < f32eps );
 		
 		assert( minComponent( p2a ) == -1L );
 		assert( minComponent( p2b ) ==  2L );

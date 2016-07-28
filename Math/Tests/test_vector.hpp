@@ -1,9 +1,9 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file contains tests for the matrix struct in vul_matrix.hpp
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -306,58 +306,58 @@ namespace vul_test {
 
 		vr9 = v9;
 		for( u32 i = 0; i < 9; ++i ) {
-			assert( abs( vr9[ i ] - v9[ i ] ) < f64eps );
+			assert( fabs( vr9[ i ] - v9[ i ] ) < f64eps );
 		}
 
 		vr9 += 1.0;
 		for( u32 i = 0; i < 9; ++i ) {
-			assert( abs( vr9[ i ] - ( v9[ i ] + 1.0 ) ) < f64eps );
+			assert( fabs( vr9[ i ] - ( v9[ i ] + 1.0 ) ) < f64eps );
 		}
 		
 		vr9 = v9;
 		vr9 -= 7.0;
 		for( u32 i = 0; i < 9; ++i ) {
-			assert( abs( vr9[ i ] - ( v9[ i ] - 7.0 ) ) < f64eps );
+			assert( fabs( vr9[ i ] - ( v9[ i ] - 7.0 ) ) < f64eps );
 		}
 
 		vr9 = v9;
 		vr9 *= 1.5;
 		for( u32 i = 0; i < 9; ++i ) {
-			assert( abs( vr9[ i ] - v9[ i ] * 1.5 ) < f64eps );
+			assert( fabs( vr9[ i ] - v9[ i ] * 1.5 ) < f64eps );
 		}
 		
 		vr9 = v9;
 		vr9 /= 2.2;
 		for( u32 i = 0; i < 9; ++i ) {
-			assert( abs( vr9[ i ] - v9[ i ] / 2.2 ) < f64eps );
+			assert( fabs( vr9[ i ] - v9[ i ] / 2.2 ) < f64eps );
 		}
 		
 		vr9 = v9;
 		vr9 += v9;
 		for( u32 i = 0; i < 9; ++i ) {
-			assert( abs( vr9[ i ] - ( v9[ i ] + v9[ i ] ) ) < f64eps );
+			assert( fabs( vr9[ i ] - ( v9[ i ] + v9[ i ] ) ) < f64eps );
 		}
 		
 		vr9 = v9;
 		vr9 -= v9;
 		for( u32 i = 0; i < 9; ++i ) {
-			assert( abs( vr9[ i ] - ( v9[ i ] - v9[ i ] ) ) < f64eps );
+			assert( fabs( vr9[ i ] - ( v9[ i ] - v9[ i ] ) ) < f64eps );
 		}
 
 		vr9 = v9;
 		vr9 *= v9;
 		for( u32 i = 0; i < 9; ++i ) {
-			assert( abs( vr9[ i ] - v9[ i ] * v9[ i ] ) < f64eps );
+			assert( fabs( vr9[ i ] - v9[ i ] * v9[ i ] ) < f64eps );
 		}
 		
 		vr9 = v9;
 		vr9 /= v9;
 		for( u32 i = 0; i < 9; ++i ) {
-			assert( abs( vr9[ i ] - v9[ i ] / v9[ i ] ) < f64eps );
+			assert( fabs( vr9[ i ] - v9[ i ] / v9[ i ] ) < f64eps );
 		}
 		
 		for( u32 i = 0; i < 9; ++i ) {
-			assert( abs( v9[ i ] - a9[ i ] ) < f64eps );
+			assert( fabs( v9[ i ] - a9[ i ] ) < f64eps );
 		}
 
 		if( v9[ 7 ] == 1.7 ) {
@@ -397,41 +397,41 @@ namespace vul_test {
 
 		vr = va + vb;
 		for( u32 i = 0; i < 19; ++i ) {
-			assert( abs( vr[ i ] - ( va[ i ] + vb[ i ] ) ) < f32eps );
+			assert( fabs( vr[ i ] - ( va[ i ] + vb[ i ] ) ) < f32eps );
 		}
 		vr = va - vb;
 		for( u32 i = 0; i < 19; ++i ) {
-			assert( abs( vr[ i ] - ( va[ i ] - vb[ i ] ) ) < f32eps );
+			assert( fabs( vr[ i ] - ( va[ i ] - vb[ i ] ) ) < f32eps );
 		}
 		vr = va * vb;
 		for( u32 i = 0; i < 19; ++i ) {
-			assert( abs( vr[ i ] - va[ i ] * vb[ i ] ) < f32eps );
+			assert( fabs( vr[ i ] - va[ i ] * vb[ i ] ) < f32eps );
 		}
 		vr = va / vb;
 		for( u32 i = 0; i < 19; ++i ) {
-			assert( abs( vr[ i ] - va[ i ] / vb[ i ] ) < f32eps );
+			assert( fabs( vr[ i ] - va[ i ] / vb[ i ] ) < f32eps );
 		}
 		
 		vr = va + 1.f;
 		for( u32 i = 0; i < 19; ++i ) {
-			assert( abs( vr[ i ] - ( va[ i ] + 1.f ) ) < f32eps );
+			assert( fabs( vr[ i ] - ( va[ i ] + 1.f ) ) < f32eps );
 		}
 		vr = va - 2.5f;
 		for( u32 i = 0; i < 19; ++i ) {
-			assert( abs( vr[ i ] - ( va[ i ] -2.5f ) ) < f32eps );
+			assert( fabs( vr[ i ] - ( va[ i ] -2.5f ) ) < f32eps );
 		}
 		vr = va * 7.12f;
 		for( u32 i = 0; i < 19; ++i ) {
-			assert( abs( vr[ i ] - va[ i ] * 7.12f ) < f32eps );
+			assert( fabs( vr[ i ] - va[ i ] * 7.12f ) < f32eps );
 		}
 		vr = va / 2.3f;
 		for( u32 i = 0; i < 19; ++i ) {
-			assert( abs( vr[ i ] - va[ i ] / 2.3f ) < f32eps );
+			assert( fabs( vr[ i ] - va[ i ] / 2.3f ) < f32eps );
 		}
 
 		vr = -va;
 		for( u32 i = 0; i < 19; ++i ) {
-			assert( abs( vr[ i ] + va[ i ] ) < f32eps );
+			assert( fabs( vr[ i ] + va[ i ] ) < f32eps );
 		}
 
 		return true;
@@ -473,9 +473,9 @@ namespace vul_test {
 		assert( v3r[ 0 ] == 0.f ); assert( v3r[ 1 ] == -1.f ); assert( v3r[ 2 ] == 0.f );
 		
 #ifdef VUL_CPLUSPLUS11
-		assert( abs( cross( normalize( Vector< f32, 2 >{ 1.f, 1.f } ), normalize( Vector< f32, 2 >{ 1.f, -1.f } ) ) + 1.f ) < f32eps );
+		assert( fabs( cross( normalize( Vector< f32, 2 >{ 1.f, 1.f } ), normalize( Vector< f32, 2 >{ 1.f, -1.f } ) ) + 1.f ) < f32eps );
 #else
-		assert( abs( cross( normalize( makeVector< f32 >( 1.f, 1.f ) ), normalize( makeVector< f32 >( 1.f, -1.f ) ) ) + 1.f ) < f32eps );
+		assert( fabs( cross( normalize( makeVector< f32 >( 1.f, 1.f ) ), normalize( makeVector< f32 >( 1.f, -1.f ) ) ) + 1.f ) < f32eps );
 #endif
 
 		f32 dt = 0.f;
@@ -499,9 +499,9 @@ namespace vul_test {
 #else
 		v3r = normalize( makeVector< f32 >( 1.f, 1.f, 1.f ) );
 #endif
-		assert( abs( v3r[ 0 ] - 1.f / sqrt( 3.f ) ) < f32eps );
-		assert( abs( v3r[ 1 ] - 1.f / sqrt( 3.f ) ) < f32eps );
-		assert( abs( v3r[ 2 ] - 1.f / sqrt( 3.f ) ) < f32eps );
+		assert( fabs( v3r[ 0 ] - 1.f / sqrt( 3.f ) ) < f32eps );
+		assert( fabs( v3r[ 1 ] - 1.f / sqrt( 3.f ) ) < f32eps );
+		assert( fabs( v3r[ 2 ] - 1.f / sqrt( 3.f ) ) < f32eps );
 		
 		v2r = min( v2a, ( s64 )1L );
 		assert( v2r[ 0 ] == 1L ); assert( v2r[ 1 ] == -1L );
@@ -553,9 +553,9 @@ namespace vul_test {
 		assert( v9r[ 6 ] == 0.f );  assert( v9r[ 7 ] ==  1.f );  assert( v9r[ 8 ] == 1.f );
 
 		v9r = lerp( v9a, v9b, 0.5f );
-		assert( abs( v9r[ 0 ] + 1.6f ) < f32eps );  assert( abs( v9r[ 1 ] + 1.1f ) < f32eps );  assert( abs( v9r[ 2 ] - 0.f ) < f32eps );
-		assert( abs( v9r[ 3 ] - 0.05f ) < f32eps ); assert( abs( v9r[ 4 ] - 0.05f ) < f32eps ); assert( abs( v9r[ 5 ] - 0.125f ) < f32eps );
-		assert( abs( v9r[ 6 ] - 0.2f ) < f32eps );  assert( abs( v9r[ 7 ] - 3.5f ) < f32eps );  assert( abs( v9r[ 8 ] - 3.f ) < f32eps );
+		assert( fabs( v9r[ 0 ] + 1.6f ) < f32eps );  assert( fabs( v9r[ 1 ] + 1.1f ) < f32eps );  assert( fabs( v9r[ 2 ] - 0.f ) < f32eps );
+		assert( fabs( v9r[ 3 ] - 0.05f ) < f32eps ); assert( fabs( v9r[ 4 ] - 0.05f ) < f32eps ); assert( fabs( v9r[ 5 ] - 0.125f ) < f32eps );
+		assert( fabs( v9r[ 6 ] - 0.2f ) < f32eps );  assert( fabs( v9r[ 7 ] - 3.5f ) < f32eps );  assert( fabs( v9r[ 8 ] - 3.f ) < f32eps );
 		
 		assert( minComponent( v2a ) == -1L );
 		assert( minComponent( v2b ) ==  2L );

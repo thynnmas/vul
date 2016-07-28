@@ -181,7 +181,7 @@ vul_mmap_file vul_mmap( const char *path, void *base_addr, s32 prot, s32 flags, 
 	}
 #else
 	ret.fd = open( path, O_RDONLY );
-	if( map_length == -1 ) {
+	if( map_length == ( size_t )-1 ) {
 		struct stat sb;
 		fstat(ret.fd, &sb);
 		map_length = ( size_t )sb.st_size;
@@ -244,16 +244,16 @@ b32 vul_file_fullpath( char *abs_path, size_t abs_path_max_len, const char *rel_
 	return _fullpath( abs_path, rel_path, abs_path_max_len ) != NULL;
 #else
 	if( rel_path[ 0 ] == '/' || rel_path[ 0 ] == '~') {
-		if( ( s32 )strlen( rel_path ) >= abs_path_max_len ) {
+		if( ( size_t )strlen( rel_path ) >= abs_path_max_len ) {
 			return VUL_FALSE;
 		}
 		strcpy( abs_path, rel_path );
 		return VUL_TRUE;
 	} else {
-		s32 n;
+		size_t n;
 		getcwd( abs_path, abs_path_max_len );
 		n = strlen( abs_path );
-		if( n + ( s32 )strlen( rel_path ) + 2 <= abs_path_max_len ) {
+		if( n + ( size_t )strlen( rel_path ) + 2 <= abs_path_max_len ) {
 			abs_path[ n ] = '/';
 			strcpy( abs_path + n + 1, rel_path );
 			return VUL_TRUE;

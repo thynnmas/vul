@@ -1,12 +1,10 @@
-#ifdef VUL_TEST_C
-
 #define VUL_DEFINE
-//#include "Tests/test_gl.h" // This doesn't appear to work yet...
-//#include "Tests/test_astar.h"
-//#include "Tests/test_csp.h"
-#include "Tests/test_linear_solvers.h"
-//#include "Tests/test_priority_queues.h"
-//#include "Tests/test_file.h"
+//#include "test_gl.h" // This doesn't appear to work yet...
+//#include "test_astar.h"
+//#include "test_csp.h"
+#include "test_linear_solvers.h"
+//#include "test_priority_queues.h"
+//#include "test_file.h"
 
 #include <stdio.h>
 /*
@@ -364,5 +362,3 @@ int main( int argv, char **argc )
 
 	return 0;
 }
-
-#endif

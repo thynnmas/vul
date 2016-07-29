@@ -24,9 +24,10 @@
 #include <math.h>
 
 #ifndef VUL_TYPES_H
-typedef float f32;
-typedef double f64;
+#define f32 float
+#define f64 double
 #endif
+typedef size_t word;
 
 typedef struct v2 {
 	union {
@@ -106,8 +107,6 @@ typedef struct m44 {
 #ifdef _cplusplus
 extern "C" {
 #endif
-
-f32 fract( f32 v );
 	
 #define DEFINE_V2OP( name, op ) v2 name( const v2 a, const v2 b );
 #define DEFINE_V3OP( name, op ) v3 name( const v3 a, const v3 b );
@@ -195,34 +194,6 @@ v2 vmax2( const v2 a, const v2 b );
 v3 vmax3( const v3 a, const v3 b );
 v4 vmax4( const v4 a, const v4 b );
 
-v2 vabs2( const v2 a );
-v3 vabs3( const v3 a );
-v4 vabs4( const v4 a );
-
-v2 vmods2( const v2 a, const f32 d );
-v3 vmods3( const v3 a, const f32 d );
-v4 vmods4( const v4 a, const f32 d );
-
-v2 vmod2( const v2 a, const v2 d );
-v3 vmod3( const v3 a, const v3 d );
-v4 vmod4( const v4 a, const v4 d );
-
-v2 vfloor2( const v2 v );
-v3 vfloor3( const v3 v );
-v4 vfloor4( const v4 v );
-
-v2 vceil2( const v2 v );
-v3 vceil3( const v3 v );
-v4 vceil4( const v4 v );
-
-v2 vfract2( const v2 v );
-v3 vfract3( const v3 v );
-v4 vfract4( const v4 v );
-
-v2 vsqrt2( const v2 v );
-v3 vsqrt3( const v3 v );
-v4 vsqrt4( const v4 v );
-
 v2 vreflect2( const v2 v, const v2 n );
 v3 vreflect3( const v3 v, const v3 n );
 v4 vreflect4( const v4 v, const v4 n );
@@ -267,6 +238,10 @@ DEFINE_S44COMPWISE_OP( mmuls44, * )
 #undef DEFINE_S33COMPWISE_OP
 #undef DEFINE_S44COMPWISE_OP
 
+m22 mcopy2( const m22 *m );
+m33 mcopy3( const m33 *m );
+m44 mcopy4( const m44 *m );
+
 m22 mmul22( const m22 *a, const m22 *b );
 m33 mmul33( const m33 *a, const m33 *b );
 m44 mmul44( const m44 *a, const m44 *b );
@@ -301,17 +276,13 @@ v4 vmulm4( const m44 *m, const v4 v );
 #ifdef _cplusplus
 }
 #endif
-#endif
+#endif // VUL_CMATH_H
 
 #ifdef VUL_DEFINE
 
 #ifdef _cplusplus
 extern "C" {
 #endif
-
-f32 fract( f32 v )	{
-	return v - ( long )v;
-}
 
 #define DEFINE_V2OP( name, op )\
 	v2 name( const v2 a, const v2 b ) {\
@@ -522,160 +493,6 @@ v4 vmax4( const v4 a, const v4 b ) {
 	return r;
 }
 
-v2 vabs2( const v2 v ) {
-	v2 r;
-	r.x = ( f32 )fabs( v.x );
-	r.y = ( f32 )fabs( v.y );
-	return r;
-}
-v3 vabs3( const v3 v ) {
-	v3 r;
-	r.x = ( f32 )fabs( v.x );
-	r.y = ( f32 )fabs( v.y );
-	r.z = ( f32 )fabs( v.z );
-	return r;
-}
-v4 vabs4( const v4 v ) {
-	v4 r;
-	r.x = ( f32 )fabs( v.x );
-	r.y = ( f32 )fabs( v.y );
-	r.z = ( f32 )fabs( v.z );
-	r.w = ( f32 )fabs( v.w );
-	return r;
-}
-
-v2 vmods2( const v2 a, const f32 d ) {
-	v2 r;
-	r.x = ( f32 )fmodf( a.x, d );
-	r.y = ( f32 )fmodf( a.y, d );
-	return r;
-}
-v3 vmods3( const v3 a, const f32 d ) {
-	v3 r;
-	r.x = ( f32 )fmodf( a.x, d );
-	r.y = ( f32 )fmodf( a.y, d );
-	r.z = ( f32 )fmodf( a.z, d );
-	return r;
-}
-v4 vmods4( const v4 a, const f32 d ) {
-	v4 r;
-	r.x = ( f32 )fmodf( a.x, d );
-	r.y = ( f32 )fmodf( a.y, d );
-	r.z = ( f32 )fmodf( a.z, d );
-	r.w = ( f32 )fmodf( a.w, d );
-	return r;
-}
-
-v2 vmod2( const v2 a, const v2 d ) {
-	v2 r;
-	r.x = ( f32 )fmodf( a.x, d.x );
-	r.y = ( f32 )fmodf( a.y, d.y );
-	return r;
-}
-v3 vmod3( const v3 a, const v3 d ) {
-	v3 r;
-	r.x = ( f32 )fmodf( a.x, d.x );
-	r.y = ( f32 )fmodf( a.y, d.y );
-	r.z = ( f32 )fmodf( a.z, d.z );
-	return r;
-}
-v4 vmod4( const v4 a, const v4 d ) {
-	v4 r;
-	r.x = ( f32 )fmodf( a.x, d.x );
-	r.y = ( f32 )fmodf( a.y, d.y );
-	r.z = ( f32 )fmodf( a.z, d.z );
-	r.w = ( f32 )fmodf( a.w, d.w );
-	return r;
-}
-
-v2 vfloor2( const v2 v ) {
-	v2 r;
-	r.x = floor( v.x );
-	r.y = floor( v.y );
-	return r;
-}
-v3 vfloor3( const v3 v ) {
-	v3 r;
-	r.x = floor( v.x );
-	r.y = floor( v.y );
-	r.z = floor( v.z );
-	return r;
-}
-v4 vfloor4( const v4 v ) {
-	v4 r;
-	r.x = floor( v.x );
-	r.y = floor( v.y );
-	r.z = floor( v.z );
-	r.w = floor( v.w );
-	return r;
-}
-
-v2 vceil2( const v2 v ) {
-	v2 r;
-	r.x = ceil( v.x );
-	r.y = ceil( v.y );
-	return r;
-}
-v3 vceil3( const v3 v ) {
-	v3 r;
-	r.x = ceil( v.x );
-	r.y = ceil( v.y );
-	r.z = ceil( v.z );
-	return r;
-}
-v4 vceil4( const v4 v ) {
-	v4 r;
-	r.x = ceil( v.x );
-	r.y = ceil( v.y );
-	r.z = ceil( v.z );
-	r.w = ceil( v.w );
-	return r;
-}
-
-v2 vfract2( const v2 v ) {
-	v2 r;
-	r.x = fract( v.x );
-	r.y = fract( v.y );
-	return r;
-}
-v3 vfract3( const v3 v ) {
-	v3 r;
-	r.x = fract( v.x );
-	r.y = fract( v.y );
-	r.z = fract( v.z );
-	return r;
-}
-v4 vfract4( const v4 v ) {
-	v4 r;
-	r.x = fract( v.x );
-	r.y = fract( v.y );
-	r.z = fract( v.z );
-	r.w = fract( v.w );
-	return r;
-}
-
-v2 vsqrt2( const v2 v ) {
-	v2 r;
-	r.x = sqrtf( v.x );
-	r.y = sqrtf( v.y );
-	return r;
-}
-v3 vsqrt3( const v3 v ) {
-	v3 r;
-	r.x = sqrtf( v.x );
-	r.y = sqrtf( v.y );
-	r.z = sqrtf( v.z );
-	return r;
-}
-v4 vsqrt4( const v4 v ) {
-	v4 r;
-	r.x = sqrtf( v.x );
-	r.y = sqrtf( v.y );
-	r.z = sqrtf( v.z );
-	r.w = sqrtf( v.w );
-	return r;
-}
-
 v2 vreflect2( const v2 v, const v2 n ) {
 	return vsub2( vmuls2( n, 2.f * vdot2( v, n ) ), v );
 }
@@ -807,55 +624,25 @@ DEFINE_S44COMPWISE_OP( mmuls44, * )
 #undef DEFINE_M33COMPWISE_OP
 #undef DEFINE_M44COMPWISE_OP
 
-m22 mat22( const f32 a00, const f32 a01,
-			  const f32 a10, const f32 a11 )
-{
+m22 mcopy2( const m22 *m ) {
 	m22 r;
-	r.a00 = a00;
-	r.a01 = a01;
-	r.a10 = a10;
-	r.a11 = a11;
+	for( u32 i = 0; i < 4; ++i ) {
+		r.A[ i ] = m->A[ i ];
+	}
 	return r;
 }
-m33 mat33( const f32 a00, const f32 a01, const f32 a02,
-			  const f32 a10, const f32 a11, const f32 a12,
-			  const f32 a20, const f32 a21, const f32 a22 )
-{
+m33 mcopy3( const m33 *m ) {
 	m33 r;
-	r.a00 = a00;
-	r.a01 = a01;
-	r.a02 = a02;
-	r.a10 = a10;
-	r.a11 = a11;
-	r.a12 = a12;
-	r.a20 = a20;
-	r.a21 = a21;
-	r.a22 = a22;
+	for( u32 i = 0; i < 9; ++i ) {
+		r.A[ i ] = m->A[ i ];
+	}
 	return r;
 }
-
-m44 mat44( const f32 a00, const f32 a01, const f32 a02, const f32 a03,
-			  const f32 a10, const f32 a11, const f32 a12, const f32 a13,
-			  const f32 a20, const f32 a21, const f32 a22, const f32 a23,
-			  const f32 a30, const f32 a31, const f32 a32, const f32 a33 )
-{
+m44 mcopy4( const m44 *m ) {
 	m44 r;
-	r.a00 = a00;
-	r.a01 = a01;
-	r.a02 = a02;
-	r.a03 = a03;
-	r.a10 = a10;
-	r.a11 = a11;
-	r.a12 = a12;
-	r.a13 = a13;
-	r.a20 = a20;
-	r.a21 = a21;
-	r.a22 = a22;
-	r.a23 = a23;
-	r.a30 = a30;
-	r.a31 = a31;
-	r.a32 = a32;
-	r.a33 = a33;
+	for( u32 i = 0; i < 16; ++i ) {
+		r.A[ i ] = m->A[ i ];
+	}
 	return r;
 }
 
@@ -904,25 +691,25 @@ m44 mmul44( const m44 *a, const m44 *b ) {
 m22 mlerp22( const m22 *a, const m22 *b, const f32 t ) {
 	m22 r;
 	f32 t1 = 1.f - t;
-	r.a00 = a->a00 * t + b->a00 * t1;
-	r.a01 = a->a01 * t + b->a01 * t1;
-	r.a10 = a->a10 * t + b->a10 * t1;
-	r.a11 = a->a11 * t + b->a11 * t1;
+	r.a00 = a->a00 * t1 + b->a00 * t;
+	r.a01 = a->a01 * t1 + b->a01 * t;
+	r.a10 = a->a10 * t1 + b->a10 * t;
+	r.a11 = a->a11 * t1 + b->a11 * t;
 	return r;
 }
 m33 mlerp33( const m33 *a, const m33 *b, const f32 t ) {
 	m33 r;
 	f32 t1 = 1.f - t;
-	for( size_t i = 0; i < 9; ++i ) {
-		r.A[ i ] = a->A[ i ] * t + b->A[ i ] * t1;
+	for( word i = 0; i < 9; ++i ) {
+		r.A[ i ] = a->A[ i ] * t1 + b->A[ i ] * t;
 	}
 	return r;
 }
 m44 mlerp44( const m44 *a, const m44 *b, const f32 t ) {
 	m44 r;
 	f32 t1 = 1.f - t;
-	for( size_t i = 0; i < 16; ++i ) {
-		r.A[ i ] = a->A[ i ] * t + b->A[ i ] * t1;
+	for( word i = 0; i < 16; ++i ) {
+		r.A[ i ] = a->A[ i ] * t1 + b->A[ i ] * t;
 	}
 	return r;
 }
@@ -959,10 +746,10 @@ f32 mdeterminant33( const m33 *m ) {
 }
 f32 mdeterminant44( const m44 *m ) {
 	f32 det = 0.f;
-	for( size_t i = 0; i < 4; ++i ) {
+	for( word i = 0; i < 4; ++i ) {
 		m33 a;
-		for( size_t c = 1; c < 4; ++c ) {
-			for( size_t r = 0, k = 0; r < 4; ++r ) {
+		for( word c = 1; c < 4; ++c ) {
+			for( word r = 0, k = 0; r < 4; ++r ) {
 				if( r == i ) continue;
 				a.A[ ( c - 1 ) * 3 + k++ ] = m->A[ c * 4 + r ];
 			}
@@ -985,11 +772,11 @@ m33 minverse33( const m33 *m ) {
 	m22 tmp;
 	m33 cofac;
 	f32 d = mdeterminant33( m );
-	for( size_t c = 0; c < 3; ++c ) {
-		for( size_t r = 0; r < 3; ++r ) {
-			for( size_t j = 0, b = 0; j < 3; ++j ) {
+	for( word c = 0; c < 3; ++c ) {
+		for( word r = 0; r < 3; ++r ) {
+			for( word j = 0, b = 0; j < 3; ++j ) {
 				if( j == c ) continue;
-				for( size_t i = 0, a = 0; i < 3; ++i ) {
+				for( word i = 0, a = 0; i < 3; ++i ) {
 					if( i == r ) continue;
 					tmp.A[ b * 2 + a++ ] = m->A[ j * 3 + i ];
 				}
@@ -1004,11 +791,11 @@ m44 minverse44( const m44 *m ) {
 	m33 tmp;
 	m44 cofac;
 	f32 d = mdeterminant44( m );
-	for( size_t c = 0; c < 4; ++c ) {
-		for( size_t r = 0; r < 4; ++r ) {
-			for( size_t j = 0, b = 0; j < 4; ++j ) {
+	for( word c = 0; c < 4; ++c ) {
+		for( word r = 0; r < 4; ++r ) {
+			for( word j = 0, b = 0; j < 4; ++j ) {
 				if( j == c ) continue;
-				for( size_t i = 0, a = 0; i < 4; ++i ) {
+				for( word i = 0, a = 0; i < 4; ++i ) {
 					if( i == r ) continue;
 					tmp.A[ b * 3 + a++ ] = m->A[ j * 4 + i ];
 				}
@@ -1076,4 +863,9 @@ v4 vmulm4( const m44 *m, const v4 v ) {
 }
 #endif
 
-#endif
+#endif // VUL_DEFINE
+
+#ifndef VUL_TYPES_H
+#undef f32
+#undef f64
+#endif // VUL_TYPES_H

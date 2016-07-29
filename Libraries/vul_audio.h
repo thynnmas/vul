@@ -49,7 +49,9 @@
 	#include <mmsystem.h>
 	#include <dsound.h>
 #elif defined( VUL_LINUX )
+	#include <dlfcn.h>
 	//#include <poll.h>
+	#include <sys/ioctl.h>
 	#include <sys/soundcard.h>
 	#include <alsa/asoundlib.h>
 	#include <pulse/simple.h>
@@ -58,16 +60,18 @@
 	BAH
 #endif
 
-typedef int8_t s8;
-typedef int16_t s16;
-typedef int32_t s32;
-typedef int64_t s64;
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef uint64_t u64;
-typedef float f32;
-typedef double f64;
+#ifndef VUL_TYPES_H
+#define s8 int8_t
+#define s16 int16_t
+#define s32 int32_t
+#define s64 int64_t
+#define u8 uint8_t
+#define u16 uint16_t
+#define u32 uint32_t
+#define u64 uint64_t
+#define f32 float
+#define f64 double
+#endif
 
 typedef enum vul__audio_lib {
 	VUL__AUDIO_LINUX_ALSA,
@@ -110,14 +114,15 @@ typedef struct vul_audio_device {
 #elif defined( VUL_LINUX )
 	vul__audio_lib lib;
 	union {
-		FILE *oss_device_fd;
+		s32 oss_device_fd;
 		struct alsa {
-			snd_pcm_t handle;
+			snd_pcm_t *handle;
 			void *dlib;
 		} alsa;
 		struct pulse {
 			pa_simple *client;
 			void *dlib;
+			void *dlib_simple;
 		} pulse;
 	} device;
 #else
@@ -129,12 +134,49 @@ typedef struct vul_audio_device {
 extern "C" {
 #endif
 
-// TODO(thynn): Declare API
+/*
+ * @TODO(thynn): Document
+ */
+vul_audio_return vul_audio_write( vul_audio_device *dev, void *samples, u32 sample_count );
+
+/*
+ * @TODO(thynn): Document
+ */
+vul_audio_return vul_audio_read( vul_audio_device *dev, void *samples, u32 sample_count );
+
+/*
+ * @TODO(thynn): Document
+ */
+vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_close );
+
+
+/*
+ * @TODO(thynn): Document
+ */
+#ifdef VUL_WINDOWS
+vul_audio_return vul_audio_init( vul_audio_device *out, 
+											HWND hwnd,
+											vul_audio_mode mode,
+											u32 channels, 
+											u32 sample_rate,
+											vul_audio_sample_format fmt );
+#elif VUL_OSX
+	TODO
+#elif VUL_LINUX
+vul_audio_return vul_audio_init( vul_audio_device *out, 
+											const char *device_name,  
+											vul_audio_mode mode,
+											u32 channels, 
+											u32 sample_rate,
+											vul_audio_sample_format fmt );
+#else
+	You must define an operating system (VUL_WINDOWS, VUL_LINUX, VUL_OSX)
+#endif
 
 #ifdef _cplusplus
 }
 #endif
-#endif
+#endif // VUL_AUDIO_H
 
 #ifdef VUL_DEFINE
 
@@ -144,12 +186,12 @@ extern "C" {
 
 #ifdef VUL_AUDIO_ERROR_STDERR
 #define ERR( ... )\
-	fprintf( stderr, ... );\
+	fprintf( stderr, __VA_ARGS__ );\
 	return VUL_ERROR;
 #elif defined( VUL_AUDIO_ERROR_STR )
 char vul_last_error[ 1024 ];
 #define ERR( ... )\
-	snprintf( vul_last_error, 1023, ... );\
+	snprintf( vul_last_error, 1023, __VA_ARGS__ );\
 	vul_last_error[ 1023 ] = 0;\
 	return VUL_ERROR;
 #elif defined( VUL_AUDIO_ERROR_ASSERT )
@@ -161,6 +203,7 @@ char vul_last_error[ 1024 ];
 	return VUL_ERROR;
 #elif defined( VUL_AUDIO_ERROR_CUSTOM )
 #define ERR VUL_AUDIO_ERROR_CUSTOM
+#endif
 
 // -----------
 // Helpers
@@ -308,6 +351,21 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 // ------
 // OSS
 // 
+#if !defined( AFMT_S32_NE )
+	#if defined( WORDS_BIGENDIAN )
+		#if defined( AFMT_S32_LE )
+			#define AFMT_S32_NE AFMT_S32_BE
+		#else
+			#define AFMT_S32_NE 0x00004000
+		#endif
+	#else
+		#if defined( AFMT_S32_LE )
+			#define AFMT_S32_NE AFMT_S32_LE
+		#else
+			#define AFMT_S32_NE 0x00002000
+		#endif
+	#endif
+#endif
 static vul_audio_return vul__audio_init_oss( vul_audio_device *dev, int mode )
 {
 	s32 tmp, fd;
@@ -449,7 +507,7 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 {
 	snd_pcm_hw_params_t *hwp;
 	snd_pcm_sw_params_t *swp;
-	snd_pdm_sframes_t frames_to_deliver;
+	snd_pcm_sframes_t frames_to_deliver;
 	int devices, err;
 	struct pollfd *device_fds;
 	
@@ -511,7 +569,7 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 	if( ( err = alsa_hw_set_format( dev->device.alsa.handle, hwp, fmt ) ) < 0 ) {
 		ERR( "Failed to set ALSA sample format.\n" );
 	}
-	if( ( err = alsa_hw_set_rate_near( dev->device.alsa.handle, hwp, dev->sample_rate, 0 ) ) < 0 ) {
+	if( ( err = alsa_hw_set_rate_near( dev->device.alsa.handle, hwp, &dev->sample_rate, 0 ) ) < 0 ) {
 		ERR( "Failed to set ALSA sample rate.\n" );
 	}
 	if( ( err = alsa_hw_set_channels( dev->device.alsa.handle, hwp, dev->channels ) ) < 0 ) {
@@ -549,6 +607,7 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 	}
 
 	dev->lib = VUL__AUDIO_LINUX_ALSA;
+	return VUL_OK;
 }
 
 // ---------------
@@ -562,6 +621,7 @@ void ( *pulse_free )( pa_simple * ) = 0;
 int ( *pulse_write )( pa_simple *, const void *, size_t, int * ) = 0;
 int ( *pulse_read )( pa_simple *, void *, size_t, int * ) = 0;
 int ( *pulse_drain )( pa_simple *, int * ) = 0;
+const char* ( *pulse_error )( int ) = 0;
 
 // @TODO(thynn): Move from simple API to asynch API? https://freedesktop.org/software/pulseaudio/doxygen/async.html
 vul_audio_return vul__audio_init_pulse( vul_audio_device *dev, const char *name, const char *description )
@@ -570,11 +630,15 @@ vul_audio_return vul__audio_init_pulse( vul_audio_device *dev, const char *name,
 	if( ( dev->device.pulse.dlib = dlopen( "libpulse.so", RTLD_NOW ) ) == NULL ) {
 		ERR( "Failed to load PulseAudio library.\n" );
 	}
-	DLLOAD( pulse_new, dev->device.pulse.dlib, "pa_simple_new" );
-	DLLOAD( pulse_free, dev->device.pulse.dlib, "pa_simple_free" );
-	DLLOAD( pulse_read, dev->device.pulse.dlib, "pa_simple_read" );
-	DLLOAD( pulse_write, dev->device.pulse.dlib, "pa_simple_write" );
-	DLLOAD( pulse_drain, dev->device.pulse.dlib, "pa_simple_drain" );
+	if( ( dev->device.pulse.dlib_simple = dlopen( "libpulse-simple.so", RTLD_NOW ) ) == NULL ) {
+		ERR( "Failed to load PulseAudio Simple API library.\n" );
+	}
+	DLLOAD( pulse_new, dev->device.pulse.dlib_simple, "pa_simple_new" );
+	DLLOAD( pulse_free, dev->device.pulse.dlib_simple, "pa_simple_free" );
+	DLLOAD( pulse_read, dev->device.pulse.dlib_simple, "pa_simple_read" );
+	DLLOAD( pulse_write, dev->device.pulse.dlib_simple, "pa_simple_write" );
+	DLLOAD( pulse_drain, dev->device.pulse.dlib_simple, "pa_simple_drain" );
+	DLLOAD( pulse_error, dev->device.pulse.dlib, "pa_strerror" );
 
 	pa_sample_spec ss;
 	switch( dev->format ) {
@@ -590,7 +654,7 @@ vul_audio_return vul__audio_init_pulse( vul_audio_device *dev, const char *name,
 	ss.channels = dev->channels;
 	ss.rate = dev->sample_rate;
 
-	pa_stream_direction dir = PA_STREAM_NODIRECTION;
+	enum pa_stream_direction dir = PA_STREAM_NODIRECTION;
 	switch( dev->mode ) {
 	case VUL_AUDIO_MODE_PLAYBACK:
 		dir = PA_STREAM_PLAYBACK;
@@ -626,7 +690,7 @@ vul_audio_return vul__audio_read_pulse( vul_audio_device *dev, void *samples, u3
 						 samples,
 						 size,
 						 &err ) < 0 ) {
-		ERR( "Failed to read samples to PulseAudio: %s.\n", pa_strerror( err ) );
+		ERR( "Failed to read samples to PulseAudio: %s.\n", pulse_error( err ) );
 	}
 	return VUL_OK;
 }
@@ -640,7 +704,7 @@ vul_audio_return vul__audio_write_pulse( vul_audio_device *dev, void *samples, u
 						  samples,
 						  size,
 						  &err ) < 0 ) {
-		ERR( "Failed to write samples to PulseAudio: %s.\n", pa_strerror( err ) );
+		ERR( "Failed to write samples to PulseAudio: %s.\n", pulse_error( err ) );
 	}
 	return VUL_OK;
 }
@@ -691,18 +755,20 @@ vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_clos
 {
 	switch( dev->lib ) {
 	case VUL__AUDIO_LINUX_ALSA:
-		if( drain_before_close ) alse_drain( dev->device.alsa.handle ); 
+		if( drain_before_close ) alsa_drain( dev->device.alsa.handle ); 
 		alsa_close( dev->device.alsa.handle );
 		dlclose( dev->device.alsa.dlib );
 		break;
 	case VUL__AUDIO_LINUX_OSS:
 		close( dev->device.oss_device_fd );
 		break;
-	case VUL__AUDIO_LINUX_PULSE:
-		if( drain_before_close ) pulse_drain( dev->device.pulse.client ); 
+	case VUL__AUDIO_LINUX_PULSE: {
+		int err;
+		if( drain_before_close ) pulse_drain( dev->device.pulse.client, &err ); 
 		pulse_free( dev->device.pulse.client );
 		dlclose( dev->device.pulse.dlib );
-		break;
+		dlclose( dev->device.pulse.dlib_simple );
+	} break;
 	default:
 		ERR( "Unknown device library in use.\n" );
 	}
@@ -753,4 +819,17 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 }
 #endif
 
-#endif
+#endif // VUL_DEFINE
+
+#ifndef VUL_TYPES_H
+#undef s8
+#undef s16
+#undef s32
+#undef s64
+#undef u8t
+#undef u16
+#undef u32
+#undef u64
+#undef f32
+#undef f64
+#endif // VUL_TYPES_H

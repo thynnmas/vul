@@ -27,6 +27,9 @@
 //#define VUL_LINUX
 //#define VUL_OSX
 
+// If you are on pre-vista windows, GetTickCount64 is not available. If so, define this:
+//#define VUL_TIMER_OLD_WINDOWS
+
 #define VUL_MIN( a, b ) ( a <= b ? a : b )
 #define VUL_MAX( a, b ) ( a >= b ? a : b )
 
@@ -55,7 +58,11 @@
 		
 typedef struct vul_timer {
 #if defined( VUL_WINDOWS )
+#ifdef VUL_TIMER_OLD_WINDOWS
+	DWORD start_tick;
+#else
 	ULONGLONG start_tick;
+#endif
 	LONGLONG last_time;
 	LARGE_INTEGER start_time;
 	LARGE_INTEGER frequency;
@@ -146,7 +153,11 @@ void vul_timer_reset( vul_timer *c )
 	old_mask = SetThreadAffinityMask( thread, c->clock_mask );
 	QueryPerformanceFrequency( &c->frequency );
 	QueryPerformanceCounter( &c->start_time );
+#ifdef VUL_TIMER_OLD_WINDOWS
+	c->start_tick = GetTickCount( );
+#else
 	c->start_tick = GetTickCount64( );
+#endif
 	SetThreadAffinityMask( thread, old_mask );
 	c->last_time = 0;
 #elif defined( VUL_LINUX )
@@ -181,7 +192,11 @@ u64 vul_timer_get_millis( vul_timer *c )
 	DWORD_PTR old_mask;
 	LONGLONG new_time;
 	u32 new_ticks;
+#ifdef VUL_TIMER_OLD_WINDOWS
+	DWORD check;
+#else
 	ULONGLONG check;
+#endif
 	s32 ms_off;
 	LONGLONG adjust;
 
@@ -193,7 +208,11 @@ u64 vul_timer_get_millis( vul_timer *c )
 	new_ticks = ( u32 )( 1000 * new_time / c->frequency.QuadPart );
 
 	// Microsoft KB: Q274323
+#ifdef VUL_TIMER_OLD_WINDOWS
+	check = GetTickCount( ) - c->start_tick;
+#else
 	check = GetTickCount64( ) - c->start_tick;
+#endif
 	ms_off = ( s32 )( new_ticks - check );
 	if( ms_off < -100 || ms_off > 100 )
 	{
@@ -227,7 +246,11 @@ u64 vul_timer_get_micros( vul_timer *c )
 	DWORD_PTR old_mask;
 	LONGLONG new_time;
 	u32 new_ticks;
+#ifdef VUL_TIMER_OLD_WINDOWS
+	DWORD check;
+#else
 	ULONGLONG check;
+#endif
 	s32 ms_off;
 	LONGLONG adjust;
 	u64 new_micro;
@@ -240,7 +263,11 @@ u64 vul_timer_get_micros( vul_timer *c )
 	new_ticks = ( u32 )( 1000 * new_time / c->frequency.QuadPart );
 
 	// Microsoft KB: Q274323
+#ifdef VUL_TIMER_OLD_WINDOWS
+	check = GetTickCount( ) - c->start_tick;
+#else
 	check = GetTickCount64( ) - c->start_tick;
+#endif
 	ms_off = ( s32 )( new_ticks - check );
 	if( ms_off < -100 || ms_off > 100 )
 	{

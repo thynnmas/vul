@@ -30,7 +30,7 @@
 #endif
 
 #ifdef VUL_WINDOWS
-#include <Windows.h>
+#include <windows.h>
 #include <tchar.h>
 #include <io.h>
 #else
@@ -159,7 +159,7 @@ vul_mmap_file vul_mmap( const char *path, void *base_addr, s32 prot, s32 flags, 
 	ret.hFile = CreateFile( path, mode, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
 	ret.hMapping = CreateFileMapping( ret.hFile, NULL, pmode, 0, 0, NULL );
 	
-	if( map_length == -1 ) {
+	if( map_length == ( size_t )-1 ) {
 		map_length = GetFileSize( ret.hFile, NULL );
 	}
 

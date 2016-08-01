@@ -5,7 +5,7 @@
  * The goal is to support (in order of attempts/fallback):
  *  - Linux: pulseaudio -> alsa -> oss
  *  - OSX: TODO
- *  - Windows: TODO
+ *  - Windows: DirectSound -> waveOut
  *
  * Error reporting: A lot can go wrong, especially in setup. We have multiple
  * ways to report errors back to the user (in addition to return values being
@@ -42,9 +42,11 @@
 #include <stdio.h>
 
 #if defined( VUL_WINDOWS )
-	#pragma comment(lib, "dsound.lib")
-	#pragma comment(lib, "dxguid.lib")
-	#pragma comment(lib, "winmm.lib")
+	#if !defined( __MINGW32__ ) && !defined( __MINGW64__ )
+		#pragma comment(lib, "dsound.lib")
+		#pragma comment(lib, "dxguid.lib")
+		#pragma comment(lib, "winmm.lib")
+	#endif
 	#include <windows.h>
 	#include <mmsystem.h>
 	#include <dsound.h>
@@ -122,8 +124,9 @@ typedef struct vul_audio_device {
 		struct {
 			LPDIRECTSOUND handle;
 			LPDIRECTSOUNDBUFFER buffer;
-			LPDIRECTSOUNDBUFFER buffer_secondary;
-			DWORD buffer_size;
+			LPDIRECTSOUNDBUFFER buffers[ 2 ];
+			u32 current_buffer;
+			DWORD buffer_size[ 2 ];
 		} dsound;
 	} device;
 #elif defined( VUL_ODX )
@@ -261,21 +264,40 @@ static vul_audio_return vul__audio_write_dsound( vul_audio_device *dev, void *sa
 	DWORD bsize = 0, size = sample_count * vul__audio_bytes_per_sample( dev ) * dev->channels;
 	HRESULT res = 0;
 
-	if( size > dev->device.dsound.buffer_size ) {
+	if( size > dev->device.dsound.buffer_size[ dev->device.dsound.current_buffer ] ) {
 		ERR( "Sample count too large for frame buffer. %d bytes, vs frame size of %f. Increase frame size!\n",
-			  size, dev->device.dsound.buffer_size );
+			  size, dev->device.dsound.buffer_size[ dev->device.dsound.current_buffer ] );
 	}
-	size = size < dev->device.dsound.buffer_size ? size : dev->device.dsound.buffer_size;
-	if( ( res = dev->device.dsound.buffer_secondary->lpVtbl->Lock( dev->device.dsound.buffer_secondary, 0, 
-																						size,
-																						&ptr, &bsize,
-																						NULL, 0, 0 ) ) != DS_OK ) {
+	size = size < dev->device.dsound.buffer_size[ dev->device.dsound.current_buffer ] 
+		  ? size : dev->device.dsound.buffer_size[ dev->device.dsound.current_buffer ];
+	if( dev->device.dsound.buffers[ dev->device.dsound.current_buffer ]->lpVtbl->SetCurrentPosition( 
+			dev->device.dsound.buffers[ dev->device.dsound.current_buffer ], 0 ) != DS_OK ) {
+		ERR( "Failed to set position to beginning of uploaded buffer.\n" );
+	}
+	if( ( res = dev->device.dsound.buffers[ dev->device.dsound.current_buffer ]->lpVtbl->Lock( 
+						dev->device.dsound.buffers[ dev->device.dsound.current_buffer ], 0, 
+						size,
+						&ptr, &bsize,
+						NULL, 0, 0 ) ) != DS_OK ) {
 		ERR( "Failed to lock sound buffer.\n" );
 	}
 	memcpy( ptr, samples, bsize );
-	if( dev->device.dsound.buffer_secondary->lpVtbl->Unlock( dev->device.dsound.buffer_secondary, 
-																				ptr, bsize, NULL, 0 ) != DS_OK ) {
+	if( dev->device.dsound.buffers[ dev->device.dsound.current_buffer ]->lpVtbl->Unlock( 
+			dev->device.dsound.buffers[ dev->device.dsound.current_buffer ], 
+			ptr, bsize, NULL, 0 ) != DS_OK ) {
 		ERR( "Failed to unlock sound buffer.\n" );
+	}
+	if( dev->device.dsound.buffers[ dev->device.dsound.current_buffer ]->lpVtbl->Play(
+			dev->device.dsound.buffers[ dev->device.dsound.current_buffer ],
+			0, 0, DSBPLAY_LOOPING ) != DS_OK ) {
+		ERR( "Failed to start secondary front buffer.\n" );
+	}
+	// Swap
+	dev->device.dsound.current_buffer = ( dev->device.dsound.current_buffer + 1 ) % 2;
+
+	if( dev->device.dsound.buffers[ dev->device.dsound.current_buffer ]->lpVtbl->Stop(
+			dev->device.dsound.buffers[ dev->device.dsound.current_buffer ] ) != DS_OK ) {
+		ERR( "Failed to stop secondary back buffer.\n" );
 	}
 
 	return VUL_OK;
@@ -291,17 +313,23 @@ static vul_audio_return vul__audio_read_dsound( vul_audio_device *dev, void *sam
 
 static vul_audio_return vul__audio_destroy_dsound( vul_audio_device *dev, int drain_before_close )
 {
-	if( dev->device.dsound.buffer_secondary ) {
-		dev->device.dsound.buffer_secondary->lpVtbl->Stop( dev->device.dsound.buffer_secondary );
-		dev->device.dsound.buffer_secondary->lpVtbl->Release( dev->device.dsound.buffer_secondary );
+	if( dev->device.dsound.buffers[ 0 ] ) {
+		dev->device.dsound.buffers[ 0 ]->lpVtbl->Stop( dev->device.dsound.buffers[ 0 ] );
+		dev->device.dsound.buffers[ 0 ]->lpVtbl->Release( dev->device.dsound.buffers[ 0 ] );
 	}
-	if( dev->device.dsound.buffer && ( dev->device.dsound.buffer != dev->device.dsound.buffer_secondary ) ) {
+	if( dev->device.dsound.buffers[ 1 ] ) {
+		dev->device.dsound.buffers[ 1 ]->lpVtbl->Stop( dev->device.dsound.buffers[ 1 ] );
+		dev->device.dsound.buffers[ 1 ]->lpVtbl->Release( dev->device.dsound.buffers[ 1 ] );
+	}
+	if( dev->device.dsound.buffer ) {
 		dev->device.dsound.buffer->lpVtbl->Stop( dev->device.dsound.buffer );
 		dev->device.dsound.buffer->lpVtbl->Release( dev->device.dsound.buffer );
 	}
 
 	if( dev->device.dsound.handle ) {
-		dev->device.dsound.handle->lpVtbl->SetCooperativeLevel( dev->device.dsound.handle, dev->hwnd, DSSCL_NORMAL );
+		dev->device.dsound.handle->lpVtbl->SetCooperativeLevel( dev->device.dsound.handle, 
+																				  dev->hwnd, 
+																				  DSSCL_NORMAL );
 		dev->device.dsound.handle->lpVtbl->Release( dev->device.dsound.handle );
 	}
 
@@ -336,7 +364,9 @@ static vul_audio_return vul__audio_init_dsound( vul_audio_device *out )
 		puts( "No DirectSound driver installed, it is emulated through waveform audio. Performance might suffer.\n" );
 	}
 
-	if( out->device.dsound.handle->lpVtbl->SetCooperativeLevel( out->device.dsound.handle, out->hwnd, DSSCL_EXCLUSIVE ) != DS_OK ) {
+	if( out->device.dsound.handle->lpVtbl->SetCooperativeLevel( out->device.dsound.handle, 
+																					out->hwnd, 
+																					DSSCL_EXCLUSIVE ) != DS_OK ) {
 		out->device.dsound.handle->lpVtbl->Release( out->device.dsound.handle );
 		ERR( "Failed to set coop level to exclusive.\n" );
 	}
@@ -357,7 +387,9 @@ static vul_audio_return vul__audio_init_dsound( vul_audio_device *out )
 	buffer.dwBufferBytes = 0;
 	buffer.lpwfxFormat = NULL;
 
-	if( out->device.dsound.handle->lpVtbl->CreateSoundBuffer( out->device.dsound.handle, &buffer, &out->device.dsound.buffer, NULL ) != DS_OK ) {
+	if( out->device.dsound.handle->lpVtbl->CreateSoundBuffer( out->device.dsound.handle, 
+																				 &buffer, 
+																				 &out->device.dsound.buffer, NULL ) != DS_OK ) {
 		ERR( "Failed to create primary DirectSound buffer.\n" );
 	}
 	if( out->device.dsound.buffer->lpVtbl->SetFormat( out->device.dsound.buffer, &format ) != DS_OK ) {
@@ -365,43 +397,41 @@ static vul_audio_return vul__audio_init_dsound( vul_audio_device *out )
 	}
 	// @TODO(thynn): Fallback for the above two (see https://github.com/id-Software/Quake/blob/master/WinQuake/snd_win.c#L340). Do we _really_ need to set these?
 
-	DSBCAPS buffer_caps;
-#ifdef VUL_AUDIO_WINDOWS_PRIMARY
-	memset( &buffer_caps, 0, sizeof( buffer_caps ) );
-	buffer_caps.dwSize = sizeof( DSBCAPS );
-	// @TODO(thynn): Change coop level if writing to primary, get capabilities of the new buffer, create fallback if nonprimary etc.
-	if( ( res = out->device.dsound.handle->lpVtbl->SetCooperativeLevel( out->device.dsound.handle, out->hwnd, DSSCL_WRITEPRIMARY ) ) != DS_OK ) {
-		ERR( "Failed to set coop level to writeprimary.\n" );
+	for( u32 i = 0; i < 2; ++i ) {
+		DSBCAPS buffer_caps;
+		memset( &buffer, 0, sizeof( buffer ) );
+		buffer.dwSize = sizeof( DSBUFFERDESC );
+		buffer.dwFlags = DSBCAPS_CTRLFREQUENCY | DSBCAPS_LOCSOFTWARE;
+		buffer.dwBufferBytes = 0x1000; // @TODO(thynn): Define or parameter!
+		buffer.lpwfxFormat = &format;
+
+		memset( &buffer_caps, 0, sizeof( buffer_caps ) );
+		buffer_caps.dwSize = sizeof( DSBCAPS );
+
+		if( out->device.dsound.handle->lpVtbl->CreateSoundBuffer( out->device.dsound.handle, 
+																					 &buffer,
+																					 &out->device.dsound.buffers[ i ], 
+																					 NULL ) != DS_OK ) {
+			ERR( "Failed to create secondary sound buffer %d.\n" );
+		}
+
+		if( out->device.dsound.buffers[ i ]->lpVtbl->GetCaps( out->device.dsound.buffers[ i ], 
+																				&buffer_caps ) ) {
+			ERR( "Failed to get secondary sound buffer %d's capabilities.\n" );
+		}
+		// Make sure the mixer is running
+		out->device.dsound.buffers[ i ]->lpVtbl->Play( out->device.dsound.buffers[ i ], 
+																	  0, 0, DSBPLAY_LOOPING );
+		out->device.dsound.buffer_size[ i ] = buffer_caps.dwBufferBytes;
 	}
+	out->device.dsound.current_buffer = 0;
 
-	if( out->device.dsound.buffer->lpVtbl->GetCaps( out->device.dsound.buffer, &buffer_caps ) != DS_OK ) {
-		ERR( "Failed to get sound buffer capabilities.\n" );
+	if( out->device.dsound.buffer->lpVtbl->Play( out->device.dsound.buffer, 0, 0, DSBPLAY_LOOPING ) != DS_OK ) {
+		ERR( "Failed to start primary buffer.\n" );
 	}
-	out->device.dsound.buffer_secondary = out->device.dsound.buffer;
-#else
-	memset( &buffer, 0, sizeof( buffer ) );
-	buffer.dwSize = sizeof( DSBUFFERDESC );
-	buffer.dwFlags = DSBCAPS_CTRLFREQUENCY | DSBCAPS_LOCSOFTWARE;
-	buffer.dwBufferBytes = 0x1000; // @TODO(thynn): Define or parameter!
-	buffer.lpwfxFormat = &format;
-
-	memset( &buffer_caps, 0, sizeof( buffer_caps ) );
-	buffer_caps.dwSize = sizeof( DSBCAPS );
-
-	if( out->device.dsound.handle->lpVtbl->CreateSoundBuffer( out->device.dsound.handle, &buffer, &out->device.dsound.buffer_secondary, NULL ) != DS_OK ) {
-		ERR( "Failed to create secondary sound buffer.\n" );
-	}
-
-	if( out->device.dsound.buffer_secondary->lpVtbl->GetCaps( out->device.dsound.buffer_secondary, &buffer_caps ) ) {
-		ERR( "Failed to get secondary sound buffer capabilities.\n" );
-	}
-#endif
-	out->device.dsound.buffer_size = buffer_caps.dwBufferBytes;
-
-	// Make sure the mixer is running
-	out->device.dsound.buffer_secondary->lpVtbl->Play( out->device.dsound.buffer_secondary, 0, 0, DSBPLAY_LOOPING );
 
 	out->lib = VUL__AUDIO_WINDOWS_DSOUND;
+
 	return VUL_OK;
 }
 
@@ -563,6 +593,9 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 }
 
 #elif defined( VUL_OSX )
+
+// @TODO(thynn): OSX
+Error...
 
 #elif defined( VUL_LINUX )
 

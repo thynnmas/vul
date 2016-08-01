@@ -14,13 +14,17 @@
  *  -@TODO(thynn): Newton-raphson for non-linear (both local and global with line searching and backtracking)
  *  -@TODO(thynn): Broyden's method for non-linear
  *
- * @TODO(thynn): Non-square matrices!
+ * @TODO(thynn): Non-square matrices:
+ *	              When r > c, we have extra information, and can do with r = c (so not needed).
+ *               When r < c, we don't have a straight forward solution, and must either substitute a
+ *               variable, or use SVD or LSF, which are both covered in above TODOs are not implemented yet.
+ *               So instead of bothering with this, implement the other two!
  *
  * All solvers are run iteratively until a desired tolerance or a maximum iteration count
  * is reached. Dense [@TODO(thynn): and sparse] matrices are supported. 
  *
  * Define VUL_LINEAR_SOLVERS_ROW_MAJOR to use row major matrices, otherwise column major
- * is assumed.
+ * is assumed (for dense). Sparse matrices are Lists-of-lists, and are always row-major.
  * 
  * If you wish to use a costum allocator for temporaries, define VUL_LINEAR_SOLVERS_ALLOC
  * and VUL_LINEAR_SOLVERS_FREE to functions with signatures similar to malloc and free, which
@@ -62,8 +66,81 @@
 #ifdef _cplusplus
 extern "C" {
 #endif
-//---------------
-// Math helpers
+
+//------------------------
+// Math helpers (sparse)
+
+typedef struct vul_solve_sparse_entry {
+	unsigned int idx;
+	float val;
+} vul_solve_sparse_entry;
+
+typedef struct vul_solve_vector {
+	vul_solve_sparse_entry *entries;
+	unsigned int count;
+} vul_solve_vector;
+
+typedef struct vul_solve_matrix_row {
+	unsigned int idx;
+	vul_solve_vector vec;
+} vul_solve_matrix_row;
+
+typedef struct vul_solve_matrix {
+	vul_solve_matrix_row *rows;
+	unsigned int count;
+} vul_solve_matrix;
+
+/*
+ * Creates a sparse vector. Takes a list of indices and values to fill it with,
+ * or two null pointers to initialize empty.
+ */
+
+vul_solve_vector *vul_solve_vector_create( unsigned *idxs, float *vals, unsigned int n );
+/*
+ * Create a sparse matrix. Takes a list of coordinates and values to fill it with,
+ * or three null-pointers to initialize empty.
+ */
+vul_solve_matrix *vul_solve_matrix_create( unsigned int *rows, unsigned int *cols, float *vals, unsigned int n, unsigned int init_count );
+
+void vul_solve_matrix_destroy( vul_solve_matrix *m );
+
+void vul_solve_vector_insert( vul_solve_vector *v, unsigned int idx, float val );
+
+void vul_solve_matrix_insert( vul_solve_matrix *m, unsigned int r, unsigned int c, float v );
+
+float vul_solve_vector_get( vul_solve_vector *v, unsigned int idx );
+
+float vul_solve_matrix_get( vul_solve_matrix *m, unsigned int r, unsigned int c );
+
+void vul_solve_vector_destroy( vul_solve_vector *v );
+
+#define DECLARE_VECTOR_OP( name, op ) static void name( vul_solve_vector *out, vul_solve_vector *a, vul_solve_vector *b );
+DECLARE_VECTOR_OP( vull__sparse_vadd, + )
+DECLARE_VECTOR_OP( vull__sparse_vsub, - )
+DECLARE_VECTOR_OP( vull__sparse_vmul, * )
+#undef DECLARE_VECTOR_OP
+
+static void vull__sparse_vmul_sub( vul_solve_vector *out, vul_solve_vector *a, vul_solve_vector *x, vul_solve_vector *b );
+static void vull__sparse_vmul_add( vul_solve_vector *out, vul_solve_vector *a, vul_solve_vector *x, vul_solve_vector *b );
+static void vull__sparse_vcopy( vul_solve_vector *out, vul_solve_vector *x );
+static float vull__sparse_dot( vul_solve_vector *a, vul_solve_vector *b );
+static void vull__sparse_mmul( vul_solve_vector *out, vul_solve_matrix *A, vul_solve_vector *x );
+static void vull__sparse_mmul_add( vul_solve_vector *out, vul_solve_matrix *A, vul_solve_vector *x, vul_solve_vector *b );
+static void vull__sparse_forward_substitute( vul_solve_vector *out, vul_solve_matrix *A, vul_solve_vector *b );
+static void vull__sparse_backward_substitute( vul_solve_vector *out, vul_solve_matrix *A, vul_solve_vector *b );
+
+//--------------------
+// Solvers (sparse)
+
+
+vul_solve_vector *vul_solve_conjugate_gradient_sparse( vul_solve_matrix *A,
+																		 vul_solve_vector *initial_guess,
+																		 vul_solve_vector *b,
+																		 int max_iterations,
+																		 float tolerance );
+
+//------------------------
+// Math helpers (dense)
 
 #define DECLARE_VECTOR_OP( name, op ) static void name( float *out, float *a, float *b, int n );
 DECLARE_VECTOR_OP( vull__vadd, + )
@@ -80,8 +157,8 @@ static void vull__mmul_add( float *out, float *A, float *x, float *b, int n );
 static void vull__forward_substitute( float *out, float *A, float *b, int n );
 static void vull__backward_substitute( float *out, float *A, float *b, int n );
 
-//---------------
-// Solvers
+//-------------------
+// Solvers (dense)
 
 void vul_solve_conjugate_gradient_dense( float *out,
 										 float *A,
@@ -133,16 +210,504 @@ void vul_solve_successive_over_relaxation_dense( float *out,
 #ifdef _cplusplus
 extern "C" {
 #endif
+
+//---------------
+// Math helpers (sparse)
+
+vul_solve_vector *vul_solve_vector_create( unsigned *idxs, float *vals, unsigned int n )
+{
+	unsigned int i;
+	vul_solve_vector *v;
+
+	v = ( vul_solve_vector* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( vul_solve_vector ) );
+	v->count = 0;
+	v->entries = 0;
+	for( i = 0; i < n; ++i ) {
+		vul_solve_vector_insert( v, idxs[ i ], vals[ i ] );
+	}
+	return v;
+}
+
+vul_solve_matrix *vul_solve_matrix_create( unsigned int *rows, unsigned int *cols, float *vals, unsigned int n, unsigned int init_count )
+{
+	vul_solve_matrix *m;
+	unsigned int i;
+	
+	m = ( vul_solve_matrix* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( vul_solve_matrix ) );
+	m->count = 0;
+	m->rows = 0;
+
+	for( i = 0; i < init_count; ++i ) {
+		vul_solve_matrix_insert( m, rows[ i ], cols[ i ], vals[ i ] );
+	}
+	return m;
+}
+
+void vul_solve_matrix_destroy( vul_solve_matrix *m )
+{
+	unsigned int i;
+	for( i = 0; i < m->count; ++i ) {
+		if( m->rows[ i ].vec.count ) {
+			VUL_LINEAR_SOLVERS_FREE( m->rows[ i ].vec.entries );
+		}
+	}
+	VUL_LINEAR_SOLVERS_FREE( m->rows );
+}
+
+void vul_solve_vector_insert( vul_solve_vector *v, unsigned int idx, float val )
+{
+	vul_solve_sparse_entry *e;
+	unsigned int i, j, inserted;
+
+	for( i = 0; i < v->count; ++i ) {
+		if( v->entries[ i ].idx == idx ) {
+			v->entries[ i ].val = val;
+			return;
+		}
+	}
+
+	e = ( vul_solve_sparse_entry* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( vul_solve_sparse_entry ) * ( v->count + 1 ) );
+	inserted = 0;
+	if( v->count ) {
+		for( i = 0, j = 0; i < v->count + 1; ++i ) {
+			if( j < v->count && ( v->entries[ j ].idx < idx || inserted ) ) {
+				e[ i ].idx = v->entries[ j ].idx;
+				e[ i ].val = v->entries[ j ].val;
+				++j;
+			} else {
+				e[ i ].idx = idx;
+				e[ i ].val = val;
+				inserted = 1;
+			}
+		}
+	} else {
+		e[ 0 ].idx = idx;
+		e[ 0 ].val = val;
+	}
+	if( v->entries ) {
+		VUL_LINEAR_SOLVERS_FREE( v->entries );
+	}
+	v->entries = e;
+	v->count = v->count + 1;
+}
+
+void vul_solve_matrix_insert( vul_solve_matrix *m, unsigned int r, unsigned int c, float val )
+{
+	unsigned int i, j, inserted;
+	vul_solve_matrix_row *e;
+
+	for( i = 0; i < m->count; ++i ) {
+		if( m->rows[ i ].idx == r ) {
+			vul_solve_vector_insert( &m->rows[ i ].vec, c, val );
+			return;
+		}
+	}
+	e = ( vul_solve_matrix_row* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( vul_solve_matrix_row ) * ( m->count + 1 ) );
+	inserted = 0;
+	if( m->count ) {
+		for( i = 0, j = 0; i < m->count + 1; ++i ) {
+			if( j < m->count && ( m->rows[ j ].idx < r || inserted ) ) {
+				e[ i ].idx = m->rows[ j ].idx;
+				e[ i ].vec = m->rows[ j ].vec;
+				++j;
+			} else {
+				e[ i ].idx = r;
+				e[ i ].vec.count = 0;
+				e[ i ].vec.entries = 0;
+				vul_solve_vector_insert( &e[ i ].vec, c, val );
+				inserted = 1;
+			}
+		}
+	} else {
+		e[ 0 ].idx = r;
+		e[ 0 ].vec.count = 0;
+		e[ 0 ].vec.entries = 0;
+		vul_solve_vector_insert( &e[ 0 ].vec, c, val );
+	}
+	if( m->rows ) {
+		VUL_LINEAR_SOLVERS_FREE( m->rows );
+	}
+	m->rows = e;
+	m->count = m->count + 1;
+}
+
+float vul_solve_vector_get( vul_solve_vector *v, unsigned int idx )
+{
+	unsigned int i;
+
+	for( i = 0; i < v->count; ++i ) {
+		if( v->entries[ i ].idx == idx ) {
+			return v->entries[ i ].val;
+		}
+	}
+	return 0.f;
+}
+
+float vul_solve_matrix_get( vul_solve_matrix *m, unsigned int r, unsigned int c )
+{
+	unsigned int i;
+
+	for( i = 0; i < m->count; ++i ) {
+		if( m->rows[ i ].idx == r ) {
+			return vul_solve_vector_get( &m->rows[ r ].vec, c );
+		}
+	}
+	return 0.f;
+}
+
+void vul_solve_vector_destroy( vul_solve_vector *v )
+{
+	if( v->entries ) {
+		VUL_LINEAR_SOLVERS_FREE( v->entries );
+	}
+}
+
+#define DEFINE_VECTOR_OP( name, op )\
+	void name( vul_solve_vector *out, vul_solve_vector *a, vul_solve_vector *b )\
+	{\
+		unsigned int ia, ib;\
+		ia = 0; ib = 0;\
+		while( ia < a->count && ib < b->count ) {\
+			if( a->entries[ ia ].idx == b->entries[ ib ].idx ) {\
+				vul_solve_vector_insert( out, a->entries[ ia ].idx, a->entries[ ia ].val op b->entries[ ib ].val );\
+				++ia; ++ib;\
+			} else if( a->entries[ ia ].idx < b->entries[ ib ].idx ) {\
+				++ia;\
+			} else {\
+				++ib;\
+			}\
+		}\
+	}
+DEFINE_VECTOR_OP( vull__sparse_vadd, + )
+DEFINE_VECTOR_OP( vull__sparse_vsub, - )
+DEFINE_VECTOR_OP( vull__sparse_vmul, * )
+
+#undef DEFINE_VECTOR_OP
+
+static void vull__sparse_vmul_sub( vul_solve_vector *out, vul_solve_vector *a, vul_solve_vector *x, vul_solve_vector *b )
+{
+	unsigned int ia, ix, ib;
+
+	ia= 0; ix = 0; ib = 0;
+	while( ia < a->count && ix < x->count && ib < b->count ) {
+		if( a->entries[ ia ].idx == x->entries[ ix ].idx && a->entries[ ia ].idx == b->entries[ ib ].idx ) {
+			vul_solve_vector_insert( out, a->entries[ ia ].idx, a->entries[ ia ].val * x->entries[ ix ].val -
+																				  b->entries[ ib ].val );
+			++ia; ++ib; ++ix;
+		} else if( b->entries[ ib ].idx <= a->entries[ ia ].idx && b->entries[ ib ].idx <= x->entries[ ix ].idx ) {
+			vul_solve_vector_insert( out, b->entries[ ib ].idx, -b->entries[ ib ].val );
+			++ib;
+		} else if( a->entries[ ia ].idx < x->entries[ ix ].idx ) {
+			++ia;
+		} else {
+			++ix;
+		}
+	}
+}
+static void vull__sparse_vmul_add( vul_solve_vector *out, vul_solve_vector *a, vul_solve_vector *x, vul_solve_vector *b )
+{
+	unsigned int ia, ix, ib;
+
+	ia= 0; ix = 0; ib = 0;
+	while( ia < a->count && ix < x->count && ib < b->count ) {
+		if( a->entries[ ia ].idx == x->entries[ ix ].idx && a->entries[ ia ].idx == b->entries[ ib ].idx ) {
+			vul_solve_vector_insert( out, a->entries[ ia ].idx, a->entries[ ia ].val * x->entries[ ix ].val +
+																				  b->entries[ ib ].val );
+			++ia; ++ib; ++ix;
+		} else if( b->entries[ ib ].idx <= a->entries[ ia ].idx && b->entries[ ib ].idx <= x->entries[ ix ].idx ) {
+			vul_solve_vector_insert( out, b->entries[ ib ].idx, b->entries[ ib ].val );
+			++ib;
+		} else if( a->entries[ ia ].idx < x->entries[ ix ].idx ) {
+			++ia;
+		} else {
+			++ix;
+		}
+	}
+}
+
+static void vull__sparse_vcopy( vul_solve_vector *out, vul_solve_vector *x )
+{
+	unsigned int i;
+
+	if( x->count ) {
+		out->entries = ( vul_solve_sparse_entry* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( vul_solve_sparse_entry ) * 
+																									x->count );
+		for( i = 0; i < x->count; ++i ) {
+			out->entries[ i ].idx = x->entries[ i ].idx;
+			out->entries[ i ].val = x->entries[ i ].val;
+		}
+		out->count = x->count;
+	} else {
+		out->entries = 0;
+		out->count = 0;
+	}
+}
+static float vull__sparse_dot( vul_solve_vector *a, vul_solve_vector *b )
+{
+	float r;
+	unsigned int ia, ib;
+	
+	r = 0.f; ia = 0; ib = 0;
+	while( ia < a->count && ib < b->count ) {
+		if( a->entries[ ia ].idx == b->entries[ ib ].idx ) {
+			r += a->entries[ ia ].val * b->entries[ ib ].val;
+			++ia; ++ib;
+		} else if( a->entries[ ia ].idx < b->entries[ ib ].idx ) {
+			++ia;
+		} else {
+			++ib;
+		}
+	}
+	return r;
+}
+static void vull__sparse_mmul( vul_solve_vector *out, vul_solve_matrix *A, vul_solve_vector *x )
+{
+	unsigned int v, i, ix;
+	float sum;
+
+	for( v = 0; v < A->count; ++v ) {
+		sum = 0.f;
+		i = 0; ix = 0;
+		while( i < A->rows[ v ].vec.count && ix < x->count ) {
+			if( A->rows[ v ].vec.entries[ i ].idx == x->entries[ ix ].idx ) {
+				sum += A->rows[ v ].vec.entries[ i ].val * x->entries[ ix ].val;
+				++i; ++ix;
+			} else if( A->rows[ v ].vec.entries[ i ].idx < x->entries[ ix ].idx ) {
+				++i;
+			} else {
+				++ix;
+			}
+		}
+		vul_solve_vector_insert( out, A->rows[ v ].idx, sum );
+	}
+}
+static void vull__sparse_mmul_add( vul_solve_vector *out, vul_solve_matrix *A, vul_solve_vector *x, vul_solve_vector *b )
+{
+	unsigned int v, i, ix, ib, found;
+	float sum;
+
+	for( v = 0; v < A->count; ++v ) {
+		sum = 0.f;
+		i = 0; ix = 0; ib = 0;
+		while( i < A->rows[ v ].vec.count && ix < x->count && ib < b->count ) {
+			if( A->rows[ v ].vec.entries[ i ].idx == x->entries[ ix ].idx && 
+				 A->rows[ v ].vec.entries[ i ].idx == b->entries[ ib ].idx ) {
+				sum += A->rows[ v ].vec.entries[ i ].val * x->entries[ ix ].val + b->entries[ ib ].val;
+				++i; ++ib; ++ix;
+			} else if( b->entries[ ib ].idx <= A->rows[ v ].vec.entries[ i ].idx && 
+						  b->entries[ ib ].idx <= x->entries[ ix ].idx ) {
+				sum += b->entries[ ib ].val;
+				++ib;
+			} else if( A->rows[ v ].vec.entries[ i ].idx < x->entries[ ix ].idx ) {
+				++i;
+			} else {
+				++ix;
+			}
+		}
+		vul_solve_vector_insert( out, A->rows[ v ].idx, sum );
+	}
+}
+static void vull__sparse_forward_substitute( vul_solve_vector *out, vul_solve_matrix *A, vul_solve_vector *b )
+{
+	unsigned int v, i, io;
+	float sum;
+
+	for( v = 0; v < A->count; ++v ) {
+		sum = vul_solve_vector_get( b, A->rows[ v ].idx );
+		i = 0; io = 0;
+		if( A->rows[ v ].vec.count && out->count ) {
+			while( i < A->rows[ v ].vec.count && io < out->count ) {
+				if( A->rows[ v ].vec.entries[ i ].idx > A->rows[ v ].idx ) {
+					break;
+				}
+				if( A->rows[ v ].vec.entries[ i ].idx == out->entries[ io ].idx ) {
+					sum -= A->rows[ v ].vec.entries[ i ].val * out->entries[ io ].val;
+					++i; ++io;
+				} else if( A->rows[ v ].vec.entries[ i ].idx < out->entries[ io ].idx ) {
+					++i;
+				} else {
+					++io;
+				}
+			}
+			if( sum != 0.f ) {
+				vul_solve_vector_insert( out, A->rows[ v ].idx, 
+												 sum / vul_solve_vector_get( &A->rows[ v ].vec, A->rows[ v ].idx ) );
+			}
+		}
+	}
+}
+static void vull__sparse_backward_substitute( vul_solve_vector *out, vul_solve_matrix *A, vul_solve_vector *b )
+{
+	int v;
+	unsigned i, io;
+	float sum;
+
+	for( v = A->count - 1; v >= 0; ++v ) {
+		sum = vul_solve_vector_get( b, A->rows[ v ].idx );
+		i = 0; io = 0;
+		if( A->rows[ v ].vec.count && out->count ) {
+			while( i < A->rows[ v ].vec.count && io < out->count ) {
+				if( A->rows[ v ].vec.entries[ i ].idx < A->rows[ v ].idx + 1 ) {
+					++i;
+					continue;
+				}
+				if( A->rows[ v ].vec.entries[ i ].idx == out->entries[ io ].idx ) {
+					sum -= A->rows[ v ].vec.entries[ i ].val * out->entries[ io ].val;
+					++i; ++io;
+				} else if( A->rows[ v ].vec.entries[ i ].idx < out->entries[ io ].idx ) {
+					++i;
+				} else {
+					++io;
+				}
+			}
+			if( sum != 0.f ) {
+				vul_solve_vector_insert( out, A->rows[ v ].idx, 
+												 sum / vul_solve_vector_get( &A->rows[ v ].vec, A->rows[ v ].idx ) );
+			}
+		}
+	}
+}
+
+//--------------------
+// Solvers (sparse)
+
+vul_solve_vector *vul_solve_conjugate_gradient_sparse( vul_solve_matrix *A,
+																		 vul_solve_vector *initial_guess,
+																		 vul_solve_vector *b,
+																		 int max_iterations,
+																		 float tolerance )
+{
+	vul_solve_vector *x, *r, *Ap, *p;
+	float rd, rd2, alpha, beta, tmp;
+	int i, j, k, idx, found;
+
+	r = vul_solve_vector_create( 0, 0, 0 );
+	p = vul_solve_vector_create( 0, 0, 0 );
+	Ap = vul_solve_vector_create( 0, 0, 0 );
+	
+	x = vul_solve_vector_create( 0, 0, 0 );
+	vull__sparse_vcopy( x, initial_guess );
+	vull__sparse_mmul( r, A, x );
+	vull__sparse_vsub( r, r, b );
+	vull__sparse_vcopy( p, r );
+
+	rd = vull__sparse_dot( r, r );
+	for( i = 0; i < max_iterations; ++i ) {
+		vull__sparse_mmul( Ap, A, p );
+		alpha = rd / vull__sparse_dot( p, Ap );
+		for( j = 0; j < p->count; ++j ) {
+			idx = p->entries[ j ].idx;
+			tmp = p->entries[ j ].val * alpha;
+			found = 0;
+			for( k = 0; k < x->count; ++k ) {
+				if( x->entries[ k ].idx == idx ) {
+					x->entries[ k ].val -= tmp;
+					found = 1;
+					break;
+				}
+			}
+			if( !found ) {
+				vul_solve_vector_insert( x, idx, -tmp );
+			}
+		}
+		for( j = 0; j < Ap->count; ++j ) {
+			idx = Ap->entries[ j ].idx;
+			tmp = Ap->entries[ j ].val * alpha;
+			found = 0;
+			for( k = 0; k < r->count; ++k ) {
+				if( r->entries[ k ].idx == idx ) {
+					r->entries[ k ].val -= tmp;
+					found = 1;
+					break;
+				}
+			}
+			if( !found ) {
+				vul_solve_vector_insert( r, idx, -tmp );
+			}
+		}
+		rd2 = vull__sparse_dot( r, r );
+		if( fabsf( rd2 - rd ) < tolerance * r->count ) {
+			break;
+		}
+		beta = rd2 / rd;
+		for( j = 0, k = 0; j < p->count && k < r->count; ) {
+			if( p->entries[ j ].idx == r->entries[ k ].idx ) {
+				p->entries[ j ].val = r->entries[ k ].val + p->entries[ j ].val * beta;
+				++j; ++k;
+			} else if( p->entries[ j ].idx < r->entries[ k ].idx ) {
+				++j;
+			} else {
+				vul_solve_vector_insert( p, r->entries[ k ].idx, r->entries[ k ].val );
+				++k;
+			}
+		}
+		rd = rd2;
+	}
+
+	vul_solve_vector_destroy( p );
+	vul_solve_vector_destroy( r );
+	vul_solve_vector_destroy( Ap );
+	return x;
+}
+
+vul_solve_vector *vul_solve_successive_over_relaxation_sparse( vul_solve_matrix *A,
+																					vul_solve_vector *initial_guess,
+																					vul_solve_vector *b,
+																					float relaxation_factor,
+																					int max_iterations,
+																					float tolerance )
+{
+	vul_solve_vector *x, *r;
+	int i, j, k;
+	float omega, rd, rd2, tmp;
+
+	r = vul_solve_vector_create( 0, 0, 0 );
+	x = vul_solve_vector_create( 0, 0, 0 );
+		
+	/* Calculate initial residual */
+	vull__sparse_vcopy( x, initial_guess );
+	vull__sparse_mmul( r, A, x );
+	vull__sparse_vsub( r, r, b );
+	rd = vull__sparse_dot( r, r );
+		
+	for( k = 0; k < max_iterations; ++k ) {
+		/* Relax */
+		for( i = 0; i < A->count; ++i ) {
+			omega = 0.f;
+			for( j = 0; j < x->count; ++j ) {
+				if( A->rows[ i ].idx != x->entries[ j ].idx ) {
+					omega += vul_solve_matrix_get( A, A->rows[ i ].idx, x->entries[ j ].idx ) * x->entries[ j ].val;
+				}
+			}
+			tmp = ( 1.f - relaxation_factor ) * vul_solve_vector_get( x, A->rows[ i ].idx ) 
+				 + ( relaxation_factor / vul_solve_matrix_get( A, A->rows[ i ].idx, A->rows[ i ].idx ) )
+				 * ( vul_solve_vector_get( b, A->rows[ i ].idx ) - omega );
+			if( tmp != 0.f ) {
+				vul_solve_vector_insert( x, A->rows[ i ].idx, tmp );
+			}
+		}
+		/* Check for convergence */
+		vull__sparse_mmul( r, A, x );
+		vull__sparse_vsub( r, r, b );
+		rd2 = vull__sparse_dot( r, r );
+		if( fabs( rd2 - rd ) < tolerance * x->count ) {
+			break;
+		}
+		rd = rd2;
+	}
+	
+	vul_solve_vector_destroy( r );
+	return x;
+}
+
+//---------------
+// Math helpers (dense)
 	
 #ifdef VUL_LINEAR_SOLVERS_ROW_MAJOR
 #define IDX( A, r, c, n ) A[ ( r ) * ( n ) + ( c ) ]
 #else
 #define IDX( A, r, c, n ) A[ ( c ) * ( n ) + ( r ) ]
 #endif
-
-//---------------
-// Math helpers
-
 
 #define DEFINE_VECTOR_OP( name, op )\
 	void name( float *out, float *a, float *b, int n )\

@@ -74,9 +74,18 @@
 #endif
 
 typedef enum vul__audio_lib {
+#ifdef VUL_WINDOWS
+	VUL__AUDIO_WINDOWS_DSOUND,
+	VUL__AUDIO_WINDOWS_WAVEOUT,
+#elif defined( VUL_OSX )
+	BAH
+#elif defined( VUL_LINUX )
 	VUL__AUDIO_LINUX_ALSA,
 	VUL__AUDIO_LINUX_PULSE,
 	VUL__AUDIO_LINUX_OSS,
+#else
+	Must define an OS
+#endif
 
 	VUL__AUDIO_Count
 } vul__audio_lib;
@@ -106,9 +115,17 @@ typedef struct vul_audio_device {
 	vul_audio_mode mode;
 
 #ifdef VUL_WINDOWS
-	LPDIRECTSOUND dsound;
-	LPDIRECTSOUNDBUFFER dsound_buffer;
-	HPSTR buffer_ptr;
+	HWND hwnd;
+	vul__audio_lib lib;
+	union {
+		HWAVEOUT waveout;
+		struct {
+			LPDIRECTSOUND handle;
+			LPDIRECTSOUNDBUFFER buffer;
+			LPDIRECTSOUNDBUFFER buffer_secondary;
+			DWORD buffer_size;
+		} dsound;
+	} device;
 #elif defined( VUL_ODX )
 	BAH
 #elif defined( VUL_LINUX )
@@ -232,31 +249,66 @@ static u32 vul__audio_bytes_per_sample( vul_audio_device *dev )
 		ERR( "Failed to load symbol %s from DirectSound.\n", name );\
 	}
 
+//----------------
+// DirectSound
+//
 
 HRESULT ( WINAPI *pDirectSoundCreate )( GUID FAR *, LPDIRECTSOUND FAR *, IUnknown FAR * );
 
-vul_audio_return vul_audio_write( vul_audio_device *dev, void *samples, u32 sample_count )
+static vul_audio_return vul__audio_write_dsound( vul_audio_device *dev, void *samples, u32 sample_count )
 {
+	void *ptr = 0;
+	DWORD bsize = 0, size = sample_count * vul__audio_bytes_per_sample( dev ) * dev->channels;
+	HRESULT res = 0;
+
+	if( size > dev->device.dsound.buffer_size ) {
+		ERR( "Sample count too large for frame buffer. %d bytes, vs frame size of %f. Increase frame size!\n",
+			  size, dev->device.dsound.buffer_size );
+	}
+	size = size < dev->device.dsound.buffer_size ? size : dev->device.dsound.buffer_size;
+	if( ( res = dev->device.dsound.buffer_secondary->lpVtbl->Lock( dev->device.dsound.buffer_secondary, 0, 
+																						size,
+																						&ptr, &bsize,
+																						NULL, 0, 0 ) ) != DS_OK ) {
+		ERR( "Failed to lock sound buffer.\n" );
+	}
+	memcpy( ptr, samples, bsize );
+	if( dev->device.dsound.buffer_secondary->lpVtbl->Unlock( dev->device.dsound.buffer_secondary, 
+																				ptr, bsize, NULL, 0 ) != DS_OK ) {
+		ERR( "Failed to unlock sound buffer.\n" );
+	}
+
+	return VUL_OK;
 }
 
-vul_audio_return vul_audio_read( vul_audio_device *dev, void *samples, u32 sample_count )
+static vul_audio_return vul__audio_read_dsound( vul_audio_device *dev, void *samples, u32 sample_count )
 {
 	if( !( dev->mode == VUL_AUDIO_MODE_RECORDING || dev->mode == VUL_AUDIO_MODE_DUPLEX ) ) {
 		ERR( "Device read requested while not in recording or duplex mode.\n" );
 	}
-
+	assert( SL_FALSE && "Not implemented yet!" );
 }
 
-vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_close )
+static vul_audio_return vul__audio_destroy_dsound( vul_audio_device *dev, int drain_before_close )
 {
+	if( dev->device.dsound.buffer_secondary ) {
+		dev->device.dsound.buffer_secondary->lpVtbl->Stop( dev->device.dsound.buffer_secondary );
+		dev->device.dsound.buffer_secondary->lpVtbl->Release( dev->device.dsound.buffer_secondary );
+	}
+	if( dev->device.dsound.buffer && ( dev->device.dsound.buffer != dev->device.dsound.buffer_secondary ) ) {
+		dev->device.dsound.buffer->lpVtbl->Stop( dev->device.dsound.buffer );
+		dev->device.dsound.buffer->lpVtbl->Release( dev->device.dsound.buffer );
+	}
+
+	if( dev->device.dsound.handle ) {
+		dev->device.dsound.handle->lpVtbl->SetCooperativeLevel( dev->device.dsound.handle, dev->hwnd, DSSCL_NORMAL );
+		dev->device.dsound.handle->lpVtbl->Release( dev->device.dsound.handle );
+	}
+
+	return VUL_OK;
 }
 
-vul_audio_return vul_audio_init( vul_audio_device *out, 
-											HWND hwnd,
-											vul_audio_mode mode,
-											u32 channels, 
-											u32 sample_rate,
-											vul_audio_sample_format fmt )
+static vul_audio_return vul__audio_init_dsound( vul_audio_device *out )
 {
 	HMODULE dsound;
 	if( ( dsound = LoadLibrary( "dsound.dll" ) ) == NULL ) {
@@ -264,19 +316,11 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 	}
 	DLLOAD( pDirectSoundCreate, dsound, "DirectSoundCreate" );
 	
-	assert( out );
-	memset( out, 0, sizeof( vul_audio_device ) );
-
-	out->channels = channels;
-	out->sample_rate = sample_rate;
-	out->format = fmt;
-	out->mode = mode;
-
 	DSBUFFERDESC bufferdesc;
 	WAVEFORMATEX waveformat;
 
 	HRESULT res = pDirectSoundCreate( NULL, // Default device, @TODO(thynn): Make this a parameter?
-												 &out->dsound,
+												 &out->device.dsound.handle,
 												 NULL );
 	if( res != DS_OK ) {
 		ERR( "Failed to start DirectSound.\n" );
@@ -284,17 +328,16 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 
 	DSCAPS dscaps;
 	dscaps.dwSize = sizeof( dscaps );
-	if( out->dsound->lbVtbl->GetCaps( out->dsound, &dscaps ) != DS_OK ) {
+	if( out->device.dsound.handle->lpVtbl->GetCaps( out->device.dsound.handle, &dscaps ) != DS_OK ) {
 		ERR( "Failed to get DirectSound capabilities.\n" );
 	}
 
 	if( dscaps.dwFlags & DSCAPS_EMULDRIVER ) {
-		out->dsound->lbVtbl->Release( out->dsound );
-		ERR( "No DirectSound driver installed.\n" );
+		puts( "No DirectSound driver installed, it is emulated through waveform audio. Performance might suffer.\n" );
 	}
 
-	if( out->dsound->lbVtbl->SetCooperativeLevel( out->dsound, hwnd, DSSCL_PRIORITY ) != DS_OK ) {
-		out->dsound->lbVtbl->Release( out->dsound );
+	if( out->device.dsound.handle->lpVtbl->SetCooperativeLevel( out->device.dsound.handle, out->hwnd, DSSCL_EXCLUSIVE ) != DS_OK ) {
+		out->device.dsound.handle->lpVtbl->Release( out->device.dsound.handle );
 		ERR( "Failed to set coop level to exclusive.\n" );
 	}
 
@@ -304,8 +347,7 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 	format.nChannels = out->channels;
 	format.wBitsPerSample = vul__audio_bytes_per_sample( out ) * 8;
 	format.nSamplesPerSec = out->sample_rate;
-	format.nBlockAlign = format.nChannels * format.wBitsPerSample / 8;
-	format.cbSize = 0;
+	format.nBlockAlign = format.nChannels * ( format.wBitsPerSample / 8 );
 	format.nAvgBytesPerSec = format.nSamplesPerSec * format.nBlockAlign;
 
 	DSBUFFERDESC buffer;
@@ -315,28 +357,210 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 	buffer.dwBufferBytes = 0;
 	buffer.lpwfxFormat = NULL;
 
-	if( out->dsound->lbVtbl->CreateSoundBuffer( out->dsound, &buffer, &out->dsound_buffer, NULL ) != DS_OK ) {
+	if( out->device.dsound.handle->lpVtbl->CreateSoundBuffer( out->device.dsound.handle, &buffer, &out->device.dsound.buffer, NULL ) != DS_OK ) {
 		ERR( "Failed to create primary DirectSound buffer.\n" );
 	}
-	if( out->dsound_buffer->lpVtbl->SetFormat( out->dsound_buffer, &format ) != DS_OK ) {
+	if( out->device.dsound.buffer->lpVtbl->SetFormat( out->device.dsound.buffer, &format ) != DS_OK ) {
 		ERR( "Failed to set primary sound buffer.\n" );
 	}
 	// @TODO(thynn): Fallback for the above two (see https://github.com/id-Software/Quake/blob/master/WinQuake/snd_win.c#L340). Do we _really_ need to set these?
+
 	DSBCAPS buffer_caps;
+#ifdef VUL_AUDIO_WINDOWS_PRIMARY
 	memset( &buffer_caps, 0, sizeof( buffer_caps ) );
 	buffer_caps.dwSize = sizeof( DSBCAPS );
 	// @TODO(thynn): Change coop level if writing to primary, get capabilities of the new buffer, create fallback if nonprimary etc.
-	
+	if( ( res = out->device.dsound.handle->lpVtbl->SetCooperativeLevel( out->device.dsound.handle, out->hwnd, DSSCL_WRITEPRIMARY ) ) != DS_OK ) {
+		ERR( "Failed to set coop level to writeprimary.\n" );
+	}
+
+	if( out->device.dsound.buffer->lpVtbl->GetCaps( out->device.dsound.buffer, &buffer_caps ) != DS_OK ) {
+		ERR( "Failed to get sound buffer capabilities.\n" );
+	}
+	out->device.dsound.buffer_secondary = out->device.dsound.buffer;
+#else
+	memset( &buffer, 0, sizeof( buffer ) );
+	buffer.dwSize = sizeof( DSBUFFERDESC );
+	buffer.dwFlags = DSBCAPS_CTRLFREQUENCY | DSBCAPS_LOCSOFTWARE;
+	buffer.dwBufferBytes = 0x1000; // @TODO(thynn): Define or parameter!
+	buffer.lpwfxFormat = &format;
+
+	memset( &buffer_caps, 0, sizeof( buffer_caps ) );
+	buffer_caps.dwSize = sizeof( DSBCAPS );
+
+	if( out->device.dsound.handle->lpVtbl->CreateSoundBuffer( out->device.dsound.handle, &buffer, &out->device.dsound.buffer_secondary, NULL ) != DS_OK ) {
+		ERR( "Failed to create secondary sound buffer.\n" );
+	}
+
+	if( out->device.dsound.buffer_secondary->lpVtbl->GetCaps( out->device.dsound.buffer_secondary, &buffer_caps ) ) {
+		ERR( "Failed to get secondary sound buffer capabilities.\n" );
+	}
+#endif
+	out->device.dsound.buffer_size = buffer_caps.dwBufferBytes;
 
 	// Make sure the mixer is running
-	out->dsound->lpVtbl->Play( out->dsound_buffer, 0, 0, DSBPLAY_LOOPING );
+	out->device.dsound.buffer_secondary->lpVtbl->Play( out->device.dsound.buffer_secondary, 0, 0, DSBPLAY_LOOPING );
 
-	// Initialize the buffer
-		// @TODO(thynn): Lock, unlock, stop, get current pos, start, idk...
-
-	// @TODO(thynn): Fallback to waveOut!
+	out->lib = VUL__AUDIO_WINDOWS_DSOUND;
+	return VUL_OK;
 }
 
+//----------------
+// waveOut
+//
+
+MMRESULT ( *pWaveOutOpen )( LPHWAVEOUT, UINT_PTR, LPWAVEFORMATEX, DWORD_PTR, DWORD_PTR, DWORD );
+MMRESULT ( *pWaveOutPrepareHeader )( HWAVEOUT, LPWAVEHDR, UINT );
+MMRESULT ( *pWaveOutWrite )( HWAVEOUT, LPWAVEHDR, UINT );
+MMRESULT ( *pWaveOutUnprepareHeader )( HWAVEOUT, LPWAVEHDR, UINT );
+MMRESULT ( *pWaveOutClose )( HWAVEOUT );
+
+static vul_audio_return vul__audio_write_waveout( vul_audio_device *dev, void *samples, u32 sample_count )
+{
+	WAVEHDR header;
+	memset( &header, 0, sizeof( header ) );
+	header.lpData = samples;
+	header.dwBufferLength = sample_count * vul__audio_bytes_per_sample( dev ) * dev->channels;
+	if( pWaveOutPrepareHeader( dev->device.waveout, &header, sizeof( header ) ) != MMSYSERR_NOERROR ) {
+		ERR( "Failed to prepare header for upload.\n" );
+	}
+
+	if( pWaveOutWrite( dev->device.waveout, &header, sizeof( header ) ) != MMSYSERR_NOERROR ) {
+		ERR( "Failed to write audio data.\n" );
+	}
+
+	while( !( header.dwFlags & WHDR_DONE ) ) {
+		// Wait for the upload to finish
+	}
+	
+	if( pWaveOutUnprepareHeader( dev->device.waveout, &header, sizeof( header ) ) != MMSYSERR_NOERROR ) {
+		ERR( "Failed to unprepare header after upload.\n" );
+	}
+
+	return VUL_OK;
+}
+
+static vul_audio_return vul__audio_read_waveout( vul_audio_device *dev, void *samples, u32 sample_count )
+{
+	ERR( "Not implemented (requires waveIn).\n" );
+	assert( SL_FALSE && "Not implemented yet!" );
+}
+
+static vul_audio_return vul__audio_destroy_waveout( vul_audio_device *dev, int drain_before_close )
+{
+	if( pWaveOutClose( dev->device.waveout ) != MMSYSERR_NOERROR ) {
+		ERR( "Failed to close waveOut device.\n" );
+	}
+	return VUL_OK;
+}
+
+static vul_audio_return vul__audio_init_waveout( vul_audio_device *out )
+{
+	HMODULE waveout;
+	if( ( waveout = LoadLibrary( "winmm.dll" ) ) == NULL ) {
+		ERR( "Failed to load winmm.dll.\n" );
+	}
+	DLLOAD( pWaveOutOpen, waveout, "waveOutOpen" );
+	DLLOAD( pWaveOutPrepareHeader, waveout, "waveOutPrepareHeader" );
+	DLLOAD( pWaveOutWrite, waveout, "waveOutWrite" );
+	//DLLOAD( pWaveOutRead, waveout, "waveOutOpen" ); // @TODO(thynn): Input is waveIn, so the question becomes, do we actually want reading??
+	DLLOAD( pWaveOutUnprepareHeader, waveout, "waveOutUnprepareHeader" );
+	DLLOAD( pWaveOutClose, waveout, "waveOutClose" );
+	
+	WAVEFORMATEX format;
+	memset( &format, 0, sizeof( format ) );
+	format.wFormatTag = WAVE_FORMAT_PCM;
+	format.nChannels = out->channels;
+	format.wBitsPerSample = vul__audio_bytes_per_sample( out ) * 8;
+	format.nSamplesPerSec = out->sample_rate;
+	format.nBlockAlign = format.nChannels * ( format.wBitsPerSample / 8 );
+	format.nAvgBytesPerSec = format.nSamplesPerSec * format.nBlockAlign;
+
+	if( pWaveOutOpen( &out->device.waveout, WAVE_MAPPER, &format, 0, 0, CALLBACK_NULL ) != MMSYSERR_NOERROR ) {
+		ERR( "Failed to open waveOut library.\n" );
+	}
+
+	out->lib = VUL__AUDIO_WINDOWS_WAVEOUT;
+	return VUL_OK;
+}
+
+// --------------
+// Public API
+//
+
+vul_audio_return vul_audio_write( vul_audio_device *dev, void *samples, u32 sample_count )
+{
+	switch( dev->lib ) {
+	case VUL__AUDIO_WINDOWS_DSOUND: {
+		return vul__audio_write_dsound( dev, samples, sample_count );
+	} break;
+	case VUL__AUDIO_WINDOWS_WAVEOUT: {
+		return vul__audio_write_waveout( dev, samples, sample_count );
+	} break;
+	default: {
+		ERR( "Unknown device library in use.\n" );
+	}
+	}
+}
+
+vul_audio_return vul_audio_read( vul_audio_device *dev, void *samples, u32 sample_count )
+{
+	switch( dev->lib ) {
+	case VUL__AUDIO_WINDOWS_DSOUND: {
+		return vul__audio_read_dsound( dev, samples, sample_count );
+	} break;
+	case VUL__AUDIO_WINDOWS_WAVEOUT: {
+		return vul__audio_read_waveout( dev, samples, sample_count );
+	} break;
+	default: {
+		ERR( "Unknown device library in use.\n" );
+	}
+	}
+}
+
+vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_close )
+{
+	switch( dev->lib ) {
+	case VUL__AUDIO_WINDOWS_DSOUND: {
+		return vul__audio_destroy_dsound( dev, drain_before_close );
+	} break;
+	case VUL__AUDIO_WINDOWS_WAVEOUT: {
+		return vul__audio_destroy_waveout( dev, drain_before_close );
+	} break;
+	default: {
+		ERR( "Unknown device library in use.\n" );
+	}
+	}
+}
+
+vul_audio_return vul_audio_init( vul_audio_device *out, 
+											HWND hwnd,
+											vul_audio_mode mode,
+											u32 channels, 
+											u32 sample_rate,
+											vul_audio_sample_format fmt )
+{
+	assert( out );
+	memset( out, 0, sizeof( vul_audio_device ) );
+
+	out->channels = channels;
+	out->sample_rate = sample_rate;
+	out->format = fmt;
+	out->mode = mode;
+	out->hwnd = hwnd;
+
+	// Try DirectSound
+	if( VUL_OK == vul__audio_init_dsound( out ) ) {
+		return VUL_OK;
+	}
+
+	// Try waveOut
+	if( VUL_OK == vul__audio_init_waveout( out ) ) {
+		return VUL_OK;
+	}
+
+	ERR( "Failed to open audio device with any of the attempted libraries.\n" );
+}
 
 #elif defined( VUL_OSX )
 
@@ -430,7 +654,7 @@ static vul_audio_return vul__audio_init_oss( vul_audio_device *dev, int mode )
 
 static vul_audio_return vul__audio_write_oss( vul_audio_device *dev, void *samples, u32 sample_count )
 {
-	u32 size = sample_count * vul__audio_bytes_per_sample( dev );
+	u32 size = sample_count * vul__audio_bytes_per_sample( dev ) * dev->channels;
 	if( write( dev->device.oss_device_fd, samples, size ) != size ) {
 		ERR( "Failed to write samples to device.\n" );
 	}
@@ -465,10 +689,7 @@ int( *alsa_close )( snd_pcm_t * ) = 0;
 
 static vul_audio_return vul__audio_read_alsa( vul_audio_device *dev, void *samples, u32 sample_count )
 {	
-	u32 size = sample_count * vul__audio_bytes_per_sample( dev );
-	u32 frames = sample_count / dev->channels;
-
-	s32 r = alsa_read( dev->device.alsa.handle, samples, frames ); // @TODO(thynn): Do we want frame-count as an argument to all write functions??
+	s32 r = alsa_read( dev->device.alsa.handle, samples, sample_count ); // @TODO(thynn): Do we want frame-count as an argument to all write functions??
 	if( r == -EPIPE ) {
 		// Reprepare before failing
 		alsa_prepare( dev->device.alsa.handle );
@@ -477,28 +698,25 @@ static vul_audio_return vul__audio_read_alsa( vul_audio_device *dev, void *sampl
 	if( r < 0 ) {
 		ERR( "ALSA read failed: %s.\n", alsa_strerror( r ) );
 	}
-	if( r != frames ) {
-		ERR( "Frame count read (%d) does not match wanted count (%d).\n", r, frames );
+	if( r != sample_count ) {
+		ERR( "Frame count read (%d) does not match wanted count (%d).\n", r, sample_count );
 	}
 	return VUL_OK;
 }
 
 static vul_audio_return vul__audio_write_alsa( vul_audio_device *dev, void *samples, u32 sample_count )
 {
-	u32 size = sample_count * vul__audio_bytes_per_sample( dev );
-	u32 frames = sample_count / dev->channels;
-
-	s32 r = alsa_write( dev->device.alsa.handle, samples, frames ); // @TODO(thynn): Do we want frame-count as an argument to all write functions??
+	s32 r = alsa_write( dev->device.alsa.handle, samples, sample_count ); // @TODO(thynn): Do we want frame-count as an argument to all write functions??
 	if( r == -EPIPE ) {
 		// Reprepare before failing
 		alsa_prepare( dev->device.alsa.handle );
-		ERR( "ALSA write returned in a buffer underrun.\n" )
+		ERR( "ALSA write returned in a buffer overrun.\n" )
 	}
 	if( r < 0 ) {
 		ERR( "ALSA write failed: %s.\n", alsa_strerror( r ) );
 	}
-	if( r != frames ) {
-		ERR( "Frame count written (%d) does not match wanted count (%d).\n", r, frames );
+	if( r != sample_count ) {
+		ERR( "Frame count write (%d) does not match wanted count (%d).\n", r, sample_count );
 	}
 	return VUL_OK;
 }
@@ -582,18 +800,17 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 	alsa_hw_free( hwp );
 
 	// Software parameters
-	// @TODO(thynn): To supply a unified architecture, can we avoid callbacks here (or make OSS use callbacks?)
 	if( ( err = alsa_sw_malloc( &swp ) ) < 0 ) {
 		ERR( "Failed to allocate ALSA software parameters struct.\n" );
 	}
 	if( ( err = alsa_sw_current( dev->device.alsa.handle, swp ) ) < 0 ) {
 		ERR( "Failed to get current ALSA software parameters.\n" );
 	}
-	// @TODO(thynn): Different frame sizes!!
-	if( ( err = alsa_sw_set_avail_min( dev->device.alsa.handle, swp, 4096 ) ) < 0 ) {
+	// @TODO(thynn): Frame size should be a define or parameter, and threshold > frame size (we'll go with factor 4)
+	if( ( err = alsa_sw_set_avail_min( dev->device.alsa.handle, swp, 0x1000 ) ) < 0 ) {
 		ERR( "Failed to set ALSA frame size.\n" );
 	}
-	if( ( err = alsa_sw_set_start_threshold( dev->device.alsa.handle, swp, 0U ) ) < 0 ) {
+	if( ( err = alsa_sw_set_start_threshold( dev->device.alsa.handle, swp, 0x4000 ) ) < 0 ) {
 		ERR( "Failed to set ALSA start threshold.\n" );
 	}
 	if( ( err = alsa_sw_params( dev->device.alsa.handle, swp ) ) < 0 ) {
@@ -684,7 +901,7 @@ vul_audio_return vul__audio_init_pulse( vul_audio_device *dev, const char *name,
 
 vul_audio_return vul__audio_read_pulse( vul_audio_device *dev, void *samples, u32 sample_count )
 {
-	u32 size = sample_count * vul__audio_bytes_per_sample( dev );
+	u32 size = sample_count * vul__audio_bytes_per_sample( dev ) * dev->channels;
 	s32 err;
 	if( pulse_read( dev->device.pulse.client,
 						 samples,
@@ -698,7 +915,7 @@ vul_audio_return vul__audio_read_pulse( vul_audio_device *dev, void *samples, u3
 vul_audio_return vul__audio_write_pulse( vul_audio_device *dev, void *samples, u32 sample_count )
 {
 	// @TODO(thynn): Make "flush first" a parameter? "Flush if latence over N ms" a parameter?
-	u32 size = sample_count * vul__audio_bytes_per_sample( dev );
+	u32 size = sample_count * vul__audio_bytes_per_sample( dev ) * dev->channels;
 	s32 err;
 	if( pulse_write( dev->device.pulse.client,
 						  samples,
@@ -807,6 +1024,7 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 	}
 
 	ERR( "Failed to open audio device with any of the attempted libraries.\n" );
+	return VUL_ERROR;
 }
 
 #else

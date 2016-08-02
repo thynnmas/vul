@@ -52,6 +52,8 @@
 
 #include <math.h>
 #include <assert.h>
+#include <float.h>
+#include <string.h>
 
 #ifndef VUL_LINEAR_SOLVERS_ALLOC
 #include <stdlib.h>
@@ -153,6 +155,7 @@ static void vull__vmul_add( float *out, float *a, float x, float *b, int n );
 static void vull__vcopy( float *out, float *x, int n );
 static float vull__dot( float *a, float *b, int n );
 static void vull__mmul( float *out, float *A, float *x, int n );
+static void vull__mmul_matrix( float *O, float *A, float *B, int n );
 static void vull__mmul_add( float *out, float *A, float *x, float *b, int n );
 static void vull__forward_substitute( float *out, float *A, float *b, int n );
 static void vull__backward_substitute( float *out, float *A, float *b, int n );
@@ -199,6 +202,72 @@ void vul_solve_successive_over_relaxation_dense( float *out,
 												 int n,
 												 int max_iterations,
 												 float tolerance );
+
+//----------------------------------
+// Singular Value Decomposition
+
+typedef struct vul_solve_svd_basis {
+	float sigma;
+	float *u; int n;
+	unsigned int axis;
+} vul_solve_svd_basis;
+
+static void vul__solve_svd_sort( vul_solve_svd_basis *x, int n );
+
+/*
+ * If transposed is set, treat A as A^T.
+ * Matrices may not alias.
+ *
+ * @TODO(thynn): Faster and more stable version.
+ * This currently uses Gram-Schmidt, and has numerical issues as well
+ * as speed issues. Should be rewritten to use householder or givens rotations!
+ */ 
+static void vul__solve_qr_decomposition( float *Q, float *R, float *A, int n, int transposed );
+
+/*
+ * Find the largest eigenvalue in the matrix A.
+ * Uses the Power method (slow, but simple).
+ */
+static float vul__solve_largest_eigenvalue( float *A, int n, float eps, int max_iter );
+
+/*
+ * Calculate the norm of the matrix' diagonal as a vector.
+ */
+static float vul__solve_matrix_norm_diagonal( float *A, int n );
+
+/*
+ * Only values above the "upper_diag"-th diagonal are used, so for
+ * the full matrix, use -min(r,c)/2.
+ */
+static float vul__solve_matrix_norm_as_single_column( float *A, int n, int upper_diag );
+
+static float vul__solve_matrix_2norm( float *A, int n, float eps, int itermax );
+
+/*
+ * Computes the singular value decomposition of A.
+ * If rank is set, the maximum of non-zero sigma and rank
+ * values and basis vectors are returned.
+ *
+ * @TODO(thynn): Faster version. This performs repeated QR decomposition
+ * of the matrix to reduce it to a diagonal matrix with the singular values,
+ * while multiplying out the alternatingly upper and lower triangular matrix
+ * produced by the decomposition into U and V.
+ */
+void vul_svd_dense_slow( vul_solve_svd_basis *out, int *rank,
+								 float *A,
+								 int r, int c, float eps, int itermax );
+/*
+ * Computes the singular value decomposition of A.
+ * If rank is set, the maximum of non-zero sigma and rank
+ * values and basis vectors are returned.
+ *
+ * This version uses the QR algorithm (or jacobi?)
+ * and is faster than the above, but more complex.
+ * @TODO(thynn): Actually implement this!
+ */
+void vul_svd_dense_fast( vul_solve_svd_basis *out, int *rank,
+								 float *A,
+								 int r, int c, float eps );
 
 #ifdef _cplusplus
 }
@@ -770,6 +839,20 @@ static void vull__mmul( float *out, float *A, float *x, int n )
 		}
 	}
 }
+static void vull__mmul_matrix( float *O, float *A, float *B, int n )
+{
+	float s;
+	int i, j, k;
+	for( i = 0; i < n; ++i ) {
+		for( j = 0; j < n; ++j ) {
+			s = 0.f;
+			for( k = 0; k < n; ++k ) {
+				s += IDX( A, i, k, n ) * IDX( B, k, j, n );
+			}
+			IDX( O, i, j, n ) = s;
+		}
+	}
+}
 
 static void vull__mmul_add( float *out, float *A, float *x, float *b, int n )
 {
@@ -1204,6 +1287,310 @@ void vul_solve_successive_over_relaxation_dense( float *out,
 	}
 	
 	VUL_LINEAR_SOLVERS_FREE( r );
+}
+
+//------------------------------
+// Singular value decomposition
+// 
+
+static void vul__solve_svd_sort( vul_solve_svd_basis *x, int n )
+{
+	vul_solve_svd_basis tmp;
+	int gap, gi, i, j;
+	int gaps[ ] = { 701, 301, 132, 67, 23, 10, 4, 1 };
+
+	for( gi = 0; gi < sizeof( gaps ) / sizeof( int ); ++gi ) {
+		for( i = 0 + gaps[ gi ]; i < n; ++i ) {
+			gap = gaps[ gi ];
+			memcpy( &tmp, &x[ i ], sizeof( vul_solve_svd_basis ) );
+			for( j = i; j >= gap && x[ j - gap ].sigma <= tmp.sigma; j -= gap ) {
+				memcpy( &x[ j ], &x[ j - gap ], sizeof( vul_solve_svd_basis ) );
+			}
+			memcpy( &x[ j ], &tmp, sizeof( vul_solve_svd_basis ) );
+		}
+	}
+}
+
+static void vul__solve_qr_decomposition( float *Q, float *R, float *A, int n, int transposed )
+{
+	// @TODO(thynn): Do this with householder rotations (or givens rotations) instead of this.
+
+	// Gram-Schmidt; numerically bad and slow, but simple.
+	float *u, *a, d, tmp;
+	int i, j, k;
+
+	u = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * n * n );
+	a = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * n );
+
+	if( transposed ) {
+		// Fill Q
+		for( i = 0; i < n; ++i ) {
+			for( j = 0; j < n; ++j ) {
+				a[ j ] = A[ i * n + j ];
+			}
+			d = 0.f;
+			for( j = 0; j < n; ++j ) {
+				u[ i * n + j ] = a[ j ];
+				for( k = 0; k < i; ++k ) {
+					tmp = vull__dot( &u[ k * n ], &u[ k * n ], n );
+					if( tmp != 0.f ) {
+						u[ i * n + j ] -= u[ k * n + j ] * ( vull__dot( &u[ k * n ], a, n ) / tmp );
+					}
+				}
+				d += u[ i * n + j ] * u[ i * n + j ];
+			}
+			if( d != 0.f ) {
+				d = 1.f / sqrtf( d );
+			}
+			for( j = 0; j < n; ++j ) {
+				Q[ j * n + i ] = u[ i * n + j ] * d;
+			}
+		}
+
+		// Fill R
+		for( i = 0; i < n; ++i ) {
+			for( j = 0; j < n; ++j ) {
+				R[ i * n + j ] = 0.f;
+				for( k = 0; k < n; ++k ) {
+					R[ i * n + j ] += Q[ k * n + i ] * A[ j * n + k ]; // Q^T, A^T
+				}
+			}
+		}
+	} else {
+		// Fill Q
+		for( i = 0; i < n; ++i ) {
+			for( j = 0; j < n; ++j ) {
+				a[ j ] = A[ j * n + i ];
+			}
+			d = 0.f;
+			for( j = 0; j < n; ++j ) {
+				u[ i * n + j ] = a[ j ];
+				for( k = 0; k < i; ++k ) {
+					tmp = vull__dot( &u[ k * n ], &u[ k * n ], n );
+					if( tmp != 0.f ) {
+						u[ i * n + j ] -= u[ k * n + j ] * ( vull__dot( &u[ k * n ], a, n ) / tmp );
+					}
+				}
+				d += u[ i * n + j ] * u[ i * n + j ];
+			}
+			if( d != 0.f ) {
+				d = 1.f / sqrtf( d );
+			}
+			for( j = 0; j < n; ++j ) {
+				Q[ j * n + i ] = u[ i * n + j ] * d;
+			}
+		}
+
+		// Fill R
+		for( i = 0; i < n; ++i ) {
+			for( j = 0; j < n; ++j ) {
+				R[ i * n + j ] = 0.f;
+				for( k = 0; k < n; ++k ) {
+					R[ i * n + j ] += Q[ k * n + i ] * A[ k * n + j ]; // Q^T
+				}
+			}
+		}
+	}
+
+	VUL_LINEAR_SOLVERS_FREE( u );
+	VUL_LINEAR_SOLVERS_FREE( a );
+}
+
+// @TODO(thynn): Write "find Nth largest eigenvalue" version that sorts a copy of the y-vector and
+// selects axis and norm for the Nth element instead of the largest.
+static float vul__solve_largest_eigenvalue( float *A, int n, float eps, int max_iter )
+{
+	int iter, axis, normaxis, i;
+	float *v, *y, lambda, norm, err;
+
+	// Power method. Slow, but simple
+	v = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * n );
+	y = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * n );
+	memset( v, 0, sizeof( float ) * n );
+	v[ 0 ] = 1.f;
+
+	err = eps * 2;
+	iter = 0;
+	axis = 0;
+	lambda = 0.f;
+	while( err > eps && iter++ < max_iter ) {
+		vull__mmul( y, A, v, n );
+		err = fabs( lambda - y[ axis ] );
+		lambda = y[ axis ];
+		norm = -FLT_MAX;
+		for( i = 0; i < n; ++i ) {
+			if( y[ i ] > norm ) {
+				norm = y[ i ];
+				normaxis = i;
+			}
+		}
+		axis = normaxis;
+		for( i = 0; i < n; ++i ) {
+			v[ i ] = y[ i ] / norm;
+		}
+	}
+	return lambda;
+}
+
+static float vul__solve_matrix_norm_diagonal( float *A, int n )
+{
+	float v;
+	int i;
+	
+	v = 0.f;
+	for( i = 0; i < n; ++i ) {
+		v += A[ i * n + i ] * A[ i * n + i ];
+	}
+	return sqrtf( v );
+}
+
+static float vul__solve_matrix_norm_as_single_column( float *A, int n, int upper_diag )
+{
+	float v;
+	int i, j;
+
+	v = 0.f;
+	for( i = 0; i < n; ++i ) {
+		for( j = i + upper_diag < 0 ? 0 : i + upper_diag;
+			  j < n; ++j ) {
+			v += A[ i * n + j ] * A[ i * n + j ];
+		}
+	}
+	return v;
+}
+
+static float vul__solve_matrix_2norm( float *A, int n, float eps, int itermax )
+{
+	float v, *U, *T, *AA, e;
+	int i, j, k;
+
+	U = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * n * n );
+	T = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * n * n );
+	AA = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * n * n );
+	memset( U, 0, sizeof( float ) * n * n );
+	memset( T, 0, sizeof( float ) * n * n );
+	for( i = 0; i < n; ++i ) {
+		for( j = 0;j < n; ++j ) {
+			U[ j * n + i ] = A[ j * n + i ];
+			T[ i * n + j ] = A[ j * n + i ];
+		}
+	}
+	for( i = 0; i < n; ++i ) {
+		for( j = 0; j < n; ++j ) {
+			v = 0;
+			for( k = 0; k < n; ++k ) {
+				v += T[ i * n + k ] * U[ k * n + j ];
+			}
+			AA[ i * n + j ] = v;
+		}
+	}
+	// Find the larges eigenvalue!
+	e = vul__solve_largest_eigenvalue( A, n, eps, itermax ); 
+	return sqrtf( e * e );
+}
+
+void vul_svd_dense_slow( vul_solve_svd_basis *out, int *rank,
+								 float *A,
+								 int r, int c, float eps, int itermax )
+{
+	float *U0, *U1, *V0, *V1, *S0, *S1, *Q, err, e, f, *tp;
+	int iter, n, i, j, ri, ci;
+
+	n = r > c ? r : c;
+	U0 = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * r * r );
+	U1 = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * r * r );
+	V0 = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * c * c );
+	V1 = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * c * c );
+	S0 = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * n * n );
+	S1 = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * n * n );
+	Q = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * n * n );
+	memset( U0, 0, sizeof( float ) * r * r );
+	memset( U1, 0, sizeof( float ) * r * r );
+	memset( V0, 0, sizeof( float ) * c * c );
+	memset( V1, 0, sizeof( float ) * c * c );
+	memset( S0, 0, sizeof( float ) * n * n );
+	memset( Q, 0, sizeof( float ) * n * n );
+	iter = 0;
+	err = FLT_MAX;
+
+	// Initialize to empty for U, V, Q. Set S to A^T
+	for( ci = 0; ci < c; ++ci ) {
+		for( ri = 0; ri < r; ++ri ) {
+			S0[ ci * c + ri ] = A[ ri * c + ci ];
+		}
+	}
+
+	// Initialize as identity matrix
+	for( i = 0; i < r; ++i ) {
+		U0[ i * r + i ] = 1.f;
+	}
+	for( i = 0; i < c; ++i ) {
+		V0[ i * c + i ] = 1.f;
+	}
+	while( err > eps && iter++ < itermax ) {
+		// Decompose
+		vul__solve_qr_decomposition( Q, S1, S0, n, 1 );
+		vull__mmul_matrix( U1, U0, Q, r );
+		vul__solve_qr_decomposition( Q, S0, S1, n, 1 );
+		vull__mmul_matrix( V1, V0, Q, c );
+		tp = U0;
+		U0 = U1;
+		U1 = tp;
+		tp = V0;
+		V0 = V1;
+		V1 = tp;
+
+		// Calculate error
+		e = vul__solve_matrix_norm_as_single_column( S0, n, 1 );
+		f = vul__solve_matrix_norm_diagonal( S0, n );
+		if( f == 0.f ) {
+			f = 1.f;
+		}
+		err = e / f;
+	}
+
+	// Grap sigmas and rank, sort decreasing
+	for( j = 0, i = 0; i < n; ++i ) {
+		out[ i ].sigma = fabs( S0[ i * n + i ] );
+		out[ i ].axis = i;
+		if( out[ i ].sigma != 0.f ) {
+			++j;
+		}
+	}
+	if( *rank == 0 || j < *rank ) {
+		*rank = j;
+	}
+	vul__solve_svd_sort( out, n );
+
+	// Fix signs and copy U
+	for( i = 0; i < *rank; ++i ) {
+		out[ i ].n = r;
+		out[ i ].u = ( float* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( float ) * r );
+		f = S0[ out[ i ].axis * n + out[ i ].axis ] < 0.f ? -1.f : 1.f;
+		for( j = 0; j < r; ++j ) {
+			out[ i ].u[ j ] = U0[ j * r + out[ i ].axis ] * f;
+		}
+	}
+
+	VUL_LINEAR_SOLVERS_FREE( U0 );
+	VUL_LINEAR_SOLVERS_FREE( U1 );
+	VUL_LINEAR_SOLVERS_FREE( V0 );
+	VUL_LINEAR_SOLVERS_FREE( V1 );
+	VUL_LINEAR_SOLVERS_FREE( S0 );
+	VUL_LINEAR_SOLVERS_FREE( S1 );
+	VUL_LINEAR_SOLVERS_FREE( Q );
+}
+
+void vul_svd_dense_fast( vul_solve_svd_basis *out, int *rank,
+								 float *A,
+								 int r, int c, float eps )
+{
+	assert( 0 && "Stub!" );
+	// If r >> c, perform QR decomposition
+
+	// Use householder reflections to reduce to bidiagonal matrix
+	
+	// Finally, compute eigenvalues (either with the QR algorithm, or with jacobi orthoganalization)
 }
 
 #undef IDX

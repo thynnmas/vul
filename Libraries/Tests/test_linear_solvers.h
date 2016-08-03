@@ -159,8 +159,10 @@ void vul__test_svd_dense( )
 	assert( fabs( res[ 0 ].sigma - 14.72f ) < 1e-2 );
 	assert( fabs( res[ 1 ].sigma - 5.22f ) < 1e-2 );
 	assert( fabs( res[ 2 ].sigma - 3.31f ) < 1e-2 );
+	real RA1[ 15 * 25 ];
+	vul_solve_svd_basis_reconstruct_matrix( RA1, res, rank );
+	CHECK_WITHIN_EPS( RA1, A, 15 * 25, 1e-3 );
 	vul_solve_svd_basis_destroy( res, rank );
-	// @TODO(thynn): Build the matrices (U, V, S) like below, multiply them, and compare to initial image.
 	
 	real A2[ 5 * 5 ] = { 2,  0, 8, 6, 0,
 								1,  6, 0, 1, 7,
@@ -311,7 +313,6 @@ void vul__test_transpose( )
 							  3, 6 };
 	real C[ 2 * 3 ];
 	vull__mtranspose( C, A, 3, 2 );
-	PRINT_MATRIX( "C", C, 3, 2 );
 	CHECK_WITHIN_EPS( C, B, 3 * 2, FLT_EPSILON );
 	vull__mtranspose( C, B, 2, 3 );
 	CHECK_WITHIN_EPS( C, A, 3 * 2, FLT_EPSILON );

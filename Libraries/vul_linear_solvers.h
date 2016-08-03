@@ -23,6 +23,13 @@
  * All solvers are run iteratively until a desired tolerance or a maximum iteration count
  * is reached. Dense [@TODO(thynn): and sparse] matrices are supported. 
  *
+ * @TODO(thynn): SVD works for dense; implement sparse support (using givens rotations
+ *               by default). Make QR-method a define for the user (separate for dense and sparse),
+ *               but have sensible defaults (householder & givens respectively).
+ * @TODO(thynn): Optimize this stuff. Some of it is semi-sane, but most of it isn't. Make it faster once it
+ *               works and we have tests that confirm it works. Make it faster once it
+ *               works and we have tests that confirm it works!
+ *
  * Define VUL_LINEAR_SOLVERS_ROW_MAJOR to use row major matrices, otherwise column major
  * is assumed (for dense). Sparse matrices are Lists-of-lists, and are always row-major.
  * 

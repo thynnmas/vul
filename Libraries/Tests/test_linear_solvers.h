@@ -9,8 +9,8 @@
 	{for( int i = 0; i < ( n ); ++i ) {\
 		assert( fabs( ( a )[ i ] - ( b )[ i ] ) < TEST_MAX( eps, ( b )[ i ] * eps ) );\
 	}}
-#define PRINT_VECTOR( v, n )\
-	printf("[");\
+#define PRINT_VECTOR( name, v, n )\
+	printf("%s [", name);\
 	{for( int i = 0; i < ( n ); ++i ) {\
 		printf( ( i == ( n )- 1 ) ? "%f" : "%f, ", ( v )[ i ] );\
 	}}\
@@ -24,12 +24,21 @@
 		}}\
 		printf("]\n");\
 	}}
+#define PRINT_MATRIX_SPARSE( name, m, c, r )\
+	printf("%s\n", name);\
+	{for( int i = 0; i < ( r ); ++i ) {\
+		printf("[");\
+		{for( int j = 0; j < ( c ); ++j ) {\
+			printf( ( j == ( c )- 1 ) ? "%f" : "%f, ", vul_solve_matrix_get( m, i, j ) );\
+		}}\
+		printf("]\n");\
+	}}
 #define CHECK_WITHIN_EPS_SPARSE( a, b, n, eps )\
 	{for( int i = 0; i < ( n ); ++i ) {\
 		assert( fabs( vul_solve_vector_get( a, i ) - vul_solve_vector_get( b, i ) ) < ( eps ) );\
 	}}
-#define PRINT_VECTOR_SPARSE( v, n )\
-	printf("[");\
+#define PRINT_VECTOR_SPARSE( name, v, n )\
+	printf("%s [", name);\
 	{for( int i = 0; i < ( n ); ++i ) {\
 		printf( ( i == ( n )- 1 ) ? "%f" : "%f, ", vul_solve_vector_get( v, i ) );\
 	}}\
@@ -52,21 +61,21 @@ void vul__test_linear_solvers_dense( )
 	int iters = 32;
 
 	real A[ 3 * 3 ] = { 25.f, 15.f, -5.f,
-						 15.f, 18.f, 0.f,
-						 -5.f, 0.f, 11.f };
+							  15.f, 18.f,  0.f,
+							  -5.f, 0.f,  11.f };
 	real b[ 3 ] = { 1.f, 3.f, 5.f };
 	real x[ 3 ], guess[ 3 ] = { 0.f, 0.f, 0.f };
 	real solution[ 3 ] = { 17.f / 225.f, 14.f / 135.f,  22.f/ 45.f };
 
 	vul_solve_conjugate_gradient_dense( x, A, guess, b, 3, iters, eps );
 	CHECK_WITHIN_EPS( x, solution, 3, 1e-7f );
-#if 0
+
 	vul_solve_lu_decomposition_dense( x, A, guess, b, 3, iters, eps );
 	CHECK_WITHIN_EPS( x, solution, 3, 1e-8f );
 
 	vul_solve_cholesky_decomposition_dense( x, A, guess, b, 3, iters, eps );
 	CHECK_WITHIN_EPS( x, solution, 3, 1e-7f );
-	
+#if 0 //BUGGED
 	vul_solve_qr_decomposition_dense( x, A, guess, b, 3, iters, eps );
 	CHECK_WITHIN_EPS( x, solution, 3, 1e-8f );
 #endif
@@ -79,7 +88,7 @@ void vul__test_linear_solvers_sparse( )
 	real eps = 1e-10f;
 	int iters = 32;
 
-	vul_solve_matrix *A = vul_solve_matrix_create( 0, 0, 0, 3, 0 );
+	vul_solve_matrix *A = vul_solve_matrix_create( 0, 0, 0, 0 );
 	vul_solve_matrix_insert( A, 0, 0, 25.f );
 	vul_solve_matrix_insert( A, 0, 1, 15.f );
 	vul_solve_matrix_insert( A, 0, 2, -5.f );
@@ -103,12 +112,14 @@ void vul__test_linear_solvers_sparse( )
 	vul_solve_vector *x = vul_solve_conjugate_gradient_sparse( A, guess, b, iters, eps );
 	CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-7f );
 	vul_solve_vector_destroy( x );
+	
+	x = vul_solve_cholesky_decomposition_sparse( A, guess, b, iters, 3, 3, eps );
+	CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-7f );
+	vul_solve_vector_destroy( x );
 #if 0
 	vul_solve_lu_decomposition_dense( x, A, guess, b, 3, iters, eps );
 	CHECK_WITHIN_EPS( x, solution, 3, 1e-8f );
 
-	vul_solve_cholesky_decomposition_dense( x, A, guess, b, 3, iters, eps );
-	CHECK_WITHIN_EPS( x, solution, 3, 1e-7f );
 	
 	vul_solve_qr_decomposition_dense( x, A, guess, b, 3, iters, eps );
 	CHECK_WITHIN_EPS( x, solution, 3, 1e-8f );
@@ -195,7 +206,6 @@ void vul__test_svd_dense( )
 	vul_solve_svd_basis_reconstruct_matrix( R0, res, rank );
 	CHECK_WITHIN_EPS( R0, A3, 5 * 4, 1e-1 );
 	vul_solve_svd_basis_destroy( res, rank );
-	exit(1);
 }
 
 void vul__test_eigenvalues( ) {
@@ -304,6 +314,30 @@ void vul__test_qr_decomposition( ) {
 	CHECK_WITHIN_EPS( CM, CT, 4 * 5, 1e-3 );
 }
 
+void vul__test_householder( )
+{
+	// @TODO(thynn): Also test the column-only version for QR decomp.!
+	real A[ 4 * 4 ] = { 4, 1,-2, 2,
+							  1, 2, 0, 1,
+							 -2, 0, 3,-2,
+							  2, 1,-2,-1,};
+	real S[ 4 * 4 ] = { 4,       -3,        0,        0,
+							 -3, 10.f/3.f,      1.f,  4.f/3.f,
+							  0,	    1.f,  5.f/3.f, -4.f/3.f,
+							  0,  4.f/3.f, -4.f/3.f,     -1.f };
+	vul__solve_apply_householder_tridiagonalization( A, 4, 4, 0 );
+	CHECK_WITHIN_EPS( A, S, 4 * 4, 1e-6 );
+
+	real B[ 3 * 3 ] = {  12, -51,   4,
+								 6, 167, -68,
+								-4,  24, -41 };
+	real SB[ 3 * 3 ] = { 14,  21, -14,
+								 0, -49, -14,
+								 0, 168, -77 };
+	vul__solve_apply_householder_column( S, B, 3, 3, 0, NULL, NULL, 0 );
+	CHECK_WITHIN_EPS( S, SB, 3 * 3, 1e-3 );
+}
+
 void vul__test_transpose( )
 {
 	real A[ 2 * 3 ] = { 1, 2, 3,
@@ -328,6 +362,8 @@ void vul_test_linear_solvers( ) {
 	puts("Sparse solvers work.");
 	vul__test_eigenvalues( );
 	puts("Eigenvalue finding works.");
+	vul__test_householder( );
+	puts("Householder reflection works.");
 	vul__test_qr_decomposition( );
 	puts("QR decomposition works.");
 	vul__test_svd_dense( );

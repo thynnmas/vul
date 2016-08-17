@@ -195,6 +195,10 @@ void vul__test_svd_sparse( )
 	}
 	vul_solve_matrix_destroy( R0 );
 	vul_solve_svd_basis_destroy_sparse( res, rank );
+
+	vul_solve_matrix_destroy( A );
+	vul_solve_matrix_destroy( A2 );
+	vul_solve_matrix_destroy( A3 );
 }
 
 void vul__test_svd_dense( )
@@ -265,6 +269,40 @@ void vul__test_svd_dense( )
 	assert( fabs( res[ 0 ].sigma - 3.f ) < 1e-5 );
 	assert( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-5 );
 	assert( fabs( res[ 2 ].sigma - 2.f ) < 1e-5 );
+
+	vul_solve_svd_basis_reconstruct_matrix( R0, res, rank );
+	CHECK_WITHIN_EPS( R0, A3, 5 * 4, 1e-1 );
+	vul_solve_svd_basis_destroy( res, rank );
+
+	// Test jacobi
+	rank = 3;
+	vul_solve_svd_dense( res, &rank, A, 15, 25, 1e-7, 32 );
+	assert( rank == 3 );
+	assert( fabs( res[ 0 ].sigma - 14.72f ) < 1e-2 );
+	assert( fabs( res[ 1 ].sigma - 5.22f ) < 1e-2 );
+	assert( fabs( res[ 2 ].sigma - 3.31f ) < 1e-2 );
+	vul_solve_svd_basis_reconstruct_matrix( RA1, res, rank );
+	CHECK_WITHIN_EPS( RA1, A, 15 * 25, 1e-3 );
+	vul_solve_svd_basis_destroy( res, rank );
+
+	rank = 0;
+	vul_solve_svd_dense_jacobi( res, &rank, A2, 5, 5, 1e-7, 8 );
+	assert( rank == 5 );
+	assert( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
+	assert( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
+	assert( fabs( res[ 2 ].sigma - 3.5639f ) < 1e-2 );
+	assert( fabs( res[ 3 ].sigma - 1.9843f ) < 1e-2 );
+	assert( fabs( res[ 4 ].sigma - 0.3496f ) < 1e-2 );
+	vul_solve_svd_basis_reconstruct_matrix( R0, res, rank );
+	CHECK_WITHIN_EPS( R0, A2, 5 * 5, 1e-1 );
+	vul_solve_svd_basis_destroy( res, rank );
+
+	rank = 0;
+	vul_solve_svd_dense_jacobi( res, &rank, A3, 5, 4, 1e-10, 32 );
+	assert( rank == 3 ); // Check that we got back the rank we wanted
+	assert( fabs( res[ 0 ].sigma - 3.f ) < 1e-2 );
+	assert( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-2 );
+	assert( fabs( res[ 2 ].sigma - 2.f ) < 1e-2 );
 
 	vul_solve_svd_basis_reconstruct_matrix( R0, res, rank );
 	CHECK_WITHIN_EPS( R0, A3, 5 * 4, 1e-1 );

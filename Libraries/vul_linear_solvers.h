@@ -9,8 +9,8 @@
  *  -Iterative:
  *     -Conjugate gradient method
  *     -Successive over-relaxation
+ *     -LU decomposition [Only for dense matrices] @TODO(thynn): Sparse as well, and make single-iteration!
  *  -Decompositions (single iteration):
- *    -LU decomposition [Only for dense matrices]
  *    -QR decomposition
  *    -Cholesky decomposition
  * with planned future support for:
@@ -25,7 +25,7 @@
  * Define VUL_LINEAR_SOLVERS_ROW_MAJOR to use row major matrices, otherwise column major
  * is assumed (for dense). Sparse matrices are Lists-of-lists, and are always row-major.
  * 
- * If you wish to use a costum allocator for temporaries, define VUL_LINEAR_SOLVERS_ALLOC
+ * If you wish to use a custom allocator for temporaries, define VUL_LINEAR_SOLVERS_ALLOC
  * and VUL_LINEAR_SOLVERS_FREE to functions with signatures similar to malloc and free.
  * malloc and free are used if no alternative is given.
  *
@@ -718,7 +718,7 @@ static void vull__sparse_backward_substitute( vul_solve_vector *out, vul_solve_m
 
    for( i = A->count - 1; i >= 0; --i ) {
       sum = vul_solve_vector_get( b, A->rows[ i ].idx );
-      for( j = 0; A->rows[ i ].vec.entries[ j ].idx <= A->rows[ i ].idx; ++j )
+      for( j = 0;j < A->rows[ i ].vec.count && A->rows[ i ].vec.entries[ j ].idx <= A->rows[ i ].idx; ++j )
          ; // Find index of first column > i
       while( j < A->rows[ i ].vec.count ) {
          sum -= A->rows[ i ].vec.entries[ j ].val * vul_solve_vector_get( out, A->rows[ i ].vec.entries[ j ].idx );
@@ -779,13 +779,17 @@ static void vull__sparse_mclean( vul_solve_matrix *A )
          }
       }
       if( c != A->rows[ i ].vec.count ) {
-         n = ( vul_solve_sparse_entry* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( vul_solve_sparse_entry ) * c );
-         for( j = 0, k = 0; j < A->rows[ i ].vec.count; ++j ) {
-            if( A->rows[ i ].vec.entries[ j ].val != 0.f ) {
-               n[ k ].val = A->rows[ i ].vec.entries[ j ].val;
-               n[ k ].idx = A->rows[ i ].vec.entries[ j ].idx;
-               ++k;
+         if( c != 0 ) {
+            n = ( vul_solve_sparse_entry* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( vul_solve_sparse_entry ) * c );
+            for( j = 0, k = 0; j < A->rows[ i ].vec.count; ++j ) {
+               if( A->rows[ i ].vec.entries[ j ].val != 0.f ) {
+                  n[ k ].val = A->rows[ i ].vec.entries[ j ].val;
+                  n[ k ].idx = A->rows[ i ].vec.entries[ j ].idx;
+                  ++k;
+               }
             }
+         } else {
+            n = 0;
          }
          VUL_LINEAR_SOLVERS_FREE( A->rows[ i ].vec.entries );
          A->rows[ i ].vec.entries = n;
@@ -1230,6 +1234,9 @@ void vul_solve_svd_sparse( vul_solve_svd_basis_sparse *out, int *rank,
          f = 1.f;
       }
       err = e / f;
+      // @TODO(thynn): Do we want to break if err increases as well?
+      // In that case, we should probably swap U/V back again to get back last iteration's versions, 
+      // but we would also need to store away S (since we overwrite that one!).
    }
 
    // Grap sigmas and rank, sort decreasing
@@ -1521,7 +1528,7 @@ void vul_solve_lu_decomposition_dense( vul_solve_real *out,
    indices = ( int* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( int ) * n );
    x = out;
    
-   /* Crout's LUP decomposition (without pivoting/scaling, which means it's unstable and bad...@TODO(thynn): Pivoting and scaling!) */
+   /* Crout's LUP decomposition with pivoting and scaling */
    for( i = 0; i < n; ++i ) {
       largest = 0.f;
       for( j = 0; j < n; ++ j ) {
@@ -1992,7 +1999,7 @@ static void vul__solve_qr_decomposition_householder( vul_solve_real *Q, vul_solv
 }
 
 static void vul__solve_givens_rotate( vul_solve_real *A, int c, int r, 
-                                      int i, float cosine, float sine,
+                                      int i, int j, float cosine, float sine,
                                       int post_multiply )
 {
    int k;
@@ -2006,18 +2013,18 @@ static void vul__solve_givens_rotate( vul_solve_real *A, int c, int r,
       // Apply it to the two affected rows, that is calculate the below for those rows that change
       // R = G^T * R
       for( k = 0; k < c; ++k ) {
-         v0 = G[ 0 ] * IDX( A, i, k, c, r ) + G[ 2 ] * IDX( A, i + 1, k, c, r ); // G[ 2 ]: T is transposed
-         v1 = G[ 1 ] * IDX( A, i, k, c, r ) + G[ 3 ] * IDX( A, i + 1, k, c, r ); // G[ 1 ]: T is transposed
-         IDX( A, i    , k, c, r ) = v0;
-         IDX( A, i + 1, k, c, r ) = v1;
+         v0 = G[ 0 ] * IDX( A, i, k, c, r ) + G[ 2 ] * IDX( A, j, k, c, r ); // G[ 2 ]: T is transposed
+         v1 = G[ 1 ] * IDX( A, i, k, c, r ) + G[ 3 ] * IDX( A, j, k, c, r ); // G[ 1 ]: T is transposed
+         IDX( A, i, k, c, r ) = v0;
+         IDX( A, j, k, c, r ) = v1;
       }
    } else {
       // Calculate new Q = Q * G
       for( k = 0; k < r; ++k ) {
-         v0 = G[ 0 ] * IDX( A, k, i, r, r ) + G[ 2 ] * IDX( A, k, i + 1, r, r );
-         v1 = G[ 1 ] * IDX( A, k, i, r, r ) + G[ 3 ] * IDX( A, k, i + 1, r, r );
-         IDX( A, k, i    , r, r ) = v0;
-         IDX( A, k, i + 1, r, r ) = v1;
+         v0 = G[ 0 ] * IDX( A, k, i, r, r ) + G[ 2 ] * IDX( A, k, j, r, r );
+         v1 = G[ 1 ] * IDX( A, k, i, r, r ) + G[ 3 ] * IDX( A, k, j, r, r );
+         IDX( A, k, i, r, r ) = v0;
+         IDX( A, k, j, r, r ) = v1;
       }
    }
 }
@@ -2057,8 +2064,8 @@ static void vul__solve_qr_decomposition_givens( vul_solve_real *Q, vul_solve_rea
             ct = 1.f;
          }
          // Create givens rotation matrix
-         vul__solve_givens_rotate( RA, c, r, i, ct, st, 1 );
-         vul__solve_givens_rotate( Q, r, r, i, ct, st, 0 );
+         vul__solve_givens_rotate( RA, c, r, i, i + 1, ct, st, 1 );
+         vul__solve_givens_rotate( Q, r, r, i, i + 1, ct, st, 0 );
       }
    }
    memcpy( R, RA, c * r * sizeof( vul_solve_real ) );
@@ -2138,7 +2145,6 @@ vul_solve_real vul_solve_largest_eigenvalue( vul_solve_real *A, int c, int r, vu
    return lambda;
 }
 
-
 void vul_solve_svd_dense( vul_solve_svd_basis *out, int *rank,
                           vul_solve_real *A,
                           int c, int r, vul_solve_real eps, int itermax )
@@ -2164,10 +2170,10 @@ void vul_solve_svd_dense( vul_solve_svd_basis *out, int *rank,
    iter = 0;
    err = FLT_MAX;
 
-   // Initialize to empty for U, V, Q. Set S to A^T
+   // Initialize S0 to A^T
    vull__mtranspose( S0, A, c, r );
 
-   // Initialize as identity matrix
+   // Initialize U and V as identity matrix
    for( i = 0; i < r; ++i ) {
       IDX( U0, i, i, r, r ) = 1.f;
    }
@@ -2232,6 +2238,121 @@ void vul_solve_svd_dense( vul_solve_svd_basis *out, int *rank,
    VUL_LINEAR_SOLVERS_FREE( S0 );
    VUL_LINEAR_SOLVERS_FREE( S1 );
    VUL_LINEAR_SOLVERS_FREE( Q );
+}
+
+void vul_solve_svd_dense_jacobi( vul_solve_svd_basis *out, int *rank,
+                                 vul_solve_real *A,
+                                 int c, int r, vul_solve_real eps, int itermax )
+{
+   vul_solve_real *J, *U, *V, *G, *omegas, f;
+   int iter, n, m, i, j, k, ri, ci, done;
+
+   n = r > c ? r : c;
+   m = r < c ? r : c;
+   U = ( vul_solve_real* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( vul_solve_real ) * r * r );
+   V = ( vul_solve_real* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( vul_solve_real ) * c * c );
+   G = ( vul_solve_real* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( vul_solve_real ) * r * c );
+   omegas = ( vul_solve_real* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( vul_solve_real ) * c );
+   memset( U, 0, sizeof( vul_solve_real ) * r * r );
+   memset( V, 0, sizeof( vul_solve_real ) * c * c );
+   memset( omegas, 0, sizeof( vul_solve_real ) * c );
+   iter = 0;
+   done = 0;
+
+   // Initialize S to A
+   // @TODO(thynn): Could scale by inverse of largest coefficient here (and multiply singular values by that
+   // same scale afterwards) for stability, at minor runtime cost.
+   memcpy( G, A, sizeof( vul_solve_real ) * r * c );
+   
+   // Initialize U and V as identity matrices
+   for( i = 0; i < r; ++i ) {
+      IDX( U, i, i, r, r ) = 1.f;
+   }
+   for( i = 0; i < c; ++i ) {
+      IDX( V, i, i, c, c ) = 1.f;
+   }
+
+   while( !done && iter++ < itermax ) {
+      done = 1;
+      for( i = 0; i < m - 1; ++i ) {
+         for( j = i + 1; j < m; ++j ) {
+            vul_solve_real aii, aij, ajj;
+            
+            // Compute a_ij, a_ji, a_ii
+            aii = 0.0; aij = 0.0; ajj = 0.0;
+            for( k = 0; k < c; ++k ) {
+               aii += IDX( G, i, k, c, r ) * IDX( G, i, k, c, r );
+               ajj += IDX( G, j, k, c, r ) * IDX( G, j, k, c, r );
+               aij += IDX( G, i, k, c, r ) * IDX( G, j, k, c, r );
+            }
+            if( fabs( aij ) > eps ) {
+               done = 0;
+               vul_solve_real tau, t, ct, st;
+               tau = ( aii - ajj ) / ( 2.0 * aij );
+               t = copysign( 1.0 / ( fabs( tau ) + sqrt( 1.0 + tau * tau ) ), tau );
+               ct = 1.0 / sqrt( 1.0 + t * t );
+               st = ct * t;
+               vul__solve_givens_rotate( G, c, r, j, i, ct, st, 1 );
+               if( j < r ) {
+                  vul__solve_givens_rotate( U, r, r, j, i, ct, st, 0 );
+               }
+            }
+         }
+      }
+   }
+   printf("ran %d iterations out of %d\n", iter-1, itermax);
+
+   // Calculate the singular values (2-norm of the columns of G)
+   for( i = 0; i < r; ++i ) {
+      vul_solve_real t = 0.0;
+      for( j = 0; j < c; ++j ) {
+         t += IDX( G, i, j, c, r ) * IDX( G, i, j, c, r );
+      }
+      omegas[ i ] = sqrt( t );
+   }
+
+   // Calculate V
+   for( i = 0; i < c; ++i ) { // The rest is zero
+      if( fabs( omegas[ i ] ) > eps ) { // Ignore zero singular values
+         for( j = 0; j < c; ++j ) {
+            IDX( V, j, i, c, c ) = IDX( G, i, j, c, r ) / omegas[ i ];
+         }
+      }
+   }
+
+   // Grap sigmas and rank, sort decreasing
+   k = r < c ? r : c;
+   for( j = 0, i = 0; i < c; ++i ) {
+      out[ i ].sigma = fabs( omegas[ i ] );
+      out[ i ].axis = i;
+      if( out[ i ].sigma > eps ) {
+         ++j;
+      }
+   }
+   if( *rank == 0 || j < *rank ) {
+      *rank = j;
+   }
+   vul__solve_svd_sort( out, k );
+
+   // Fix signs and copy U
+   for( i = 0; i < *rank; ++i ) {
+      out[ i ].u_length = r;
+      out[ i ].v_length = c;
+      out[ i ].u = ( vul_solve_real* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( vul_solve_real ) * r );
+      out[ i ].v = ( vul_solve_real* )VUL_LINEAR_SOLVERS_ALLOC( sizeof( vul_solve_real ) * c );
+      f = omegas[ out[ i ].axis ] < 0.f ? -1.f : 1.f;
+      for( j = 0; j < r; ++j ) {
+         out[ i ].u[ j ] = IDX( U, j, out[ i ].axis, r, r ) * f;
+      }
+      for( j = 0; j < c; ++j ) {
+         out[ i ].v[ j ] = IDX( V, j, out[ i ].axis, c, c );
+      }
+   }
+
+   VUL_LINEAR_SOLVERS_FREE( U );
+   VUL_LINEAR_SOLVERS_FREE( V );
+   VUL_LINEAR_SOLVERS_FREE( G );
+   VUL_LINEAR_SOLVERS_FREE( omegas );
 }
 
 // @TODO(thynn): Jacobi rotation SVD. Because WHY NOT (might be faster; the current approach is rather slow!)

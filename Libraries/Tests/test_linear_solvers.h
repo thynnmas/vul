@@ -81,6 +81,9 @@ void vul__test_linear_solvers_dense( )
 
 	vul_solve_successive_over_relaxation_dense( x, A, guess, b, 1.1f, 3, iters, eps );
 	CHECK_WITHIN_EPS( x, solution, 3, 1e-5f );
+
+	vul_solve_linear_least_squares_dense( x, A, b, 3, 3, iters, eps );
+	CHECK_WITHIN_EPS( x, solution, 3, 1e-7f );
 }
 
 void vul__test_linear_solvers_sparse( )
@@ -127,6 +130,10 @@ void vul__test_linear_solvers_sparse( )
 
 	x = vul_solve_successive_over_relaxation_sparse( A, guess, b, 1.1f, iters, eps );
 	CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-5f );
+	vul_solve_vector_destroy( x );
+
+   x = vul_solve_linear_least_squares_sparse( A, b, 3, 3, iters, eps );
+	CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-7f );
 
 	vul_solve_matrix_destroy( A );
 	vul_solve_vector_destroy( b );
@@ -196,9 +203,41 @@ void vul__test_svd_sparse( )
 	vul_solve_matrix_destroy( R0 );
 	vul_solve_svd_basis_destroy_sparse( res, rank );
 
+	// Jacobi
+	rank = 0;
+	vul_solve_svd_sparse_jacobi( res, &rank, A, 5, 5, 1e-7, 32 );
+	assert( rank == 5 );
+	assert( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
+	assert( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
+	assert( fabs( res[ 2 ].sigma - 3.5639f ) < 1e-2 );
+	assert( fabs( res[ 3 ].sigma - 1.9843f ) < 1e-2 );
+	assert( fabs( res[ 4 ].sigma - 0.3496f ) < 1e-2 );
+	R0 = vul_solve_svd_basis_reconstruct_matrix_sparse( res, rank );
+	for( int k = 0; k < 5; ++k ) {
+		CHECK_WITHIN_EPS_SPARSE( &R0->rows[ k ].vec, &A->rows[ k ].vec, 5, 1e-1 );
+	}
+	vul_solve_matrix_destroy( R0 );
+	vul_solve_svd_basis_destroy_sparse( res, rank );
+
+	rank = 0;
+	vul_solve_svd_sparse_jacobi( res, &rank, A2, 5, 4, 1e-10, 32 );
+	assert( rank == 3 ); // Check that we got back the rank we wanted
+	assert( fabs( res[ 0 ].sigma - 3.f ) < 1e-5 );
+	assert( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-5 );
+	assert( fabs( res[ 2 ].sigma - 2.f ) < 1e-5 );
+
+	R0 = vul_solve_svd_basis_reconstruct_matrix_sparse( res, rank );
+	assert( R0->count == A2->count );
+	for( int k = 0; k < R0->count; ++k ) {
+		CHECK_WITHIN_EPS_SPARSE( &R0->rows[ k ].vec, &A2->rows[ k ].vec, 5, 1e-1 );
+	}
+	vul_solve_matrix_destroy( R0 );
+	vul_solve_svd_basis_destroy_sparse( res, rank );
+
 	vul_solve_matrix_destroy( A );
 	vul_solve_matrix_destroy( A2 );
 	vul_solve_matrix_destroy( A3 );
+
 }
 
 void vul__test_svd_dense( )

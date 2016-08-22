@@ -9,10 +9,12 @@
  *  - Emscripten: TODO (can we hotload this?)
  *  - Mobile: TODO iOS & Android (don't know these apis or how to hotload them!)
  *
- * @TODO(thynn): This "write to buffer"-approach is not great. Use callback threads
- *					  instead, integrate a mixer into this thing (SSE/AVX that) as well.
- *
  * @TODO(thynn): Hide a statically linked version behind a define?
+ * @TODO(thynn): Mixer should be wide (SSE/AVX)!
+ *
+ * Linux and OSX variation require linking with pthreads (because dlopen-ing
+ * libpthread.so simply does not work!).
+ * @TODO(thynn): C11 threads as an alternative to pthreads behind a define!
  *
  * Error reporting: A lot can go wrong, especially in setup. We have multiple
  * ways to report errors back to the user (in addition to return values being
@@ -43,6 +45,9 @@
  * Define in exactly _one_ C/CPP file.
  */
 //#define VUL_DEFINE
+
+// @TODO(thynn): Make this an init-parameter and not a define?
+#define VUL_AUDIO_FRAME_SIZE_BYTES 0x1000
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -118,7 +123,7 @@ typedef enum vul__audio_lib {
 	VUL__AUDIO_WINDOWS_DSOUND,
 	VUL__AUDIO_WINDOWS_WAVEOUT,
 #elif defined( VUL_OSX )
-	BAH
+   VUL__AUDIO_OSX_CORE_AUDIO,
 #elif defined( VUL_LINUX )
 	VUL__AUDIO_LINUX_ALSA,
 	VUL__AUDIO_LINUX_PULSE,
@@ -164,10 +169,11 @@ typedef struct vul_audio_device {
       } waveout;
 	} device;
 #elif defined( VUL_ODX )
-	BAH
+   pthread_mutex_t mixer_mutex;
+   AudioQueueRef queue;
 #elif defined( VUL_LINUX )
    pthread_t thread;
-   pthread_mutex_t mixer_mutex, thread_mutex; // @TODO(thynn): Load pthread functions!
+   pthread_mutex_t mixer_mutex, thread_mutex; 
 	union {
 		s32 oss_device_fd;
 		struct alsa {
@@ -192,11 +198,6 @@ extern "C" {
 /*
  * @TODO(thynn): Document
  */
-vul_audio_return vul_audio_read( vul_audio_device *dev, void *samples, u32 sample_count );
-
-/*
- * @TODO(thynn): Document
- */
 vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_close );
 
 
@@ -212,9 +213,15 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 											void (*mix_function)( void *, size_t, void* ), 
                                  void *mix_function_user_data );
 #elif VUL_OSX
-	TODO
+vul_audio_return vul_audio_init( vul_audio_device *out, 
+											vul_audio_mode mode,
+											u32 channels, 
+											u32 sample_rate,
+											void (*mix_function)( void *, size_t, void* ),
+                                 void *mix_function_user_data );
 #elif VUL_LINUX
 vul_audio_return vul_audio_init( vul_audio_device *out, 
+											const char *server_name,  
 											const char *device_name,  
 											vul_audio_mode mode,
 											u32 channels, 
@@ -676,12 +683,6 @@ static vul_audio_return vul__audio_write_waveout( vul_audio_device *dev, void *s
    return VUL_OK;
 }
 
-static vul_audio_return vul__audio_read_waveout( vul_audio_device *dev, void *samples, u32 sample_count )
-{
-	ERR( "Not implemented (requires waveIn).\n" );
-	assert( SL_FALSE && "Not implemented yet!" );
-}
-
 static vul_audio_return vul__audio_destroy_waveout( vul_audio_device *dev, int drain_before_close )
 {
    SetEvent( dev->device.waveout.event );
@@ -711,7 +712,6 @@ static vul_audio_return vul__audio_init_waveout( vul_audio_device *out )
 	DLLOAD( pWaveOutOpen, waveout, "waveOutOpen" );
 	DLLOAD( pWaveOutPrepareHeader, waveout, "waveOutPrepareHeader" );
 	DLLOAD( pWaveOutWrite, waveout, "waveOutWrite" );
-	//DLLOAD( pWaveOutRead, waveout, "waveOutOpen" ); // @TODO(thynn): Input is waveIn, so the question becomes, do we actually want reading??
 	DLLOAD( pWaveOutUnprepareHeader, waveout, "waveOutUnprepareHeader" );
 	DLLOAD( pWaveOutClose, waveout, "waveOutClose" );
 	
@@ -735,11 +735,10 @@ static vul_audio_return vul__audio_init_waveout( vul_audio_device *out )
 	}
 
    for( int i = 0; i < 2; ++i ) {
-      // @TODO(thynn): Make the size a parameters; it's the frame window
-      out->device.waveout.buffers[ i ] = ( smp* )malloc( 0x1000 );
-      memset( out->device.waveout.buffers[ i ], 0, 0x1000 );
+      out->device.waveout.buffers[ i ] = ( smp* )malloc( VUL_AUDIO_FRAME_SIZE_BYTES );
+      memset( out->device.waveout.buffers[ i ], 0, VUL_AUDIO_FRAME_SIZE_BYTES );
       memset( &out->device.waveout.headers[ i ], 0, sizeof( WAVEHDR ) );
-      out->device.waveout.headers[ i ].dwBufferLength = 0x1000;
+      out->device.waveout.headers[ i ].dwBufferLength = VUL_AUDIO_FRAME_SIZE_BYTES;
       out->device.waveout.headers[ i ].lpData = ( LPSTR )out->device.waveout.buffers[ i ];
       if( MMSYSERR_NOERROR != pWaveOutPrepareHeader( out->device.waveout.handle,
                                                      &out->device.waveout.headers[ i ],
@@ -767,18 +766,6 @@ vul_audio_return vul__audio_write( vul_audio_device *dev, void *samples, u32 sam
 // --------------
 // Public API
 //
-
-vul_audio_return vul_audio_read( vul_audio_device *dev, void *samples, u32 sample_count )
-{
-	switch( dev->lib ) {
-	case VUL__AUDIO_WINDOWS_WAVEOUT: {
-		return vul__audio_read_waveout( dev, samples, sample_count );
-	} break;
-	default: {
-		ERR( "Unknown device library in use.\n" );
-	}
-	}
-}
 
 vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_close )
 {
@@ -822,7 +809,7 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
       out->mix_function = mix_function;
       out->mix_function_data = mix_function_user_data;
    }
-   vul__audio_mixer_init( &out->mixer, channels, 0x1000 / ( sizeof( smp ) * channels ), 32 );
+   vul__audio_mixer_init( &out->mixer, channels, VUL_AUDIO_FRAME_SIZE_BYTES / ( sizeof( smp ) * channels ), 32 );
 
 	// Try waveOut
    ret = vul__audio_init_waveout( out );
@@ -850,8 +837,125 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 
 #elif defined( VUL_OSX )
 
-// @TODO(thynn): OSX
-Error...
+// @TODO(thynn): We probably want to dynamically load this as well if possible!
+
+vul_audio_return vul__audio_mixer_wait_and_lock( vul_audio_device *dev )
+{
+   int res = pthread_mutex_lock( &dev->mixer_mutex );
+   return res == 0 ? VUL_OK : VUL_ERROR;
+}
+
+void vul__audio_mixer_release( vul_audio_device *dev )
+{
+   int res = pthread_mutex_unlock( &dev->mixer_mutex );
+}
+
+
+static void vul__audio_callback( void *data, AudioQueueRef queue, AudioQueueBufferRef buffer )
+{
+   vul_audio_return ret;
+   vul_audio_device *dev = ( vul_audio_device* )data;
+
+   if( dev->mix_function ) {
+      dev->mix_function( ( void* )buffer->mAudioData, 
+                         ( size_t )buffer->mAudioDataByteSize,
+                         dev->mix_function_data );
+   } else {
+      if( VUL_ERROR == vul__audio_mixer_wait_and_lock( dev ) ) {
+         ERR( "Failed to lock audio mixer.\n" );
+      }
+
+      vul__audio_mix( &dev->mixer );
+
+      vul__audio_mixer_release( dev );
+
+      memcpy( buffer->mAudioData, dev->mixer.samples, buffer->mAudioDataByteSize );
+   }
+
+   // Upload the data
+   AudioQueueEnqueueBuffer( queue, buffer, 0, NULL );
+}
+
+// --------------
+// Public API
+//
+
+vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_close )
+{
+   pthread_mutex_destroy( &dev->mixer_mutex );
+
+   AudioQueueStop( dev->queue, 1 );
+   AudioQueueDispose( dev->queue, 0 );
+}
+
+vul_audio_return vul_audio_init( vul_audio_device *out, 
+											vul_audio_mode mode,
+											u32 channels, 
+											u32 sample_rate,
+											void (*mix_function)( void*, size_t, void* ),
+                                 void *mix_function_user_data )
+{
+   vul_audio_return ret;
+   OSStatus res;
+   s32 i;
+
+	assert( out );
+	memset( out, 0, sizeof( vul_audio_device ) );
+
+	out->channels = channels;
+	out->sample_rate = sample_rate;
+	out->mode = mode;
+   if( mix_function ) {
+      out->mix_function = mix_function;
+      out->mix_function_data = mix_function_user_data;
+   } else {
+      vul__audio_mixer_init( &out->mixer, channels, VUL_AUDIO_FRAME_SIZE_BYTES / ( sizeof( smp ) * channels ), 32 );
+   }
+
+   // Initialize CoreAudio (do this in here instead of a subfunction because it's the only choice)
+   AudioStreamBasicDescription format;
+   memset( format, 0, sizeof( format ) );
+   format.mSampleRate = sample_rate;
+   format.mFormatID = kAudioFormatLinearPCM;
+   format.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger
+                       | kAudioFormatFlagIsPacked;
+   format.mBytesPerPacket = channels * sizeof( smp );
+   format.mFramesPerPacket = 1;
+   format.mBytesPerFrame = format.mBytesPerPacket;
+   format.mChannelsPerFrame = channels;
+   format.mBitsPerChannel = sizeof( smp ) * 8;
+   
+   res = AudioQueueNewOutput( &format, 
+                              vul__audio_callback, out, 
+                              NULL, NULL, 0, 
+                              &out->queue );
+   if( res ) {
+      ERR( "Failed to create core audio queue.\n" );
+   }
+
+   for( i = 0; i < 2; ++i ) {
+      AudioQueueBufferRef buffer;
+      res = AudioQueueAllocateBuffer( out->queue, VUL_AUDIO_FRAME_SIZE_BYTES, &buffer );
+      if( res ) {
+         ERR( "Failed to create core audio buffer.\n" );
+      }
+      buffer->mAudioDataByteSize = VUL_AUDIO_FRAME_SIZE_BYTES;
+      memset( buffer->mAudioData, 0, buffer->mAudioDataByteSize );
+      AudioQueueEnqueueBuffer( out->queue, buffer, 0, NULL );
+   }
+
+   res = AudioQueueStart( out->queue, NULL );
+   if( res ) {
+      ERR( "Failed to start core audio queue playback.\n" );
+   }
+
+   pthread_mutex_init( &out->mixer_mutex, NULL );
+
+   out->lib = VUL__AUDIO_OSX_CORE_AUDIO;
+
+   return VUL_OK;
+}
+
 
 #elif defined( VUL_LINUX )
 
@@ -986,7 +1090,6 @@ static vul_audio_return vul__audio_write_oss( vul_audio_device *dev, void *sampl
 // ALSA
 //
 
-snd_pcm_sframes_t ( *alsa_read)( snd_pcm_t *, void *, snd_pcm_uframes_t ) = 0;
 snd_pcm_sframes_t ( *alsa_write )( snd_pcm_t *, const void *, snd_pcm_uframes_t ) = 0;
 int ( *alsa_prepare )( snd_pcm_t * ) = 0;
 const char * ( *alsa_strerror )( int ) = 0;
@@ -1010,32 +1113,17 @@ int( *alsa_sw_free )( snd_pcm_sw_params_t * ) = 0;
 int( *alsa_drain )( snd_pcm_t * ) = 0;
 int( *alsa_close )( snd_pcm_t * ) = 0;
 
-static vul_audio_return vul__audio_read_alsa( vul_audio_device *dev, void *samples, u32 sample_count )
-{	
-	s32 r = alsa_read( dev->device.alsa.handle, samples, sample_count ); // @TODO(thynn): Do we want frame-count as an argument to all write functions??
-	if( r == -EPIPE ) {
-		// Reprepare before failing
-		alsa_prepare( dev->device.alsa.handle );
-		ERR( "ALSA read returned in a buffer overrun.\n" )
-	}
-	if( r < 0 ) {
-		ERR( "ALSA read failed: %s.\n", alsa_strerror( r ) );
-	}
-	if( r != sample_count ) {
-		ERR( "Frame count read (%d) does not match wanted count (%d).\n", r, sample_count );
-	}
-	return VUL_OK;
-}
-
-// @TODO(thynn): Make this work, see write_and_poll_loop in
+// @TODO(thynn): Make this work properly (as in, poll for when to continue writing,
+// and not hardcode the wait!), see write_and_poll_loop in
 // http://www.alsa-project.org/alsa-doc/alsa-lib/_2test_2pcm_8c-example.html 
 static vul_audio_return vul__audio_write_alsa( vul_audio_device *dev, void *samples, u32 sample_count )
 {
    s32 r;
+   u32 size = sample_count;// * dev->mixer.channels * sizeof( smp );
 
    while( -EAGAIN == ( r = alsa_write( dev->device.alsa.handle, 
                                        samples, 
-                                       sample_count ) ) )
+                                       size ) ) )
       ; // Keep looping
 	if( r == -EPIPE ) {
 		// Reprepare before failing
@@ -1045,10 +1133,10 @@ static vul_audio_return vul__audio_write_alsa( vul_audio_device *dev, void *samp
 	if( r < 0 ) { // @TODO(thynn): Underrun, attempt a recovery
 		ERR( "ALSA write failed: %s.\n", alsa_strerror( r ) );
 	}
-	if( r != sample_count ) {
-		ERR( "Frame count write (%d) does not match wanted count (%d).\n", r, sample_count );
+	if( r != size ) {
+		ERR( "Frame count write (%d) does not match wanted count (%d).\n", r, size );
 	}
-   vul_sleep(90);
+   vul_sleep(20);
 	return VUL_OK;
 }
 
@@ -1066,7 +1154,6 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 	}
 	DLLOAD( alsa_prepare, dev->device.alsa.dlib, "snd_pcm_prepare" );
 	DLLOAD( alsa_write, dev->device.alsa.dlib, "snd_pcm_writei" );
-	DLLOAD( alsa_read, dev->device.alsa.dlib, "snd_pcm_readi" );
 	DLLOAD( alsa_strerror, dev->device.alsa.dlib, "snd_strerror" );
 	DLLOAD( alsa_open, dev->device.alsa.dlib, "snd_pcm_open" );
 	DLLOAD( alsa_hw_malloc, dev->device.alsa.dlib, "snd_pcm_hw_params_malloc" );
@@ -1101,7 +1188,6 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 		ERR( "Failed to get initial ALSA hardware parameters.\n" );
 	}
 
-	// @TODO(thynn): Interleaved vs. other buffer/stream types!!
 	if( ( err = alsa_hw_set_access( dev->device.alsa.handle, hwp, SND_PCM_ACCESS_RW_INTERLEAVED ) ) < 0 ) {
 		ERR( "Failed to set ALSA access pattern.\n" );
 	}
@@ -1127,10 +1213,10 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 	if( ( err = alsa_hw_set_channels( dev->device.alsa.handle, hwp, dev->channels ) ) < 0 ) {
 		ERR( "Failed to set ALSA channel count.\n" );
 	}
-   if( ( err = alsa_hw_set_buffer_size( dev->device.alsa.handle, hwp, 0x4000 ) ) < 0 ) { // @TODO(thynn): Parameter/config/define
+   if( ( err = alsa_hw_set_buffer_size( dev->device.alsa.handle, hwp, VUL_AUDIO_FRAME_SIZE_BYTES ) ) < 0 ) {
       ERR( "Failed to set ALSA buffer size.\n" );
    }
-   if( ( err = alsa_hw_set_period_size( dev->device.alsa.handle, hwp, 0x1000, 0 ) ) < 0 ) { // @TODO(thynn): Parameter/config/define
+   if( ( err = alsa_hw_set_period_size( dev->device.alsa.handle, hwp, VUL_AUDIO_FRAME_SIZE_BYTES / 4, 0 ) ) < 0 ) {
       ERR( "Failed to set ALSA period size.\n" );
    }
 	if( ( err = alsa_hw_params( dev->device.alsa.handle, hwp ) ) < 0 ) {
@@ -1146,17 +1232,15 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 	if( ( err = alsa_sw_current( dev->device.alsa.handle, swp ) ) < 0 ) {
 		ERR( "Failed to get current ALSA software parameters.\n" );
 	}
-	// @TODO(thynn): Frame size should be a define or parameter, and threshold > frame size (we'll go with factor 4)
-	if( ( err = alsa_sw_set_avail_min( dev->device.alsa.handle, swp, 0x4000 ) ) < 0 ) {
+	if( ( err = alsa_sw_set_avail_min( dev->device.alsa.handle, swp, VUL_AUDIO_FRAME_SIZE_BYTES ) ) < 0 ) {
 		ERR( "Failed to set ALSA frame size.\n" );
 	}
-	if( ( err = alsa_sw_set_start_threshold( dev->device.alsa.handle, swp, ( 0x4000 / 0x1000 ) * 0x1000 ) ) < 0 ) {
+	if( ( err = alsa_sw_set_start_threshold( dev->device.alsa.handle, swp, VUL_AUDIO_FRAME_SIZE_BYTES ) ) < 0 ) {
 		ERR( "Failed to set ALSA start threshold.\n" );
 	}
 	if( ( err = alsa_sw_params( dev->device.alsa.handle, swp ) ) < 0 ) {
 		ERR( "Failed to set final ALSA software parameters.\n" );
 	}
-	// @TODO(thynn): Can we free this (swp)??
 
 	// Prepare device
 	if( ( err = alsa_prepare( dev->device.alsa.handle ) ) < 0 ) {
@@ -1176,12 +1260,10 @@ pa_simple * ( *pulse_new )( const char *, const char *, pa_stream_direction_t,
 									 const pa_channel_map*, const pa_buffer_attr*, int * ) = 0;
 void ( *pulse_free )( pa_simple * ) = 0;
 int ( *pulse_write )( pa_simple *, const void *, size_t, int * ) = 0;
-int ( *pulse_read )( pa_simple *, void *, size_t, int * ) = 0;
 int ( *pulse_drain )( pa_simple *, int * ) = 0;
 const char* ( *pulse_error )( int ) = 0;
 
-// @TODO(thynn): Move from simple API to asynch API? https://freedesktop.org/software/pulseaudio/doxygen/async.html
-vul_audio_return vul__audio_init_pulse( vul_audio_device *dev, const char *name, const char *description )
+vul_audio_return vul__audio_init_pulse( vul_audio_device *dev, const char *name, const char *description, const char *server_name, const char *device_name )
 {
 	// Library loads
 	if( ( dev->device.pulse.dlib = dlopen( "libpulse.so", RTLD_NOW ) ) == NULL ) {
@@ -1192,7 +1274,6 @@ vul_audio_return vul__audio_init_pulse( vul_audio_device *dev, const char *name,
 	}
 	DLLOAD( pulse_new, dev->device.pulse.dlib_simple, "pa_simple_new" );
 	DLLOAD( pulse_free, dev->device.pulse.dlib_simple, "pa_simple_free" );
-	DLLOAD( pulse_read, dev->device.pulse.dlib_simple, "pa_simple_read" );
 	DLLOAD( pulse_write, dev->device.pulse.dlib_simple, "pa_simple_write" );
 	DLLOAD( pulse_drain, dev->device.pulse.dlib_simple, "pa_simple_drain" );
 	DLLOAD( pulse_error, dev->device.pulse.dlib, "pa_strerror" );
@@ -1223,35 +1304,25 @@ vul_audio_return vul__audio_init_pulse( vul_audio_device *dev, const char *name,
 		ERR( "Unkown device mode encountered.\n" );
 	}
 	
-	dev->device.pulse.client = pulse_new( NULL, // Default server, (@TODO(thynn): Make an argument?)
+	dev->device.pulse.client = pulse_new( server_name,
 													  name,
 													  dir,
-													  NULL, // Default device (@TODO(thynn): Make an argument?)
+                                         device_name,
 													  description,
 													  &ss,
 													  NULL, // Default channel map, 
 													  NULL, // Default buffering attributes
 													  NULL ); // Ignore error code
-	dev->lib = VUL__AUDIO_LINUX_PULSE;
-	return VUL_OK;
-}
+   if( !dev->device.pulse.client ) {
+      ERR( "Failed to open pulse device.\n" );
+   }
 
-vul_audio_return vul__audio_read_pulse( vul_audio_device *dev, void *samples, u32 sample_count )
-{
-	u32 size = sample_count * sizeof( smp ) * dev->channels;
-	s32 err;
-	if( pulse_read( dev->device.pulse.client,
-						 samples,
-						 size,
-						 &err ) < 0 ) {
-		ERR( "Failed to read samples to PulseAudio: %s.\n", pulse_error( err ) );
-	}
+	dev->lib = VUL__AUDIO_LINUX_PULSE;
 	return VUL_OK;
 }
 
 vul_audio_return vul__audio_write_pulse( vul_audio_device *dev, void *samples, u32 sample_count )
 {
-	// @TODO(thynn): Make "flush first" a parameter? "Flush if latence over N ms" a parameter?
 	u32 size = sample_count * sizeof( smp ) * dev->channels;
 	s32 err;
 	if( pulse_write( dev->device.pulse.client,
@@ -1285,26 +1356,6 @@ vul_audio_return vul__audio_write( vul_audio_device *dev, void *samples, u32 sam
 // --------------
 // Public API
 //
-
-
-vul_audio_return vul_audio_read( vul_audio_device *dev, void *samples, u32 sample_count )
-{
-	if( !( dev->mode == VUL_AUDIO_MODE_RECORDING || dev->mode == VUL_AUDIO_MODE_DUPLEX ) ) {
-		ERR( "Device read requested while not in recording or duplex mode.\n" );
-	}
-
-	switch( dev->lib ) {
-	case VUL__AUDIO_LINUX_OSS:
-		assert( 0 && "Not implemented yet." );
-	case VUL__AUDIO_LINUX_ALSA:
-		return vul__audio_read_alsa( dev, samples, sample_count );
-	case VUL__AUDIO_LINUX_PULSE:
-		return vul__audio_read_pulse( dev, samples, sample_count );
-	default:
-		ERR( "Unknown device library in use.\n" );
-	}
-	return VUL_OK;
-}
 
 vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_close )
 {
@@ -1344,7 +1395,8 @@ vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_clos
 }
 
 vul_audio_return vul_audio_init( vul_audio_device *out, 
-											const char *device_name,  
+                                 const char *server_name, // Only pulse
+											const char *device_name, // Both pulse and ALSA
 											vul_audio_mode mode,
 											u32 channels, 
 											u32 sample_rate,
@@ -1364,14 +1416,17 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
       out->mix_function = mix_function;
       out->mix_function_data = mix_function_user_data;
    } else {
-      vul__audio_mixer_init( &out->mixer, channels, 0x1000, 32 );
+      vul__audio_mixer_init( &out->mixer, channels, VUL_AUDIO_FRAME_SIZE_BYTES / ( sizeof( smp ) * channels ), 32 );
    }
 
 	// Try pulse
-	vul__audio_init_pulse( out, "vul_audio", "@TODO(thynn): This and name should be parameters!" );
+	ret = vul__audio_init_pulse( out, "vul_audio", "@TODO(thynn): This and name should be parameters!", server_name, device_name );
 
 	// Try ALSA
 	if( VUL_OK != ret ) {
+      if( !device_name ) {
+         device_name = "default";
+      }
 	   ret = vul__audio_init_alsa( out, device_name );
       if( VUL_OK != ret ) {
          // Try OSS

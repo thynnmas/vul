@@ -69,6 +69,7 @@
 	#include <pulse/error.h>
    #include <pthread.h>
 #elif defined( VUL_OSX )
+   #include <pthread.h>
    #include <AudioToolbox/AudioToolbox.h>
 #endif
 
@@ -168,7 +169,7 @@ typedef struct vul_audio_device {
          HANDLE event;
       } waveout;
 	} device;
-#elif defined( VUL_ODX )
+#elif defined( VUL_OSX )
    pthread_mutex_t mixer_mutex;
    AudioQueueRef queue;
 #elif defined( VUL_LINUX )
@@ -569,6 +570,8 @@ void vul__audio_mix( vul__audio_mixer *mixer )
 	}
 }
 
+#if defined( VUL_WINDOWS ) || defined( VUL_LINUX )
+
 vul_audio_return vul__audio_callback_internal( vul_audio_device *dev )
 {
    if( dev->mix_function ) {
@@ -590,6 +593,8 @@ vul_audio_return vul__audio_callback_internal( vul_audio_device *dev )
 
    return VUL_OK;
 }
+
+#endif
 
 #ifdef VUL_WINDOWS
 
@@ -862,7 +867,8 @@ static void vul__audio_callback( void *data, AudioQueueRef queue, AudioQueueBuff
                          dev->mix_function_data );
    } else {
       if( VUL_ERROR == vul__audio_mixer_wait_and_lock( dev ) ) {
-         ERR( "Failed to lock audio mixer.\n" );
+         printf( "Failed to lock audio mixer.\n" );
+			return;
       }
 
       vul__audio_mix( &dev->mixer );
@@ -914,7 +920,7 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 
    // Initialize CoreAudio (do this in here instead of a subfunction because it's the only choice)
    AudioStreamBasicDescription format;
-   memset( format, 0, sizeof( format ) );
+   memset( &format, 0, sizeof( format ) );
    format.mSampleRate = sample_rate;
    format.mFormatID = kAudioFormatLinearPCM;
    format.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger

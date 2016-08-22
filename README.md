@@ -11,7 +11,7 @@ For more complete descriptions and instructions, see the comments at the top of 
 | File | Description | FFP\* | Dependencies | Notes |
 |------|-------------|-------|--------------|-------|
 | vul_astar.h | Generic A\* implementation                                                          | &#9734; | vul_priority_heap, vul_queue, vul_stack, vul_stable_array, vul_types |
-| vul_audio.h | OS-agnostic audio wrapper around PulseAudio, ALSA, OSS, DSound and CoreAudio        | &#9888;   |   | WIP |
+| vul_audio.h | OS-agnostic audio wrapper around PulseAudio, ALSA, OSS, WaveOut and CoreAudio       | &#9872; |   | WIP: OSS is untested, >2 channels is untested. ALSA uses a hack instead of proper polling |
 | vul_benchmark.h  | Simple function benchmarking                                                   | &#9734; | vul_types, vul_timer, vul_sort |   |
 | vul_cl.h | OpenCL wrappers and helper functions                                                   | &#9872; | vul_stable_array |   |
 | vul_cmath.h | C vector and matrix math library                                                    | &#9734; |  | Needs tests, but used a lot |

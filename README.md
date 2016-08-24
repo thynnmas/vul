@@ -20,7 +20,7 @@ For more complete descriptions and instructions, see the comments at the top of 
 | vul_file.h | System-agnosting mmap and file change monitoring + some stb.h file-related functions | &#9872; | vul_string, vul_types | Has seen some use, but has no tests |
 | vul_gl.h | Some minor GL helper functions (error printing and glu-matrix-likes)                   | &#9734; | vul_types | |
 | vul_hash_map.h | Generic C hash-map. Buckets are linked lists (which is bad)                      | &#9872; | vul_types, vul_linked_list | Has seen plenty of use and is stable, but slow (and usage can be annoying. Rewrite coming at some point!) |
-| vul_linear_solvers.h | Linear system solvers for dense, square matrices                           | &#9872; | | QR decomposition is broken. Non-square and sparse are useful, and on the TODO list. |
+| vul_blas.h | Linear system solvers, singular value decomposition and general least squares solver | &#9734; | | |
 | vul_linked_list.h | Non-intrusive linked list                                                     | &#9734; | vul_types | |
 | vul_noise.h | Various noise functions                                                             | &#9872; | | Currently generates gaussian and worley noise only |
 | vul_priority_heap.h | Generic fibonacci heap                                                      | &#9734; | vul_types | Needs tests |
@@ -69,8 +69,7 @@ on those.
 
 Include *vul_math.hpp* only to use the normal features. For the bare-bones bezier tracing functionality
 or linear solvers, these headers must be included separately after *vul_math.hpp*. Note that *vul_linear.hpp* 
-is broken (it shares the problems and limitations of *vul_linear_solvers.h*, and it shows worse stability for 
-the solvers that *do* work than the C equivalent). Consider it a WIP, and avoid for now.
+is is the beginning of a port of vul_blas.h, but is neither feature complete nor bug-free; avoid for now!
 
 ## Collission
 Contains a file filled with a variation of primitive collission checks (direct, n^2 tests). Not intended for use 

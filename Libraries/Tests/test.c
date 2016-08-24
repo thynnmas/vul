@@ -2,7 +2,7 @@
 //#include "test_gl.h" // This doesn't appear to work yet...
 //#include "test_astar.h"
 //#include "test_csp.h"
-#include "test_linear_solvers.h"
+#include "test_blas.h"
 //#include "test_priority_queues.h"
 //#include "test_file.h"
 
@@ -353,7 +353,7 @@ int main( int argv, char **argc )
 
 	//vul_test_csp( );
 
-	vul_test_linear_solvers( );
+	vul_test_blas( );
 
 	//vul_test_priority_heap( );
 

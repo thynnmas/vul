@@ -7,9 +7,8 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-#define PRINT_MATRIX(name, m, c, r) {}
 #define VUL_DEFINE
-#include "vul_linear_solvers.h"
+#include "vul_blas.h"
 #include "vul_timer.h"
 
 int main( int argc, char **argv )
@@ -38,7 +37,7 @@ int main( int argc, char **argv )
    int rank = strtol( argv[ 2 ], &eptr, 10 );
    int wrank = rank;
    assert( rank <= w );
-   vul_solve_svd_basis *res = ( vul_solve_svd_basis* )malloc( sizeof( vul_solve_svd_basis ) * w );
+   vul_blas_svd_basis *res = ( vul_blas_svd_basis* )malloc( sizeof( vul_blas_svd_basis ) * w );
 
    int iters = 32;
    if( argc > 3 ) {
@@ -47,7 +46,7 @@ int main( int argc, char **argv )
    
    printf( "Computing SVD of %s (%d iterations)\n", argv[ 1 ], iters );
    vul_timer *t = vul_timer_create( );
-   vul_solve_svd_dense_jacobi( res, &rank, A, w, h, 1e-4, iters ); // @TODO(thynn): eps and iter should be parameters
+   vul_blas_svd_dense( res, &rank, A, w, h, 1e-4, iters ); // @TODO(thynn): eps and iter should be parameters
    uint64_t mms = vul_timer_get_micros( t );
    printf( "Completed in %lu.%lus\n", mms / 1000000, mms % 1000000 );
 
@@ -58,7 +57,7 @@ int main( int argc, char **argv )
    printf( "Rank of decomposition %d, wanted at most %d\n", rank, wrank );
 
    float *B = ( float* )malloc( sizeof( float ) * w * h );
-   vul_solve_svd_basis_reconstruct_matrix( B, res, rank );
+   vul_blas_svd_basis_reconstruct_matrix( B, res, rank );
 
    unsigned char *odata = ( unsigned char* )malloc( sizeof( unsigned char ) * w * h * 3 );
    for( int y = 0; y < h; ++y ) {
@@ -88,7 +87,7 @@ int main( int argc, char **argv )
    stbi_write_bmp( "source.bmp", w, h, 3, odata );
    printf( "Wrote input to source.bmp.\n");
    
-   vul_solve_svd_basis_destroy( res, rank );
+   vul_blas_svd_basis_destroy( res, rank );
    free( res );
    free( A );
    free( B );

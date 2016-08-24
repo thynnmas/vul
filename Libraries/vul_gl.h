@@ -18,9 +18,12 @@
 #ifndef VUL_GL_H
 #define VUL_GL_H
 
-#include "vul_types.h"
 #include <stdio.h>
 #include <math.h>
+
+#ifndef VUL_TYPES_H
+#define f32 float
+#endif
 
 #ifdef _cplusplus
 extern "C" {
@@ -87,9 +90,18 @@ int vul_gl_check_error_print( char *out_str );
 #ifdef _cplusplus
 }
 #endif
+
+#ifndef VUL_TYPES_H
+#undef f32
+#endif
+
 #endif // VUL_GL_H
 
 #ifdef VUL_DEFINE
+
+#ifndef VUL_TYPES_H
+#define f32 float
+#endif
 
 #ifdef _cplusplus
 extern "C" {
@@ -311,6 +323,10 @@ int vul_gl_check_error_print( char *out_str )
 
 #ifdef _cplusplus
 }
+#endif
+
+#ifndef VUL_TYPES_H
+#undef f32
 #endif
 
 #endif // VUL_DEFINE

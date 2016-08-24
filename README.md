@@ -18,7 +18,7 @@ For more complete descriptions and instructions, see the comments at the top of 
 | vul_csp.h | Constraint satisfaction problem solver using GAC                                      | &#9734; | vul_astar |  |
 | vul_distributions.h | Contains a halton series generator                                          | &#9872; |  | Intended to contain more distributions as the need arises |
 | vul_file.h | System-agnosting mmap and file change monitoring + some stb.h file-related functions | &#9872; | vul_string | Has seen some use, but has no tests. OS X file monitoring missing. |
-| vul_gl.h | Some minor GL helper functions (error printing and glu-matrix-likes)                   | &#9734; | vul_types | |
+| vul_gl.h | Some minor GL helper functions (error printing and glu-matrix-likes)                   | &#9734; | | |
 | vul_hash_map.h | Generic C hash-map. Buckets are linked lists (which is bad)                      | &#9872; | vul_linked_list | Has seen plenty of use and is stable, but slow (and usage can be annoying. Rewrite coming at some point!) |
 | vul_blas.h | Linear system and gen. linear least squares solvers, singular value decomposition    | &#9734; | | |
 | vul_linked_list.h | Non-intrusive linked list                                                     | &#9734; | | |

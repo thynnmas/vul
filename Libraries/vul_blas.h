@@ -224,12 +224,12 @@ vul_blas_vector *vul_blas_qr_decomposition_sparse( vul_blas_matrix *A,
  * below the given tolerance.
  */
 void vul_blas_conjugate_gradient_dense( vul_blas_real *out,
-                               vul_blas_real *A,
-                               vul_blas_real *initial_guess,
-                               vul_blas_real *b,
-                               int n,
-                               int max_iterations,
-                               vul_blas_real tolerance );
+                                        vul_blas_real *A,
+                                        vul_blas_real *initial_guess,
+                                        vul_blas_real *b,
+                                        int n,
+                                        int max_iterations,
+                                        vul_blas_real tolerance );
 /*
  * Iterative solver of the linear system Ax = b
  * Uses the Successive Over-Relaxation method. May converge for any matrix,
@@ -239,13 +239,13 @@ void vul_blas_conjugate_gradient_dense( vul_blas_real *out,
  * below the given tolerance.
  */
 void vul_blas_successive_over_relaxation_dense( vul_blas_real *out,
-                                     vul_blas_real *A,
-                                     vul_blas_real *initial_guess,
-                                     vul_blas_real *b,
-                                     vul_blas_real relaxation_factor,
-                                     int n,
-                                     int max_iterations,
-                                     vul_blas_real tolerance );
+                                                vul_blas_real *A,
+                                                vul_blas_real *initial_guess,
+                                                vul_blas_real *b,
+                                                vul_blas_real relaxation_factor,
+                                                int n,
+                                                int max_iterations,
+                                                vul_blas_real tolerance );
 
 /*
  * Iterative solver of the linear system Ax = b
@@ -256,12 +256,12 @@ void vul_blas_successive_over_relaxation_dense( vul_blas_real *out,
  * the average square error is below tolerance.
  */
 void vul_blas_lu_decomposition_dense( vul_blas_real *out,
-                              vul_blas_real *A,
-                              vul_blas_real *initial_guess,
-                              vul_blas_real *b,
-                              int n,
-                              int max_iterations,
-                              vul_blas_real tolerance );
+                                      vul_blas_real *A,
+                                      vul_blas_real *initial_guess,
+                                      vul_blas_real *b,
+                                      int n,
+                                      int max_iterations,
+                                      vul_blas_real tolerance );
 /*
  * Iterative solver of the linear system Ax = b
  * Uses Choleski Decomposition. Works for matrices that are
@@ -271,9 +271,9 @@ void vul_blas_lu_decomposition_dense( vul_blas_real *out,
  * Does not currently emply iterative refinement; @TODO(thynn): Iterative refinement!
  */
 void vul_blas_cholesky_decomposition_dense( vul_blas_real *out,
-                                  vul_blas_real *A,
-                                  vul_blas_real *b,
-                                  int n );
+                                            vul_blas_real *A,
+                                            vul_blas_real *b,
+                                            int n );
 /*
  * Iterative solver of the linear system Ax = b
  * Uses QR Decomposition. Works for all matrices.
@@ -281,9 +281,9 @@ void vul_blas_cholesky_decomposition_dense( vul_blas_real *out,
  * Does not currently emply iterative refinement; @TODO(thynn): Iterative refinement!
  */
 void vul_blas_qr_decomposition_dense( vul_blas_real *out,
-                                       vul_blas_real *A,
-                                       vul_blas_real *b,
-                                       int n );
+                                      vul_blas_real *A,
+                                      vul_blas_real *b,
+                                      int n );
 
 //---------------------------------------
 // Dense Singular Value Decomposition

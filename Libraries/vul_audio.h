@@ -447,7 +447,7 @@ u64 vul_audio_clip_add( vul_audio_device *dev, smp *data, u64 sample_count, u32 
 		dev->mixer.size *= 2;
 	}
 
-	vul__audio_mixer_clip *clip = &dev->mixer.clips[ dev->mixer.count++ ];
+	vul__audio_mixer_clip *clip = &dev->mixer.clips[ dev->mixer.count ];
 	clip->id = dev->mixer.next_id++;
 	clip->samples = data;
 	clip->sample_count = sample_count;

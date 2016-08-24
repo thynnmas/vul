@@ -71,6 +71,3 @@ Include *vul_math.hpp* only to use the normal features. For the bare-bones bezie
 or linear solvers, these headers must be included separately after *vul_math.hpp*. Note that *vul_linear.hpp* 
 is is the beginning of a port of vul_blas.h, but is neither feature complete nor bug-free; avoid for now!
 
-## Collission
-Contains a file filled with a variation of primitive collission checks (direct, n^2 tests). Not intended for use 
-as a library, but useful as a copy-paste resource for when you don't need a full CSO sollution.

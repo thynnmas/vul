@@ -21,7 +21,10 @@
 #include <assert.h>
 #include <string.h>
 
-#include "vul_types.h"
+#ifndef VUL_TYPES_H
+#include <stdint.h>
+#define u32 uint32_t
+#endif
 
 /**
  * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!
@@ -91,9 +94,17 @@ vul_list_element *vul_list_copy( vul_list_element *list_head, void *( *allocator
 }
 #endif
 
+#ifndef VUL_TYPES_H
+#undef u32
+#endif
+
 #endif // VUL_LINKED_LIST_H
 
 #ifdef VUL_DEFINE
+
+#ifndef VUL_TYPES_H
+#define u32 uint32_t
+#endif
 
 #ifdef _cplusplus
 extern "C" {
@@ -210,7 +221,7 @@ vul_list_element *vul_list_insert( vul_list_element *list_head,
 
 u32 vul_list_size( vul_list_element *list_head )
 {
-   int c;
+   u32 c;
 
    c = 0;
    while( list_head != NULL )
@@ -263,6 +274,10 @@ vul_list_element *vul_list_copy( vul_list_element *list_head, void *( *allocator
 
 #ifdef _cplusplus
 }
+#endif
+
+#ifndef VUL_TYPES_H
+#undef u32
 #endif
 
 #endif // VUL_DEFINE

@@ -5,6 +5,10 @@
  * and OS X. Possibly works on other *nix systems as well.
  * It also contains an OS agnostic sleep function.
  * 
+ * Define VUL_DEFINE in exactly one compilation unit.
+ * Define VUL_WINDOWS, VUL_LINUX or VUL_OSX depending out your system.
+ * Older versions of windows (pre-vista) also need VUL_TIMER_OLD_WINDOWS defined.
+ *
  * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
@@ -18,17 +22,6 @@
  */
 #ifndef VUL_TIMER_H
 #define VUL_TIMER_H
-
-// Define in exactly _one_ C/CPP file
-//#define VUL_DEFINE
-
-// Define one of these
-//#define VUL_WINDOWS
-//#define VUL_LINUX
-//#define VUL_OSX
-
-// If you are on pre-vista windows, GetTickCount64 is not available. If so, define this:
-//#define VUL_TIMER_OLD_WINDOWS
 
 #define VUL_MIN( a, b ) ( a <= b ? a : b )
 #define VUL_MAX( a, b ) ( a >= b ? a : b )
@@ -54,7 +47,13 @@
 #else
 	vul needs an operating system defined.
 #endif
-#include "vul_types.h"
+
+#ifndef VUL_TYPES_H
+#include <stdint.h>
+#define s32 int32_t
+#define u32 uint32_t
+#define u64 uint64_t
+#endif
 		
 typedef struct vul_timer {
 #if defined( VUL_WINDOWS )
@@ -118,9 +117,22 @@ u32 vul_sleep( u32 milliseconds );
 #ifdef _cplusplus
 }
 #endif
+
+#ifndef VUL_TYPES_H
+#undef s32
+#undef u32
+#undef u64
 #endif
 
+#endif // VUL_TIMER_H
+
 #ifdef VUL_DEFINE
+
+#ifndef VUL_TYPES_H
+#define s32 int32_t
+#define u32 uint32_t
+#define u64 uint64_t
+#endif
 
 #ifdef _cplusplus
 extern "C" {
@@ -327,4 +339,10 @@ unsigned int vul_sleep( unsigned int milliseconds )
 }
 #endif
 
+#ifndef VUL_TYPES_H
+#undef s32
+#undef u32
+#undef u64
 #endif
+
+#endif // VUL_DEFINE

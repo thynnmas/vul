@@ -19,12 +19,20 @@
 #ifndef VUL_BENCHMARK_H
 #define VUL_BENCHMARK_H
 
-#include "vul_types.h"
 #include "vul_timer.h"
 #include "vul_sort.h"
 
 #include <stdarg.h>
 #include <stdio.h>
+
+#ifndef VUL_TYPES_H
+#include <stdint.h>
+#define f32 float
+#define f64 double
+#define s32 uint32_t
+#define u32 uint32_t
+#define u64 uint64_t
+#endif
 
 typedef struct vul_benchmark_result {
    u32 iterations;
@@ -81,9 +89,26 @@ void vul_benchmark_print_histogram_micros( u64 *times, u32 left, u32 right, u32 
 #ifdef _cplusplus
 }
 #endif
+
+#ifndef VUL_TYPES_H
+#undef f32
+#undef f64
+#undef s32
+#undef u32
+#undef u64
+#endif
+
 #endif // VUL_BENCHMARK_H
 
 #ifdef VUL_DEFINE
+
+#ifndef VUL_TYPES_H
+#define f32 float
+#define f64 double
+#define s32 uint32_t
+#define u32 uint32_t
+#define u64 uint64_t
+#endif
 
 #ifdef _cplusplus
 extern "C" {
@@ -498,6 +523,14 @@ void vul_benchmark_print_histogram_micros( u64 *times, u32 left, u32 right, u32 
 
 #ifdef _cplusplus
 }
+#endif
+
+#ifndef VUL_TYPES_H
+#undef f32
+#undef f64
+#undef s32
+#undef u32
+#undef u64
 #endif
 
 #endif // VUL_DEFINE

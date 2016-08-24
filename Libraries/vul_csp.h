@@ -246,7 +246,6 @@ f64 vul_gac_cost_neighbors( vul_astar_node *s, vul_astar_node *t );
 #ifdef VUL_DEFINE
 
 #ifndef VUL_TYPES_H
-#include <stdint.h>
 #define f32 float
 #define f64 double
 #define s8 int8_t

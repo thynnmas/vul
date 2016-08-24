@@ -201,7 +201,6 @@ void vul_astar_path_finalize( vul_astar_path_node *root );
 #ifdef VUL_DEFINE
 
 #ifndef VUL_TYPES_H
-#include <stdint.h>
 #define f32 float
 #define f64 double
 #define s8 int8_t

@@ -11,7 +11,11 @@
 #ifndef VUL_DISTRIBUTIONS_H
 #define VUL_DISTRIBUTIONS_H
 
-#include "vul_types.h"
+#ifndef VUL_TYPES_H
+#include <stdint.h>
+#define f32 float
+#define u32 uint32_t
+#endif
 
 #include <stdlib.h>
 #ifndef VUL_OSX
@@ -53,9 +57,20 @@ f32 vul_halton_series_next( vul_halton *rng );
 #ifdef _cplusplus
 }
 #endif
+
+#ifndef VUL_TYPES_H
+#undef f32
+#undef u32
 #endif
 
+#endif // VUL_DISTRIBUTIONS_H
+
 #ifdef VUL_DEFINE
+
+#ifndef VUL_TYPES_H
+#define f32 float
+#define u32 uint32_t
+#endif
 
 #ifdef _cplusplus
 extern "C" {
@@ -106,4 +121,9 @@ f32 vul_halton_series_next( vul_halton *rng )
 }
 #endif
 
+#ifndef VUL_TYPES_H
+#undef f32
+#undef u32
 #endif
+
+#endif // VUL_DEFINE

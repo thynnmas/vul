@@ -69,5 +69,5 @@ on those.
 
 Include *vul_math.hpp* only to use the normal features. For the bare-bones bezier tracing functionality
 or linear solvers, these headers must be included separately after *vul_math.hpp*. Note that *vul_linear.hpp* 
-is is the beginning of a port of vul_blas.h, but is neither feature complete nor bug-free; avoid for now!
+is is the beginning of a port of *vul_blas.h*, but is neither feature complete nor bug-free; avoid for now!
 

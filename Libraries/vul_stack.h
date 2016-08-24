@@ -1,10 +1,10 @@
 /*
-* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
 *
 * This file describes a thin wrapper around the stable array
 * providing stack behavior.
 *
-* ¹ If public domain is not legally valid in your legal jurisdiction
+* ? If public domain is not legally valid in your legal jurisdiction
 *   the MIT licence applies (see the LICENCE file)
 *
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR

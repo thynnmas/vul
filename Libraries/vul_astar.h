@@ -27,9 +27,7 @@
 #include <stdio.h>
 #include "vul_priority_heap.h"
 #include "vul_queue.h"
-#include "vul_stack.h"
-#include "vul_stable_array.h"
-#include "vul_types.h"
+#include "vul_stack.h" // includes vul_stable_array
 #ifndef F64_INF
 #define F64_INF 1.79769e+308
 #endif
@@ -39,6 +37,21 @@
 #endif
 #ifndef VUL_ASTAR_FREE
 #define VUL_ASTAR_FREE free
+#endif
+
+#ifndef VUL_TYPES_H
+#include <stdint.h>
+#define f32 float
+#define f64 double
+#define s8 int8_t
+#define s16 int16_t
+#define s32 int32_t
+#define s64 int64_t
+#define u8 uint8_t
+#define u16 int16_t
+#define u32 uint32_t
+#define u64 uint64_t
+#define b32 uint32_t
 #endif
 
 /* We keep the open and closed set as state within the nodes. */
@@ -169,9 +182,38 @@ void vul_astar_path_finalize( vul_astar_path_node *root );
 }
 #endif
 
+#ifndef VUL_TYPES_H
+#undef f32
+#undef f64
+#undef s8
+#undef s16
+#undef s32
+#undef s64
+#undef u8
+#undef u16
+#undef u32
+#undef u64
+#undef b32
+#endif
+
 #endif // VUL_ASTAR_H
 
 #ifdef VUL_DEFINE
+
+#ifndef VUL_TYPES_H
+#include <stdint.h>
+#define f32 float
+#define f64 double
+#define s8 int8_t
+#define s16 int16_t
+#define s32 int32_t
+#define s64 int64_t
+#define u8 uint8_t
+#define u16 int16_t
+#define u32 uint32_t
+#define u64 uint64_t
+#define b32 uint32_t
+#endif
 
 #ifdef _cplusplus
 extern "C" {
@@ -465,4 +507,19 @@ static int vul__astar_open_set_is_empty( vul_astar_strategy strategy, void *set 
 #ifdef _cplusplus
 }
 #endif
+
+#ifndef VUL_TYPES_H
+#undef f32
+#undef f64
+#undef s8
+#undef s16
+#undef s32
+#undef s64
+#undef u8
+#undef u16
+#undef u32
+#undef u64
+#undef b32
+#endif
+
 #endif // VUL_DEFINE

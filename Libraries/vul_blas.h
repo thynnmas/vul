@@ -16,7 +16,7 @@
  * > The following SVD methods:
  *    -One-sided Jacobi orthogonalization
  *    -Repeated, alternating QR and LQ decomposition (SLOW and less accurate, but simple)
- * > A General Least Square solver that uses SVD
+ * > A Generalized Linear Least Square solver that uses SVD
  * > A function that finds the largest eigenvalue of a matrix (using the power method).
  *
  * All features except the LU decomposition solver are supplied both for dense matrices
@@ -337,7 +337,7 @@ void vul_blas_svd_dense_qrlq( vul_blas_svd_basis *out, int *rank,
                               int c, int r, vul_blas_real eps, int itermax );
 
 /*
- * Solves the general linear least squares problem defined by A and b by
+ * Solves the generalized linear least squares problem defined by A and b by
  * singular value decomposition. The SVD runs at most max_iterations, or
  * until the average sqare error is less than tolerance. Matrix size must
  * be given in dimensions c and r.
@@ -390,7 +390,7 @@ void vul_blas_svd_sparse_qrlq( vul_blas_svd_basis_sparse *out, int *rank,
                                int c, int r, vul_blas_real eps, int itermax );
 
 /*
- * Solves the general linear least squares problem defined by A and b by
+ * Solves the generalized linear least squares problem defined by A and b by
  * singular value decomposition. The SVD runs at most max_iterations, or
  * until the average sqare error is less than tolerance. Matrix size must
  * be given in dimensions c and r.

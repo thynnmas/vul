@@ -36,7 +36,7 @@ For more complete descriptions and instructions, see the comments at the top of 
 | vul_stack.h | Generic stack                                                                       | &#9734; | vul_stable_array | Pointers to elements are stable |
 | vul_string.h | Some useful string functions (UTF8 & search/pattern matching (KMP))                | &#9872; | | UTF-8 functions are due stb.h |
 | vul_timer.h | OS-agnostic timer & sleep function                                                  | &#9734; | |  |
-| vul_types.h | Defines standard types in my favourable form                                        | &#9734; | | Useful if you like the form, horrible otherwise. This is an anti-pattern I should get rid of in the above (and is on the TODO-list) |
+| vul_types.h | Defines standard types in my favourable form                                        | &#9734; | | Useful if you like the form, horrible otherwise. |
 
 \* FFP (Fit-for-production) is a 3-tier system: 
 

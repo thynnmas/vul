@@ -168,7 +168,8 @@ void vul_astar_path_finalize( vul_astar_path_node *root );
 #ifdef _cplusplus
 }
 #endif
-#endif
+
+#endif // VUL_ASTAR_H
 
 #ifdef VUL_DEFINE
 
@@ -464,4 +465,4 @@ static int vul__astar_open_set_is_empty( vul_astar_strategy strategy, void *set 
 #ifdef _cplusplus
 }
 #endif
-#endif
+#endif // VUL_DEFINE

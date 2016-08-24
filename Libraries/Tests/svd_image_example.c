@@ -36,8 +36,7 @@ int main( int argc, char **argv )
    char *eptr;
    int rank = strtol( argv[ 2 ], &eptr, 10 );
    int wrank = rank;
-   assert( rank <= w );
-   vul_blas_svd_basis *res = ( vul_blas_svd_basis* )malloc( sizeof( vul_blas_svd_basis ) * w );
+   vul_blas_svd_basis *res = ( vul_blas_svd_basis* )malloc( sizeof( vul_blas_svd_basis ) * ( w < h ? w : h ) );
 
    int iters = 32;
    if( argc > 3 ) {

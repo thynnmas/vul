@@ -312,7 +312,7 @@ void vul_blas_svd_basis_destroy( vul_blas_svd_basis *x, int n );
  * The out array must have room for min(c,r) entries even if less are desired,
  * as the entries are used to sort and select singular values.
  *
- * This function uses jacobi iteration.
+ * This function uses Jacobi orthogonalization.
  */
 void vul_blas_svd_dense( vul_blas_svd_basis *out, int *rank,
                          vul_blas_real *A,
@@ -366,7 +366,7 @@ typedef struct vul_blas_svd_basis_sparse {
  * The out array must have room for min(c,r) entries even if less are desired,
  * as the entries are used to sort and select singular values.
  *
- * This function uses jacobi iteration.
+ * This function uses Jacobi orthogonalization.
  */
 void vul_blas_svd_sparse( vul_blas_svd_basis_sparse *out, int *rank,
                           vul_blas_matrix *A,

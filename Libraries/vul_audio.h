@@ -1,34 +1,37 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
  *
- * This file contains a low-level wrapper for different audio APIs.
- * The goal is to support (in order of attempts/fallback):
+ * This file contains a low-level wrapper for a few different audio APIs.
+ * Supported APIs by system (in order of attempts/fallback):
  *  - Linux: pulseaudio -> alsa -> oss @TODO(thynn): Test OSS support
- *  - OSX: TODO
+ *  - OSX: CoreAudio
  *  - Windows: waveOut @TODO(thynn): XAudio2 and/or WASAPI
- *  - Emscripten: TODO (can we hotload this?)
- *  - Mobile: TODO iOS & Android (don't know these apis or how to hotload them!)
+ * @TODO(thynn): These two would probably be useful
+ *  - Emscripten
+ *  - Mobile: iOS & Android
  *
- * @TODO(thynn): Hide a statically linked version behind a define?
- * @TODO(thynn): Mixer should be wide (SSE/AVX)!
+ * @TODO(thynn): Hide a statically linked version behind a define? Would this be useful?
+ * @TODO(thynn): Make the mixer wide (SSE, AVX and NEON at least).
  *
  * Linux and OSX variation require linking with pthreads (because dlopen-ing
  * libpthread.so simply does not work!).
- * @TODO(thynn): C11 threads as an alternative to pthreads behind a define!
  *
  * Error reporting: A lot can go wrong, especially in setup. We have multiple
- * ways to report errors back to the user (in addition to return values being
+ * ways to report errors back to the user (in addition to return value being
  * VUL_ERROR). Define any of these to use it (no default):
- *  - VUL_AUDIO_ERROR_STDERR: Print an erro message to stderr.
- *  - VUL_AUDIO_ERROR_STR: Last error message is written to vul_last_error.
+ *  - VUL_AUDIO_ERROR_STDERR: Print an error message to stderr.
+ *  - VUL_AUDIO_ERROR_STR: Last error message is written to the global vul_last_error.
  *  - VUL_AUDIO_ERROR_ASSERT: Trigger an assert on error.
  *  - VUL_AUDIO_ERROR_QUIET: Do no reporting at all, simple fail.
  *  - VUL_AUDIO_ERROR_CUSTOM: Define your own macro VUL_AUDIO_ERROR_CUSTOM( ... )
  *    and do whatever you want with the error message (printf style formatting/arguments)
  *    before failing.
  * 
- * ? If public domain is not legally valid in your legal jurisdiction
+ * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
+ *
+ * To use, define VUL_DEFINE in exacly _one_ C/CPP compilation unit before including 
+ * this file.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -40,14 +43,6 @@
  */
 #ifndef VUL_AUDIO_H
 #define VUL_AUDIO_H
-
-/**
- * Define in exactly _one_ C/CPP file.
- */
-//#define VUL_DEFINE
-
-// @TODO(thynn): Make this an init-parameter and not a define?
-#define VUL_AUDIO_FRAME_SIZE_BYTES 0x1000
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -109,7 +104,7 @@ typedef struct vul__audio_mixer_clip {
 
 typedef struct vul__audio_mixer {
 	vul__audio_mixer_clip *clips;
-	u64 count, size;
+	u64 count, size, next_id;
 	
 	f32 volume;
 	u32 channels;
@@ -159,8 +154,7 @@ typedef struct vul_audio_device {
 	vul__audio_lib lib;
    b32 thread_dead;
 #ifdef VUL_WINDOWS
-	HWND hwnd;
-   HANDLE thread, mixer_mutex, close_event; // @TODO(thynn): Load thread, event and mutex functions from kernel32.lib/dll
+   HANDLE thread, mixer_mutex, close_event;
 	union {
       struct {
          HWAVEOUT handle;
@@ -196,42 +190,125 @@ typedef struct vul_audio_device {
 extern "C" {
 #endif
 
+//-----------------
+// Public API
+//
+
 /*
- * @TODO(thynn): Document
+ * Stops the audio system (disconnects from the audio server), stops
+ * the worker thread and frees all allocated memory.
+ * ALSA and Pulse make use of the drain_before_close argument, which
+ * drain it's internal audio buffers before shutting down (finish
+ * playing any uploaded audio) if the argument is non-zero.
  */
 vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_close );
 
-
 /*
- * @TODO(thynn): Document
+ * Initialize the audio subsystem and start the thread that writes to it.
+ *
+ * If the mix_function argument is supplied, the function is called when
+ * the audio system requires new data (it is actually called immediately 
+ * after a write, and waits until needed after the call to write to the buffer).
+ * It is supplied a buffer to fill with data (channels are interleaved),
+ * the size of said buffer and mix_function_user_data.
+ *
+ * If no mix_function is supplied, the internal mixer is used.
+ *
+ * The frame-size argument is the size of the audio buffer upload frame
+ * in bytes. If unsure what to use, 0x1000 seems to be a popular default.
+ *
+ * The linux version takes three additional arguments: 
+ * -server_name  is the name to the pulse audio server to attempt to connect 
+ *  to (or NULL for default), and is ignored by ALSA and OSS. 
+ * -device_name  is the name of the device to output to. For pulse, the default
+ *  device is used if device_name is NULL; for ALSA the default device is
+ *  used when the argument is set to "default".
+ * -identifier   is used only by pulse, and is the description of the application
+ *  visible to the user in the pulse audio server. The application will
+ *  show as "vul_audio" "[description]".
+ *
+ * Remember to call vul_audio_destroy to stop the audio system, free
+ * it's memory and stop the started thread!
  */
-#ifdef VUL_WINDOWS
+#if defined( VUL_WINDOWS ) || defined( VUL_OSX )
 vul_audio_return vul_audio_init( vul_audio_device *out, 
-											HWND hwnd,
 											vul_audio_mode mode,
 											u32 channels, 
 											u32 sample_rate,
+                                 u32 frame_size,
 											void (*mix_function)( void *, size_t, void* ), 
-                                 void *mix_function_user_data );
-#elif VUL_OSX
-vul_audio_return vul_audio_init( vul_audio_device *out, 
-											vul_audio_mode mode,
-											u32 channels, 
-											u32 sample_rate,
-											void (*mix_function)( void *, size_t, void* ),
                                  void *mix_function_user_data );
 #elif VUL_LINUX
 vul_audio_return vul_audio_init( vul_audio_device *out, 
 											const char *server_name,  
 											const char *device_name,  
+                                 const char *description,
 											vul_audio_mode mode,
 											u32 channels, 
 											u32 sample_rate,
+                                 u32 frame_size,
 											void (*mix_function)( void *, size_t, void* ),
                                  void *mix_function_user_data );
 #else
 	You must define an operating system (VUL_WINDOWS, VUL_LINUX, VUL_OSX)
 #endif
+
+//----------------------
+// Public Mixer API
+//
+
+/*
+ * Adds a clip to the mixer. The clip may have a different channel count than the
+ * audio system, but if the amount is larger than the system supports (N_mixer), only the first
+ * N_mixer channels are used. The sample rate must match that of the audio system.
+ * The volume given is in range [0,1].
+ * After calling this function, the clip is NOT playing, NOT set to loop, and SET to
+ * be deleted after completing once.
+ *
+ * A identifier to the clip is returned. If the adding fails, 0 is returned.
+ */
+u64 vul_audio_clip_add( vul_audio_device *dev, smp *data, u64 sample_count, u32 channels, f32 volume );
+
+/*
+ * Pauses the clip with the given identifier. If reset is set, the current sample
+ * of the clip is set to the first sample (in effect restarting the clip).
+ */
+vul_audio_return vul_audio_clip_pause( vul_audio_device *dev, u64 id, b32 reset );
+
+/* 
+ * Starts playback of the clip with the given identifier. If looping is set,
+ * the clip is restarted when it's end is reached. If keep is set, the clip
+ * remains in the mixer's clip-list upon completion, otherwise it is deleted
+ * (this is _default behavior_).
+ */
+vul_audio_return vul_audio_clip_play( vul_audio_device *dev, u64 id, b32 looping, b32 keep );
+
+/*
+ * Resumes playback of the clip with the given identifier. This only
+ * alters the playing state, it does not alter the current position
+ * in the clip. vul_audio_clip_play should be used to start the clip
+ * instead of this, although is default behavior is wanted (not looping
+ * and not keeping the clip upon completion), this does the same.
+ */
+vul_audio_return vul_audio_clip_resume( vul_audio_device *dev, u64 id );
+
+/*
+ * Removes the clip with the given identifier from the mixer.
+ */
+vul_audio_return vul_audio_clip_remove( vul_audio_device *dev, u64 id );
+
+/*
+ * Sets the volume of the clip with the given identifier. Volume range is
+ * [0,1], values outside are clamped to this range.
+ */
+vul_audio_return vul_audio_clip_volume( vul_audio_device *dev, u64 id, f32 vol );
+
+/*
+ * Sets the global mixer volume. All clips' volume are multiplied with this
+ * volume. Range is [0,1], values outside are clamped to this range.
+ */
+vul_audio_return vul_audio_set_global_volume( vul_audio_device *dev, f32 volume );
+
 
 #ifdef _cplusplus
 }
@@ -270,21 +347,34 @@ void vul__audio_mixer_release( vul_audio_device *dev );
 #define ERR( ... )\
 	fprintf( stderr, __VA_ARGS__ );\
 	return VUL_ERROR;
+#define ERR_NORETURN( ... )\
+	fprintf( stderr, __VA_ARGS__ );
 #elif defined( VUL_AUDIO_ERROR_STR )
 char vul_last_error[ 1024 ];
 #define ERR( ... )\
 	snprintf( vul_last_error, 1023, __VA_ARGS__ );\
 	vul_last_error[ 1023 ] = 0;\
 	return VUL_ERROR;
+#define ERR_NORETURN( ... )\
+	snprintf( vul_last_error, 1023, __VA_ARGS__ );\
+	vul_last_error[ 1023 ] = 0;
 #elif defined( VUL_AUDIO_ERROR_ASSERT )
 #define ERR( ... )\
 	assert( 0 );\
 	return VUL_ERROR;
+#define ERR_NORETURN( ... )\
+	assert( 0 );
 #elif defined( VUL_AUDIO_ERROR_QUIET )
 #define ERR( ... )\
 	return VUL_ERROR;
+#define ERR_NORETURN( ... )\
+   {(void)0;}
 #elif defined( VUL_AUDIO_ERROR_CUSTOM )
-#define ERR VUL_AUDIO_ERROR_CUSTOM
+#define ERR( ... )\
+   VUL_AUDIO_ERROR_CUSTOM( __VA_ARGS__)\
+   return VUL_ERROR;
+#define ERR_NORETURN( ... )\
+   VUL_AUDIO_ERROR_CUSTOM( __VA_ARGS__)
 #endif
 
 vul_audio_return vul__audio_write( vul_audio_device *dev, void *samples, u32 sample_count );
@@ -295,6 +385,7 @@ void vul__audio_mixer_init( vul__audio_mixer *mixer, u32 channels, u32 buffer_sa
 	mixer->clips = ( vul__audio_mixer_clip* )malloc( sizeof( vul__audio_mixer_clip ) * clip_count_initial );
 	mixer->size = clip_count_initial;
 	mixer->count = 0;
+   mixer->next_id = 1;
 	mixer->channels = channels;
 	mixer->mixbuf_sample_count = buffer_sample_count;
 	mixer->mixbuf  = ( smx* )malloc( sizeof( smx ) * mixer->mixbuf_sample_count * mixer->channels * 2 );
@@ -322,33 +413,34 @@ void vul__audio_mixer_destroy( vul__audio_mixer *mixer )
 	}
 }
 
-void vul__audio_clip_remove_internal( vul__audio_mixer *mixer, u64 id )
+void vul__audio_clip_remove_internal( vul__audio_mixer *mixer, u64 idx )
 {
-	if( id > 1 ) {
-		for( u64 i = id; i < mixer->count; ++i ) {
-			memcpy( &mixer->clips[ i - 1 ], &mixer->clips[ i ], sizeof( vul__audio_mixer_clip ) );
-		}
-	}
-	mixer->count -= 1;
+   if( idx >= 1 ) {
+      for( u64 i = idx + 1; i < mixer->count; ++i ) {
+         memcpy( &mixer->clips[ i - 1 ], &mixer->clips[ i ], sizeof( vul__audio_mixer_clip ) );
+      }
+   }
+      
+   mixer->count -= 1;
 }
 
 u64 vul_audio_clip_add( vul_audio_device *dev, smp *data, u64 sample_count, u32 channels, f32 volume )
 {
 	if( !dev ) {
-      ERR( "No audio device supplied.\n" );
-		return 0; // @TODO(thynn): This will return vul_error, not 0...
+      ERR_NORETURN( "No audio device supplied.\n" );
+		return 0;
 	}
 
    if( VUL_ERROR == vul__audio_mixer_wait_and_lock( dev ) ) {
-      ERR( "Failed to lock audio mixer.\n" );
-		return 0; // @TODO(thynn): This will return vul_error, not 0...
+      ERR_NORETURN( "Failed to lock audio mixer.\n" );
+		return 0;
    }
 
 	if( dev->mixer.count == dev->mixer.size - 1 ) {
 		vul__audio_mixer_clip* ptr;
 		ptr = realloc( dev->mixer.clips, sizeof( vul__audio_mixer_clip ) * dev->mixer.size * 2 );
 		if( ptr == 0 ) {
-			ERR( "Failed to reallocate mixer clip collection." );
+			ERR_NORETURN( "Failed to reallocate mixer clip collection." );
 			return 0;
 		}
 		dev->mixer.clips = ptr;
@@ -356,7 +448,7 @@ u64 vul_audio_clip_add( vul_audio_device *dev, smp *data, u64 sample_count, u32 
 	}
 
 	vul__audio_mixer_clip *clip = &dev->mixer.clips[ dev->mixer.count++ ];
-	clip->id = dev->mixer.count; // Always 1 more than the index so 0 indicates failure
+	clip->id = dev->mixer.next_id++;
 	clip->samples = data;
 	clip->sample_count = sample_count;
 	clip->channels = channels;
@@ -365,9 +457,10 @@ u64 vul_audio_clip_add( vul_audio_device *dev, smp *data, u64 sample_count, u32 
 	clip->looping = 0;
    clip->keep_after_finish = 0;
 	if( volume < 0.f || volume > 1.f ) {
-		ERR( "Volume should be in range [0,1]. Value was clamped." );
+		ERR_NORETURN( "Volume should be in range [0,1]. Value was clamped." );
 	}
 	clip->volume = volume > 1.f ? 1.f : volume < 0.f ? 0.f : volume;
+   dev->mixer.count++;
 
    vul__audio_mixer_release( dev );
 
@@ -376,6 +469,8 @@ u64 vul_audio_clip_add( vul_audio_device *dev, smp *data, u64 sample_count, u32 
 
 vul_audio_return vul_audio_clip_pause( vul_audio_device *dev, u64 id, b32 reset )
 {
+   u64 idx;
+
    if( !dev ) {
       ERR( "No audio device supplied.\n" );
    }
@@ -383,13 +478,21 @@ vul_audio_return vul_audio_clip_pause( vul_audio_device *dev, u64 id, b32 reset 
       ERR( "Failed to lock audio mixer.\n" );
    }
 
-	if( id > dev->mixer.count ) {
-		ERR( "Mixer clip ID out of range." );
-	}
-	dev->mixer.clips[ id - 1 ].playing = 0;
+   idx = dev->mixer.count;
+   for( u64 i = 0; i < dev->mixer.count; ++i ) {
+      if( dev->mixer.clips[ i ].id == id ) {
+         idx = i;
+         break;
+      }
+   }
 
+	if( idx >= dev->mixer.count ) {
+      ERR( "Clip not found, can't pause it." );
+	}
+
+	dev->mixer.clips[ idx ].playing = 0;
    if( reset ) {
-      dev->mixer.clips[ id - 1 ].current_offset = 0;
+      dev->mixer.clips[ idx ].current_offset = 0;
    }
 
    vul__audio_mixer_release( dev );
@@ -399,6 +502,8 @@ vul_audio_return vul_audio_clip_pause( vul_audio_device *dev, u64 id, b32 reset 
 
 vul_audio_return vul_audio_clip_play( vul_audio_device *dev, u64 id, b32 looping, b32 keep )
 {
+   u64 idx;
+
    if( !dev ) {
       ERR( "No audio device supplied.\n" );
    }
@@ -406,12 +511,21 @@ vul_audio_return vul_audio_clip_play( vul_audio_device *dev, u64 id, b32 looping
       ERR( "Failed to lock audio mixer.\n" );
    }
 
-	if( id > dev->mixer.count ) {
-		ERR( "Mixer clip ID out of range." );
+   idx = dev->mixer.count;
+   for( u64 i = 0; i < dev->mixer.count; ++i ) {
+      if( dev->mixer.clips[ i ].id == id ) {
+         idx = i;
+         break;
+      }
+   }
+
+	if( idx >= dev->mixer.count ) {
+      ERR( "Clip not found, can't play it." );
 	}
-	dev->mixer.clips[ id - 1 ].playing = 1;
-	dev->mixer.clips[ id - 1 ].looping = looping;
-   dev->mixer.clips[ id - 1 ].keep_after_finish = keep;
+
+	dev->mixer.clips[ idx ].playing = 1;
+	dev->mixer.clips[ idx ].looping = looping;
+   dev->mixer.clips[ idx ].keep_after_finish = keep;
 
    vul__audio_mixer_release( dev );
 
@@ -420,6 +534,8 @@ vul_audio_return vul_audio_clip_play( vul_audio_device *dev, u64 id, b32 looping
 
 vul_audio_return vul_audio_clip_resume( vul_audio_device *dev, u64 id )
 {
+   u64 idx;
+
    if( !dev ) {
       ERR( "No audio device supplied.\n" );
    }
@@ -427,10 +543,19 @@ vul_audio_return vul_audio_clip_resume( vul_audio_device *dev, u64 id )
       ERR( "Failed to lock audio mixer.\n" );
    }
 
-	if( id > dev->mixer.count ) {
-		ERR( "Mixer clip ID out of range." );
+   idx = dev->mixer.count;
+   for( u64 i = 0; i < dev->mixer.count; ++i ) {
+      if( dev->mixer.clips[ i ].id == id ) {
+         idx = i;
+         break;
+      }
+   }
+
+	if( idx >= dev->mixer.count ) {
+      ERR( "Clip not found, can't resume it." );
 	}
-	dev->mixer.clips[ id - 1 ].playing = 1;
+
+	dev->mixer.clips[ idx ].playing = 1;
 
    vul__audio_mixer_release( dev );
 
@@ -439,6 +564,7 @@ vul_audio_return vul_audio_clip_resume( vul_audio_device *dev, u64 id )
 
 vul_audio_return vul_audio_clip_remove( vul_audio_device *dev, u64 id )
 {
+   u64 idx;
    if( !dev ) {
       ERR( "No audio device supplied.\n" );
    }
@@ -446,11 +572,19 @@ vul_audio_return vul_audio_clip_remove( vul_audio_device *dev, u64 id )
       ERR( "Failed to lock audio mixer.\n" );
    }
 
-	if( id > dev->mixer.count ) {
-		ERR( "Mixer clip ID out of range." );
+   idx = dev->mixer.count;
+   for( u64 i = 0; i < dev->mixer.count; ++i ) {
+      if( dev->mixer.clips[ i ].id == id ) {
+         idx = i;
+         break;
+      }
+   }
+
+	if( idx >= dev->mixer.count ) {
+      ERR( "Clip not found, can't remove it." );
 	}
 
-   vul__audio_clip_remove_internal( &dev->mixer, id );
+   vul__audio_clip_remove_internal( &dev->mixer, idx );
 
    vul__audio_mixer_release( dev );
 
@@ -459,6 +593,8 @@ vul_audio_return vul_audio_clip_remove( vul_audio_device *dev, u64 id )
 
 vul_audio_return vul_audio_clip_volume( vul_audio_device *dev, u64 id, f32 vol )
 {
+   u64 idx;
+
    if( !dev ) {
       ERR( "No audio device supplied.\n" );
    }
@@ -466,14 +602,23 @@ vul_audio_return vul_audio_clip_volume( vul_audio_device *dev, u64 id, f32 vol )
       ERR( "Failed to lock audio mixer.\n" );
    }
 
-	if( id > dev->mixer.count ) {
-		ERR( "Mixer clip ID out of range." );
+   idx = dev->mixer.count;
+   for( u64 i = 0; i < dev->mixer.count; ++i ) {
+      if( dev->mixer.clips[ i ].id == id ) {
+         idx = i;
+         break;
+      }
+   }
+
+	if( idx >= dev->mixer.count ) {
+      ERR( "Clip not found, can't remove it." );
 	}
+
 	if( vol > 1.f || vol < 0.f ) {
-		ERR( "Volume must be in range [0,1]. Clamped it." );
 		vol = vol < 0.f ? 0.f : 1.f;
 	}
-	dev->mixer.clips[ id - 1 ].volume = vol;
+
+	dev->mixer.clips[ idx ].volume = vol;
 
    vul__audio_mixer_release( dev );
 
@@ -490,7 +635,6 @@ vul_audio_return vul_audio_set_global_volume( vul_audio_device *dev, f32 volume 
    }
 
 	if( volume < 0.f || volume > 1.f ) {
-		puts( "Volume should be in range [0,1]. Value was clamped." ); // @TODO(thynn): Warning. Quiet?
 		volume = volume < 0.f ? 0.f : 1.f;
 	}
 	dev->mixer.volume = volume;
@@ -563,7 +707,7 @@ void vul__audio_mix( vul__audio_mixer *mixer )
                mixer->clips[ i ].playing = 0;
                mixer->clips[ i ].current_offset = 0;
             } else {
-               vul__audio_clip_remove_internal( mixer, mixer->clips[ i ].id );
+               vul__audio_clip_remove_internal( mixer, i );
             }
 			}
 		}
@@ -708,7 +852,7 @@ static vul_audio_return vul__audio_destroy_waveout( vul_audio_device *dev, int d
 	return VUL_OK;
 }
 
-static vul_audio_return vul__audio_init_waveout( vul_audio_device *out )
+static vul_audio_return vul__audio_init_waveout( vul_audio_device *out, u32 frame_size )
 {
 	HMODULE waveout;
 	if( ( waveout = LoadLibrary( "winmm.dll" ) ) == NULL ) {
@@ -740,10 +884,10 @@ static vul_audio_return vul__audio_init_waveout( vul_audio_device *out )
 	}
 
    for( int i = 0; i < 2; ++i ) {
-      out->device.waveout.buffers[ i ] = ( smp* )malloc( VUL_AUDIO_FRAME_SIZE_BYTES );
-      memset( out->device.waveout.buffers[ i ], 0, VUL_AUDIO_FRAME_SIZE_BYTES );
+      out->device.waveout.buffers[ i ] = ( smp* )malloc( frame_size );
+      memset( out->device.waveout.buffers[ i ], 0, frame_size );
       memset( &out->device.waveout.headers[ i ], 0, sizeof( WAVEHDR ) );
-      out->device.waveout.headers[ i ].dwBufferLength = VUL_AUDIO_FRAME_SIZE_BYTES;
+      out->device.waveout.headers[ i ].dwBufferLength = frame_size;
       out->device.waveout.headers[ i ].lpData = ( LPSTR )out->device.waveout.buffers[ i ];
       if( MMSYSERR_NOERROR != pWaveOutPrepareHeader( out->device.waveout.handle,
                                                      &out->device.waveout.headers[ i ],
@@ -795,10 +939,10 @@ vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_clos
 }
 
 vul_audio_return vul_audio_init( vul_audio_device *out, 
-											HWND hwnd,
 											vul_audio_mode mode,
 											u32 channels, 
 											u32 sample_rate,
+                                 u32 frame_size,
 											void (*mix_function)( void *, size_t, void* ),
                                  void *mix_function_user_data )
 {
@@ -809,15 +953,14 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 	out->channels = channels;
 	out->sample_rate = sample_rate;
 	out->mode = mode;
-	out->hwnd = hwnd;
    if( mix_function ) {
       out->mix_function = mix_function;
       out->mix_function_data = mix_function_user_data;
    }
-   vul__audio_mixer_init( &out->mixer, channels, VUL_AUDIO_FRAME_SIZE_BYTES / ( sizeof( smp ) * channels ), 32 );
+   vul__audio_mixer_init( &out->mixer, channels, frame_size / ( sizeof( smp ) * channels ), 32 );
 
 	// Try waveOut
-   ret = vul__audio_init_waveout( out );
+   ret = vul__audio_init_waveout( out, frame_size );
    if( ret != VUL_OK ) {
       ERR( "Failed to open audio device with any of the attempted libraries.\n" );
       return VUL_ERROR;
@@ -841,8 +984,6 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 }
 
 #elif defined( VUL_OSX )
-
-// @TODO(thynn): We probably want to dynamically load this as well if possible!
 
 vul_audio_return vul__audio_mixer_wait_and_lock( vul_audio_device *dev )
 {
@@ -898,6 +1039,7 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 											vul_audio_mode mode,
 											u32 channels, 
 											u32 sample_rate,
+                                 u32 frame_size,
 											void (*mix_function)( void*, size_t, void* ),
                                  void *mix_function_user_data )
 {
@@ -915,7 +1057,7 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
       out->mix_function = mix_function;
       out->mix_function_data = mix_function_user_data;
    } else {
-      vul__audio_mixer_init( &out->mixer, channels, VUL_AUDIO_FRAME_SIZE_BYTES / ( sizeof( smp ) * channels ), 32 );
+      vul__audio_mixer_init( &out->mixer, channels, frame_size / ( sizeof( smp ) * channels ), 32 );
    }
 
    // Initialize CoreAudio (do this in here instead of a subfunction because it's the only choice)
@@ -941,11 +1083,11 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 
    for( i = 0; i < 2; ++i ) {
       AudioQueueBufferRef buffer;
-      res = AudioQueueAllocateBuffer( out->queue, VUL_AUDIO_FRAME_SIZE_BYTES, &buffer );
+      res = AudioQueueAllocateBuffer( out->queue, frame_size, &buffer );
       if( res ) {
          ERR( "Failed to create core audio buffer.\n" );
       }
-      buffer->mAudioDataByteSize = VUL_AUDIO_FRAME_SIZE_BYTES;
+      buffer->mAudioDataByteSize = frame_size;
       memset( buffer->mAudioData, 0, buffer->mAudioDataByteSize );
       AudioQueueEnqueueBuffer( out->queue, buffer, 0, NULL );
    }
@@ -1146,7 +1288,7 @@ static vul_audio_return vul__audio_write_alsa( vul_audio_device *dev, void *samp
 	return VUL_OK;
 }
 
-static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char *device_name )
+static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char *device_name, u32 frame_size )
 {
 	snd_pcm_hw_params_t *hwp;
 	snd_pcm_sw_params_t *swp;
@@ -1182,7 +1324,6 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 	DLLOAD( alsa_close, dev->device.alsa.dlib, "snd_pcm_close" );
 	// Hardware parameters
 
-	// @TODO(thynn): Other modes than playback!
 	if( ( err = alsa_open( &dev->device.alsa.handle, device_name, SND_PCM_STREAM_PLAYBACK, 0 ) ) < 0 ) {
 		ERR( "Failed to open ALSA device %s.\n", device_name );
 	}
@@ -1219,10 +1360,10 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 	if( ( err = alsa_hw_set_channels( dev->device.alsa.handle, hwp, dev->channels ) ) < 0 ) {
 		ERR( "Failed to set ALSA channel count.\n" );
 	}
-   if( ( err = alsa_hw_set_buffer_size( dev->device.alsa.handle, hwp, VUL_AUDIO_FRAME_SIZE_BYTES ) ) < 0 ) {
+   if( ( err = alsa_hw_set_buffer_size( dev->device.alsa.handle, hwp, frame_size ) ) < 0 ) {
       ERR( "Failed to set ALSA buffer size.\n" );
    }
-   if( ( err = alsa_hw_set_period_size( dev->device.alsa.handle, hwp, VUL_AUDIO_FRAME_SIZE_BYTES / 4, 0 ) ) < 0 ) {
+   if( ( err = alsa_hw_set_period_size( dev->device.alsa.handle, hwp, frame_size / 4, 0 ) ) < 0 ) {
       ERR( "Failed to set ALSA period size.\n" );
    }
 	if( ( err = alsa_hw_params( dev->device.alsa.handle, hwp ) ) < 0 ) {
@@ -1238,10 +1379,10 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 	if( ( err = alsa_sw_current( dev->device.alsa.handle, swp ) ) < 0 ) {
 		ERR( "Failed to get current ALSA software parameters.\n" );
 	}
-	if( ( err = alsa_sw_set_avail_min( dev->device.alsa.handle, swp, VUL_AUDIO_FRAME_SIZE_BYTES ) ) < 0 ) {
+	if( ( err = alsa_sw_set_avail_min( dev->device.alsa.handle, swp, frame_size ) ) < 0 ) {
 		ERR( "Failed to set ALSA frame size.\n" );
 	}
-	if( ( err = alsa_sw_set_start_threshold( dev->device.alsa.handle, swp, VUL_AUDIO_FRAME_SIZE_BYTES ) ) < 0 ) {
+	if( ( err = alsa_sw_set_start_threshold( dev->device.alsa.handle, swp, frame_size ) ) < 0 ) {
 		ERR( "Failed to set ALSA start threshold.\n" );
 	}
 	if( ( err = alsa_sw_params( dev->device.alsa.handle, swp ) ) < 0 ) {
@@ -1398,14 +1539,17 @@ vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_clos
 	default:
 		ERR( "Unknown device library in use.\n" );
 	}
+   return VUL_OK;
 }
 
 vul_audio_return vul_audio_init( vul_audio_device *out, 
                                  const char *server_name, // Only pulse
 											const char *device_name, // Both pulse and ALSA
+                                 const char *description, // Only pulse
 											vul_audio_mode mode,
 											u32 channels, 
 											u32 sample_rate,
+                                 u32 frame_size,
 											void (*mix_function)( void*, size_t, void* ),
                                  void *mix_function_user_data )
 {
@@ -1422,21 +1566,20 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
       out->mix_function = mix_function;
       out->mix_function_data = mix_function_user_data;
    } else {
-      vul__audio_mixer_init( &out->mixer, channels, VUL_AUDIO_FRAME_SIZE_BYTES / ( sizeof( smp ) * channels ), 32 );
+      vul__audio_mixer_init( &out->mixer, channels, frame_size / ( sizeof( smp ) * channels ), 32 );
    }
 
 	// Try pulse
-	ret = vul__audio_init_pulse( out, "vul_audio", "@TODO(thynn): This and name should be parameters!", server_name, device_name );
+	ret = vul__audio_init_pulse( out, "vul_audio", description, server_name, device_name );
 
 	// Try ALSA
 	if( VUL_OK != ret ) {
       if( !device_name ) {
          device_name = "default";
       }
-	   ret = vul__audio_init_alsa( out, device_name );
+	   ret = vul__audio_init_alsa( out, device_name, frame_size );
       if( VUL_OK != ret ) {
          // Try OSS
-         // @TODO(thynn): Other modes based on out->mode!
          int fdmode = O_WRONLY;
          ret = vul__audio_init_oss( out, fdmode );
          if( VUL_OK != ret ) {

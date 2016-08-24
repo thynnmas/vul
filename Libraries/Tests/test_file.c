@@ -1,4 +1,4 @@
-#include "vul_types.h"
+#define VUL_DEFINE
 #include "vul_file.h"
 #include "vul_timer.h"
 
@@ -25,4 +25,13 @@ void vul_test_file_monitor_blocking( )
 			puts(".");
 		}
 	}
+}
+
+int main()
+{
+   printf("These are interavtive tests for now!\n" );
+   // @TODO(thynn): Write tests for the other functions of this file, and:
+   // Test the above by poking the file from other threads, and checking we get
+   // the results we want!
+   return 0;
 }

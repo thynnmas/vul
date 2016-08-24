@@ -31,6 +31,7 @@
 #define u8 uint8_t
 #define u32 uint32_t
 #define s32 int32_t
+#define b32 uint32_t
 #define f32 float
 #endif
 
@@ -138,6 +139,7 @@ b32 vul_svector_is_empty( vul_svector *vec );
 #undef u8
 #undef u32
 #undef s32
+#undef b32
 #undef f32
 #endif
 
@@ -149,6 +151,7 @@ b32 vul_svector_is_empty( vul_svector *vec );
 #define u8 uint8_t
 #define u32 uint32_t
 #define s32 int32_t
+#define b32 uint32_t
 #define f32 float
 #endif
 
@@ -379,6 +382,7 @@ b32 vul_svector_is_empty( vul_svector *vec )
 #undef u8
 #undef u32
 #undef s32
+#undef b32
 #undef f32
 #endif
 

@@ -1,10 +1,38 @@
 #define VUL_DEFINE
-//#include "test_gl.h" // This doesn't appear to work yet...
-//#include "test_astar.h"
-//#include "test_csp.h"
+/*
+#include "../vul_astar.h"
+#include "../vul_audio.h"
+#include "../vul_benchmark.h"
+#include "../vul_blas.h"
+#include "../vul_cl.h"
+#include "../vul_cmath.h"
+#include "../vul_csp.h"
+#include "../vul_distributions.h"
+#include "../vul_file.h"
+#include "../vul_gl.h"
+#include "../vul_hash_map.h"
+#include "../vul_linked_list.h"
+#include "../vul_mesh_simplify.h"
+#include "../vul_noise.h"
+#include "../vul_priority_heap.h"
+#include "../vul_queue.h"
+#include "../vul_raycast.h"
+#include "../vul_resizable_array.h"
+#include "../vul_rngs.h"
+#include "../vul_shapes.h"
+#include "../vul_skip_list.h"
+#include "../vul_socket.h"
+#include "../vul_stable_array.h"
+#include "../vul_stack.h"
+#include "../vul_string.h"
+#include "../vul_timer.h"
+*/
+#include "test_gl.h" // This doesn't appear to work yet...
+#include "test_astar.h"
+#include "test_csp.h"
 #include "test_blas.h"
-//#include "test_priority_queues.h"
-//#include "test_file.h"
+#include "test_priority_queues.h"
+#include "test_file.h"
 
 #include <stdio.h>
 /*
@@ -271,7 +299,7 @@ void bench_sorts_multiple( )
 
 	printf( "Done" );
 }
-
+*/
 void test_sorts( )
 {
 	srand( time( NULL ) );
@@ -320,45 +348,26 @@ void test_sorts( )
 	}
 }
 
-#include "vul_compress.h"
-void test_compression_rle( )
-{
-	const u8 *comp, *out;
-	u32 len_in, len_comp, len_out;
-	
-	const char *strin = "WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW";
-	len_in = strlen( strin );
-	comp = vul_compress_rle( ( u8* )strin, len_in, &len_comp );
-	
-	out = vul_decompress_rle( comp, len_comp, &len_out );
-	printf( "Lengths, in (%d), comp(%d), ratio(%f), out(%d)\n", len_in, len_comp, (f32)len_comp / (f32)len_in, len_out );
-	printf( "In:  %s\n", strin );
-	printf( "Out: %s\n", (char*)out );
-	printf( "compare: %d\n", strcmp(strin, ( char* )out ) );
-}*/
 
 int main( int argv, char **argc )
 {
 	//bench_sorts( );
 	//bench_sorts_multiple( );
 	
-	//test_sorts( );
+	test_sorts( );
 
-	//test_compression_rle( );
+	vul_test_gl( );
 
+	vul_test_astar( );
 
-	//vul_test_gl( );
-
-	//vul_test_astar( );
-
-	//vul_test_csp( );
+	vul_test_csp( );
 
 	vul_test_blas( );
 
-	//vul_test_priority_heap( );
+	vul_test_priority_heap( );
 
 	//vul_test_file_monitor_blocking( );
-	//vul_test_file_monitor( );
+   //vul_test_file_monitor( );
 
 	return 0;
 }

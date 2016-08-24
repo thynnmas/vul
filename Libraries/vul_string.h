@@ -26,12 +26,19 @@
 #include <stdlib.h>
 #include <wchar.h>
 
+#ifndef VUL_TYPES_H
+#include <stdint.h>
+#define s32 int32_t
+#define u32 uint32_t
+#define u8 uint8_t
+#endif
+
 typedef wchar_t vul_wchar;
 
 struct vul__string_search_table
 {
-	size_t size;
-	int *entries;
+   size_t size;
+   int *entries;
 };
 
 #ifdef _cplusplus
@@ -90,10 +97,14 @@ size_t vul_wstring_search( const vul_wchar *str, const vul_wchar *pattern );
 //-----------
 // Helpers
 
-static void vul__string_calculate_search_table( const char *pattern, struct vul__string_search_table *table );
-static void vul__wstring_calculate_search_table( const vul_wchar *pattern, struct vul__string_search_table *table );
-static size_t vul__string_search( const char *str, const char *pattern, size_t str_len, struct vul__string_search_table *table );
-static size_t vul__wstring_search( const vul_wchar *str, const vul_wchar *pattern, size_t str_len, struct vul__string_search_table *table );
+static void vul__string_calculate_search_table( const char *pattern, 
+                                                struct vul__string_search_table *table );
+static void vul__wstring_calculate_search_table( const vul_wchar *pattern, 
+                                                 struct vul__string_search_table *table );
+static size_t vul__string_search( const char *str, const char *pattern, 
+                                  size_t str_len, struct vul__string_search_table *table );
+static size_t vul__wstring_search( const vul_wchar *str, const vul_wchar *pattern, 
+                                   size_t str_len, struct vul__string_search_table *table );
 
 //-----------------------------
 // Useful substring functions
@@ -119,9 +130,22 @@ vul_wchar *vul_wstring_divide_get_first( const vul_wchar *str, const vul_wchar d
 #ifdef _cplusplus
 }
 #endif
+
+#ifndef VUL_TYPES_H
+#undef s32
+#undef u32
+#undef u8
 #endif
 
+#endif // VUL_STRING_H
+
 #ifdef VUL_DEFINE
+
+#ifndef VUL_TYPES_H
+#define s32 int32_t
+#define u32 uint32_t
+#define u8 uint8_t
+#endif
 
 #ifdef _cplusplus
 extern "C" {
@@ -217,217 +241,227 @@ char *vul_wchar_to_utf8( char *buffer, const vul_wchar *str, s32 n )
 
 vul_wchar *vul_wchar_from_utf8_large( const char *str )
 {
-	static vul_wchar buffer[ 4096 ];
-	return vul_wchar_from_utf8( buffer, str, 4096 );
+   static vul_wchar buffer[ 4096 ];
+   return vul_wchar_from_utf8( buffer, str, 4096 );
 }
 
 vul_wchar *vul_wchar_from_utf8_small( const char *str )
 {
-	static vul_wchar buffer[ 64 ];
-	return vul_wchar_from_utf8( buffer, str, 64 );
+   static vul_wchar buffer[ 64 ];
+   return vul_wchar_from_utf8( buffer, str, 64 );
 }
 
 char *vul_wchar_to_utf8_large( const vul_wchar *str )
 {
-	static char buffer [ 4096 ];
-	return vul_wchar_to_utf8( buffer, str, 4096 );
+   static char buffer [ 4096 ];
+   return vul_wchar_to_utf8( buffer, str, 4096 );
 }
 
 char *vul_wchar_to_utf8_small( const vul_wchar *str )
 {
-	static char buffer[ 64 ];
-	return vul_wchar_to_utf8( buffer, str, 64 );
+   static char buffer[ 64 ];
+   return vul_wchar_to_utf8( buffer, str, 64 );
 }
 
-static void vul__string_calculate_search_table( const char *pattern, struct vul__string_search_table *table )
+static void vul__string_calculate_search_table( const char *pattern, 
+                                                struct vul__string_search_table *table )
 {
-	u32 pos;
-	s32 cnd;
+   u32 pos;
+   s32 cnd;
 
-	pos = 2;
-	cnd = 0;
-	table->entries[ 0 ] = -1;
-	table->entries[ 1 ] = 0;
+   pos = 2;
+   cnd = 0;
+   table->entries[ 0 ] = -1;
+   table->entries[ 1 ] = 0;
 
-	while ( pos < table->size )
-	{
-		if ( pattern[ pos - 1 ] == pattern[ cnd ] ) {
-			table->entries[ pos++ ] = ++cnd;
-		} else if ( cnd > 0 ) {
-			cnd = table->entries[ cnd ];
-		} else {
-			table->entries[ pos++ ] = 0;
-		}
-	}
+   while ( pos < table->size )
+   {
+      if ( pattern[ pos - 1 ] == pattern[ cnd ] ) {
+         table->entries[ pos++ ] = ++cnd;
+      } else if ( cnd > 0 ) {
+         cnd = table->entries[ cnd ];
+      } else {
+         table->entries[ pos++ ] = 0;
+      }
+   }
 }
 
-static void vul__wstring_calculate_search_table( const vul_wchar *pattern, struct vul__string_search_table *table )
+static void vul__wstring_calculate_search_table( const vul_wchar *pattern, 
+                                                 struct vul__string_search_table *table )
 {
-	u32 pos;
-	s32 cnd;
+   u32 pos;
+   s32 cnd;
 
-	pos = 2;
-	cnd = 0;
-	table->entries[ 0 ] = -1;
-	table->entries[ 1 ] = 0;
+   pos = 2;
+   cnd = 0;
+   table->entries[ 0 ] = -1;
+   table->entries[ 1 ] = 0;
 
-	while ( pos < table->size )
-	{
-		if ( pattern[ pos - 1 ] == pattern[ cnd ] ) {
-			table->entries[ pos++ ] = ++cnd;
-		} else if ( cnd > 0 ) {
-			cnd = table->entries[ cnd ];
-		} else {
-			table->entries[ pos++ ] = 0;
-		}
-	}
+   while ( pos < table->size )
+   {
+      if ( pattern[ pos - 1 ] == pattern[ cnd ] ) {
+         table->entries[ pos++ ] = ++cnd;
+      } else if ( cnd > 0 ) {
+         cnd = table->entries[ cnd ];
+      } else {
+         table->entries[ pos++ ] = 0;
+      }
+   }
 }
 
-static size_t vul__string_search( const char *str, const char *pattern, size_t str_len, struct vul__string_search_table *table )
+static size_t vul__string_search( const char *str, const char *pattern, 
+                                  size_t str_len, struct vul__string_search_table *table )
 {
-	size_t m, i;
+   size_t m, i;
 
-	m = 0;
-	i = 0;
+   m = 0;
+   i = 0;
 
-	while ( m + i < str_len )
-	{
-		if ( pattern[ i ] == str[ m + i ] ) {
-			if ( i++ == table->size - 1 )
-				return m;
-		} else {
-			m = m + i - table->entries[ i ];
-			if ( table->entries[ i ] > -1 )
-				i = table->entries[ i ];
-			else
-				i = 0;
-		}
-	}
-	return str_len;
+   while ( m + i < str_len )
+   {
+      if ( pattern[ i ] == str[ m + i ] ) {
+         if ( i++ == table->size - 1 )
+            return m;
+      } else {
+         m = m + i - table->entries[ i ];
+         if ( table->entries[ i ] > -1 )
+            i = table->entries[ i ];
+         else
+            i = 0;
+      }
+   }
+   return str_len;
 }
 
-static size_t vul__wstring_search( const vul_wchar *str, const vul_wchar *pattern, size_t str_len, struct vul__string_search_table *table )
+static size_t vul__wstring_search( const vul_wchar *str, const vul_wchar *pattern, 
+                                   size_t str_len, struct vul__string_search_table *table )
 {
-	size_t m, i;
+   size_t m, i;
 
-	m = 0;
-	i = 0;
+   m = 0;
+   i = 0;
 
-	while ( m + i < str_len )
-	{
-		if ( pattern[ i ] == str[ m + i ] ) {
-			if ( i++ == table->size - 1 )
-				return m;
-		} else {
-			m = m + i - table->entries[ i ];
-			if ( table->entries[ i ] > -1 )
-				i = table->entries[ i ];
-			else
-				i = 0;
-		}
-	}
-	return str_len;
+   while ( m + i < str_len )
+   {
+      if ( pattern[ i ] == str[ m + i ] ) {
+         if ( i++ == table->size - 1 )
+            return m;
+      } else {
+         m = m + i - table->entries[ i ];
+         if ( table->entries[ i ] > -1 )
+            i = table->entries[ i ];
+         else
+            i = 0;
+      }
+   }
+   return str_len;
 }
 
 size_t vul_string_search( const char *str, const char *pattern )
 {
-	size_t ret, lenS;
-	struct vul__string_search_table table;
+   size_t ret, lenS;
+   struct vul__string_search_table table;
 
-	lenS = strlen( str );
+   lenS = strlen( str );
 
-	if ( lenS == 0 ) return 0;
+   if ( lenS == 0 ) return 0;
 
-	table.size = strlen( pattern );
-	if ( table.size == 0 ) return lenS;
+   table.size = strlen( pattern );
+   if ( table.size == 0 ) return lenS;
 
-	table.entries = ( int* )malloc( table.size * sizeof( int ) );
-	if ( !table.entries ) return lenS;
+   table.entries = ( int* )malloc( table.size * sizeof( int ) );
+   if ( !table.entries ) return lenS;
 
-	vul__string_calculate_search_table( pattern, &table );
-	
-	ret = vul__string_search( str, pattern, lenS, &table );
-	
-	free( table.entries );
-	
-	return ret;
+   vul__string_calculate_search_table( pattern, &table );
+   
+   ret = vul__string_search( str, pattern, lenS, &table );
+   
+   free( table.entries );
+   
+   return ret;
 }
 
 size_t vul_wstring_search( const vul_wchar *str, const vul_wchar *pattern )
 {
-	size_t ret, lenS;
-	struct vul__string_search_table table;
+   size_t ret, lenS;
+   struct vul__string_search_table table;
 
-	lenS = wcslen( str );
+   lenS = wcslen( str );
 
-	if ( lenS == 0 ) return 0;
+   if ( lenS == 0 ) return 0;
 
-	table.size = wcslen( pattern );
-	if ( table.size == 0 ) return lenS;
+   table.size = wcslen( pattern );
+   if ( table.size == 0 ) return lenS;
 
-	table.entries = ( int* )malloc( table.size * sizeof( int ) );
-	if ( !table.entries ) return lenS;
+   table.entries = ( int* )malloc( table.size * sizeof( int ) );
+   if ( !table.entries ) return lenS;
 
-	vul__wstring_calculate_search_table( pattern, &table );
-	
-	ret = vul__wstring_search( str, pattern, lenS, &table );
-	
-	free( table.entries );
-	
-	return ret;
+   vul__wstring_calculate_search_table( pattern, &table );
+   
+   ret = vul__wstring_search( str, pattern, lenS, &table );
+   
+   free( table.entries );
+   
+   return ret;
 }
 
 char *vul_string_divide_get_last( const char *str, const char divisor )
 {
-	size_t index;
-	
-	index = strlen( str ) - 1;
-	
-	while ( index > 0 && str[ index ] != divisor )
-		--index;
+   size_t index;
+   
+   index = strlen( str ) - 1;
+   
+   while ( index > 0 && str[ index ] != divisor )
+      --index;
 
-	return ( char* )( str + index );
+   return ( char* )( str + index );
 }
 
 vul_wchar *vul_wstring_divide_get_last( const vul_wchar *str, const vul_wchar divisor )
 {
-	size_t index;
-	
-	index = wcslen( str ) - 1;
-	
-	while ( index > 0 && str[ index ] != divisor )
-		--index;
+   size_t index;
+   
+   index = wcslen( str ) - 1;
+   
+   while ( index > 0 && str[ index ] != divisor )
+      --index;
 
-	return ( vul_wchar* )( str + index );
+   return ( vul_wchar* )( str + index );
 }
 
 char *vul_string_divide_get_first( const char *str, const char divisor )
 {
-	size_t index, len;
-	
-	len = strlen( str ) - 1;
-	index = 0;
-	
-	while ( index < len && str[ index ] != divisor )
-		++index;
+   size_t index, len;
+   
+   len = strlen( str ) - 1;
+   index = 0;
+   
+   while ( index < len && str[ index ] != divisor )
+      ++index;
 
-	return ( char* )( str + index );
+   return ( char* )( str + index );
 } 
 vul_wchar *vul_wstring_divide_get_first( const vul_wchar *str, const vul_wchar divisor )
 {
-	size_t index, len;
-	
-	len = wcslen( str ) - 1;
-	index = 0;
-	
-	while ( index < len && str[ index ] != divisor )
-		++index;
+   size_t index, len;
+   
+   len = wcslen( str ) - 1;
+   index = 0;
+   
+   while ( index < len && str[ index ] != divisor )
+      ++index;
 
-	return ( vul_wchar* )( str + index );
+   return ( vul_wchar* )( str + index );
 }
 
 #ifdef _cplusplus
 }
 #endif
 
+#ifndef VUL_TYPES_H
+#undef s32
+#undef u32
+#undef u8
 #endif
+
+#endif // VUL_DEFINE

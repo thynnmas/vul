@@ -1,12 +1,19 @@
 /**
  * This tests vul_astar on a rectangular grid.
  */
-#include "../vul_astar.h"
-#include "../vul_types.h"
 
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+
+#define VUL_DEFINE
+#include "../vul_stable_array.h"
+#include "../vul_astar.h"
+
+#define TEST( expr ) if( !( expr ) ) {\
+   fprintf( stderr, #expr );\
+   exit( 1 );\
+}
 
 #ifdef _WIN32
 #define snprintf sprintf_s
@@ -57,7 +64,7 @@ void astar__bitfield_mark_block( u32 *bitfield,
 		for( x = x0; x < x0 + w; ++x ) {
 			i = ( y * bitfield_width + x ) / 32;
 			b = ( y * bitfield_width + x ) % 32;
-			bitfield[ i ] |= ( 1 << b );
+			bitfield[ i ] |= ( 1u << b );
 		}
 	}
 }
@@ -71,21 +78,21 @@ u32 *astar_input_from_string( u32 *w, u32 *h,
 
 	/* Read the size of the grid and allocate it */
 	c = str;
-	assert( astar__input_read_number_pair( w, h, &c ) );
+	TEST( astar__input_read_number_pair( w, h, &c ) );
 	bitfield_length = ( u32 )ceil( ( f32 )( ( *w ) * ( *h ) ) / 32.f );
 	bitfield = ( u32* )malloc( bitfield_length * sizeof( u32 ) );
 	/* Initialize it to 0 */
 	memset( bitfield, 0x00, bitfield_length * sizeof( u32 ) );
 	/* Read the start and end positions */
-	assert( astar__input_read_number_pair( sx, sy, &c ) );
-	assert( astar__input_read_number_pair( ex, ey, &c ) );
+	TEST( astar__input_read_number_pair( sx, sy, &c ) );
+	TEST( astar__input_read_number_pair( ex, ey, &c ) );
 	/* Read ll the walls */
 	while( 1 ) {
 		if( !astar__input_read_number_pair( &x0, &y0, &c ) ) {
 			break; /* No more walls */
 		}
 		/* If we have a single block we have a malformed line! */
-		assert( astar__input_read_number_pair( &xw, &yh, &c ) );
+		TEST( astar__input_read_number_pair( &xw, &yh, &c ) );
 		/* Mark the block */
 		astar__bitfield_mark_block( bitfield, *w, x0, y0, xw, yh );
 	}
@@ -141,7 +148,7 @@ u64 astar_neighbors( vul_astar_node **neighbors,
 	vul_astar_node * n;
 	u32 i;
 
-	assert( max_neighbors >= 4 ); // No diagonals means 4 neighbors
+	TEST( max_neighbors >= 4 ); // No diagonals means 4 neighbors
 
 	/* Handle neighbors, handling edge cases */
 	i = 0;
@@ -222,7 +229,7 @@ void astar_grid_construct_graph( vul_astar_graph *graph,
 		for( x = 0u; x < width; ++x ) {
 			/* Index into our bitfield */
 			u32 blocked = ( bitfield[ ( base + x ) / 32 ]
-							   & ( 1 << ( ( base + x ) % 32 ) ) )
+							   & ( 1u << ( ( base + x ) % 32 ) ) )
 							   == 0u ? 0u : 0xffffffff;
 			/* Store whether it is blocked */
 			node = ( vul_astar_node* ) vul_svector_append_empty( graph->nodes );
@@ -363,11 +370,11 @@ void astar_strategy_print( vul_astar_strategy strategy )
 	} else if( strategy == VUL_ASTAR_STRATEGY_DEPTH_FIRST ) {
 		printf( "depth first\n" );
 	} else {
-		assert( 0 && "Invalid search strategy" );
+		TEST( 0 && "Invalid search strategy" );
 	}
 }
 
-void vul_test_astar( )
+int main( )
 {
 	u32 *bitfield, w, h, sx, sy, ex, ey;
 	vul_astar_graph graph;
@@ -381,6 +388,7 @@ void vul_test_astar( )
 	graph.nodes = NULL;
 	graph.user_data = NULL;
 	astar_grid_construct_graph( &graph, w, h, bitfield );
+   free( bitfield );
 
 	/* Get the start and end nodes */
 	user_data.x = sx;
@@ -393,13 +401,13 @@ void vul_test_astar( )
 	for( strat = VUL_ASTAR_STRATEGY_BEST_FIRST; strat < VUL_ASTAR_STRATEGY_Count; ++strat ) {
 		/* Find the path */
 		vul_astar_search( &result, &graph,
-						  astar_grid_manhattan_dist,
-						  astar_grid_is_final,
-						  astar_neighbors,
-						  astar_cost_neighbors,
-						  start, end,
-						  strat, 4,
-						  ( VISUALIZE ? astar_grid_visualize : NULL ) );
+                        astar_grid_manhattan_dist,
+                        astar_grid_is_final,
+                        astar_neighbors,
+                        astar_cost_neighbors,
+                        start, end,
+                        strat, 4,
+                        ( VISUALIZE ? astar_grid_visualize : NULL ) );
 
 		/* Print results */
 		astar_strategy_print( strat );
@@ -414,4 +422,6 @@ void vul_test_astar( )
 		vul_astar_graph_reset( &graph );
 	}
 	astar_grid_finalize_graph( &graph );
+
+   return 0;
 }

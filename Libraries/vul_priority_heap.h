@@ -77,9 +77,9 @@ extern "C" {
  * memory management functions.
  */
 vul_priority_heap *vul_priority_heap_create( u32 element_size, 
-                                  int( *comparison_func )( void* a, void* b ),
-                                  void *( *allocator )( size_t size ),
-                                  void( *deallocator )( void *ptr ) );
+                                             int ( *comparison_func )( void* a, void* b ),
+                                             void *( *allocator )( size_t size ),
+                                             void ( *deallocator )( void *ptr ) );
 /**
  * Returns true if the heap is empty 
  */
@@ -118,8 +118,8 @@ vul_priority_heap *vul_priority_heap_merge( vul_priority_heap *heap1, vul_priori
  * Merge two parts of the heap.
  */
 static vul__fheap_element *vul__fheap_merge_lists( vul_priority_heap *heap, 
-                                       vul__fheap_element *e1, 
-                                       vul__fheap_element *e2 );
+                                                   vul__fheap_element *e1, 
+                                                   vul__fheap_element *e2 );
 /**
  * Adds an element to the heap, while maintaining the sorted invariant.
  */
@@ -163,8 +163,8 @@ extern "C" {
 #endif
 
 static vul__fheap_element *vul__fheap_merge_lists( vul_priority_heap *heap, 
-                                       vul__fheap_element *e1, 
-                                       vul__fheap_element *e2 )
+                                                   vul__fheap_element *e1, 
+                                                   vul__fheap_element *e2 )
 {
    if( e1 == NULL && e2 == NULL ) {
       return NULL;
@@ -201,11 +201,14 @@ static void *vul__fheap_enqueue( vul_priority_heap *heap, void *data )
 
 static vul__fheap_element *vul__fheap_dequeue_min( vul_priority_heap *heap )
 {
+   u32 tovisitsize, treesize;
+   vul__fheap_element *min_element, *current, **tovisit, **tree, *first;
+
    assert( heap->size != 0 );
    
    heap->size -= 1;
 
-   vul__fheap_element *min_element = heap->min_element;
+   min_element = heap->min_element;
 
    if( min_element->next == min_element ) {
       heap->min_element = NULL;
@@ -228,17 +231,17 @@ static vul__fheap_element *vul__fheap_dequeue_min( vul_priority_heap *heap )
    if( heap->min_element == NULL ) return min_element;
 
    /* Count tovisit and calculate tree sizes */
-   vul__fheap_element *current = heap->min_element;
-   u32 tovisitsize = current == NULL ? 0 : 1;
-   u32 treesize = ( u32 )log2( heap->size ) + 1; // The guaranteed upper bound on degree is log( n )
-   vul__fheap_element *first = current;
+   current = heap->min_element;
+   tovisitsize = current == NULL ? 0 : 1;
+   treesize = ( u32 )log2( heap->size ) + 1; // The guaranteed upper bound on degree is log( n )
+   first = current;
    while( current->next != first ) {
       ++tovisitsize;
       current = current->next;
     }
 
-   vul__fheap_element **tovisit = ( vul__fheap_element** )heap->allocator( tovisitsize * sizeof( vul__fheap_element* ) );
-   vul__fheap_element **tree = ( vul__fheap_element** )heap->allocator( treesize * sizeof( vul__fheap_element* ) );
+   tovisit = ( vul__fheap_element** )heap->allocator( tovisitsize * sizeof( vul__fheap_element* ) );
+   tree = ( vul__fheap_element** )heap->allocator( treesize * sizeof( vul__fheap_element* ) );
 
    /* Fill the tovisit array */
    current = heap->min_element;
@@ -341,9 +344,9 @@ static void vul__fheap_delete( vul_priority_heap *heap, vul__fheap_element *elem
 }
 
 vul_priority_heap *vul_priority_heap_create( u32 element_size,
-                                  int( *comparison_func )( void* a, void* b ),
-                                  void *( *allocator )( size_t size ),
-                                  void( *deallocator )( void *ptr ) )
+                                             int ( *comparison_func )( void* a, void* b ),
+                                             void *( *allocator )( size_t size ),
+                                             void ( *deallocator )( void *ptr ) )
 {
    vul_priority_heap *heap;
 
@@ -370,7 +373,9 @@ void vul_priority_heap_destroy( vul_priority_heap *heap )
    // We have no need of preseved order on every delete and should
    // just march each heap, deleting everything we meet along the way!
    while( !vul_priority_heap_is_empty( heap ) ) {
-      vul__fheap_dequeue_min( heap );
+      vul__fheap_element *e = vul__fheap_dequeue_min( heap );
+      heap->deallocator( e->data );
+      heap->deallocator( e );
    }
    heap->deallocator( heap );
 }
@@ -389,6 +394,7 @@ void vul_priority_heap_pop( vul_priority_heap *heap, void *data_out )
    
    memcpy( data_out, el->data, heap->element_size );
 
+   heap->deallocator( el->data );
    heap->deallocator( el );
 }
 

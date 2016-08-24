@@ -2,12 +2,17 @@
 
 #include <stdio.h>
 
+#define TEST( expr ) if( !( expr ) ) {\
+   fprintf( stderr, #expr );\
+   exit( 1 );\
+}
+
 #define TEST_MIN( a, b ) ( ( a ) <= ( b ) ? ( a ) : ( b ) )
 #define TEST_MAX( a, b ) ( ( a ) >= ( b ) ? ( a ) : ( b ) )
 
 #define CHECK_WITHIN_EPS( a, b, n, eps )\
    {for( int ppi = 0; ppi < ( n ); ++ppi ) {\
-      assert( fabs( ( a )[ ppi ] - ( b )[ ppi ] ) < TEST_MAX( eps, ( b )[ ppi ] * eps ) );\
+      TEST( fabs( ( a )[ ppi ] - ( b )[ ppi ] ) < TEST_MAX( eps, ( b )[ ppi ] * eps ) );\
    }}
 #define PRINT_VECTOR( name, v, n )\
    printf("%s [", name);\
@@ -35,7 +40,7 @@
    }}
 #define CHECK_WITHIN_EPS_SPARSE( a, b, n, eps )\
    {for( int ppi = 0; ppi < ( n ); ++ppi ) {\
-      assert( fabs( vul_blas_vector_get( a, ppi ) - vul_blas_vector_get( b, ppi ) ) < ( eps ) );\
+      TEST( fabs( vul_blas_vector_get( a, ppi ) - vul_blas_vector_get( b, ppi ) ) < ( eps ) );\
    }}
 #define PRINT_VECTOR_SPARSE( name, v, n )\
    printf("%s [", name);\
@@ -169,12 +174,12 @@ void vul__test_svd_sparse( )
    vul_blas_matrix_insert( A, 4, 4, 7.f );
 
    vul_blas_svd_sparse_qrlq( res, &rank, A, 5, 5, 1e-7, 32 );
-   assert( rank == 5 );
-   assert( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
-   assert( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
-   assert( fabs( res[ 2 ].sigma - 3.5639f ) < 1e-2 );
-   assert( fabs( res[ 3 ].sigma - 1.9843f ) < 1e-2 );
-   assert( fabs( res[ 4 ].sigma - 0.3496f ) < 1e-2 );
+   TEST( rank == 5 );
+   TEST( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
+   TEST( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
+   TEST( fabs( res[ 2 ].sigma - 3.5639f ) < 1e-2 );
+   TEST( fabs( res[ 3 ].sigma - 1.9843f ) < 1e-2 );
+   TEST( fabs( res[ 4 ].sigma - 0.3496f ) < 1e-2 );
    vul_blas_matrix *R0 = vul_blas_svd_basis_reconstruct_matrix_sparse( res, rank );
    for( int k = 0; k < 5; ++k ) {
       CHECK_WITHIN_EPS_SPARSE( &R0->rows[ k ].vec, &A->rows[ k ].vec, 5, 1e-1 );
@@ -190,13 +195,13 @@ void vul__test_svd_sparse( )
    vul_blas_matrix *A3 = vul_blas_matrix_create( 0, 0, 0, 0 );
    vulb__sparse_mtranspose( A3, A2 );
    vul_blas_svd_sparse_qrlq( res, &rank, A2, 5, 4, 1e-10, 32 );
-   assert( rank == 3 ); // Check that we got back the rank we wanted
-   assert( fabs( res[ 0 ].sigma - 3.f ) < 1e-5 );
-   assert( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-5 );
-   assert( fabs( res[ 2 ].sigma - 2.f ) < 1e-5 );
+   TEST( rank == 3 ); // Check that we got back the rank we wanted
+   TEST( fabs( res[ 0 ].sigma - 3.f ) < 1e-5 );
+   TEST( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-5 );
+   TEST( fabs( res[ 2 ].sigma - 2.f ) < 1e-5 );
 
    R0 = vul_blas_svd_basis_reconstruct_matrix_sparse( res, rank );
-   assert( R0->count == A2->count );
+   TEST( R0->count == A2->count );
    for( int k = 0; k < R0->count; ++k ) {
       CHECK_WITHIN_EPS_SPARSE( &R0->rows[ k ].vec, &A2->rows[ k ].vec, 5, 1e-1 );
    }
@@ -206,12 +211,12 @@ void vul__test_svd_sparse( )
    // Jacobi
    rank = 0;
    vul_blas_svd_sparse( res, &rank, A, 5, 5, 1e-7, 32 );
-   assert( rank == 5 );
-   assert( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
-   assert( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
-   assert( fabs( res[ 2 ].sigma - 3.5639f ) < 1e-2 );
-   assert( fabs( res[ 3 ].sigma - 1.9843f ) < 1e-2 );
-   assert( fabs( res[ 4 ].sigma - 0.3496f ) < 1e-2 );
+   TEST( rank == 5 );
+   TEST( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
+   TEST( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
+   TEST( fabs( res[ 2 ].sigma - 3.5639f ) < 1e-2 );
+   TEST( fabs( res[ 3 ].sigma - 1.9843f ) < 1e-2 );
+   TEST( fabs( res[ 4 ].sigma - 0.3496f ) < 1e-2 );
    R0 = vul_blas_svd_basis_reconstruct_matrix_sparse( res, rank );
    for( int k = 0; k < 5; ++k ) {
       CHECK_WITHIN_EPS_SPARSE( &R0->rows[ k ].vec, &A->rows[ k ].vec, 5, 1e-1 );
@@ -221,13 +226,13 @@ void vul__test_svd_sparse( )
 
    rank = 0;
    vul_blas_svd_sparse( res, &rank, A2, 5, 4, 1e-10, 32 );
-   assert( rank == 3 ); // Check that we got back the rank we wanted
-   assert( fabs( res[ 0 ].sigma - 3.f ) < 1e-5 );
-   assert( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-5 );
-   assert( fabs( res[ 2 ].sigma - 2.f ) < 1e-5 );
+   TEST( rank == 3 ); // Check that we got back the rank we wanted
+   TEST( fabs( res[ 0 ].sigma - 3.f ) < 1e-5 );
+   TEST( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-5 );
+   TEST( fabs( res[ 2 ].sigma - 2.f ) < 1e-5 );
 
    R0 = vul_blas_svd_basis_reconstruct_matrix_sparse( res, rank );
-   assert( R0->count == A2->count );
+   TEST( R0->count == A2->count );
    for( int k = 0; k < R0->count; ++k ) {
       CHECK_WITHIN_EPS_SPARSE( &R0->rows[ k ].vec, &A2->rows[ k ].vec, 5, 1e-1 );
    }
@@ -272,10 +277,10 @@ void vul__test_svd_dense( )
                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
    rank = 3;
    vul_blas_svd_dense_qrlq( res, &rank, A, 15, 25, 1e-7, 32 );
-   assert( rank == 3 );
-   assert( fabs( res[ 0 ].sigma - 14.72f ) < 1e-2 );
-   assert( fabs( res[ 1 ].sigma - 5.22f ) < 1e-2 );
-   assert( fabs( res[ 2 ].sigma - 3.31f ) < 1e-2 );
+   TEST( rank == 3 );
+   TEST( fabs( res[ 0 ].sigma - 14.72f ) < 1e-2 );
+   TEST( fabs( res[ 1 ].sigma - 5.22f ) < 1e-2 );
+   TEST( fabs( res[ 2 ].sigma - 3.31f ) < 1e-2 );
    real RA1[ 15 * 25 ];
    vul_blas_svd_basis_reconstruct_matrix( RA1, res, rank );
    CHECK_WITHIN_EPS( RA1, A, 15 * 25, 1e-3 );
@@ -288,12 +293,12 @@ void vul__test_svd_dense( )
                         0, 10, 0, 0, 7 };
    rank = 0;
    vul_blas_svd_dense_qrlq( res, &rank, A2, 5, 5, 1e-7, 8 ); // Higher iteration count introduces error with givens rotations!
-   assert( rank == 5 );
-   assert( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
-   assert( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
-   assert( fabs( res[ 2 ].sigma - 3.5639f ) < 1e-2 );
-   assert( fabs( res[ 3 ].sigma - 1.9843f ) < 1e-2 );
-   assert( fabs( res[ 4 ].sigma - 0.3496f ) < 1e-2 );
+   TEST( rank == 5 );
+   TEST( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
+   TEST( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
+   TEST( fabs( res[ 2 ].sigma - 3.5639f ) < 1e-2 );
+   TEST( fabs( res[ 3 ].sigma - 1.9843f ) < 1e-2 );
+   TEST( fabs( res[ 4 ].sigma - 0.3496f ) < 1e-2 );
    real R0[ 5 * 5 ];
    vul_blas_svd_basis_reconstruct_matrix( R0, res, rank );
    CHECK_WITHIN_EPS( R0, A2, 5 * 5, 1e-1 );
@@ -304,10 +309,10 @@ void vul__test_svd_dense( )
                         0, 0, 0, 0, 0,
                         0, 2, 0, 0, 0 };
    vul_blas_svd_dense_qrlq( res, &rank, A3, 5, 4, 1e-10, 32 );
-   assert( rank == 3 ); // Check that we got back the rank we wanted
-   assert( fabs( res[ 0 ].sigma - 3.f ) < 1e-5 );
-   assert( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-5 );
-   assert( fabs( res[ 2 ].sigma - 2.f ) < 1e-5 );
+   TEST( rank == 3 ); // Check that we got back the rank we wanted
+   TEST( fabs( res[ 0 ].sigma - 3.f ) < 1e-5 );
+   TEST( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-5 );
+   TEST( fabs( res[ 2 ].sigma - 2.f ) < 1e-5 );
 
    vul_blas_svd_basis_reconstruct_matrix( R0, res, rank );
    CHECK_WITHIN_EPS( R0, A3, 5 * 4, 1e-1 );
@@ -316,32 +321,32 @@ void vul__test_svd_dense( )
    // Test jacobi
    rank = 0;
    vul_blas_svd_dense( res, &rank, A, 15, 25, 1e-7, 32 );
-   assert( rank == 3 );
-   assert( fabs( res[ 0 ].sigma - 14.72f ) < 1e-2 );
-   assert( fabs( res[ 1 ].sigma - 5.22f ) < 1e-2 );
-   assert( fabs( res[ 2 ].sigma - 3.31f ) < 1e-2 );
+   TEST( rank == 3 );
+   TEST( fabs( res[ 0 ].sigma - 14.72f ) < 1e-2 );
+   TEST( fabs( res[ 1 ].sigma - 5.22f ) < 1e-2 );
+   TEST( fabs( res[ 2 ].sigma - 3.31f ) < 1e-2 );
    vul_blas_svd_basis_reconstruct_matrix( RA1, res, rank );
    CHECK_WITHIN_EPS( RA1, A, 15 * 25, 1e-3 );
    vul_blas_svd_basis_destroy( res, rank );
 
    rank = 0;
    vul_blas_svd_dense( res, &rank, A2, 5, 5, 1e-7, 8 );
-   assert( rank == 5 );
-   assert( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
-   assert( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
-   assert( fabs( res[ 2 ].sigma - 3.5639f ) < 1e-2 );
-   assert( fabs( res[ 3 ].sigma - 1.9843f ) < 1e-2 );
-   assert( fabs( res[ 4 ].sigma - 0.3496f ) < 1e-2 );
+   TEST( rank == 5 );
+   TEST( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
+   TEST( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
+   TEST( fabs( res[ 2 ].sigma - 3.5639f ) < 1e-2 );
+   TEST( fabs( res[ 3 ].sigma - 1.9843f ) < 1e-2 );
+   TEST( fabs( res[ 4 ].sigma - 0.3496f ) < 1e-2 );
    vul_blas_svd_basis_reconstruct_matrix( R0, res, rank );
    CHECK_WITHIN_EPS( R0, A2, 5 * 5, 1e-1 );
    vul_blas_svd_basis_destroy( res, rank );
 
    rank = 0;
    vul_blas_svd_dense( res, &rank, A3, 5, 4, 1e-10, 32 );
-   assert( rank == 3 ); // Check that we got back the rank we wanted
-   assert( fabs( res[ 0 ].sigma - 3.f ) < 1e-2 );
-   assert( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-2 );
-   assert( fabs( res[ 2 ].sigma - 2.f ) < 1e-2 );
+   TEST( rank == 3 ); // Check that we got back the rank we wanted
+   TEST( fabs( res[ 0 ].sigma - 3.f ) < 1e-2 );
+   TEST( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-2 );
+   TEST( fabs( res[ 2 ].sigma - 2.f ) < 1e-2 );
 
    vul_blas_svd_basis_reconstruct_matrix( R0, res, rank );
    CHECK_WITHIN_EPS( R0, A3, 5 * 4, 1e-1 );
@@ -356,7 +361,7 @@ void vul__test_eigenvalues( ) {
    real solution = 15.756757465243327;
    real eps = 1e-6;
    real v = vul_blas_largest_eigenvalue( H, 4, 4, 1e-7, 32 );
-   assert( fabs( v - solution ) < eps );
+   TEST( fabs( v - solution ) < eps );
 }
 
 void vul__test_qr_decomposition( ) {
@@ -481,7 +486,7 @@ void vul__test_transpose( )
    CHECK_WITHIN_EPS( C, A, 3 * 2, FLT_EPSILON );
 }
 
-void vul_test_blas( ) {
+int main( ) {
    // @TODO(thynn): Test all the helpers, not just the transpose
    vul__test_transpose( );
 
@@ -499,5 +504,7 @@ void vul_test_blas( ) {
    puts("Sparse SVD works.");
    vul__test_svd_dense( );
    puts("Dense SVD works.");
+
+   return 0;
 }
 

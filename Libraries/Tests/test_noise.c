@@ -1,3 +1,4 @@
+#define VUL_DEFINE
 #include "vul_noise.h"
 
 int vul__test_noise_gaussian( )
@@ -14,6 +15,8 @@ int vul__test_noise_gaussian( )
 					( unsigned char )( a[ i ] * 255.f ) );
 	}
 	fclose( f );
+
+   free( a );
 	
 	return 1;
 }
@@ -43,6 +46,8 @@ int vul__test_noise_worley_2d( )
 	}
 	fclose( f );
 
+   free( a );
+
 	return 1;
 }
 
@@ -53,6 +58,8 @@ int vul_test_noise( )
 
 int main( int argc, char **argv )
 {
+   // @TODO(thynn): Use seeded rng to create the noise and check that we get
+   // correct results!
 	vul__test_noise_gaussian( );
 	vul__test_noise_worley_2d( );
 	

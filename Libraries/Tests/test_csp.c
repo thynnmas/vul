@@ -1,14 +1,20 @@
-#include "../vul_csp.h"
-
 #include <stdio.h>
 #include <malloc.h>
-#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <math.h>
 #include <limits.h>
 #include <float.h>
+
+#define TEST( expr ) if( !( expr ) ) {\
+   fprintf( stderr, #expr );\
+   exit( 1 );\
+}
+
+#define VUL_DEFINE
+#include "../vul_csp.h"
+#include "../vul_types.h"
 
 #ifdef _WIN32
 #define snprintf sprintf_s
@@ -140,7 +146,7 @@ csp_graph_t *graph_input_from_string( u32 *vert_count, u32 *edge_count, u32 K, c
    f32 x, y;
 
    /* Read the graph size and allocate it */
-   assert( graph__input_read_edge( vert_count, edge_count, &str ) );
+   TEST( graph__input_read_edge( vert_count, edge_count, &str ) );
    graph = ( csp_graph_t* )malloc( sizeof( csp_graph_t ) );
    graph->nodes = vul_svector_create( sizeof( csp_graph_node_t ), 32, malloc, free );
    graph->colors = vul_svector_create( sizeof( csp_graph_color_t ), 32, malloc, free );
@@ -152,7 +158,7 @@ csp_graph_t *graph_input_from_string( u32 *vert_count, u32 *edge_count, u32 K, c
       vul_svector_append_empty( graph->nodes );
    } // Create them first since they aren't guaranteed to come in order
    for( a = 0; a < *vert_count; ++a ) {
-      assert( graph__input_read_vertex( &i, &x, &y, &str ) );
+      TEST( graph__input_read_vertex( &i, &x, &y, &str ) );
       node = ( csp_graph_node_t* )vul_svector_get( graph->nodes, i );
       node->pos.x = x;
       node->pos.y = y;
@@ -162,7 +168,7 @@ csp_graph_t *graph_input_from_string( u32 *vert_count, u32 *edge_count, u32 K, c
 
    /* Read the edges */
    for( i = 0; i < *edge_count; ++i ) {
-      assert( graph__input_read_edge( &a, &b, &str ) );
+      TEST( graph__input_read_edge( &a, &b, &str ) );
       node = ( csp_graph_node_t* )vul_svector_get( graph->nodes, a );
       vul_svector_append( node->neighbors, &b );
    }
@@ -185,9 +191,9 @@ int csp_color_comparator( void *a, void *b )
 
 int csp_color_test( u32 count, vul_csp_var *vars )
 {
-   assert( count == 2 );
-   assert( vars[ 0 ].bound_value->size == sizeof( csp_graph_color_t ) );
-   assert( vars[ 1 ].bound_value->size == sizeof( csp_graph_color_t ) );
+   TEST( count == 2 );
+   TEST( vars[ 0 ].bound_value->size == sizeof( csp_graph_color_t ) );
+   TEST( vars[ 1 ].bound_value->size == sizeof( csp_graph_color_t ) );
    return csp_color_comparator( vars[ 0 ].bound_value->data, vars[ 1 ].bound_value->data );
 }
 
@@ -526,7 +532,7 @@ char *TEST_CSP_GRAPH = "40 94\n"
 "20 30\n";
 int TEST_CSP_K = 4;
 
-void vul_test_csp( )
+int main( )
 {
    u32 vc, ec, K, i, j, quiet, gui, all;
    csp_graph_t *csp_graph;
@@ -545,42 +551,38 @@ void vul_test_csp( )
 
    vul_csp_graph_initialize( &graph );
    
-   for( strat = VUL_ASTAR_STRATEGY_BEST_FIRST;
-        strat < VUL_ASTAR_STRATEGY_Count;
-        ++strat ) {
+   start = vul_svector_get( graph.nodes, 0 ); // First and only node is start
+   end = NULL; // End node is unknown
 
-      start = vul_svector_get( graph.nodes, 0 ); // First and only node is start
-      end = NULL; // End node is unknown
+   // @TODO: Some timing...
+   vul_astar_search( &result,
+                     &graph,
+                     vul_gac_heuristic,
+                     vul_gac_is_final,
+                     vul_gac_neighbors,
+                     vul_gac_cost_neighbors,
+                     start, end,
+                     VUL_ASTAR_STRATEGY_BEST_FIRST,
+                     K, // Each node has exactly as many potential neighbors as we can make
+                        // assumptions, for each node we can only assume a valid color, <= K
+                        // This is a restriction we've made to make the tree not flat, see comment
+                        // for vul_astar_neighbors
+                     NULL );
 
-      // @TODO: Some timing...
-      vul_astar_search( &result,
-                        &graph,
-                        vul_gac_heuristic,
-                        vul_gac_is_final,
-                        vul_gac_neighbors,
-                        vul_gac_cost_neighbors,
-                        start, end,
-                        strat,
-                        K, // Each node has exactly as many potential neighbors as we can make
-                           // assumptions, for each node we can only assume a valid color, <= K
-                           // This is a restriction we've made to make the tree not flat, see comment
-                           // for vul_astar_neighbors
-                        NULL );
-
-      astar_strategy_print( strat );
-      if( result.root ) {
-         print_solution( ( ( vul_gac_astar_node_user_data* )result.final_node->user_data )->gac_node, K );
-      }
-
-      printf( "Failed constraint count: %d\n", vul_gac_count_failed( result.final_node ) );
-      printf( "Vertices without color assignment: %d\n", vul_gac_count_unassigned( result.final_node ) );
-      printf( "Modes considered: %lu\n", result.size_closed_set );
-      printf( "Nodes still open: %lu\n", result.size_open_set );
-
-      if( strat + 1 < VUL_ASTAR_STRATEGY_Count ) {
-         vul_csp_graph_reset( &graph );
-      }
+   astar_strategy_print( strat );
+   if( result.root ) {
+      print_solution( ( ( vul_gac_astar_node_user_data* )result.final_node->user_data )->gac_node, K );
    }
 
+   printf( "Failed constraint count: %d\n", vul_gac_count_failed( result.final_node ) );
+   printf( "Vertices without color assignment: %d\n", vul_gac_count_unassigned( result.final_node ) );
+   printf( "Modes considered: %lu\n", result.size_closed_set );
+   printf( "Nodes still open: %lu\n", result.size_open_set );
+
+   vul_astar_path_finalize( result.root );
    csp_graph_finalize_astar( &graph );
+
+   // @TODO(thynn): Actually test that the values are what they should be!
+
+   return 0;
 }

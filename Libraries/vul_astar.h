@@ -59,6 +59,8 @@ typedef enum vul__astar_node_state {
    VUL_ASTAR_NODE_OPEN,
    VUL_ASTAR_NODE_CLOSED,
    VUL_ASTAR_NODE_UNDISCOVERED,
+   VUL_ASTAR_NODE_IN_SOLUTION,
+   VUL_ASTAR_NODE_FINALIZED,
    VUL_ASTAR_NODE_STATE_Count
 } vul__astar_node_state;
 
@@ -258,6 +260,7 @@ void vul_astar_search( vul_astar_result *result,
                        void( *visualize )( vul_astar_graph *graph, vul_astar_node *start, 
                                            vul_astar_node *end, vul_astar_node *current ) )
 {
+   vul_svector *closed_set;
    void *open_set;
    vul_astar_node *n, **nb, *best;
    u64 c, i;
@@ -282,6 +285,7 @@ void vul_astar_search( vul_astar_result *result,
    result->size_closed_set = 0;
    result->size_open_set = 1;
 
+   vul_svector_append( graph->nodes, &start );
    while( !vul__astar_open_set_is_empty( strategy, open_set ) )
    {
       /* Pop the node with the lowest f_cost */
@@ -304,12 +308,21 @@ void vul_astar_search( vul_astar_result *result,
          /* Calculate the path */
          result->root = vul_astar_calculate_path( n );
          result->final_node = n;
+         /* Add it to the closed set so we can properly delete it later */
+         // Clean up
+         vul__astar_open_set_finalize( strategy, open_set );
+         VUL_ASTAR_FREE( nb );
          return;
       }
+      /* Add it to the closed set so we can properly delete it later */
       /* Fetch the neighbors */
       c = neighbors( nb, graph, n, max_neighbors );
       for( i = 0; i < c; ++i )
       {
+         /* Add it to the graph array so we can remember to delete it */
+         vul_astar_node *nbn = ( vul_astar_node* )vul_svector_append( graph->nodes, nb[ i ] );
+         VUL_ASTAR_FREE( nb[ i ] );
+         nb[ i ] = nbn;
          /* We have a monotonic heuristic, so we can skip closed nodes */
          if( nb[ i ]->state == VUL_ASTAR_NODE_CLOSED ) {
             continue;
@@ -392,6 +405,7 @@ vul_astar_path_node *vul_astar_calculate_path( vul_astar_node *end )
 
    last = NULL;
    while( end ) {
+      end->state = VUL_ASTAR_NODE_IN_SOLUTION;
       cur = ( vul_astar_path_node* )VUL_ASTAR_ALLOC( sizeof( vul_astar_path_node ) );
       cur->next = last;
       cur->node_data = end->user_data;

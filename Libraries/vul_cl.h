@@ -280,7 +280,11 @@ cl_platform_id vul_cl_get_platform_by_vendor_string( const char *vendor_string )
 /**
  * Retrieves the cl_platform_id of the context at the given index.
  */
-cl_platform_id vul_cl_get_platform_by_context_index( u32 index );
+cl_platform_id vul_cl_get_platform_by_context_index( size_t index );
+/**
+ * Prints the vendor string for all platforms found
+ */
+void vul_cl_print_platform_vendor_strings( );
 /**
  * Prints all platforms found
  */
@@ -563,7 +567,7 @@ void vul_cl_write_compile_output( vul_cl_program *prog, FILE *out )
 	size_t len;
 	char buffer[ 65536 ];
 
-	for( u32 i = 0; i < prog->context->device_count; ++i ) {
+	for( size_t i = 0; i < prog->context->device_count; ++i ) {
 		fprintf( out, "Writing compile output for device %d:\n", i );
 		clGetProgramBuildInfo( prog->program,
 							   prog->context->device_list[ i ],
@@ -982,11 +986,14 @@ cl_int vul_cl_sync( vul_cl_kernel *kernel, size_t device_index )
 cl_platform_id vul_cl_get_platform_by_vendor_string( const char *vendor_string )
 {
 	cl_int err;
-	u32 i;
+	size_t i;
 	size_t size;
 	char *name;
 
 	for( i = 0; i < vul__cl_context_count; ++i ) {
+      if( !vul__cl_contexts[ i ] ) {
+         continue;
+      }
 		err = clGetPlatformInfo( vul__cl_contexts[ i ]->platform,
 								 CL_PLATFORM_VENDOR,
 								 0,
@@ -1006,20 +1013,49 @@ cl_platform_id vul_cl_get_platform_by_vendor_string( const char *vendor_string )
 	return NULL;
 }
 
-cl_platform_id vul_cl_get_platform_by_context_index( u32 index )
+cl_platform_id vul_cl_get_platform_by_context_index( size_t index )
 {
 	assert( index <= vul__cl_context_count );
+   
+   if( vul__cl_contexts[ index ] ) {
+      return vul__cl_contexts[ index ]->platform;
+   }
+   return ( cl_platform_id )-1;
+}
 
-	return vul__cl_contexts[ index ]->platform;
+void vul_cl_print_platform_vendor_strings( )
+{
+   cl_int err;
+   size_t i;
+   char *name;
+	size_t size;
+
+   for( i = 0; i < vul__cl_context_count; ++i ) {
+      if( !vul__cl_contexts[ i ] ) {
+         continue;
+      }
+		err = clGetPlatformInfo( vul__cl_contexts[ i ]->platform,
+								 CL_PLATFORM_VENDOR,
+								 0,
+								 NULL,
+								 &size );
+		name = ( char* )malloc( sizeof( char ) * size );
+		err = clGetPlatformInfo( vul__cl_contexts[ i ]->platform,
+								 CL_PLATFORM_VENDOR,
+								 size,
+								 name,
+								 NULL );
+      printf( "Platform %d: %s\n", i, name );
+   }
 }
 
 void vul_cl_print_platform_info( )
 {
 	cl_int err;
-	u32 i, j;
+	size_t i, j;
 	size_t size;
 	char *name;
-	u64 type;
+	size_t type;
 
 	for( i = 0; i < vul__cl_context_count; ++i ) {
 		if( !vul__cl_contexts[ i ]  ) {

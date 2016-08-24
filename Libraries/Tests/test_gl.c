@@ -1,9 +1,9 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
  *
  * This file contains tests for vul_gl.h
  * 
- * ¹ If public domain is not legally valid in your legal jurisdiction
+ * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -17,9 +17,17 @@
 #ifndef VUL_TEST_GL_H
 #define VUL_TEST_GL_H
 
-#include <assert.h>
+#include <stdlib.h>
 
+#define TEST( expr ) if( !( expr ) ) {\
+   fprintf( stderr, #expr );\
+   exit( 1 );\
+}
+
+#define VUL_DEFINE
+#include "GL/gl.h"
 #include "../vul_gl.h"
+#include "../vul_types.h"
 
 #define VUL_TEST_PI 3.1415926535897932384626433832795f
 
@@ -41,7 +49,7 @@ static int vul__test_gl_ortho( )
 	
 	for( c = 0; c < 4; ++c ) {
 		for( r = 0; r < 4; ++r ) {
-	//		assert( m32( c, r ) - gm32[ r ][ c ] < f32eps );
+	//		TEST( m32( c, r ) - gm32[ r ][ c ] < f32eps );
 		}
 	}
 
@@ -62,7 +70,7 @@ static int vul__test_gl_perspective( )
 		
 	for( c = 0; c < 4; ++c ) {
 		for( r = 0; r < 4; ++r ) {
-			//assert( m32( c, r ) - gm32[ c ][ r ] < f32eps );
+			//TEST( m32( c, r ) - gm32[ c ][ r ] < f32eps );
 		}
 	}
 
@@ -73,7 +81,7 @@ static int vul__test_gl_perspective( )
 		
 	for( c = 0; c < 4; ++c ) {
 		for( r = 0; r < 4; ++r ) {
-			//assert( m32( c, r ) - gm32[ c ][ r ] < f32eps );
+			//TEST( m32( c, r ) - gm32[ c ][ r ] < f32eps );
 		}
 	}
 
@@ -83,9 +91,9 @@ static int vul__test_gl_perspective( )
 	for( c = 0; c < 4; ++c ) {
 		for( r = 0; r < 4; ++r ) {
 			if( c == 3 && ( r == 0 || r == 1 ) ) {
-				//assert( m32( c, r ) - m32o( c, r ) < ... + f32eps );
+				//TEST( m32( c, r ) - m32o( c, r ) < ... + f32eps );
 			} else {
-				//assert( m32( c, r ) - m32o( c, r ) < f32eps );
+				//TEST( m32( c, r ) - m32o( c, r ) < f32eps );
 			}
 		}
 	}
@@ -93,12 +101,12 @@ static int vul__test_gl_perspective( )
 	return 1;
 }
 
-static int vul_test_gl( )
+int main( )
 {
-	assert( vul__test_gl_ortho( ) );
-	assert( vul__test_gl_perspective( ) );
+	TEST( vul__test_gl_ortho( ) );
+	TEST( vul__test_gl_perspective( ) );
 
-	return 1;
+	return 0;
 }
 
 #undef VUL_TEST_PI

@@ -208,9 +208,9 @@ int vul_gac_is_final( vul_astar_node *c, vul_astar_node *e );
 * best candidate is the one that constrains the most. Perform deduction and don't return illegal states.
 */
 u64 vul_gac_neighbors( vul_astar_node **neighbors,
-                  vul_astar_graph *graph,
-                  vul_astar_node *root,
-                  u32 max_neighbors );
+                       vul_astar_graph *graph,
+                       vul_astar_node *root,
+                       u32 max_neighbors );
 /*
 * The heuristic we use is number of free variables.
 * End node is always null, and not used.
@@ -365,6 +365,10 @@ void vul_csp_graph_finalize_astar_node( vul_astar_node *node )
    u32 i;
    vul_gac_astar_node_user_data *ndata;
 
+   if( node->state == VUL_ASTAR_NODE_FINALIZED ) {
+      return; // Already finalized
+   }
+
    ndata = ( vul_gac_astar_node_user_data* )node->user_data;
 
    vul_gac_node_finalize( ndata->gac_node );
@@ -373,6 +377,7 @@ void vul_csp_graph_finalize_astar_node( vul_astar_node *node )
    }
 
    VUL_ASTAR_FREE( ndata );
+   node->state = VUL_ASTAR_NODE_FINALIZED;
 }
 
 void vul_csp_graph_reset( vul_astar_graph *graph )
@@ -418,8 +423,10 @@ static int vul__gac_revise_recurse( vul_csp_constraint_instance *cons,
 
       // Test if the constraint is satisfied, if it is, return
       if( cons->constraint->test( bound_count, lvars ) ) {
+         VUL_ASTAR_FREE( lvars );
          return 1;
       }
+      VUL_ASTAR_FREE( lvars );
    } else {
       // We have free variables. For all values in its domain, bind
       // the first free variable and call ourselves.
@@ -553,6 +560,8 @@ void vul_gac_initialize( u32 constraint_count,
 
    // Now perform deduction
    vul_gac_deduction( q, constraint_count, const_insts );
+
+   vul_queue_destroy( q );
 }
 
 void vul_gac_rerun( u32 constraint_count,
@@ -587,6 +596,8 @@ void vul_gac_rerun( u32 constraint_count,
 
    // Then perform deduction
    vul_gac_deduction( q, constraint_count, const_insts );
+
+   vul_queue_destroy( q );
 }
 
 void vul_gac_cnet_finalize( vul_gac_cnet *cnet )
@@ -769,6 +780,10 @@ int vul_gac_is_valid( vul_astar_node *anode )
    return 1;
 }
 
+// @BUG(thynn): We have a massive memory leak originating from here: We
+// create neighboring nodes here (with a lot of different allocations),
+// but don't destroy them. Need to find out what the lifespan of these
+// copies is, and destroy them when they're no longer needed!
 static void vul__gac_create_astar_node_copy( vul_astar_node **anode,
                                              vul_astar_graph *graph,
                                              vul_astar_node *parent,
@@ -856,7 +871,7 @@ static void vul__gac_create_astar_node_copy( vul_astar_node **anode,
 
 int vul_gac_is_final( vul_astar_node *c, vul_astar_node *e )
 {
-   u32 i, j, ret;
+   u32 i, j;
    vul_gac_astar_node_user_data *udata;
    vul_gac_node_data *gnode;
    vul_csp_var *var;
@@ -872,7 +887,6 @@ int vul_gac_is_final( vul_astar_node *c, vul_astar_node *e )
    }
 
    // Test if we are done
-   ret = 0;
    for( i = 0; i < gnode->constraint_count; ++i ) {
       for( j = 0; j < gnode->const_insts[ i ].constraint->var_count; ++j ) {
          if( vul_svector_size( gnode->const_insts[ i ].var_insts[ j ]->dom_inst ) != 1 ) {

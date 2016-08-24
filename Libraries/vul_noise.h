@@ -95,7 +95,7 @@ static void vul__noise_worley_downsample( float *from, float *to, int n, int str
 
 	for( i = 0; i < n / 2; ++i ) {
 		to[ i * stride ] = 0.f;
-		for( k = 2 * i - 16; k <= 2 * i + 16; ++k ) {
+		for( k = 2 * i - 16; k <= 2 * i + 15; ++k ) {
 			// @BUG(thynn): We have a read past the coefficient matrix here leading to a NaN!
 			to[ i * stride ] += coeffs[ k - 2 * i ] * from[ vul__noise_worley_mod( k, n ) * stride ];
 		}

@@ -363,9 +363,15 @@ namespace vul {
 	template< typename T >
 	f32 determinant( const Matrix< T, 2, 2 > &mat );
 	/**
+	 * Calculates the determinant of the matrix. This is the 3x3 special case.
+	 */
+	template< typename T >
+	f32 determinant( const Matrix< T, 3, 3 > &mat );
+	/**
 	 * Calculates the determinant of the matrix. Recursively simplifies down to
 	 * the 2x2 case. Uses vul_matrix_find_most_zero at every level to recurse down
 	 * the path with the least sub-expressions at that level.
+    * @TODO(thynn): Write 3x3 specialization, probably 4x4 as well!
 	 */
 	template< typename T, s32 cols, s32 rows >
 	f32 determinant( const Matrix< T, cols, rows > &mat );
@@ -1314,6 +1320,22 @@ namespace vul {
 		return m;
 	}
 	
+	template< typename T >
+	f32 determinant( const Matrix< T, 3, 3 > &mat )
+	{
+      f32 t0, t1, t2;
+      t0 = ( f32 )mat.data[ 1 ][ 1 ] * ( f32 )mat.data[ 2 ][ 1 ]
+			- ( f32 )mat.data[ 1 ][ 2 ] * ( f32 )mat.data[ 2 ][ 2 ];
+      t1 = ( f32 )mat.data[ 1 ][ 0 ] * ( f32 )mat.data[ 2 ][ 2 ]
+			- ( f32 )mat.data[ 1 ][ 2 ] * ( f32 )mat.data[ 2 ][ 0 ];
+      t2 = ( f32 )mat.data[ 1 ][ 0 ] * ( f32 )mat.data[ 2 ][ 1 ]
+			- ( f32 )mat.data[ 1 ][ 1 ] * ( f32 )mat.data[ 2 ][ 0 ];
+
+
+		return ( f32 )mat.data[ 0 ][ 0 ] * t0
+           - ( f32 )mat.data[ 0 ][ 1 ] * t1
+           + ( f32 )mat.data[ 0 ][ 2 ] * t2;
+   }
 	template< typename T >
 	f32 determinant( const Matrix< T, 2, 2 > &mat )
 	{

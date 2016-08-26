@@ -194,6 +194,34 @@ v2 vmax2( const v2 a, const v2 b );
 v3 vmax3( const v3 a, const v3 b );
 v4 vmax4( const v4 a, const v4 b );
 
+v2 vabs2( const v2 a );
+v3 vabs3( const v3 a );
+v4 vabs4( const v4 a );
+
+v2 vmods2( const v2 a, const f32 d );
+v3 vmods3( const v3 a, const f32 d );
+v4 vmods4( const v4 a, const f32 d );
+
+v2 vmod2( const v2 a, const v2 d );
+v3 vmod3( const v3 a, const v3 d );
+v4 vmod4( const v4 a, const v4 d );
+
+v2 vfloor2( const v2 v );
+v3 vfloor3( const v3 v );
+v4 vfloor4( const v4 v );
+
+v2 vceil2( const v2 v );
+v3 vceil3( const v3 v );
+v4 vceil4( const v4 v );
+
+v2 vfract2( const v2 v );
+v3 vfract3( const v3 v );
+v4 vfract4( const v4 v );
+
+v2 vsqrt2( const v2 v );
+v3 vsqrt3( const v3 v );
+v4 vsqrt4( const v4 v );
+
 v2 vreflect2( const v2 v, const v2 n );
 v3 vreflect3( const v3 v, const v3 n );
 v4 vreflect4( const v4 v, const v4 n );
@@ -493,6 +521,160 @@ v4 vmax4( const v4 a, const v4 b ) {
    return r;
 }
 
+v2 vabs2( const v2 v ) {
+   v2 r;
+   r.x = ( f32 )fabs( v.x );
+   r.y = ( f32 )fabs( v.y );
+   return r;
+}
+v3 vabs3( const v3 v ) {
+   v3 r;
+   r.x = ( f32 )fabs( v.x );
+   r.y = ( f32 )fabs( v.y );
+   r.z = ( f32 )fabs( v.z );
+   return r;
+}
+v4 vabs4( const v4 v ) {
+   v4 r;
+   r.x = ( f32 )fabs( v.x );
+   r.y = ( f32 )fabs( v.y );
+   r.z = ( f32 )fabs( v.z );
+   r.w = ( f32 )fabs( v.w );
+   return r;
+}
+
+v2 vmods2( const v2 a, const f32 d ) {
+   v2 r;
+   r.x = ( f32 )fmodf( a.x, d );
+   r.y = ( f32 )fmodf( a.y, d );
+   return r;
+}
+v3 vmods3( const v3 a, const f32 d ) {
+   v3 r;
+   r.x = ( f32 )fmodf( a.x, d );
+   r.y = ( f32 )fmodf( a.y, d );
+   r.z = ( f32 )fmodf( a.z, d );
+   return r;
+}
+v4 vmods4( const v4 a, const f32 d ) {
+   v4 r;
+   r.x = ( f32 )fmodf( a.x, d );
+   r.y = ( f32 )fmodf( a.y, d );
+   r.z = ( f32 )fmodf( a.z, d );
+   r.w = ( f32 )fmodf( a.w, d );
+   return r;
+}
+
+v2 vmod2( const v2 a, const v2 d ) {
+   v2 r;
+   r.x = ( f32 )fmodf( a.x, d.x );
+   r.y = ( f32 )fmodf( a.y, d.y );
+   return r;
+}
+v3 vmod3( const v3 a, const v3 d ) {
+   v3 r;
+   r.x = ( f32 )fmodf( a.x, d.x );
+   r.y = ( f32 )fmodf( a.y, d.y );
+   r.z = ( f32 )fmodf( a.z, d.z );
+   return r;
+}
+v4 vmod4( const v4 a, const v4 d ) {
+   v4 r;
+   r.x = ( f32 )fmodf( a.x, d.x );
+   r.y = ( f32 )fmodf( a.y, d.y );
+   r.z = ( f32 )fmodf( a.z, d.z );
+   r.w = ( f32 )fmodf( a.w, d.w );
+   return r;
+}
+
+v2 vfloor2( const v2 v ) {
+   v2 r;
+   r.x = floor( v.x );
+   r.y = floor( v.y );
+   return r;
+}
+v3 vfloor3( const v3 v ) {
+   v3 r;
+   r.x = floor( v.x );
+   r.y = floor( v.y );
+   r.z = floor( v.z );
+   return r;
+}
+v4 vfloor4( const v4 v ) {
+   v4 r;
+   r.x = floor( v.x );
+   r.y = floor( v.y );
+   r.z = floor( v.z );
+   r.w = floor( v.w );
+   return r;
+}
+
+v2 vceil2( const v2 v ) {
+   v2 r;
+   r.x = ceil( v.x );
+   r.y = ceil( v.y );
+   return r;
+}
+v3 vceil3( const v3 v ) {
+   v3 r;
+   r.x = ceil( v.x );
+   r.y = ceil( v.y );
+   r.z = ceil( v.z );
+   return r;
+}
+v4 vceil4( const v4 v ) {
+   v4 r;
+   r.x = ceil( v.x );
+   r.y = ceil( v.y );
+   r.z = ceil( v.z );
+   r.w = ceil( v.w );
+   return r;
+}
+
+v2 vfract2( const v2 v ) {
+   v2 r;
+   r.x = fract( v.x );
+   r.y = fract( v.y );
+   return r;
+}
+v3 vfract3( const v3 v ) {
+   v3 r;
+   r.x = fract( v.x );
+   r.y = fract( v.y );
+   r.z = fract( v.z );
+   return r;
+}
+v4 vfract4( const v4 v ) {
+   v4 r;
+   r.x = fract( v.x );
+   r.y = fract( v.y );
+   r.z = fract( v.z );
+   r.w = fract( v.w );
+   return r;
+}
+
+v2 vsqrt2( const v2 v ) {
+   v2 r;
+   r.x = sqrtf( v.x );
+   r.y = sqrtf( v.y );
+   return r;
+}
+v3 vsqrt3( const v3 v ) {
+   v3 r;
+   r.x = sqrtf( v.x );
+   r.y = sqrtf( v.y );
+   r.z = sqrtf( v.z );
+   return r;
+}
+v4 vsqrt4( const v4 v ) {
+   v4 r;
+   r.x = sqrtf( v.x );
+   r.y = sqrtf( v.y );
+   r.z = sqrtf( v.z );
+   r.w = sqrtf( v.w );
+   return r;
+}
+
 v2 vreflect2( const v2 v, const v2 n ) {
    return vsub2( vmuls2( n, 2.f * vdot2( v, n ) ), v );
 }
@@ -623,6 +805,58 @@ DEFINE_S44COMPWISE_OP( mmuls44, * )
 #undef DEFINE_M22COMPWISE_OP
 #undef DEFINE_M33COMPWISE_OP
 #undef DEFINE_M44COMPWISE_OP
+
+m22 mat22( const f32 a00, const f32 a01,
+           const f32 a10, const f32 a11 )
+{
+   m22 r;
+   r.a00 = a00;
+   r.a01 = a01;
+   r.a10 = a10;
+   r.a11 = a11;
+   return r;
+}
+m33 mat33( const f32 a00, const f32 a01, const f32 a02,
+           const f32 a10, const f32 a11, const f32 a12,
+           const f32 a20, const f32 a21, const f32 a22 )
+{
+   m33 r;
+   r.a00 = a00;
+   r.a01 = a01;
+   r.a02 = a02;
+   r.a10 = a10;
+   r.a11 = a11;
+   r.a12 = a12;
+   r.a20 = a20;
+   r.a21 = a21;
+   r.a22 = a22;
+   return r;
+}
+
+m44 mat44( const f32 a00, const f32 a01, const f32 a02, const f32 a03,
+           const f32 a10, const f32 a11, const f32 a12, const f32 a13,
+           const f32 a20, const f32 a21, const f32 a22, const f32 a23,
+           const f32 a30, const f32 a31, const f32 a32, const f32 a33 )
+{
+   m44 r;
+   r.a00 = a00;
+   r.a01 = a01;
+   r.a02 = a02;
+   r.a03 = a03;
+   r.a10 = a10;
+   r.a11 = a11;
+   r.a12 = a12;
+   r.a13 = a13;
+   r.a20 = a20;
+   r.a21 = a21;
+   r.a22 = a22;
+   r.a23 = a23;
+   r.a30 = a30;
+   r.a31 = a31;
+   r.a32 = a32;
+   r.a33 = a33;
+   return r;
+}
 
 m22 mcopy2( const m22 *m ) {
    m22 r;

@@ -47,7 +47,7 @@ int main( int argc, char **argv )
    vul_timer *t = vul_timer_create( );
    vul_linalg_svd_dense( res, &rank, A, w, h, 1e-4, iters ); // @TODO(thynn): eps and iter should be parameters
    uint64_t mms = vul_timer_get_micros( t );
-   printf( "Completed in %llu.%llus\n", mms / 1000000, mms % 1000000 );
+   printf( "Completed in %lu.%lus\n", mms / 1000000, mms % 1000000 );
 
    for( int i = 0; i < rank; ++i ) {
       printf( "S[%d]: %f, axis %d\n", i, res[ i ].sigma, res[ i ].axis );

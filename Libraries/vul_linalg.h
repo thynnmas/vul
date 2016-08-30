@@ -32,11 +32,11 @@
  *                 should use Strassen's algorithm for larger N.
  *
  *
- * Define VUL_BLAS_ROW_MAJOR to use row major dense matrices, otherwise column major
+ * Define VUL_LINALG_ROW_MAJOR to use row major dense matrices, otherwise column major
  * is assumed.
  * 
- * If you wish to use a custom allocator for temporaries, define VUL_BLAS_ALLOC
- * and VUL_BLAS_FREE to functions with signatures similar to malloc and free;
+ * If you wish to use a custom allocator for temporaries, define VUL_LINALG_ALLOC
+ * and VUL_LINALG_FREE to functions with signatures similar to malloc and free;
  * if no alternative is given malloc and free are used.
  *
  * All solvers leave input intact; only the "out"-argument is altered.
@@ -56,28 +56,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef VUL_BLAS_H
-#define VUL_BLAS_H
+#ifndef VUL_LINALG_H
+#define VUL_LINALG_H
 
 #include <math.h>
 #include <assert.h>
 #include <float.h>
 #include <string.h>
 
-#ifndef VUL_BLAS_ALLOC
+#ifndef VUL_LINALG_ALLOC
 #include <stdlib.h>
-#define VUL_BLAS_ALLOC malloc
-#define VUL_BLAS_FREE free
+#define VUL_LINALG_ALLOC malloc
+#define VUL_LINALG_FREE free
 #else
-   #ifndef VUL_BLAS_FREE
-      vul_blas.h: You must also specify a deallocation function to go with VUL_BLAS_ALLOC
+   #ifndef VUL_LINALG_FREE
+      vul_linalg.h: You must also specify a deallocation function to go with VUL_LINALG_ALLOC
    #endif
 #endif
 
-#ifdef VUL_BLAS_DOUBLE
-#define vul_blas_real double
+#ifdef VUL_LINALG_DOUBLE
+#define vul_linalg_real double
 #else
-#define vul_blas_real float
+#define vul_linalg_real float
 #endif
 
 #ifdef _cplusplus
@@ -88,25 +88,25 @@
 // Sparse datatypes
 //
 
-typedef struct vul_blas_sparse_entry {
+typedef struct vul_linalg_sparse_entry {
    unsigned int idx;
-   vul_blas_real val;
-} vul_blas_sparse_entry;
+   vul_linalg_real val;
+} vul_linalg_sparse_entry;
 
-typedef struct vul_blas_vector {
-   vul_blas_sparse_entry *entries;
+typedef struct vul_linalg_vector {
+   vul_linalg_sparse_entry *entries;
    unsigned int count;
-} vul_blas_vector;
+} vul_linalg_vector;
 
-typedef struct vul_blas_matrix_row {
+typedef struct vul_linalg_matrix_row {
    unsigned int idx;
-   vul_blas_vector vec;
-} vul_blas_matrix_row;
+   vul_linalg_vector vec;
+} vul_linalg_matrix_row;
 
-typedef struct vul_blas_matrix {
-   vul_blas_matrix_row *rows;
+typedef struct vul_linalg_matrix {
+   vul_linalg_matrix_row *rows;
    unsigned int count;
-} vul_blas_matrix;
+} vul_linalg_matrix;
 
 //----------------------------------
 // Sparse datatype public functions
@@ -116,24 +116,24 @@ typedef struct vul_blas_matrix {
  * Creates a sparse vector. Takes a list of indices and values to fill it with,
  * or two null pointers to initialize empty.
  */
-vul_blas_vector *vul_blas_vector_create( unsigned *idxs, vul_blas_real *vals, unsigned int n );
+vul_linalg_vector *vul_linalg_vector_create( unsigned *idxs, vul_linalg_real *vals, unsigned int n );
 
 /*
  * Create a sparse matrix. Takes a list of coordinates and values to fill it with,
  * or three null-pointers to initialize empty.
  */
-vul_blas_matrix *vul_blas_matrix_create( unsigned int *rows, unsigned int *cols, 
-                                         vul_blas_real *vals, unsigned int init_count );
+vul_linalg_matrix *vul_linalg_matrix_create( unsigned int *rows, unsigned int *cols, 
+                                             vul_linalg_real *vals, unsigned int init_count );
 
 /* 
  * Destroys a sparse matrix
  */
-void vul_blas_matrix_destroy( vul_blas_matrix *m );
+void vul_linalg_matrix_destroy( vul_linalg_matrix *m );
 
 /* 
  * Overwriting a non-zero value with zero does not reclaim the space!
  */
-void vul_blas_vector_insert( vul_blas_vector *v, unsigned int idx, vul_blas_real val );
+void vul_linalg_vector_insert( vul_linalg_vector *v, unsigned int idx, vul_linalg_real val );
 
 /*
  * When overwriting a non-zero value with zero, the space is not reclaimed automaticall,
@@ -141,22 +141,22 @@ void vul_blas_vector_insert( vul_blas_vector *v, unsigned int idx, vul_blas_real
  * rotations this can lead to full rows of zeroes. Use vulb__mclean on the matrix to reclaim all
  * space lost to zero-over-non-zero insertions.
  */
-void vul_blas_matrix_insert( vul_blas_matrix *m, unsigned int r, unsigned int c, vul_blas_real v );
+void vul_linalg_matrix_insert( vul_linalg_matrix *m, unsigned int r, unsigned int c, vul_linalg_real v );
 
 /*
  * Retrieve an element from a sparse vector.
  */
-vul_blas_real vul_blas_vector_get( vul_blas_vector *v, unsigned int idx );
+vul_linalg_real vul_linalg_vector_get( vul_linalg_vector *v, unsigned int idx );
 
 /* 
  * Retrieve and element from a sparse matrix.
  */
-vul_blas_real vul_blas_matrix_get( vul_blas_matrix *m, unsigned int r, unsigned int c );
+vul_linalg_real vul_linalg_matrix_get( vul_linalg_matrix *m, unsigned int r, unsigned int c );
 
 /*
  * Destroy a sparse vector
  */
-void vul_blas_vector_destroy( vul_blas_vector *v );
+void vul_linalg_vector_destroy( vul_linalg_vector *v );
 
 //--------------------
 // Sparse solvers
@@ -169,11 +169,11 @@ void vul_blas_vector_destroy( vul_blas_vector *v );
  * Runs for at most max_iterations, or until the average square error is
  * below the given tolerance.
  */
-vul_blas_vector *vul_blas_conjugate_gradient_sparse( vul_blas_matrix *A,
-                                                     vul_blas_vector *initial_guess,
-                                                     vul_blas_vector *b,
-                                                     int max_iterations,
-                                                     vul_blas_real tolerance );
+vul_linalg_vector *vul_linalg_conjugate_gradient_sparse( vul_linalg_matrix *A,
+                                                         vul_linalg_vector *initial_guess,
+                                                         vul_linalg_vector *b,
+                                                         int max_iterations,
+                                                         vul_linalg_real tolerance );
 
 /*
  * Iterative solver of the linear system Ax = b
@@ -183,12 +183,12 @@ vul_blas_vector *vul_blas_conjugate_gradient_sparse( vul_blas_matrix *A,
  * Runs for at most max_iterations, or until the average square error is
  * below the given tolerance.
  */
-vul_blas_vector *vul_blas_successive_over_relaxation_sparse( vul_blas_matrix *A,
-                                                             vul_blas_vector *initial_guess,
-                                                             vul_blas_vector *b,
-                                                             vul_blas_real relaxation_factor,
-                                                             int max_iterations,
-                                                             vul_blas_real tolerance );
+vul_linalg_vector *vul_linalg_successive_over_relaxation_sparse( vul_linalg_matrix *A,
+                                                                 vul_linalg_vector *initial_guess,
+                                                                 vul_linalg_vector *b,
+                                                                 vul_linalg_real relaxation_factor,
+                                                                 int max_iterations,
+                                                                 vul_linalg_real tolerance );
 
 /*
  * Iterative solver of the linear system Ax = b
@@ -198,9 +198,9 @@ vul_blas_vector *vul_blas_successive_over_relaxation_sparse( vul_blas_matrix *A,
  * If your matrix fits, this should be the fastest of the decomposition-based methods.
  * Does not currently emply iterative refinement; @TODO(thynn): Iterative refinement!
  */
-vul_blas_vector *vul_blas_cholesky_decomposition_sparse( vul_blas_matrix *A,
-                                                         vul_blas_vector *b,
-                                                         int cols, int rows );
+vul_linalg_vector *vul_linalg_cholesky_decomposition_sparse( vul_linalg_matrix *A,
+                                                             vul_linalg_vector *b,
+                                                             int cols, int rows );
 
 /*
  * Iterative solver of the linear system Ax = b
@@ -208,9 +208,9 @@ vul_blas_vector *vul_blas_cholesky_decomposition_sparse( vul_blas_matrix *A,
  *
  * Does not currently emply iterative refinement; @TODO(thynn): Iterative refinement!
  */
-vul_blas_vector *vul_blas_qr_decomposition_sparse( vul_blas_matrix *A,
-                                                   vul_blas_vector *b,
-                                                   int cols, int rows );
+vul_linalg_vector *vul_linalg_qr_decomposition_sparse( vul_linalg_matrix *A,
+                                                       vul_linalg_vector *b,
+                                                       int cols, int rows );
 
 //-------------------
 // Dense solvers
@@ -223,13 +223,13 @@ vul_blas_vector *vul_blas_qr_decomposition_sparse( vul_blas_matrix *A,
  * Runs for at most max_iterations, or until the average square error is
  * below the given tolerance.
  */
-void vul_blas_conjugate_gradient_dense( vul_blas_real *out,
-                                        vul_blas_real *A,
-                                        vul_blas_real *initial_guess,
-                                        vul_blas_real *b,
-                                        int n,
-                                        int max_iterations,
-                                        vul_blas_real tolerance );
+void vul_linalg_conjugate_gradient_dense( vul_linalg_real *out,
+                                          vul_linalg_real *A,
+                                          vul_linalg_real *initial_guess,
+                                          vul_linalg_real *b,
+                                          int n,
+                                          int max_iterations,
+                                          vul_linalg_real tolerance );
 /*
  * Iterative solver of the linear system Ax = b
  * Uses the Successive Over-Relaxation method. May converge for any matrix,
@@ -238,14 +238,14 @@ void vul_blas_conjugate_gradient_dense( vul_blas_real *out,
  * Runs for at most max_iterations, or until the average square error is
  * below the given tolerance.
  */
-void vul_blas_successive_over_relaxation_dense( vul_blas_real *out,
-                                                vul_blas_real *A,
-                                                vul_blas_real *initial_guess,
-                                                vul_blas_real *b,
-                                                vul_blas_real relaxation_factor,
-                                                int n,
-                                                int max_iterations,
-                                                vul_blas_real tolerance );
+void vul_linalg_successive_over_relaxation_dense( vul_linalg_real *out,
+                                                  vul_linalg_real *A,
+                                                  vul_linalg_real *initial_guess,
+                                                  vul_linalg_real *b,
+                                                  vul_linalg_real relaxation_factor,
+                                                  int n,
+                                                  int max_iterations,
+                                                  vul_linalg_real tolerance );
 
 /*
  * Iterative solver of the linear system Ax = b
@@ -255,13 +255,13 @@ void vul_blas_successive_over_relaxation_dense( vul_blas_real *out,
  * This method employs at most max_iterations of iterative refinement, or until
  * the average square error is below tolerance.
  */
-void vul_blas_lu_decomposition_dense( vul_blas_real *out,
-                                      vul_blas_real *A,
-                                      vul_blas_real *initial_guess,
-                                      vul_blas_real *b,
-                                      int n,
-                                      int max_iterations,
-                                      vul_blas_real tolerance );
+void vul_linalg_lu_decomposition_dense( vul_linalg_real *out,
+                                        vul_linalg_real *A,
+                                        vul_linalg_real *initial_guess,
+                                        vul_linalg_real *b,
+                                        int n,
+                                        int max_iterations,
+                                        vul_linalg_real tolerance );
 /*
  * Iterative solver of the linear system Ax = b
  * Uses Choleski Decomposition. Works for matrices that are
@@ -270,40 +270,40 @@ void vul_blas_lu_decomposition_dense( vul_blas_real *out,
  * If your matrix fits, this should be the fastest of the decomposition-based methods.
  * Does not currently emply iterative refinement; @TODO(thynn): Iterative refinement!
  */
-void vul_blas_cholesky_decomposition_dense( vul_blas_real *out,
-                                            vul_blas_real *A,
-                                            vul_blas_real *b,
-                                            int n );
+void vul_linalg_cholesky_decomposition_dense( vul_linalg_real *out,
+                                              vul_linalg_real *A,
+                                              vul_linalg_real *b,
+                                              int n );
 /*
  * Iterative solver of the linear system Ax = b
  * Uses QR Decomposition. Works for all matrices.
  *
  * Does not currently emply iterative refinement; @TODO(thynn): Iterative refinement!
  */
-void vul_blas_qr_decomposition_dense( vul_blas_real *out,
-                                      vul_blas_real *A,
-                                      vul_blas_real *b,
-                                      int n );
+void vul_linalg_qr_decomposition_dense( vul_linalg_real *out,
+                                        vul_linalg_real *A,
+                                        vul_linalg_real *b,
+                                        int n );
 
 //---------------------------------------
 // Dense Singular Value Decomposition
 
-typedef struct vul_blas_svd_basis {
-   vul_blas_real sigma;
-   vul_blas_real *u, *v;
+typedef struct vul_linalg_svd_basis {
+   vul_linalg_real sigma;
+   vul_linalg_real *u, *v;
    unsigned int u_length, v_length;
    unsigned int axis;
-} vul_blas_svd_basis;
+} vul_linalg_svd_basis;
 
 /*
  * Reconstruct the matrix M = U S V* from the bases returned from the dense svd functions.
  * Takes a variable number n of bases x.
  */
-void vul_blas_svd_basis_reconstruct_matrix( vul_blas_real *M, vul_blas_svd_basis *x, int n );
+void vul_linalg_svd_basis_reconstruct_matrix( vul_linalg_real *M, vul_linalg_svd_basis *x, int n );
 /*
  * Destroy n svd bases as returned from the svd functions.
  */
-void vul_blas_svd_basis_destroy( vul_blas_svd_basis *x, int n );
+void vul_linalg_svd_basis_destroy( vul_linalg_svd_basis *x, int n );
 
 /*
  * Computes the singular value decomposition of A.
@@ -314,9 +314,9 @@ void vul_blas_svd_basis_destroy( vul_blas_svd_basis *x, int n );
  *
  * This function uses Jacobi orthogonalization.
  */
-void vul_blas_svd_dense( vul_blas_svd_basis *out, int *rank,
-                         vul_blas_real *A,
-                         int c, int r, vul_blas_real eps, int itermax );
+void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
+                           vul_linalg_real *A,
+                           int c, int r, vul_linalg_real eps, int itermax );
 
 /*
  * Computes the singular value decomposition of A.
@@ -332,9 +332,9 @@ void vul_blas_svd_dense( vul_blas_svd_basis *out, int *rank,
  *
  * If the error increases, the iteration is stopped.
  */
-void vul_blas_svd_dense_qrlq( vul_blas_svd_basis *out, int *rank,
-                              vul_blas_real *A,
-                              int c, int r, vul_blas_real eps, int itermax );
+void vul_linalg_svd_dense_qrlq( vul_linalg_svd_basis *out, int *rank,
+                                vul_linalg_real *A,
+                                int c, int r, vul_linalg_real eps, int itermax );
 
 /*
  * Solves the generalized linear least squares problem defined by A and b by
@@ -342,22 +342,22 @@ void vul_blas_svd_dense_qrlq( vul_blas_svd_basis *out, int *rank,
  * until the average sqare error is less than tolerance. Matrix size must
  * be given in dimensions c and r.
  */
-void vul_blas_linear_least_squares_dense( vul_blas_real *out,
-                                          vul_blas_real *A,
-                                          vul_blas_real *b,
-                                          int c, int r,
-                                          int max_iterations,
-                                          vul_blas_real tolerance );
+void vul_linalg_linear_least_squares_dense( vul_linalg_real *out,
+                                            vul_linalg_real *A,
+                                            vul_linalg_real *b,
+                                            int c, int r,
+                                            int max_iterations,
+                                            vul_linalg_real tolerance );
 
 //---------------------------------------
 // Sparse Singular Value Decomposition
 
-typedef struct vul_blas_svd_basis_sparse {
-   vul_blas_real sigma;
-   vul_blas_vector *u, *v;
+typedef struct vul_linalg_svd_basis_sparse {
+   vul_linalg_real sigma;
+   vul_linalg_vector *u, *v;
    unsigned int u_length, v_length;
    unsigned int axis;
-} vul_blas_svd_basis_sparse;
+} vul_linalg_svd_basis_sparse;
 
 /*
  * Computes the singular value decomposition of A.
@@ -368,9 +368,9 @@ typedef struct vul_blas_svd_basis_sparse {
  *
  * This function uses Jacobi orthogonalization.
  */
-void vul_blas_svd_sparse( vul_blas_svd_basis_sparse *out, int *rank,
-                          vul_blas_matrix *A,
-                          int c, int r, vul_blas_real eps, int itermax );
+void vul_linalg_svd_sparse( vul_linalg_svd_basis_sparse *out, int *rank,
+                            vul_linalg_matrix *A,
+                            int c, int r, vul_linalg_real eps, int itermax );
 /*
  * Computes the singular value decomposition of A.
  * If rank is set, the maximum of non-zero singular values and rank
@@ -385,9 +385,9 @@ void vul_blas_svd_sparse( vul_blas_svd_basis_sparse *out, int *rank,
  *
  * If the error increases, the iteration is stopped.
  */
-void vul_blas_svd_sparse_qrlq( vul_blas_svd_basis_sparse *out, int *rank,
-                               vul_blas_matrix *A,
-                               int c, int r, vul_blas_real eps, int itermax );
+void vul_linalg_svd_sparse_qrlq( vul_linalg_svd_basis_sparse *out, int *rank,
+                                 vul_linalg_matrix *A,
+                                 int c, int r, vul_linalg_real eps, int itermax );
 
 /*
  * Solves the generalized linear least squares problem defined by A and b by
@@ -395,11 +395,11 @@ void vul_blas_svd_sparse_qrlq( vul_blas_svd_basis_sparse *out, int *rank,
  * until the average sqare error is less than tolerance. Matrix size must
  * be given in dimensions c and r.
  */
-vul_blas_vector *vul_blas_linear_least_squares_sparse( vul_blas_matrix *A,
-                                                       vul_blas_vector *b,
-                                                       int c, int r,
-                                                       int max_iterations,
-                                                       vul_blas_real tolerance );
+vul_linalg_vector *vul_linalg_linear_least_squares_sparse( vul_linalg_matrix *A,
+                                                           vul_linalg_vector *b,
+                                                           int c, int r,
+                                                           int max_iterations,
+                                                           vul_linalg_real tolerance );
 
 //--------------------------------
 // Miscellanous BLAS functions
@@ -411,14 +411,14 @@ vul_blas_vector *vul_blas_linear_least_squares_sparse( vul_blas_matrix *A,
  *
  * Uses the Power method (slow, but simple).
  */
-vul_blas_real vul_blas_largest_eigenvalue( vul_blas_real *A, int c, int r, vul_blas_real eps, int max_iter );
+vul_linalg_real vul_linalg_largest_eigenvalue( vul_linalg_real *A, int c, int r, vul_linalg_real eps, int max_iter );
 
 
 #ifdef _cplusplus
 }
 #endif
 
-#endif // VUL_BLAS_H
+#endif // VUL_LINALG_H
 
 #ifdef VUL_DEFINE
 
@@ -430,99 +430,99 @@ extern "C" {
 // Sparse datatype local functions
 //
 
-#define DECLARE_VECTOR_OP( name, op ) static void name( vul_blas_vector *out, vul_blas_vector *a, vul_blas_vector *b );
+#define DECLARE_VECTOR_OP( name, op ) static void name( vul_linalg_vector *out, vul_linalg_vector *a, vul_linalg_vector *b );
 DECLARE_VECTOR_OP( vulb__sparse_vadd, + )
 DECLARE_VECTOR_OP( vulb__sparse_vsub, - )
 DECLARE_VECTOR_OP( vulb__sparse_vmul, * )
 #undef DECLARE_VECTOR_OP
 
-static void vulb__sparse_vmul_sub( vul_blas_vector *out, vul_blas_vector *a, vul_blas_vector *x, vul_blas_vector *b );
-static void vulb__sparse_vmul_add( vul_blas_vector *out, vul_blas_vector *a, vul_blas_vector *x, vul_blas_vector *b );
-static void vulb__sparse_vcopy( vul_blas_vector *out, vul_blas_vector *x );
-static vul_blas_real vulb__sparse_dot( vul_blas_vector *a, vul_blas_vector *b );
-static void vulb__sparse_mmul( vul_blas_vector *out, vul_blas_matrix *A, vul_blas_vector *x );
-static void vulb__sparse_mmul_matrix( vul_blas_matrix *O, vul_blas_matrix *A, vul_blas_matrix *B, int n );
-static void vulb__sparse_mmul_add( vul_blas_vector *out, vul_blas_matrix *A, vul_blas_vector *x, vul_blas_vector *b );
-static void vulb__sparse_forward_substitute( vul_blas_vector *out, vul_blas_matrix *A, vul_blas_vector *b );
-static void vulb__sparse_backward_substitute( vul_blas_vector *out, vul_blas_matrix *A, vul_blas_vector *b );
-static void vulb__sparse_mtranspose( vul_blas_matrix *out, vul_blas_matrix *A );
-static void vulb__sparse_mcopy( vul_blas_matrix *out, vul_blas_matrix *A );
-static void vulb__sparse_mclear( vul_blas_matrix *A );
+static void vulb__sparse_vmul_sub( vul_linalg_vector *out, vul_linalg_vector *a, vul_linalg_vector *x, vul_linalg_vector *b );
+static void vulb__sparse_vmul_add( vul_linalg_vector *out, vul_linalg_vector *a, vul_linalg_vector *x, vul_linalg_vector *b );
+static void vulb__sparse_vcopy( vul_linalg_vector *out, vul_linalg_vector *x );
+static vul_linalg_real vulb__sparse_dot( vul_linalg_vector *a, vul_linalg_vector *b );
+static void vulb__sparse_mmul( vul_linalg_vector *out, vul_linalg_matrix *A, vul_linalg_vector *x );
+static void vulb__sparse_mmul_matrix( vul_linalg_matrix *O, vul_linalg_matrix *A, vul_linalg_matrix *B, int n );
+static void vulb__sparse_mmul_add( vul_linalg_vector *out, vul_linalg_matrix *A, vul_linalg_vector *x, vul_linalg_vector *b );
+static void vulb__sparse_forward_substitute( vul_linalg_vector *out, vul_linalg_matrix *A, vul_linalg_vector *b );
+static void vulb__sparse_backward_substitute( vul_linalg_vector *out, vul_linalg_matrix *A, vul_linalg_vector *b );
+static void vulb__sparse_mtranspose( vul_linalg_matrix *out, vul_linalg_matrix *A );
+static void vulb__sparse_mcopy( vul_linalg_matrix *out, vul_linalg_matrix *A );
+static void vulb__sparse_mclear( vul_linalg_matrix *A );
 // Helper that returns an empty vector if the row doesn't exist; simplifies some loops
-static vul_blas_vector vulb__blas_matrix_get_row_by_array_index( vul_blas_matrix *m, unsigned int r );
+static vul_linalg_vector vulb__linalg_matrix_get_row_by_array_index( vul_linalg_matrix *m, unsigned int r );
 /*
  * When inserting zeroes into places that previously held non-zeroes, the memory is not freed.
  * This "compacts" the matrix back into a fully sparse memory pattern.
  */
-static void vulb__sparse_mclean( vul_blas_matrix *A );
+static void vulb__sparse_mclean( vul_linalg_matrix *A );
 
 /*
  * Apply a Givens rotation to the matrix A at indices i and j
  * with the given sine/cosine. If post_multiply is set,
  * perform A = G * A instead of A = A * G.
  */
-static void vul__blas_givens_rotate_sparse( vul_blas_matrix *A, int c, int r, 
-                                            int i, int j, float cosine, float sine,
-                                            int post_multiply );
+static void vul__linalg_givens_rotate_sparse( vul_linalg_matrix *A, int c, int r, 
+                                              int i, int j, float cosine, float sine,
+                                              int post_multiply );
 /*
  * Compute the QR decomposition of A using givens rotations.
  */
-static void vul__blas_qr_decomposition_givens_sparse( vul_blas_matrix *Q, vul_blas_matrix *R, 
-                                                      vul_blas_matrix *A, int c, int r );
+static void vul__linalg_qr_decomposition_givens_sparse( vul_linalg_matrix *Q, vul_linalg_matrix *R, 
+                                                        vul_linalg_matrix *A, int c, int r );
 
 //------------------------
 // Dense local functions
 //
 
-#define DECLARE_VECTOR_OP( name, op ) static void name( vul_blas_real *out, vul_blas_real *a, vul_blas_real *b, int n );
+#define DECLARE_VECTOR_OP( name, op ) static void name( vul_linalg_real *out, vul_linalg_real *a, vul_linalg_real *b, int n );
 DECLARE_VECTOR_OP( vulb__vadd, + )
 DECLARE_VECTOR_OP( vulb__vsub, - )
 DECLARE_VECTOR_OP( vulb__vmul, * )
 #undef DECLARE_VECTOR_OP
 
-static void vulb__vmul_sub( vul_blas_real *out, vul_blas_real *a, vul_blas_real x, vul_blas_real *b, int n );
-static void vulb__vmul_add( vul_blas_real *out, vul_blas_real *a, vul_blas_real x, vul_blas_real *b, int n );
-static void vulb__vcopy( vul_blas_real *out, vul_blas_real *x, int n );
-static vul_blas_real vulb__dot( vul_blas_real *a, vul_blas_real *b, int n );
-static void vulb__mmul( vul_blas_real *out, vul_blas_real *A, vul_blas_real *x, int c, int r );
-static void vulb__mmul_matrix( vul_blas_real *O, vul_blas_real *A, vul_blas_real *B, int n );
-static void vulb__mmul_add( vul_blas_real *out, vul_blas_real *A, vul_blas_real *x, vul_blas_real *b, 
+static void vulb__vmul_sub( vul_linalg_real *out, vul_linalg_real *a, vul_linalg_real x, vul_linalg_real *b, int n );
+static void vulb__vmul_add( vul_linalg_real *out, vul_linalg_real *a, vul_linalg_real x, vul_linalg_real *b, int n );
+static void vulb__vcopy( vul_linalg_real *out, vul_linalg_real *x, int n );
+static vul_linalg_real vulb__dot( vul_linalg_real *a, vul_linalg_real *b, int n );
+static void vulb__mmul( vul_linalg_real *out, vul_linalg_real *A, vul_linalg_real *x, int c, int r );
+static void vulb__mmul_matrix( vul_linalg_real *O, vul_linalg_real *A, vul_linalg_real *B, int n );
+static void vulb__mmul_add( vul_linalg_real *out, vul_linalg_real *A, vul_linalg_real *x, vul_linalg_real *b, 
                             int c, int r );
-static void vulb__forward_substitute( vul_blas_real *out, vul_blas_real *A, vul_blas_real *b, int c, int r );
-static void vulb__backward_substitute( vul_blas_real *out, vul_blas_real *A, vul_blas_real *b, int c, int r,
+static void vulb__forward_substitute( vul_linalg_real *out, vul_linalg_real *A, vul_linalg_real *b, int c, int r );
+static void vulb__backward_substitute( vul_linalg_real *out, vul_linalg_real *A, vul_linalg_real *b, int c, int r,
                                        int transpose );
-static void vulb__mtranspose( vul_blas_real *O, vul_blas_real *A, int c, int r );
-static void vulb__mmul_matrix_rect( vul_blas_real *O, vul_blas_real *A, vul_blas_real *B, 
+static void vulb__mtranspose( vul_linalg_real *O, vul_linalg_real *A, int c, int r );
+static void vulb__mmul_matrix_rect( vul_linalg_real *O, vul_linalg_real *A, vul_linalg_real *B, 
                                     int ca, int ra_cb, int rb );
 /*
  * If transposed is set, treat A as A^T.
  * Matrices may not alias.
  * @NOTE(Thynn): Not currently used.
  */ 
-static void vul__blas_qr_decomposition_gram_schmidt( vul_blas_real *Q, vul_blas_real *R, vul_blas_real *A, 
-                                                     int c, int r, int transpose );
+static void vul__linalg_qr_decomposition_gram_schmidt( vul_linalg_real *Q, vul_linalg_real *R, vul_linalg_real *A, 
+                                                       int c, int r, int transpose );
 /*
  * If transposed is set, treat A as A^T.
  * Matrices may alias.
  * @NOTE(Thynn): Not currently used.
  */
-static void vul__blas_qr_decomposition_householder( vul_blas_real *Q, vul_blas_real *R, vul_blas_real *A, 
-                                                    int c, int r, int transpose );
+static void vul__linalg_qr_decomposition_householder( vul_linalg_real *Q, vul_linalg_real *R, vul_linalg_real *A, 
+                                                      int c, int r, int transpose );
 /*
  * If transposed is set, treat A as A^T.
  * Matrices may not alias.
  */
-static void vul__blas_qr_decomposition_givens( vul_blas_real *Q, vul_blas_real *R, vul_blas_real *A, 
-                                               int c, int r, int transpose );
+static void vul__linalg_qr_decomposition_givens( vul_linalg_real *Q, vul_linalg_real *R, vul_linalg_real *A, 
+                                                 int c, int r, int transpose );
 
 /*
  * Apply a Givens rotation to the matrix A at indices i and j
  * with the given sine/cosine. If post_multiply is set,
  * perform A = G * A instead of A = A * G.
  */
-static void vul__blas_givens_rotate( vul_blas_real *A, int c, int r, 
-                                     int i, int j, float cosine, float sine,
-                                     int post_multiply );
+static void vul__linalg_givens_rotate( vul_linalg_real *A, int c, int r, 
+                                       int i, int j, float cosine, float sine,
+                                       int post_multiply );
 
 //-----------------------------------------------------
 // Dense Singular Value Decomposition local functions
@@ -531,7 +531,7 @@ static void vul__blas_givens_rotate( vul_blas_real *A, int c, int r,
 /*
  * Use shell sort to sort the bases.
  */
-static void vul__blas_svd_sort( vul_blas_svd_basis *x, int n );
+static void vul__linalg_svd_sort( vul_linalg_svd_basis *x, int n );
 
 /*
  * Qt and u are optional space to perform operations in (and to use the data afterwards, as in QR decomposition.
@@ -539,20 +539,20 @@ static void vul__blas_svd_sort( vul_blas_svd_basis *x, int n );
  * If QO and Q are not NULL, Q is postmultiplied by Qt into QO, allowing for accumulation of Q and not just R
  * during QR decomposition. If they (either of them) are NULL, this step is skipped.
  */ 
-static void vul__blas_apply_householder_column( vul_blas_real *QO, vul_blas_real *A,
-                                                vul_blas_real *RO, vul_blas_real *R,
-                                                int c, int r, int qc, int qr, int k,
-                                                vul_blas_real *Qt, vul_blas_real *u, int respect_signbit );
+static void vul__linalg_apply_householder_column( vul_linalg_real *QO, vul_linalg_real *A,
+                                                  vul_linalg_real *RO, vul_linalg_real *R,
+                                                  int c, int r, int qc, int qr, int k,
+                                                  vul_linalg_real *Qt, vul_linalg_real *u, int respect_signbit );
 /*
  * Calculate the norm of the matrix' diagonal as a vector.
  */
-static vul_blas_real vul__blas_matrix_norm_diagonal( vul_blas_real *A, int c, int r );
+static vul_linalg_real vul__linalg_matrix_norm_diagonal( vul_linalg_real *A, int c, int r );
 
 /*
  * Only values above the "upper_diag"-th diagonal are used, so for
  * the full matrix, use -min(r,c)/2.
  */
-static vul_blas_real vul__blas_matrix_norm_as_single_column( vul_blas_real *A, int c, int r, int upper_diag );
+static vul_linalg_real vul__linalg_matrix_norm_as_single_column( vul_linalg_real *A, int c, int r, int upper_diag );
 
 //-----------------------------------------------------
 // Dense Singular Value Decomposition local functions
@@ -561,17 +561,17 @@ static vul_blas_real vul__blas_matrix_norm_as_single_column( vul_blas_real *A, i
 /*
  * Calculate the norm of the matrix' diagonal as a vector.
  */
-static vul_blas_real vul__blas_matrix_norm_diagonal_sparse( vul_blas_matrix *A );
+static vul_linalg_real vul__linalg_matrix_norm_diagonal_sparse( vul_linalg_matrix *A );
 
 /*
  * Only values above the "upper_diag"-th diagonal are used, so for
  * the full matrix, use -min(r,c)/2.
  */
-static vul_blas_real vul__blas_matrix_norm_as_single_column_sparse( vul_blas_matrix *A, int upper_diag );
+static vul_linalg_real vul__linalg_matrix_norm_as_single_column_sparse( vul_linalg_matrix *A, int upper_diag );
 /*
  * Use shell sort to sort the bases.
  */
-static void vul__blas_svd_sort_sparse( vul_blas_svd_basis_sparse *x, int n );
+static void vul__linalg_svd_sort_sparse( vul_linalg_svd_basis_sparse *x, int n );
 
 #ifdef _cplusplus
 }
@@ -588,52 +588,52 @@ extern "C" {
 // Sparse datatype public functions
 //
 
-vul_blas_vector *vul_blas_vector_create( unsigned *idxs, vul_blas_real *vals, unsigned int n )
+vul_linalg_vector *vul_linalg_vector_create( unsigned *idxs, vul_linalg_real *vals, unsigned int n )
 {
    unsigned int i;
-   vul_blas_vector *v;
+   vul_linalg_vector *v;
 
-   v = ( vul_blas_vector* )VUL_BLAS_ALLOC( sizeof( vul_blas_vector ) );
+   v = ( vul_linalg_vector* )VUL_LINALG_ALLOC( sizeof( vul_linalg_vector ) );
    v->count = 0;
    v->entries = 0;
    for( i = 0; i < n; ++i ) {
-      vul_blas_vector_insert( v, idxs[ i ], vals[ i ] );
+      vul_linalg_vector_insert( v, idxs[ i ], vals[ i ] );
    }
    return v;
 }
 
-vul_blas_matrix *vul_blas_matrix_create( unsigned int *rows, unsigned int *cols, vul_blas_real *vals, unsigned int init_count )
+vul_linalg_matrix *vul_linalg_matrix_create( unsigned int *rows, unsigned int *cols, vul_linalg_real *vals, unsigned int init_count )
 {
-   vul_blas_matrix *m;
+   vul_linalg_matrix *m;
    unsigned int i;
    
-   m = ( vul_blas_matrix* )VUL_BLAS_ALLOC( sizeof( vul_blas_matrix ) );
+   m = ( vul_linalg_matrix* )VUL_LINALG_ALLOC( sizeof( vul_linalg_matrix ) );
    m->count = 0;
    m->rows = 0;
 
    for( i = 0; i < init_count; ++i ) {
-      vul_blas_matrix_insert( m, rows[ i ], cols[ i ], vals[ i ] );
+      vul_linalg_matrix_insert( m, rows[ i ], cols[ i ], vals[ i ] );
    }
    return m;
 }
 
-void vul_blas_matrix_destroy( vul_blas_matrix *m )
+void vul_linalg_matrix_destroy( vul_linalg_matrix *m )
 {
    unsigned int i;
    for( i = 0; i < m->count; ++i ) {
       if( m->rows[ i ].vec.count ) {
-         VUL_BLAS_FREE( m->rows[ i ].vec.entries );
+         VUL_LINALG_FREE( m->rows[ i ].vec.entries );
       }
    }
-   VUL_BLAS_FREE( m->rows );
+   VUL_LINALG_FREE( m->rows );
    m->rows = 0;
 
-   VUL_BLAS_FREE( m );
+   VUL_LINALG_FREE( m );
 }
 
-void vul_blas_vector_insert( vul_blas_vector *v, unsigned int idx, vul_blas_real val )
+void vul_linalg_vector_insert( vul_linalg_vector *v, unsigned int idx, vul_linalg_real val )
 {
-   vul_blas_sparse_entry *e;
+   vul_linalg_sparse_entry *e;
    unsigned int i, j, inserted;
 
    // Overwrite, even if zero
@@ -649,7 +649,7 @@ void vul_blas_vector_insert( vul_blas_vector *v, unsigned int idx, vul_blas_real
       return;
    }
 
-   e = ( vul_blas_sparse_entry* )VUL_BLAS_ALLOC( sizeof( vul_blas_sparse_entry ) * ( v->count + 1 ) );
+   e = ( vul_linalg_sparse_entry* )VUL_LINALG_ALLOC( sizeof( vul_linalg_sparse_entry ) * ( v->count + 1 ) );
    inserted = 0;
    if( v->count ) {
       for( i = 0, j = 0; i < v->count + 1; ++i ) {
@@ -668,21 +668,21 @@ void vul_blas_vector_insert( vul_blas_vector *v, unsigned int idx, vul_blas_real
       e[ 0 ].val = val;
    }
    if( v->entries ) {
-      VUL_BLAS_FREE( v->entries );
+      VUL_LINALG_FREE( v->entries );
    }
    v->entries = e;
    v->count = v->count + 1;
 }
 
-void vul_blas_matrix_insert( vul_blas_matrix *m, unsigned int r, unsigned int c, vul_blas_real val )
+void vul_linalg_matrix_insert( vul_linalg_matrix *m, unsigned int r, unsigned int c, vul_linalg_real val )
 {
    unsigned int i, j, inserted;
-   vul_blas_matrix_row *e;
+   vul_linalg_matrix_row *e;
    
    // Overwrite, even if zero
    for( i = 0; i < m->count; ++i ) {
       if( m->rows[ i ].idx == r ) {
-         vul_blas_vector_insert( &m->rows[ i ].vec, c, val );
+         vul_linalg_vector_insert( &m->rows[ i ].vec, c, val );
          return;
       }
    }
@@ -692,7 +692,7 @@ void vul_blas_matrix_insert( vul_blas_matrix *m, unsigned int r, unsigned int c,
       return;
    }
 
-   e = ( vul_blas_matrix_row* )VUL_BLAS_ALLOC( sizeof( vul_blas_matrix_row ) * ( m->count + 1 ) );
+   e = ( vul_linalg_matrix_row* )VUL_LINALG_ALLOC( sizeof( vul_linalg_matrix_row ) * ( m->count + 1 ) );
    inserted = 0;
    if( m->count ) {
       for( i = 0, j = 0; i < m->count + 1; ++i ) {
@@ -704,7 +704,7 @@ void vul_blas_matrix_insert( vul_blas_matrix *m, unsigned int r, unsigned int c,
             e[ i ].idx = r;
             e[ i ].vec.count = 0;
             e[ i ].vec.entries = 0;
-            vul_blas_vector_insert( &e[ i ].vec, c, val );
+            vul_linalg_vector_insert( &e[ i ].vec, c, val );
             inserted = 1;
          }
       }
@@ -712,16 +712,16 @@ void vul_blas_matrix_insert( vul_blas_matrix *m, unsigned int r, unsigned int c,
       e[ 0 ].idx = r;
       e[ 0 ].vec.count = 0;
       e[ 0 ].vec.entries = 0;
-      vul_blas_vector_insert( &e[ 0 ].vec, c, val );
+      vul_linalg_vector_insert( &e[ 0 ].vec, c, val );
    }
    if( m->rows ) {
-      VUL_BLAS_FREE( m->rows );
+      VUL_LINALG_FREE( m->rows );
    }
    m->rows = e;
    m->count = m->count + 1;
 }
 
-vul_blas_real vul_blas_vector_get( vul_blas_vector *v, unsigned int idx )
+vul_linalg_real vul_linalg_vector_get( vul_linalg_vector *v, unsigned int idx )
 {
    unsigned int i;
 
@@ -733,20 +733,20 @@ vul_blas_real vul_blas_vector_get( vul_blas_vector *v, unsigned int idx )
    return 0.f;
 }
 
-vul_blas_real vul_blas_matrix_get( vul_blas_matrix *m, unsigned int r, unsigned int c )
+vul_linalg_real vul_linalg_matrix_get( vul_linalg_matrix *m, unsigned int r, unsigned int c )
 {
    unsigned int i;
 
    for( i = 0; i < m->count; ++i ) {
       if( m->rows[ i ].idx == r ) {
-         return vul_blas_vector_get( &m->rows[ i ].vec, c );
+         return vul_linalg_vector_get( &m->rows[ i ].vec, c );
       }
    }
    return 0.f;
 }
-static vul_blas_vector vulb__blas_matrix_get_row_by_array_index( vul_blas_matrix *m, unsigned int r )
+static vul_linalg_vector vulb__linalg_matrix_get_row_by_array_index( vul_linalg_matrix *m, unsigned int r )
 {
-   vul_blas_vector v;
+   vul_linalg_vector v;
 
    if( r >= m->count ) {
       v.count = 0;
@@ -756,12 +756,12 @@ static vul_blas_vector vulb__blas_matrix_get_row_by_array_index( vul_blas_matrix
    return m->rows[ r ].vec;
 }
 
-void vul_blas_vector_destroy( vul_blas_vector *v )
+void vul_linalg_vector_destroy( vul_linalg_vector *v )
 {
    if( v->entries ) {
-      VUL_BLAS_FREE( v->entries );
+      VUL_LINALG_FREE( v->entries );
    }
-   VUL_BLAS_FREE( v );
+   VUL_LINALG_FREE( v );
 }
 
 //----------------------------------------
@@ -769,28 +769,28 @@ void vul_blas_vector_destroy( vul_blas_vector *v )
 //
 
 #define DEFINE_VECTOR_OP( name, op )\
-   static void name( vul_blas_vector *out, vul_blas_vector *a, vul_blas_vector *b )\
+   static void name( vul_linalg_vector *out, vul_linalg_vector *a, vul_linalg_vector *b )\
    {\
       unsigned int ia, ib;\
       ia = 0; ib = 0;\
       while( ia < a->count && ib < b->count ) {\
          if( a->entries[ ia ].idx == b->entries[ ib ].idx ) {\
-            vul_blas_vector_insert( out, a->entries[ ia ].idx, a->entries[ ia ].val op b->entries[ ib ].val );\
+            vul_linalg_vector_insert( out, a->entries[ ia ].idx, a->entries[ ia ].val op b->entries[ ib ].val );\
             ++ia; ++ib;\
          } else if( a->entries[ ia ].idx < b->entries[ ib ].idx ) {\
-            vul_blas_vector_insert( out, a->entries[ ia ].idx, 0.f op a->entries[ ia ].val );\
+            vul_linalg_vector_insert( out, a->entries[ ia ].idx, 0.f op a->entries[ ia ].val );\
             ++ia;\
          } else {\
-            vul_blas_vector_insert( out, b->entries[ ib ].idx, 0.f op b->entries[ ib ].val );\
+            vul_linalg_vector_insert( out, b->entries[ ib ].idx, 0.f op b->entries[ ib ].val );\
             ++ib;\
          }\
       }\
       while( ia < a->count ) {\
-         vul_blas_vector_insert( out, a->entries[ ia ].idx, 0.f op a->entries[ ia ].val );\
+         vul_linalg_vector_insert( out, a->entries[ ia ].idx, 0.f op a->entries[ ia ].val );\
          ++ia;\
       }\
       while( ib < b->count ) {\
-         vul_blas_vector_insert( out, b->entries[ ib ].idx, 0.f op b->entries[ ib ].val );\
+         vul_linalg_vector_insert( out, b->entries[ ib ].idx, 0.f op b->entries[ ib ].val );\
          ++ib;\
       }\
    }
@@ -800,18 +800,18 @@ DEFINE_VECTOR_OP( vulb__sparse_vmul, * )
 
 #undef DEFINE_VECTOR_OP
 
-static void vulb__sparse_vmul_sub( vul_blas_vector *out, vul_blas_vector *a, vul_blas_vector *x, vul_blas_vector *b )
+static void vulb__sparse_vmul_sub( vul_linalg_vector *out, vul_linalg_vector *a, vul_linalg_vector *x, vul_linalg_vector *b )
 {
    unsigned int ia, ix, ib;
 
    ia= 0; ix = 0; ib = 0;
    while( ia < a->count && ix < x->count && ib < b->count ) {
       if( a->entries[ ia ].idx == x->entries[ ix ].idx && a->entries[ ia ].idx == b->entries[ ib ].idx ) {
-         vul_blas_vector_insert( out, a->entries[ ia ].idx, a->entries[ ia ].val * x->entries[ ix ].val -
-                                                             b->entries[ ib ].val );
+         vul_linalg_vector_insert( out, a->entries[ ia ].idx, a->entries[ ia ].val * x->entries[ ix ].val -
+                                                              b->entries[ ib ].val );
          ++ia; ++ib; ++ix;
       } else if( b->entries[ ib ].idx <= a->entries[ ia ].idx && b->entries[ ib ].idx <= x->entries[ ix ].idx ) {
-         vul_blas_vector_insert( out, b->entries[ ib ].idx, -b->entries[ ib ].val );
+         vul_linalg_vector_insert( out, b->entries[ ib ].idx, -b->entries[ ib ].val );
          ++ib;
       } else if( a->entries[ ia ].idx < x->entries[ ix ].idx ) {
          ++ia;
@@ -820,18 +820,18 @@ static void vulb__sparse_vmul_sub( vul_blas_vector *out, vul_blas_vector *a, vul
       }
    }
 }
-static void vulb__sparse_vmul_add( vul_blas_vector *out, vul_blas_vector *a, vul_blas_vector *x, vul_blas_vector *b )
+static void vulb__sparse_vmul_add( vul_linalg_vector *out, vul_linalg_vector *a, vul_linalg_vector *x, vul_linalg_vector *b )
 {
    unsigned int ia, ix, ib;
 
    ia= 0; ix = 0; ib = 0;
    while( ia < a->count && ix < x->count && ib < b->count ) {
       if( a->entries[ ia ].idx == x->entries[ ix ].idx && a->entries[ ia ].idx == b->entries[ ib ].idx ) {
-         vul_blas_vector_insert( out, a->entries[ ia ].idx, a->entries[ ia ].val * x->entries[ ix ].val +
-                                                             b->entries[ ib ].val );
+         vul_linalg_vector_insert( out, a->entries[ ia ].idx, a->entries[ ia ].val * x->entries[ ix ].val +
+                                                              b->entries[ ib ].val );
          ++ia; ++ib; ++ix;
       } else if( b->entries[ ib ].idx <= a->entries[ ia ].idx && b->entries[ ib ].idx <= x->entries[ ix ].idx ) {
-         vul_blas_vector_insert( out, b->entries[ ib ].idx, b->entries[ ib ].val );
+         vul_linalg_vector_insert( out, b->entries[ ib ].idx, b->entries[ ib ].val );
          ++ib;
       } else if( a->entries[ ia ].idx < x->entries[ ix ].idx ) {
          ++ia;
@@ -841,12 +841,12 @@ static void vulb__sparse_vmul_add( vul_blas_vector *out, vul_blas_vector *a, vul
    }
 }
 
-static void vulb__sparse_vcopy( vul_blas_vector *out, vul_blas_vector *x )
+static void vulb__sparse_vcopy( vul_linalg_vector *out, vul_linalg_vector *x )
 {
    unsigned int i;
 
    if( x->count ) {
-      out->entries = ( vul_blas_sparse_entry* )VUL_BLAS_ALLOC( sizeof( vul_blas_sparse_entry ) * 
+      out->entries = ( vul_linalg_sparse_entry* )VUL_LINALG_ALLOC( sizeof( vul_linalg_sparse_entry ) * 
                                                                            x->count );
       for( i = 0; i < x->count; ++i ) {
          out->entries[ i ].idx = x->entries[ i ].idx;
@@ -858,9 +858,9 @@ static void vulb__sparse_vcopy( vul_blas_vector *out, vul_blas_vector *x )
       out->count = 0;
    }
 }
-static vul_blas_real vulb__sparse_dot( vul_blas_vector *a, vul_blas_vector *b )
+static vul_linalg_real vulb__sparse_dot( vul_linalg_vector *a, vul_linalg_vector *b )
 {
-   vul_blas_real r;
+   vul_linalg_real r;
    unsigned int ia, ib;
    
    r = 0.f; ia = 0; ib = 0;
@@ -876,10 +876,10 @@ static vul_blas_real vulb__sparse_dot( vul_blas_vector *a, vul_blas_vector *b )
    }
    return r;
 }
-static void vulb__sparse_mmul( vul_blas_vector *out, vul_blas_matrix *A, vul_blas_vector *x )
+static void vulb__sparse_mmul( vul_linalg_vector *out, vul_linalg_matrix *A, vul_linalg_vector *x )
 {
    unsigned int v, i, ix;
-   vul_blas_real sum;
+   vul_linalg_real sum;
 
    for( v = 0; v < A->count; ++v ) {
       sum = 0.f;
@@ -894,12 +894,12 @@ static void vulb__sparse_mmul( vul_blas_vector *out, vul_blas_matrix *A, vul_bla
             ++ix;
          }
       }
-      vul_blas_vector_insert( out, A->rows[ v ].idx, sum );
+      vul_linalg_vector_insert( out, A->rows[ v ].idx, sum );
    }
 }
-static void vulb__sparse_mmul_matrix( vul_blas_matrix *O, vul_blas_matrix *A, vul_blas_matrix *B, int n )
+static void vulb__sparse_mmul_matrix( vul_linalg_matrix *O, vul_linalg_matrix *A, vul_linalg_matrix *B, int n )
 {
-   vul_blas_real s;
+   vul_linalg_real s;
    int i, j, k;
    
    //@TODO(thynn): Strassen instead of this naïve approach.
@@ -908,16 +908,16 @@ static void vulb__sparse_mmul_matrix( vul_blas_matrix *O, vul_blas_matrix *A, vu
          s = 0.f;
          for( k = 0; k < A->rows[ i ].vec.count; ++k ) {
             s += A->rows[ i ].vec.entries[ k ].val 
-               * vul_blas_matrix_get( B, A->rows[ i ].vec.entries[ k ].idx, j );
+               * vul_linalg_matrix_get( B, A->rows[ i ].vec.entries[ k ].idx, j );
          }
-         vul_blas_matrix_insert( O, i, j, s );
+         vul_linalg_matrix_insert( O, i, j, s );
       }
    }
 }
-static void vulb__sparse_mmul_add( vul_blas_vector *out, vul_blas_matrix *A, vul_blas_vector *x, vul_blas_vector *b )
+static void vulb__sparse_mmul_add( vul_linalg_vector *out, vul_linalg_matrix *A, vul_linalg_vector *x, vul_linalg_vector *b )
 {
    unsigned int v, i, ix, ib, found;
-   vul_blas_real sum;
+   vul_linalg_real sum;
 
    for( v = 0; v < A->count; ++v ) {
       sum = 0.f;
@@ -937,88 +937,88 @@ static void vulb__sparse_mmul_add( vul_blas_vector *out, vul_blas_matrix *A, vul
             ++ix;
          }
       }
-      vul_blas_vector_insert( out, A->rows[ v ].idx, sum );
+      vul_linalg_vector_insert( out, A->rows[ v ].idx, sum );
    }
 }
-static void vulb__sparse_forward_substitute( vul_blas_vector *out, vul_blas_matrix *A, vul_blas_vector *b )
+static void vulb__sparse_forward_substitute( vul_linalg_vector *out, vul_linalg_matrix *A, vul_linalg_vector *b )
 {
    int i, j;
-   vul_blas_real sum;
+   vul_linalg_real sum;
 
    for( i = 0; i < A->count; ++i ) {
-      sum = vul_blas_vector_get( b, A->rows[ i ].idx );
+      sum = vul_linalg_vector_get( b, A->rows[ i ].idx );
       for( j = A->rows[ i ].vec.count - 1; 
            j >= 0 && A->rows[ i ].vec.entries[ j ].idx >= A->rows[ i ].idx ; 
            --j )
            ; // Find j = i - 1
       for( ; j >= 0 ; --j ) {
-         sum -= A->rows[ i ].vec.entries[ j ].val * vul_blas_vector_get( out, A->rows[ i ].vec.entries[ j ].idx );
+         sum -= A->rows[ i ].vec.entries[ j ].val * vul_linalg_vector_get( out, A->rows[ i ].vec.entries[ j ].idx );
       }
-      vul_blas_vector_insert( out, i, sum / vul_blas_matrix_get( A, A->rows[ i ].idx, A->rows[ i ].idx ) );
+      vul_linalg_vector_insert( out, i, sum / vul_linalg_matrix_get( A, A->rows[ i ].idx, A->rows[ i ].idx ) );
    }
 }
 
-static void vulb__sparse_backward_substitute( vul_blas_vector *out, vul_blas_matrix *A, vul_blas_vector *b )
+static void vulb__sparse_backward_substitute( vul_linalg_vector *out, vul_linalg_matrix *A, vul_linalg_vector *b )
 {
    int i, j;
-   vul_blas_real sum;
+   vul_linalg_real sum;
 
    for( i = A->count - 1; i >= 0; --i ) {
-      sum = vul_blas_vector_get( b, A->rows[ i ].idx );
+      sum = vul_linalg_vector_get( b, A->rows[ i ].idx );
       for( j = 0; j < A->rows[ i ].vec.count && A->rows[ i ].vec.entries[ j ].idx <= A->rows[ i ].idx; ++j )
          ; // Find index of first column > i
       while( j < A->rows[ i ].vec.count ) {
-         sum -= A->rows[ i ].vec.entries[ j ].val * vul_blas_vector_get( out, A->rows[ i ].vec.entries[ j ].idx );
+         sum -= A->rows[ i ].vec.entries[ j ].val * vul_linalg_vector_get( out, A->rows[ i ].vec.entries[ j ].idx );
          ++j;
       }
-      vul_blas_vector_insert( out, i, sum / vul_blas_matrix_get( A, A->rows[ i ].idx, A->rows[ i ].idx ) );
+      vul_linalg_vector_insert( out, i, sum / vul_linalg_matrix_get( A, A->rows[ i ].idx, A->rows[ i ].idx ) );
    }
 }
-static void vulb__sparse_mtranspose( vul_blas_matrix *out, vul_blas_matrix *A )
+static void vulb__sparse_mtranspose( vul_linalg_matrix *out, vul_linalg_matrix *A )
 {
    int i, j;
    
    vulb__sparse_mclear( out );
    for( i = 0; i < A->count; ++i ) {
       for( j = 0; j < A->rows[ i ].vec.count; ++j ) {
-         vul_blas_matrix_insert( out, A->rows[ i ].vec.entries[ j ].idx, 
-                                       A->rows[ i ].idx, 
-                                       A->rows[ i ].vec.entries[ j ].val );
+         vul_linalg_matrix_insert( out, A->rows[ i ].vec.entries[ j ].idx, 
+                                        A->rows[ i ].idx, 
+                                        A->rows[ i ].vec.entries[ j ].val );
       }
    }
 }
-static void vulb__sparse_mcopy( vul_blas_matrix *out, vul_blas_matrix *A )
+static void vulb__sparse_mcopy( vul_linalg_matrix *out, vul_linalg_matrix *A )
 {
    int i, j;
 
    vulb__sparse_mclear( out );
    for( i = 0; i < A->count; ++i ) {
       for( j = 0; j < A->rows[ i ].vec.count; ++j ) {
-         vul_blas_matrix_insert( out, A->rows[ i ].idx, 
-                                       A->rows[ i ].vec.entries[ j ].idx, 
-                                       A->rows[ i ].vec.entries[ j ].val );
+         vul_linalg_matrix_insert( out, A->rows[ i ].idx, 
+                                        A->rows[ i ].vec.entries[ j ].idx, 
+                                        A->rows[ i ].vec.entries[ j ].val );
       }
    }
 }
 
-static void vulb__sparse_mclear( vul_blas_matrix *A )
+static void vulb__sparse_mclear( vul_linalg_matrix *A )
 {
    int i;
 
    for( i = 0; i < A->count; ++i ) {
       if( A->rows[ i ].vec.count ) {
-         VUL_BLAS_FREE( A->rows[ i ].vec.entries );
+         VUL_LINALG_FREE( A->rows[ i ].vec.entries );
       }
       A->rows[ i ].vec.count = 0;
    }
-   VUL_BLAS_FREE( A->rows );
+   VUL_LINALG_FREE( A->rows );
    A->rows = 0;
    A->count = 0;
 }
-static void vulb__sparse_mclean( vul_blas_matrix *A )
+static void vulb__sparse_mclean( vul_linalg_matrix *A )
 {
    int i, j, k, c;
-   vul_blas_sparse_entry *n;
+   vul_linalg_sparse_entry *n;
 
    for( i = 0; i < A->count; ++i ) {
       c = 0;
@@ -1029,7 +1029,7 @@ static void vulb__sparse_mclean( vul_blas_matrix *A )
       }
       if( c != A->rows[ i ].vec.count ) {
          if( c != 0 ) {
-            n = ( vul_blas_sparse_entry* )VUL_BLAS_ALLOC( sizeof( vul_blas_sparse_entry ) * c );
+            n = ( vul_linalg_sparse_entry* )VUL_LINALG_ALLOC( sizeof( vul_linalg_sparse_entry ) * c );
             for( j = 0, k = 0; j < A->rows[ i ].vec.count; ++j ) {
                if( A->rows[ i ].vec.entries[ j ].val != 0.f ) {
                   n[ k ].val = A->rows[ i ].vec.entries[ j ].val;
@@ -1040,7 +1040,7 @@ static void vulb__sparse_mclean( vul_blas_matrix *A )
          } else {
             n = 0;
          }
-         VUL_BLAS_FREE( A->rows[ i ].vec.entries );
+         VUL_LINALG_FREE( A->rows[ i ].vec.entries );
          A->rows[ i ].vec.entries = n;
          A->rows[ i ].vec.count = c;
       }
@@ -1051,21 +1051,21 @@ static void vulb__sparse_mclean( vul_blas_matrix *A )
 // Sparse solvers
 //
 
-vul_blas_vector *vul_blas_conjugate_gradient_sparse( vul_blas_matrix *A,
-                                                       vul_blas_vector *initial_guess,
-                                                       vul_blas_vector *b,
-                                                       int max_iterations,
-                                                       vul_blas_real tolerance )
+vul_linalg_vector *vul_linalg_conjugate_gradient_sparse( vul_linalg_matrix *A,
+                                                         vul_linalg_vector *initial_guess,
+                                                         vul_linalg_vector *b,
+                                                         int max_iterations,
+                                                         vul_linalg_real tolerance )
 {
-   vul_blas_vector *x, *r, *Ap, *p;
-   vul_blas_real rd, rd2, alpha, beta, tmp;
+   vul_linalg_vector *x, *r, *Ap, *p;
+   vul_linalg_real rd, rd2, alpha, beta, tmp;
    int i, j, k, idx, found;
 
-   r = vul_blas_vector_create( 0, 0, 0 );
-   p = vul_blas_vector_create( 0, 0, 0 );
-   Ap = vul_blas_vector_create( 0, 0, 0 );
+   r = vul_linalg_vector_create( 0, 0, 0 );
+   p = vul_linalg_vector_create( 0, 0, 0 );
+   Ap = vul_linalg_vector_create( 0, 0, 0 );
    
-   x = vul_blas_vector_create( 0, 0, 0 );
+   x = vul_linalg_vector_create( 0, 0, 0 );
    vulb__sparse_vcopy( x, initial_guess );
    vulb__sparse_mmul( r, A, x );
    vulb__sparse_vsub( r, r, b );
@@ -1087,7 +1087,7 @@ vul_blas_vector *vul_blas_conjugate_gradient_sparse( vul_blas_matrix *A,
             }
          }
          if( !found ) {
-            vul_blas_vector_insert( x, idx, -tmp );
+            vul_linalg_vector_insert( x, idx, -tmp );
          }
       }
       for( j = 0; j < Ap->count; ++j ) {
@@ -1102,7 +1102,7 @@ vul_blas_vector *vul_blas_conjugate_gradient_sparse( vul_blas_matrix *A,
             }
          }
          if( !found ) {
-            vul_blas_vector_insert( r, idx, -tmp );
+            vul_linalg_vector_insert( r, idx, -tmp );
          }
       }
       rd2 = vulb__sparse_dot( r, r );
@@ -1117,32 +1117,32 @@ vul_blas_vector *vul_blas_conjugate_gradient_sparse( vul_blas_matrix *A,
          } else if( p->entries[ j ].idx < r->entries[ k ].idx ) {
             ++j;
          } else {
-            vul_blas_vector_insert( p, r->entries[ k ].idx, r->entries[ k ].val );
+            vul_linalg_vector_insert( p, r->entries[ k ].idx, r->entries[ k ].val );
             ++k;
          }
       }
       rd = rd2;
    }
 
-   vul_blas_vector_destroy( p );
-   vul_blas_vector_destroy( r );
-   vul_blas_vector_destroy( Ap );
+   vul_linalg_vector_destroy( p );
+   vul_linalg_vector_destroy( r );
+   vul_linalg_vector_destroy( Ap );
    return x;
 }
 
-vul_blas_vector *vul_blas_successive_over_relaxation_sparse( vul_blas_matrix *A,
-                                                               vul_blas_vector *initial_guess,
-                                                               vul_blas_vector *b,
-                                                               vul_blas_real relaxation_factor,
-                                                               int max_iterations,
-                                                               vul_blas_real tolerance )
+vul_linalg_vector *vul_linalg_successive_over_relaxation_sparse( vul_linalg_matrix *A,
+                                                                 vul_linalg_vector *initial_guess,
+                                                                 vul_linalg_vector *b,
+                                                                 vul_linalg_real relaxation_factor,
+                                                                 int max_iterations,
+                                                                 vul_linalg_real tolerance )
 {
-   vul_blas_vector *x, *r;
+   vul_linalg_vector *x, *r;
    int i, j, k;
-   vul_blas_real omega, rd, rd2, tmp;
+   vul_linalg_real omega, rd, rd2, tmp;
 
-   r = vul_blas_vector_create( 0, 0, 0 );
-   x = vul_blas_vector_create( 0, 0, 0 );
+   r = vul_linalg_vector_create( 0, 0, 0 );
+   x = vul_linalg_vector_create( 0, 0, 0 );
       
    /* Calculate initial residual */
    vulb__sparse_vcopy( x, initial_guess );
@@ -1156,14 +1156,14 @@ vul_blas_vector *vul_blas_successive_over_relaxation_sparse( vul_blas_matrix *A,
          omega = 0.f;
          for( j = 0; j < x->count; ++j ) {
             if( A->rows[ i ].idx != x->entries[ j ].idx ) {
-               omega += vul_blas_matrix_get( A, A->rows[ i ].idx, x->entries[ j ].idx ) * x->entries[ j ].val;
+               omega += vul_linalg_matrix_get( A, A->rows[ i ].idx, x->entries[ j ].idx ) * x->entries[ j ].val;
             }
          }
-         tmp = ( 1.f - relaxation_factor ) * vul_blas_vector_get( x, A->rows[ i ].idx ) 
-             + ( relaxation_factor / vul_blas_matrix_get( A, A->rows[ i ].idx, A->rows[ i ].idx ) )
-             * ( vul_blas_vector_get( b, A->rows[ i ].idx ) - omega );
+         tmp = ( 1.f - relaxation_factor ) * vul_linalg_vector_get( x, A->rows[ i ].idx ) 
+             + ( relaxation_factor / vul_linalg_matrix_get( A, A->rows[ i ].idx, A->rows[ i ].idx ) )
+             * ( vul_linalg_vector_get( b, A->rows[ i ].idx ) - omega );
          if( tmp != 0.f ) {
-            vul_blas_vector_insert( x, A->rows[ i ].idx, tmp );
+            vul_linalg_vector_insert( x, A->rows[ i ].idx, tmp );
          }
       }
       /* Check for convergence */
@@ -1176,38 +1176,38 @@ vul_blas_vector *vul_blas_successive_over_relaxation_sparse( vul_blas_matrix *A,
       rd = rd2;
    }
    
-   vul_blas_vector_destroy( r );
+   vul_linalg_vector_destroy( r );
    return x;
 }
 
-vul_blas_vector *vul_blas_cholesky_decomposition_sparse( vul_blas_matrix *A,
-                                                           vul_blas_vector *b,
-                                                           int cols, int rows )
+vul_linalg_vector *vul_linalg_cholesky_decomposition_sparse( vul_linalg_matrix *A,
+                                                             vul_linalg_vector *b,
+                                                             int cols, int rows )
 {
-   vul_blas_vector *x, *r, rowi, rowj;
-   vul_blas_matrix *D, *DT;
-   vul_blas_real sum, rd, rd2;
+   vul_linalg_vector *x, *r, rowi, rowj;
+   vul_linalg_matrix *D, *DT;
+   vul_linalg_real sum, rd, rd2;
    int i, j, ki, kj, k;
 
-   D = vul_blas_matrix_create( 0, 0, 0, 0 );
-   DT = vul_blas_matrix_create( 0, 0, 0, 0 );
-   r = vul_blas_vector_create( 0, 0, 0 );
-   x = vul_blas_vector_create( 0, 0, 0 );
+   D = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   DT = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   r = vul_linalg_vector_create( 0, 0, 0 );
+   x = vul_linalg_vector_create( 0, 0, 0 );
 
    for( i = 0; i < A->count; ++i ) {
       for( j = 0; j < A->rows[ i ].vec.count; ++j ) {
-         vul_blas_matrix_insert( D, A->rows[ i ].idx, 
-                                     A->rows[ i ].vec.entries[ j ].idx,
-                                     A->rows[ i ].vec.entries[ j ].val );
+         vul_linalg_matrix_insert( D, A->rows[ i ].idx, 
+                                      A->rows[ i ].vec.entries[ j ].idx,
+                                      A->rows[ i ].vec.entries[ j ].val );
       }
    }
 
    // Decomposition into L and L^T
    for( i = 0; i < cols; ++i ) {
       for( j = i; j < rows; ++j ) {
-         sum = vul_blas_matrix_get( A, i, j );
-         rowi = vulb__blas_matrix_get_row_by_array_index( D, i );
-         rowj = vulb__blas_matrix_get_row_by_array_index( D, j );
+         sum = vul_linalg_matrix_get( A, i, j );
+         rowi = vulb__linalg_matrix_get_row_by_array_index( D, i );
+         rowj = vulb__linalg_matrix_get_row_by_array_index( D, j );
          for( ki = rowi.count - 1; ki >= 0 && rowi.entries[ ki ].idx >= i; --ki )
             ; // Search backwards until ki < i
          for( kj = rowj.count - 1; kj >= 0 && rowj.entries[ kj ].idx >= i; --kj )
@@ -1224,11 +1224,11 @@ vul_blas_vector *vul_blas_cholesky_decomposition_sparse( vul_blas_matrix *A,
          }
          if( i == j ) {
             assert( sum > 0.f ); // Cholesky decomposition is only valid for POSITIVE-DEFINITE symmetric matrices
-            vul_blas_matrix_insert( D, i, i, sqrt( sum ) );
+            vul_linalg_matrix_insert( D, i, i, sqrt( sum ) );
          } else {
-            rd = vul_blas_matrix_get( D, i, i );
+            rd = vul_linalg_matrix_get( D, i, i );
             assert( rd != 0.f ); // Determinant is sufficiently small that a divide-by-zero is imminent
-            vul_blas_matrix_insert( D, j, i, sum / rd );
+            vul_linalg_matrix_insert( D, j, i, sum / rd );
          }
       }
    }
@@ -1239,19 +1239,19 @@ vul_blas_vector *vul_blas_cholesky_decomposition_sparse( vul_blas_matrix *A,
    vulb__sparse_mtranspose( DT, D );
    vulb__sparse_backward_substitute( x, DT, r );
 
-   vul_blas_matrix_destroy( D );
-   vul_blas_matrix_destroy( DT );
-   vul_blas_vector_destroy( r );
+   vul_linalg_matrix_destroy( D );
+   vul_linalg_matrix_destroy( DT );
+   vul_linalg_vector_destroy( r );
 
    return x;
 }
 
-static void vul__blas_givens_rotate_sparse( vul_blas_matrix *A, int c, int r, 
-                                            int i, int j, float cosine, float sine,
-                                            int post_multiply )
+static void vul__linalg_givens_rotate_sparse( vul_linalg_matrix *A, int c, int r, 
+                                              int i, int j, float cosine, float sine,
+                                              int post_multiply )
 {
    int k;
-   vul_blas_real G[ 4 ], v0, v1;
+   vul_linalg_real G[ 4 ], v0, v1;
 
    G[ 0 ] = cosine;
    G[ 1 ] = sine;
@@ -1261,43 +1261,43 @@ static void vul__blas_givens_rotate_sparse( vul_blas_matrix *A, int c, int r,
    if( post_multiply ) {
       // R = G^T * R
       for( k = 0; k < c; ++k ) {
-         v0 = G[ 0 ] * vul_blas_matrix_get( A, i, k ) 
-            + G[ 2 ] * vul_blas_matrix_get( A, j, k ); // G[ 2 ]: T is transposed
-         v1 = G[ 1 ] * vul_blas_matrix_get( A, i, k ) 
-            + G[ 3 ] * vul_blas_matrix_get( A, j, k ); // G[ 1 ]: T is transposed
-         vul_blas_matrix_insert( A, i, k, v0 );
-         vul_blas_matrix_insert( A, j, k, v1 );
+         v0 = G[ 0 ] * vul_linalg_matrix_get( A, i, k ) 
+            + G[ 2 ] * vul_linalg_matrix_get( A, j, k ); // G[ 2 ]: T is transposed
+         v1 = G[ 1 ] * vul_linalg_matrix_get( A, i, k ) 
+            + G[ 3 ] * vul_linalg_matrix_get( A, j, k ); // G[ 1 ]: T is transposed
+         vul_linalg_matrix_insert( A, i, k, v0 );
+         vul_linalg_matrix_insert( A, j, k, v1 );
       }
    } else {
       // Q = Q * G
       for( k = 0; k < r; ++k ) {
-         v0 = G[ 0 ] * vul_blas_matrix_get( A, k, i ) 
-            + G[ 2 ] * vul_blas_matrix_get( A, k, j );
-         v1 = G[ 1 ] * vul_blas_matrix_get( A, k, i) 
-            + G[ 3 ] * vul_blas_matrix_get( A, k, j );
-         vul_blas_matrix_insert( A, k, i, v0 );
-         vul_blas_matrix_insert( A, k, j, v1 );
+         v0 = G[ 0 ] * vul_linalg_matrix_get( A, k, i ) 
+            + G[ 2 ] * vul_linalg_matrix_get( A, k, j );
+         v1 = G[ 1 ] * vul_linalg_matrix_get( A, k, i) 
+            + G[ 3 ] * vul_linalg_matrix_get( A, k, j );
+         vul_linalg_matrix_insert( A, k, i, v0 );
+         vul_linalg_matrix_insert( A, k, j, v1 );
       }
    }
 }
 
-static void vul__blas_qr_decomposition_givens_sparse( vul_blas_matrix *Q, vul_blas_matrix *R, 
-                                                      vul_blas_matrix *A, int c, int r )
+static void vul__linalg_qr_decomposition_givens_sparse( vul_linalg_matrix *Q, vul_linalg_matrix *R, 
+                                                        vul_linalg_matrix *A, int c, int r )
 {
    int i, j, k;
-   vul_blas_real theta, st, ct, G[ 4 ], v0, v1, *RA;
+   vul_linalg_real theta, st, ct, G[ 4 ], v0, v1, *RA;
 
    vulb__sparse_mcopy( R, A );
    vulb__sparse_mclear( Q );
 
    for( i = 0; i < r; ++i ) {
-      vul_blas_matrix_insert( Q, i, i, 1.f );
+      vul_linalg_matrix_insert( Q, i, i, 1.f );
    }
    
    for( j = 0; j < c; ++j ) {
       for( i = r - 2; i >= j; --i ) {
-         v0 = vul_blas_matrix_get( R, i, j );
-         v1 = vul_blas_matrix_get( R, i + 1, j );
+         v0 = vul_linalg_matrix_get( R, i, j );
+         v1 = vul_linalg_matrix_get( R, i + 1, j );
          theta = v0 * v0 + v1 * v1;
          if( theta != 0.f ) {
             theta = sqrt( theta );
@@ -1307,36 +1307,36 @@ static void vul__blas_qr_decomposition_givens_sparse( vul_blas_matrix *Q, vul_bl
             st = 0.f;
             ct = 1.f;
          }
-         vul__blas_givens_rotate_sparse( R, c, r, i, i + 1, ct, st, 1 );
-         vul__blas_givens_rotate_sparse( Q, r, r, i, i + 1, ct, st, 0 );
+         vul__linalg_givens_rotate_sparse( R, c, r, i, i + 1, ct, st, 1 );
+         vul__linalg_givens_rotate_sparse( Q, r, r, i, i + 1, ct, st, 0 );
          vulb__sparse_mclean( R );
          vulb__sparse_mclean( Q );
       }
    }
 }
 
-vul_blas_vector *vul_blas_qr_decomposition_sparse( vul_blas_matrix *A,
-                                                   vul_blas_vector *b,
-                                                   int cols, int rows )
+vul_linalg_vector *vul_linalg_qr_decomposition_sparse( vul_linalg_matrix *A,
+                                                       vul_linalg_vector *b,
+                                                       int cols, int rows )
 {
-   vul_blas_matrix *Q, *QT, *R;
-   vul_blas_vector *x, *d;
+   vul_linalg_matrix *Q, *QT, *R;
+   vul_linalg_vector *x, *d;
 
-   Q = vul_blas_matrix_create( 0, 0, 0, 0 );
-   QT = vul_blas_matrix_create( 0, 0, 0, 0 );
-   R = vul_blas_matrix_create( 0, 0, 0, 0 );
-   d = vul_blas_vector_create( 0, 0, 0 );
-   x = vul_blas_vector_create( 0, 0, 0 );
+   Q = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   QT = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   R = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   d = vul_linalg_vector_create( 0, 0, 0 );
+   x = vul_linalg_vector_create( 0, 0, 0 );
 
-   vul__blas_qr_decomposition_givens_sparse( Q, R, A, cols, rows );
+   vul__linalg_qr_decomposition_givens_sparse( Q, R, A, cols, rows );
    vulb__sparse_mtranspose( QT, Q );
    vulb__sparse_mmul( d, QT, b );
    vulb__sparse_backward_substitute( x, R, d );
 
-   vul_blas_matrix_destroy( Q );
-   vul_blas_matrix_destroy( QT );
-   vul_blas_matrix_destroy( R );
-   vul_blas_vector_destroy( d );
+   vul_linalg_matrix_destroy( Q );
+   vul_linalg_matrix_destroy( QT );
+   vul_linalg_matrix_destroy( R );
+   vul_linalg_vector_destroy( d );
 
    return x;
 }
@@ -1345,9 +1345,9 @@ vul_blas_vector *vul_blas_qr_decomposition_sparse( vul_blas_matrix *A,
 // Sparse singular value decomposition local functions
 //
 
-static vul_blas_real vul__blas_matrix_norm_diagonal_sparse( vul_blas_matrix *A )
+static vul_linalg_real vul__linalg_matrix_norm_diagonal_sparse( vul_linalg_matrix *A )
 {
-   vul_blas_real v;
+   vul_linalg_real v;
    int i, j;
    
    v = 0.f;
@@ -1361,9 +1361,9 @@ static vul_blas_real vul__blas_matrix_norm_diagonal_sparse( vul_blas_matrix *A )
    return sqrt( v );
 }
 
-static vul_blas_real vul__blas_matrix_norm_as_single_column_sparse( vul_blas_matrix *A, int upper_diag )
+static vul_linalg_real vul__linalg_matrix_norm_as_single_column_sparse( vul_linalg_matrix *A, int upper_diag )
 {
-   vul_blas_real v;
+   vul_linalg_real v;
    int i, j, s;
 
    v = 0.f;
@@ -1378,12 +1378,12 @@ static vul_blas_real vul__blas_matrix_norm_as_single_column_sparse( vul_blas_mat
    return v;
 }
 
-vul_blas_matrix *vul_blas_svd_basis_reconstruct_matrix_sparse( vul_blas_svd_basis_sparse *x, int n )
+vul_linalg_matrix *vul_linalg_svd_basis_reconstruct_matrix_sparse( vul_linalg_svd_basis_sparse *x, int n )
 {
    int i, j, k, l;
-   vul_blas_matrix *M;
+   vul_linalg_matrix *M;
 
-   M = vul_blas_matrix_create( 0, 0, 0, 0 );
+   M = vul_linalg_matrix_create( 0, 0, 0, 0 );
    if( !n ) {
       return M;
    }
@@ -1392,67 +1392,67 @@ vul_blas_matrix *vul_blas_svd_basis_reconstruct_matrix_sparse( vul_blas_svd_basi
    for( k = n - 1; k >= 0; --k ) {
       for( i = 0; i < x[ k ].u_length; ++i ) {
          for( j = 0; j < x[ k ].v_length; ++j ) {
-            vul_blas_matrix_insert( M, i, j, vul_blas_matrix_get( M, i, j ) + 
-                                              x[ k ].sigma * vul_blas_vector_get( x[ k ].u, i )
-                                                           * vul_blas_vector_get( x[ k ].v, j ) );
+            vul_linalg_matrix_insert( M, i, j, vul_linalg_matrix_get( M, i, j ) + 
+                                               x[ k ].sigma * vul_linalg_vector_get( x[ k ].u, i )
+                                                            * vul_linalg_vector_get( x[ k ].v, j ) );
          }
       }
    }
    return M;
 }
 
-void vul_blas_svd_basis_destroy_sparse( vul_blas_svd_basis_sparse *x, int n )
+void vul_linalg_svd_basis_destroy_sparse( vul_linalg_svd_basis_sparse *x, int n )
 {
    int i;
 
    for( i = 0; i < n; ++i ) {
       if( x[ i ].u ) {
-         vul_blas_vector_destroy( x[ i ].u );
+         vul_linalg_vector_destroy( x[ i ].u );
          x[ i ].u = 0;
       }
       if( x[ i ].v ) {
-         vul_blas_vector_destroy( x[ i ].v );
+         vul_linalg_vector_destroy( x[ i ].v );
          x[ i ].v = 0;
       }
    }
 }
 
-static void vul__blas_svd_sort_sparse( vul_blas_svd_basis_sparse *x, int n )
+static void vul__linalg_svd_sort_sparse( vul_linalg_svd_basis_sparse *x, int n )
 {
    // Shell sort, gaps for up to about a 10M singular values. Good luck exceeding that with this solver!
-   vul_blas_svd_basis_sparse tmp;
+   vul_linalg_svd_basis_sparse tmp;
    int gap, gi, i, j;
    int gaps[ ] = { 4071001, 1170001, 237001, 67001, 17001, 5001, 1701, 701, 301, 132, 67, 23, 10, 4, 1 };
 
    for( gi = 0; gi < sizeof( gaps ) / sizeof( int ); ++gi ) {
       for( i = 0 + gaps[ gi ]; i < n; ++i ) {
          gap = gaps[ gi ];
-         memcpy( &tmp, &x[ i ], sizeof( vul_blas_svd_basis_sparse ) );
+         memcpy( &tmp, &x[ i ], sizeof( vul_linalg_svd_basis_sparse ) );
          for( j = i; j >= gap && x[ j - gap ].sigma <= tmp.sigma; j -= gap ) {
-            memcpy( &x[ j ], &x[ j - gap ], sizeof( vul_blas_svd_basis_sparse ) );
+            memcpy( &x[ j ], &x[ j - gap ], sizeof( vul_linalg_svd_basis_sparse ) );
          }
-         memcpy( &x[ j ], &tmp, sizeof( vul_blas_svd_basis_sparse ) );
+         memcpy( &x[ j ], &tmp, sizeof( vul_linalg_svd_basis_sparse ) );
       }
    }
 }
 
-void vul_blas_svd_sparse_qrlq( vul_blas_svd_basis_sparse *out, int *rank,
-                               vul_blas_matrix *A,
-                               int c, int r, vul_blas_real eps, int itermax )
+void vul_linalg_svd_sparse_qrlq( vul_linalg_svd_basis_sparse *out, int *rank,
+                                 vul_linalg_matrix *A,
+                                 int c, int r, vul_linalg_real eps, int itermax )
 {
-   vul_blas_matrix *U0, *U1, *V0, *V1, *S0, *S1, *Sb, *Q, *tmp;
-   vul_blas_real err, e, f, scale;
+   vul_linalg_matrix *U0, *U1, *V0, *V1, *S0, *S1, *Sb, *Q, *tmp;
+   vul_linalg_real err, e, f, scale;
    int iter, n, i, j, k, ri, ci;
 
    n = r > c ? r : c;
-   U0 = vul_blas_matrix_create( 0, 0, 0, 0 );
-   U1 = vul_blas_matrix_create( 0, 0, 0, 0 );
-   V0 = vul_blas_matrix_create( 0, 0, 0, 0 );
-   V1 = vul_blas_matrix_create( 0, 0, 0, 0 );
-   S0 = vul_blas_matrix_create( 0, 0, 0, 0 );
-   S1 = vul_blas_matrix_create( 0, 0, 0, 0 );
-   Sb = vul_blas_matrix_create( 0, 0, 0, 0 );
-   Q  = vul_blas_matrix_create( 0, 0, 0, 0 );
+   U0 = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   U1 = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   V0 = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   V1 = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   S0 = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   S1 = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   Sb = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   Q  = vul_linalg_matrix_create( 0, 0, 0, 0 );
    iter = 0;
    err = FLT_MAX;
 
@@ -1476,10 +1476,10 @@ void vul_blas_svd_sparse_qrlq( vul_blas_svd_basis_sparse *out, int *rank,
 
    // Initialize as identity matrix
    for( i = 0; i < r; ++i ) {
-      vul_blas_matrix_insert( U0, i, i, 1.f );
+      vul_linalg_matrix_insert( U0, i, i, 1.f );
    }
    for( i = 0; i < c; ++i ) {
-      vul_blas_matrix_insert( V0, i, i, 1.f );
+      vul_linalg_matrix_insert( V0, i, i, 1.f );
    }
    while( err > eps && iter++ < itermax ) {
       // Store away old S
@@ -1487,19 +1487,19 @@ void vul_blas_svd_sparse_qrlq( vul_blas_svd_basis_sparse *out, int *rank,
 
       // Decompose
       vulb__sparse_mtranspose( S1, S0 );
-      vul__blas_qr_decomposition_givens_sparse( Q, S0, S1, c, r );
+      vul__linalg_qr_decomposition_givens_sparse( Q, S0, S1, c, r );
       vulb__sparse_mmul_matrix( U1, U0, Q, r );
 
       vulb__sparse_mtranspose( S1, S0 );
-      vul__blas_qr_decomposition_givens_sparse( Q, S0, S1, r, c );
+      vul__linalg_qr_decomposition_givens_sparse( Q, S0, S1, r, c );
       vulb__sparse_mmul_matrix( V1, V0, Q, c );
 
       tmp = U0; U0 = U1; U1 = tmp;
       tmp = V0; V0 = V1; V1 = tmp;
 
       // Calculate error
-      e = vul__blas_matrix_norm_as_single_column_sparse( S0, 1 );
-      f = vul__blas_matrix_norm_diagonal_sparse( S0 );
+      e = vul__linalg_matrix_norm_as_single_column_sparse( S0, 1 );
+      f = vul__linalg_matrix_norm_diagonal_sparse( S0 );
       if( f == 0.f ) {
          f = 1.f;
       }
@@ -1516,7 +1516,7 @@ void vul_blas_svd_sparse_qrlq( vul_blas_svd_basis_sparse *out, int *rank,
    // Grap sigmas and rank, sort decreasing
    k = r < c ? r : c;
    for( j = 0, i = 0; i < k; ++i ) { // Since we're transposed, S is indexed with r and not c
-      out[ i ].sigma = fabs( vul_blas_matrix_get( S0, i, i ) ) * scale;
+      out[ i ].sigma = fabs( vul_linalg_matrix_get( S0, i, i ) ) * scale;
       out[ i ].axis = i;
       if( out[ i ].sigma > eps ) {
          ++j;
@@ -1525,48 +1525,48 @@ void vul_blas_svd_sparse_qrlq( vul_blas_svd_basis_sparse *out, int *rank,
    if( *rank == 0 || j < *rank ) {
       *rank = j;
    }
-   vul__blas_svd_sort_sparse( out, k );
+   vul__linalg_svd_sort_sparse( out, k );
 
    // Fix signs and copy U
    for( i = 0; i < *rank; ++i ) {
       out[ i ].u_length = r;
       out[ i ].v_length = c;
-      out[ i ].u = vul_blas_vector_create( 0, 0, 0 );
-      out[ i ].v = vul_blas_vector_create( 0, 0, 0 );
-      f = vul_blas_matrix_get( S0, out[ i ].axis, out[ i ].axis ) < 0.f ? -1.f : 1.f;
+      out[ i ].u = vul_linalg_vector_create( 0, 0, 0 );
+      out[ i ].v = vul_linalg_vector_create( 0, 0, 0 );
+      f = vul_linalg_matrix_get( S0, out[ i ].axis, out[ i ].axis ) < 0.f ? -1.f : 1.f;
       for( j = 0; j < r; ++j ) {
-         vul_blas_vector_insert( out[ i ].u, j, vul_blas_matrix_get( U0, j, out[ i ].axis ) * f );
+         vul_linalg_vector_insert( out[ i ].u, j, vul_linalg_matrix_get( U0, j, out[ i ].axis ) * f );
       }
       for( j = 0; j < c; ++j ) {
-         vul_blas_vector_insert( out[ i ].v, j, vul_blas_matrix_get( V0, j, out[ i ].axis ) );
+         vul_linalg_vector_insert( out[ i ].v, j, vul_linalg_matrix_get( V0, j, out[ i ].axis ) );
       }
    }
 
-   vul_blas_matrix_destroy( U0 );
-   vul_blas_matrix_destroy( U1 );
-   vul_blas_matrix_destroy( V0 );
-   vul_blas_matrix_destroy( V1 );
-   vul_blas_matrix_destroy( S0 );
-   vul_blas_matrix_destroy( S1 );
-   vul_blas_matrix_destroy( Sb );
-   vul_blas_matrix_destroy( Q );
+   vul_linalg_matrix_destroy( U0 );
+   vul_linalg_matrix_destroy( U1 );
+   vul_linalg_matrix_destroy( V0 );
+   vul_linalg_matrix_destroy( V1 );
+   vul_linalg_matrix_destroy( S0 );
+   vul_linalg_matrix_destroy( S1 );
+   vul_linalg_matrix_destroy( Sb );
+   vul_linalg_matrix_destroy( Q );
 }
 
-void vul_blas_svd_sparse( vul_blas_svd_basis_sparse *out, int *rank,
-                          vul_blas_matrix *A,
-                          int c, int r, vul_blas_real eps, int itermax )
+void vul_linalg_svd_sparse( vul_linalg_svd_basis_sparse *out, int *rank,
+                            vul_linalg_matrix *A,
+                            int c, int r, vul_linalg_real eps, int itermax )
 {
-   vul_blas_matrix *J, *U, *V, *G;
-   vul_blas_vector *omegas;
-   vul_blas_real f, t, vik, vjk, scale;
+   vul_linalg_matrix *J, *U, *V, *G;
+   vul_linalg_vector *omegas;
+   vul_linalg_real f, t, vik, vjk, scale, max_diag, threshold;
    int iter, n, m, i, j, k, ri, ci, nonzero;
 
    n = r > c ? r : c;
    m = r < c ? r : c;
-   U = vul_blas_matrix_create( 0, 0, 0, 0 );
-   V = vul_blas_matrix_create( 0, 0, 0, 0 );
-   G = vul_blas_matrix_create( 0, 0, 0, 0 );
-   omegas = vul_blas_vector_create( 0, 0, 0 );
+   U = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   V = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   G = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   omegas = vul_linalg_vector_create( 0, 0, 0 );
    iter = 0;
    nonzero = c;
 
@@ -1581,30 +1581,42 @@ void vul_blas_svd_sparse( vul_blas_svd_basis_sparse *out, int *rank,
    f = 1.0 / scale;
    for( i = 0; i < A->count; ++i ) {
       for( j = 0; j < A->rows[ i ].vec.count; ++j ) {
-         vul_blas_matrix_insert( G, A->rows[ i ].idx, A->rows[ i ].vec.entries[ j ].idx, 
-                                     A->rows[ i ].vec.entries[ j ].val * f );
+         vul_linalg_matrix_insert( G, A->rows[ i ].idx, A->rows[ i ].vec.entries[ j ].idx, 
+                                      A->rows[ i ].vec.entries[ j ].val * f );
       }
    }
    
    // Initialize U and V as identity matrices
    for( i = 0; i < r; ++i ) {
-      vul_blas_matrix_insert( U, i, i, 1.f );
+      vul_linalg_matrix_insert( U, i, i, 1.f );
    }
    for( i = 0; i < c; ++i ) {
-      vul_blas_matrix_insert( V, i, i, 1.f );
+      vul_linalg_matrix_insert( V, i, i, 1.f );
    }
+   max_diag = 1.0; // Matrix is scaled
 
    while( nonzero && iter++ < itermax ) {
       nonzero = 0;
       for( i = 0; i < r - 1; ++i ) {
          for( j = i + 1; j < r; ++j ) {
-            vul_blas_real aii, aij, ajj;
+            vul_linalg_real aii, aij, ajj;
             
+            // Skip if already diagonal (or as close as we can get)
+#ifdef __FLT_DENORM_MIN__
+            threshold = eps * max_diag < __FLT_DENORM_MIN__ ? __FLT_DENORM_MIN__ : eps * max_diag;
+#else
+            threshold = eps * max_diag < FLT_MIN ? FLT_MIN : eps * max_diag;
+#endif
+            if( !( fabs( vul_linalg_matrix_get( G, i, j ) ) > threshold
+                || fabs( vul_linalg_matrix_get( G, j, i ) ) > threshold ) ) {
+               continue;
+            }
+
             // Compute a_ij, a_ji, a_ii
             aii = 0.0; aij = 0.0; ajj = 0.0;
             for( k = 0; k < c; ++k ) {
-               vik = vul_blas_matrix_get( G, i, k );
-               vjk = vul_blas_matrix_get( G, j, k );
+               vik = vul_linalg_matrix_get( G, i, k );
+               vjk = vul_linalg_matrix_get( G, j, k );
 
                aii += vik * vik;
                ajj += vjk * vjk;
@@ -1612,15 +1624,21 @@ void vul_blas_svd_sparse( vul_blas_svd_basis_sparse *out, int *rank,
             }
             if( fabs( aij ) > eps ) {
                nonzero += 1;
-               vul_blas_real tau, t, ct, st;
+               vul_linalg_real tau, t, ct, st;
                tau = ( aii - ajj ) / ( 2.0 * aij );
                t = copysign( 1.0 / ( fabs( tau ) + sqrt( 1.0 + tau * tau ) ), tau );
                ct = 1.0 / sqrt( 1.0 + t * t );
                st = ct * t;
-               vul__blas_givens_rotate_sparse( G, c, r, j, i, ct, st, 1 );
+               vul__linalg_givens_rotate_sparse( G, c, r, j, i, ct, st, 1 );
                if( j < r ) {
-                  vul__blas_givens_rotate_sparse( U, r, r, j, i, ct, st, 0 );
+                  vul__linalg_givens_rotate_sparse( U, r, r, j, i, ct, st, 0 );
                }
+
+               // Keep track of largest diagonal entry
+               aii = vul_linalg_matrix_get( G, i, i );
+               ajj = vul_linalg_matrix_get( G, j, j );
+               threshold = aii > ajj ? aii : ajj;
+               max_diag = max_diag > threshold ? max_diag : threshold;
             }
          }
       }
@@ -1630,18 +1648,18 @@ void vul_blas_svd_sparse( vul_blas_svd_basis_sparse *out, int *rank,
    for( i = 0; i < r; ++i ) {
       t = 0.0;
       for( j = 0; j < c; ++j ) {
-         f = vul_blas_matrix_get( G, i, j );
+         f = vul_linalg_matrix_get( G, i, j );
          t += f * f;
       }
-      vul_blas_vector_insert( omegas, i, sqrt( t ) );
+      vul_linalg_vector_insert( omegas, i, sqrt( t ) );
    }
 
    // Calculate V
    for( i = 0; i < c; ++i ) { // The rest is zero
-      if( fabs( vul_blas_vector_get( omegas, i ) ) > eps ) { // Ignore zero singular values
+      if( fabs( vul_linalg_vector_get( omegas, i ) ) > eps ) { // Ignore zero singular values
          for( j = 0; j < c; ++j ) {
-            vul_blas_matrix_insert( V, j, i, vul_blas_matrix_get( G, i, j ) / 
-                                              vul_blas_vector_get( omegas, i ) );
+            vul_linalg_matrix_insert( V, j, i, vul_linalg_matrix_get( G, i, j ) / 
+                                               vul_linalg_vector_get( omegas, i ) );
          }
       }
    }
@@ -1649,7 +1667,7 @@ void vul_blas_svd_sparse( vul_blas_svd_basis_sparse *out, int *rank,
    // Grap sigmas and rank, sort decreasing
    k = r < c ? r : c;
    for( j = 0, i = 0; i < c; ++i ) {
-      out[ i ].sigma = fabs( vul_blas_vector_get( omegas, i ) ) * scale;
+      out[ i ].sigma = fabs( vul_linalg_vector_get( omegas, i ) ) * scale;
       out[ i ].axis = i;
       if( out[ i ].sigma > eps ) {
          ++j;
@@ -1658,78 +1676,78 @@ void vul_blas_svd_sparse( vul_blas_svd_basis_sparse *out, int *rank,
    if( *rank == 0 || j < *rank ) {
       *rank = j;
    }
-   vul__blas_svd_sort_sparse( out, k );
+   vul__linalg_svd_sort_sparse( out, k );
 
    // Fix signs and copy U
    for( i = 0; i < *rank; ++i ) {
       out[ i ].u_length = r;
       out[ i ].v_length = c;
-      out[ i ].u = vul_blas_vector_create( 0, 0, 0 );
-      out[ i ].v = vul_blas_vector_create( 0, 0, 0 );
-      f = vul_blas_vector_get( omegas, out[ i ].axis ) < 0.f ? -1.f : 1.f;
+      out[ i ].u = vul_linalg_vector_create( 0, 0, 0 );
+      out[ i ].v = vul_linalg_vector_create( 0, 0, 0 );
+      f = vul_linalg_vector_get( omegas, out[ i ].axis ) < 0.f ? -1.f : 1.f;
       for( j = 0; j < r; ++j ) {
-         vul_blas_vector_insert( out[ i ].u, j, vul_blas_matrix_get( U, j, out[ i ].axis ) * f );
+         vul_linalg_vector_insert( out[ i ].u, j, vul_linalg_matrix_get( U, j, out[ i ].axis ) * f );
       }
       for( j = 0; j < c; ++j ) {
-         vul_blas_vector_insert( out[ i ].v, j, vul_blas_matrix_get( V, j, out[ i ].axis ) );
+         vul_linalg_vector_insert( out[ i ].v, j, vul_linalg_matrix_get( V, j, out[ i ].axis ) );
       }
    }
 
-   vul_blas_matrix_destroy( U );
-   vul_blas_matrix_destroy( V );
-   vul_blas_matrix_destroy( G );
-   vul_blas_vector_destroy( omegas );
+   vul_linalg_matrix_destroy( U );
+   vul_linalg_matrix_destroy( V );
+   vul_linalg_matrix_destroy( G );
+   vul_linalg_vector_destroy( omegas );
 }
 
-vul_blas_vector *vul_blas_linear_least_squares_sparse( vul_blas_matrix *A,
-                                                         vul_blas_vector *b,
-                                                         int c, int r,
-                                                         int max_iterations,
-                                                         vul_blas_real tolerance )
+vul_linalg_vector *vul_linalg_linear_least_squares_sparse( vul_linalg_matrix *A,
+                                                           vul_linalg_vector *b,
+                                                           int c, int r,
+                                                           int max_iterations,
+                                                           vul_linalg_real tolerance )
 {
-   vul_blas_svd_basis_sparse *res;
-   vul_blas_matrix *U, *V;
-   vul_blas_vector *S, *d, *out;
-   vul_blas_real v;
+   vul_linalg_svd_basis_sparse *res;
+   vul_linalg_matrix *U, *V;
+   vul_linalg_vector *S, *d, *out;
+   vul_linalg_real v;
    int rank, i, j, k, m;
 
-   res = ( vul_blas_svd_basis_sparse* )VUL_BLAS_ALLOC( sizeof( vul_blas_svd_basis_sparse ) * c );
+   res = ( vul_linalg_svd_basis_sparse* )VUL_LINALG_ALLOC( sizeof( vul_linalg_svd_basis_sparse ) * c );
    rank = 0;
-   vul_blas_svd_sparse( res, &rank, A, c, r, tolerance, max_iterations );
+   vul_linalg_svd_sparse( res, &rank, A, c, r, tolerance, max_iterations );
    
-   U = vul_blas_matrix_create( 0, 0, 0, 0 );
-   V = vul_blas_matrix_create( 0, 0, 0, 0 );
-   S = vul_blas_vector_create( 0, 0, 0 );
-   d = vul_blas_vector_create( 0, 0, 0 );
-   out = vul_blas_vector_create( 0, 0, 0 );
+   U = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   V = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   S = vul_linalg_vector_create( 0, 0, 0 );
+   d = vul_linalg_vector_create( 0, 0, 0 );
+   out = vul_linalg_vector_create( 0, 0, 0 );
 
    // Reconstruct U^T
    for( i = 0; i < rank; ++i ) {
       for( j = 0; j < res[ i ].u->count; ++j ) {
-         vul_blas_matrix_insert( U, res[ i ].axis, res[ i ].u->entries[ j ].idx, res[ i ].u->entries[ j ].val );
+         vul_linalg_matrix_insert( U, res[ i ].axis, res[ i ].u->entries[ j ].idx, res[ i ].u->entries[ j ].val );
       }
    }
    // Reconstruct V
    for( i = 0; i < rank; ++i ) {
       for( j = 0; j < res[ i ].v->count; ++j ) {
-         vul_blas_matrix_insert( V, res[ i ].v->entries[ j ].idx, res[ i ].axis, res[ i ].v->entries[ j ].val );
+         vul_linalg_matrix_insert( V, res[ i ].v->entries[ j ].idx, res[ i ].axis, res[ i ].v->entries[ j ].val );
       }
    }
    // Reconstruct the diagonal of S
    for( i = 0; i < rank; ++i ) {
-      vul_blas_vector_insert( S, res[ i ].axis, res[ i ].sigma );
+      vul_linalg_vector_insert( S, res[ i ].axis, res[ i ].sigma );
    }
    // Free the basis'
-   vul_blas_svd_basis_destroy_sparse( res, rank );
-   VUL_BLAS_FREE( res );
+   vul_linalg_svd_basis_destroy_sparse( res, rank );
+   VUL_LINALG_FREE( res );
 
    // Calculate d = U^T * b
    for( i = 0; i < U->count; ++i ) {
       v = 0.0;
       for( j = 0; j < U->rows[ i ].vec.count; ++j ) {
-         v += U->rows[ i ].vec.entries[ j ].val * vul_blas_vector_get( b, U->rows[ i ].vec.entries[ j ].idx );
+         v += U->rows[ i ].vec.entries[ j ].val * vul_linalg_vector_get( b, U->rows[ i ].vec.entries[ j ].idx );
       }
-      vul_blas_vector_insert( d, U->rows[ i ].idx, v );
+      vul_linalg_vector_insert( d, U->rows[ i ].idx, v );
    }
 
    // Calculate x = V * S^+ * d
@@ -1737,16 +1755,16 @@ vul_blas_vector *vul_blas_linear_least_squares_sparse( vul_blas_matrix *A,
       v = 0.0;
       for( j = 0; j < V->rows[ i ].vec.count; ++j ) {
          v += V->rows[ i ].vec.entries[ j ].val
-            * vul_blas_vector_get( d, V->rows[ i ].vec.entries[ j ].idx )
-            / vul_blas_vector_get( S, V->rows[ i ].vec.entries[ j ].idx );
+            * vul_linalg_vector_get( d, V->rows[ i ].vec.entries[ j ].idx )
+            / vul_linalg_vector_get( S, V->rows[ i ].vec.entries[ j ].idx );
       }
-      vul_blas_vector_insert( out, V->rows[ i ].idx, v );
+      vul_linalg_vector_insert( out, V->rows[ i ].idx, v );
    }
    
-   vul_blas_matrix_destroy( U );
-   vul_blas_matrix_destroy( V );
-   vul_blas_vector_destroy( S );
-   vul_blas_vector_destroy( d );
+   vul_linalg_matrix_destroy( U );
+   vul_linalg_matrix_destroy( V );
+   vul_linalg_vector_destroy( S );
+   vul_linalg_vector_destroy( d );
 
    return out;
 }
@@ -1759,14 +1777,14 @@ vul_blas_vector *vul_blas_linear_least_squares_sparse( vul_blas_matrix *A,
 // @NOTE(thynn): The reason we index y over x is that I fucked up, and initially had them mixed up,
 // and once I discovered the bug I had been consistent enough that simply swapping indices meant it all worked.
 // So now we index (y,x) instead of (x,y). Oops. But it's only internal in this file anyway.
-#ifdef VUL_BLAS_ROW_MAJOR
+#ifdef VUL_LINALG_ROW_MAJOR
 #define IDX( A, y, x, c, r ) A[ ( y ) * ( c ) + ( x ) ]
 #else
 #define IDX( A, y, x, c, r ) A[ ( x ) * ( r ) + ( y ) ]
 #endif
 
 #define DEFINE_VECTOR_OP( name, op )\
-   static void name( vul_blas_real *out, vul_blas_real *a, vul_blas_real *b, int n )\
+   static void name( vul_linalg_real *out, vul_linalg_real *a, vul_linalg_real *b, int n )\
    {\
       int i;\
       for( i = 0; i < n; ++i ) {\
@@ -1779,14 +1797,14 @@ DEFINE_VECTOR_OP( vulb__vmul, * )
 
 #undef DEFINE_VECTOR_OP
 
-static inline void vulb__swap_ptr( vul_blas_real **a, vul_blas_real **b )
+static inline void vulb__swap_ptr( vul_linalg_real **a, vul_linalg_real **b )
 {
-   vul_blas_real *t = *a;
+   vul_linalg_real *t = *a;
    *a = *b;
    *b = t;
 }
 
-static void vulb__vmul_sub( vul_blas_real *out, vul_blas_real *a, vul_blas_real x, vul_blas_real *b, int n )
+static void vulb__vmul_sub( vul_linalg_real *out, vul_linalg_real *a, vul_linalg_real x, vul_linalg_real *b, int n )
 {
    int i;
    for( i = 0; i < n; ++i ) {
@@ -1794,7 +1812,7 @@ static void vulb__vmul_sub( vul_blas_real *out, vul_blas_real *a, vul_blas_real 
    }
 }
 
-static void vulb__vmul_add( vul_blas_real *out, vul_blas_real *a, vul_blas_real x, vul_blas_real *b, int n )
+static void vulb__vmul_add( vul_linalg_real *out, vul_linalg_real *a, vul_linalg_real x, vul_linalg_real *b, int n )
 {
    int i;
    for( i = 0; i < n; ++i ) {
@@ -1803,7 +1821,7 @@ static void vulb__vmul_add( vul_blas_real *out, vul_blas_real *a, vul_blas_real 
 }
       
 
-static void vulb__vcopy( vul_blas_real *out, vul_blas_real *x, int n )
+static void vulb__vcopy( vul_linalg_real *out, vul_linalg_real *x, int n )
 {
    int i;
    for( i = 0; i < n; ++i ) {
@@ -1811,9 +1829,9 @@ static void vulb__vcopy( vul_blas_real *out, vul_blas_real *x, int n )
    }
 }
 
-static vul_blas_real vulb__dot( vul_blas_real *a, vul_blas_real *b, int n )
+static vul_linalg_real vulb__dot( vul_linalg_real *a, vul_linalg_real *b, int n )
 {
-   vul_blas_real f;
+   vul_linalg_real f;
    int i;
 
    f = a[ 0 ] * b[ 0 ];
@@ -1823,7 +1841,7 @@ static vul_blas_real vulb__dot( vul_blas_real *a, vul_blas_real *b, int n )
    return f;
 }
 
-static void vulb__mmul( vul_blas_real *out, vul_blas_real *A, vul_blas_real *x, int c, int r )
+static void vulb__mmul( vul_linalg_real *out, vul_linalg_real *A, vul_linalg_real *x, int c, int r )
 {
    int i, j;
    for( i = 0; i < r; ++i ) {
@@ -1833,9 +1851,9 @@ static void vulb__mmul( vul_blas_real *out, vul_blas_real *A, vul_blas_real *x, 
       }
    }
 }
-static void vulb__mmul_matrix( vul_blas_real *O, vul_blas_real *A, vul_blas_real *B, int n )
+static void vulb__mmul_matrix( vul_linalg_real *O, vul_linalg_real *A, vul_linalg_real *B, int n )
 {
-   vul_blas_real s;
+   vul_linalg_real s;
    int i, j, k;
    // @TODO(thynn): Strassen instead of this naïve approach.
    for( i = 0; i < n; ++i ) {
@@ -1849,7 +1867,7 @@ static void vulb__mmul_matrix( vul_blas_real *O, vul_blas_real *A, vul_blas_real
    }
 }
 
-static void vulb__mmul_add( vul_blas_real *out, vul_blas_real *A, vul_blas_real *x, vul_blas_real *b, 
+static void vulb__mmul_add( vul_linalg_real *out, vul_linalg_real *A, vul_linalg_real *x, vul_linalg_real *b, 
                             int c, int r )
 {
    int i, j;
@@ -1861,12 +1879,12 @@ static void vulb__mmul_add( vul_blas_real *out, vul_blas_real *A, vul_blas_real 
    }
 }
 
-static void vulb__forward_substitute( vul_blas_real *out, vul_blas_real *A, vul_blas_real *b, int c, int r )
+static void vulb__forward_substitute( vul_linalg_real *out, vul_linalg_real *A, vul_linalg_real *b, int c, int r )
 {
    int i, j;
 
    for( i = 0; i < r; ++i ) {
-      vul_blas_real sum = b[ i ];
+      vul_linalg_real sum = b[ i ];
       for( j = i - 1; j >= 0; --j ) {
          sum -= IDX( A, i, j, c, r ) * out[ j ];
       }
@@ -1874,14 +1892,14 @@ static void vulb__forward_substitute( vul_blas_real *out, vul_blas_real *A, vul_
    }
 }
 
-static void vulb__backward_substitute( vul_blas_real *out, vul_blas_real *A, vul_blas_real *b, int c, int r,
+static void vulb__backward_substitute( vul_linalg_real *out, vul_linalg_real *A, vul_linalg_real *b, int c, int r,
                                        int transpose )
 {
    int i, j;
 
    if( transpose ) {
       for( i = c - 1; i >= 0; --i ) {
-         vul_blas_real sum = b[ i ];
+         vul_linalg_real sum = b[ i ];
          for( j = i + 1; j < r; ++j ) {
             sum -= IDX( A, j, i, c, r ) * out[ j ];
          }
@@ -1889,7 +1907,7 @@ static void vulb__backward_substitute( vul_blas_real *out, vul_blas_real *A, vul
       }
    } else {
       for( i = r - 1; i >= 0; --i ) {
-         vul_blas_real sum = b[ i ];
+         vul_linalg_real sum = b[ i ];
          for( j = i + 1; j < c; ++j ) {
             sum -= IDX( A, i, j, c, r ) * out[ j ];
          }
@@ -1897,7 +1915,7 @@ static void vulb__backward_substitute( vul_blas_real *out, vul_blas_real *A, vul
       }
    }
 }
-static void vulb__mtranspose( vul_blas_real *O, vul_blas_real *A, int c, int r )
+static void vulb__mtranspose( vul_linalg_real *O, vul_linalg_real *A, int c, int r )
 {
    int i, j, k;
 
@@ -1918,10 +1936,10 @@ static void vulb__mtranspose( vul_blas_real *O, vul_blas_real *A, int c, int r )
       }
    }
 }
-static void vulb__mmul_matrix_rect( vul_blas_real *O, vul_blas_real *A, vul_blas_real *B, int ra, int rb_ca, int cb )
+static void vulb__mmul_matrix_rect( vul_linalg_real *O, vul_linalg_real *A, vul_linalg_real *B, int ra, int rb_ca, int cb )
 {
    int i, j, k;
-   vul_blas_real d;
+   vul_linalg_real d;
 
    // @TODO(thynn): Strassen instead of this naïve approach.
    for( i = 0; i < ra; ++i ) {
@@ -1939,21 +1957,21 @@ static void vulb__mmul_matrix_rect( vul_blas_real *O, vul_blas_real *A, vul_blas
 // Dense solvers
 //
 
-void vul_blas_conjugate_gradient_dense( vul_blas_real *out,
-                                        vul_blas_real *A,
-                                        vul_blas_real *initial_guess,
-                                        vul_blas_real *b,
-                                        int n,
-                                        int max_iterations,
-                                        vul_blas_real tolerance )
+void vul_linalg_conjugate_gradient_dense( vul_linalg_real *out,
+                                          vul_linalg_real *A,
+                                          vul_linalg_real *initial_guess,
+                                          vul_linalg_real *b,
+                                          int n,
+                                          int max_iterations,
+                                          vul_linalg_real tolerance )
 {
-   vul_blas_real *x, *r, *Ap, *p;
-   vul_blas_real rd, rd2, alpha, beta;
+   vul_linalg_real *x, *r, *Ap, *p;
+   vul_linalg_real rd, rd2, alpha, beta;
    int i, j;
 
-   r = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n );
-   p = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n );
-   Ap = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n );
+   r = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
+   p = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
+   Ap = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
    
    x = out;
    vulb__vcopy( out, initial_guess, n );
@@ -1980,27 +1998,27 @@ void vul_blas_conjugate_gradient_dense( vul_blas_real *out,
       rd = rd2;
    }
 
-   VUL_BLAS_FREE( p );
-   VUL_BLAS_FREE( r );
-   VUL_BLAS_FREE( Ap );
+   VUL_LINALG_FREE( p );
+   VUL_LINALG_FREE( r );
+   VUL_LINALG_FREE( Ap );
 }
 
-void vul_blas_lu_decomposition_dense( vul_blas_real *out,
-                                      vul_blas_real *A,
-                                      vul_blas_real *initial_guess,
-                                      vul_blas_real *b,
-                                      int n,
-                                      int max_iterations,
-                                      vul_blas_real tolerance )
+void vul_linalg_lu_decomposition_dense( vul_linalg_real *out,
+                                        vul_linalg_real *A,
+                                        vul_linalg_real *initial_guess,
+                                        vul_linalg_real *b,
+                                        int n,
+                                        int max_iterations,
+                                        vul_linalg_real tolerance )
 {
-   vul_blas_real *x, *LU, *r, *scale;
-   vul_blas_real sum, rd, rd2, tmp, largest;
+   vul_linalg_real *x, *LU, *r, *scale;
+   vul_linalg_real sum, rd, rd2, tmp, largest;
    int i, j, k, imax, iold, *indices;
 
-   LU = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n * n );
-   r = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n );
-   scale = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n );
-   indices = ( int* )VUL_BLAS_ALLOC( sizeof( int ) * n );
+   LU = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n * n );
+   r = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
+   scale = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
+   indices = ( int* )VUL_LINALG_ALLOC( sizeof( int ) * n );
    x = out;
    
    /* Crout's LUP decomposition with pivoting and scaling */
@@ -2090,27 +2108,27 @@ void vul_blas_lu_decomposition_dense( vul_blas_real *out,
       rd = rd2;
    }
    
-   VUL_BLAS_FREE( LU );
-   VUL_BLAS_FREE( r );
-   VUL_BLAS_FREE( scale );
-   VUL_BLAS_FREE( indices );
+   VUL_LINALG_FREE( LU );
+   VUL_LINALG_FREE( r );
+   VUL_LINALG_FREE( scale );
+   VUL_LINALG_FREE( indices );
 }
 
-void vul_blas_cholesky_decomposition_dense( vul_blas_real *out,
-                                            vul_blas_real *A,
-                                            vul_blas_real *b,
-                                            int n )
+void vul_linalg_cholesky_decomposition_dense( vul_linalg_real *out,
+                                              vul_linalg_real *A,
+                                              vul_linalg_real *b,
+                                              int n )
 {
-   vul_blas_real *x, *D, *r;
-   vul_blas_real sum, rd, rd2;
+   vul_linalg_real *x, *D, *r;
+   vul_linalg_real sum, rd, rd2;
    int i, j, k;
 
-   D = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n * n );
-   r = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n );
+   D = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n * n );
+   r = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
    x = out;
    
    // Copy work matrix
-   memcpy( D, A, sizeof( vul_blas_real ) * n * n );
+   memcpy( D, A, sizeof( vul_linalg_real ) * n * n );
 
    // Decomposition
    for( i = 0; i < n; ++i ) {
@@ -2133,23 +2151,23 @@ void vul_blas_cholesky_decomposition_dense( vul_blas_real *out,
    // Solve L^Tx = r
    vulb__backward_substitute( out, D, r, n, n, 1 );
 
-   VUL_BLAS_FREE( D );
-   VUL_BLAS_FREE( r );
+   VUL_LINALG_FREE( D );
+   VUL_LINALG_FREE( r );
 }
 
-void vul_blas_qr_decomposition_dense( vul_blas_real *out,
-                                      vul_blas_real *A,
-                                      vul_blas_real *b,
-                                      int n )
+void vul_linalg_qr_decomposition_dense( vul_linalg_real *out,
+                                        vul_linalg_real *A,
+                                        vul_linalg_real *b,
+                                        int n )
 {
-   vul_blas_real *d, *Q, *R, sum, rd, rd2;
+   vul_linalg_real *d, *Q, *R, sum, rd, rd2;
    int i, j, k;
 
-   d = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n );
-   Q = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n * n );
-   R = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n * n );
+   d = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
+   Q = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n * n );
+   R = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n * n );
 
-   vul__blas_qr_decomposition_givens( Q, R, A, n, n, 0 );
+   vul__linalg_qr_decomposition_givens( Q, R, A, n, n, 0 );
 
    for( i = 0; i < n; ++i ) {
       sum = 0;
@@ -2161,25 +2179,25 @@ void vul_blas_qr_decomposition_dense( vul_blas_real *out,
 
    vulb__backward_substitute( out, R, d, n, n, 0 );
 
-   VUL_BLAS_FREE( d );
-   VUL_BLAS_FREE( Q );
-   VUL_BLAS_FREE( R );
+   VUL_LINALG_FREE( d );
+   VUL_LINALG_FREE( Q );
+   VUL_LINALG_FREE( R );
 }
 
-void vul_blas_successive_over_relaxation_dense( vul_blas_real *out,
-                                                vul_blas_real *A,
-                                                vul_blas_real *initial_guess,
-                                                vul_blas_real *b,
-                                                vul_blas_real relaxation_factor,
-                                                int n,
-                                                int max_iterations,
-                                                vul_blas_real tolerance )
+void vul_linalg_successive_over_relaxation_dense( vul_linalg_real *out,
+                                                  vul_linalg_real *A,
+                                                  vul_linalg_real *initial_guess,
+                                                  vul_linalg_real *b,
+                                                  vul_linalg_real relaxation_factor,
+                                                  int n,
+                                                  int max_iterations,
+                                                  vul_linalg_real tolerance )
 {
-   vul_blas_real *x, *r;
+   vul_linalg_real *x, *r;
    int i, j, k;
-   vul_blas_real omega, rd, rd2;
+   vul_linalg_real omega, rd, rd2;
 
-   r = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n );
+   r = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
       
    x = out;
    /* Calculate initial residual */
@@ -2210,14 +2228,14 @@ void vul_blas_successive_over_relaxation_dense( vul_blas_real *out,
       rd = rd2;
    }
    
-   VUL_BLAS_FREE( r );
+   VUL_LINALG_FREE( r );
 }
 
 //---------------------------------------
 // Dense singular value decomposition
 // 
 
-void vul_blas_svd_basis_reconstruct_matrix( vul_blas_real *M, vul_blas_svd_basis *x, int n )
+void vul_linalg_svd_basis_reconstruct_matrix( vul_linalg_real *M, vul_linalg_svd_basis *x, int n )
 {
    int i, j, k, l;
 
@@ -2225,7 +2243,7 @@ void vul_blas_svd_basis_reconstruct_matrix( vul_blas_real *M, vul_blas_svd_basis
       return;
    }
 
-   memset( M, 0, sizeof( vul_blas_real ) * x[ 0 ].u_length * x[ 0 ].v_length );
+   memset( M, 0, sizeof( vul_linalg_real ) * x[ 0 ].u_length * x[ 0 ].v_length );
 
    // Sum from smallest to largest sigma for numerical stability
    for( k = n - 1; k >= 0; --k ) {
@@ -2237,58 +2255,58 @@ void vul_blas_svd_basis_reconstruct_matrix( vul_blas_real *M, vul_blas_svd_basis
    }
 }
 
-void vul_blas_svd_basis_destroy( vul_blas_svd_basis *x, int n )
+void vul_linalg_svd_basis_destroy( vul_linalg_svd_basis *x, int n )
 {
    int i;
 
    for( i = 0; i < n; ++i ) {
       if( x[ i ].u ) {
-         VUL_BLAS_FREE( x[ i ].u );
+         VUL_LINALG_FREE( x[ i ].u );
          x[ i ].u = 0;
       }
       if( x[ i ].v ) {
-         VUL_BLAS_FREE( x[ i ].v );
+         VUL_LINALG_FREE( x[ i ].v );
          x[ i ].v = 0;
       }
    }
 }
 
-static void vul__blas_svd_sort( vul_blas_svd_basis *x, int n )
+static void vul__linalg_svd_sort( vul_linalg_svd_basis *x, int n )
 {
    // Shell sort, gaps for up to about a 1000 singular values.
-   vul_blas_svd_basis tmp;
+   vul_linalg_svd_basis tmp;
    int gap, gi, i, j;
    int gaps[ ] = { 4071001, 1170001, 237001, 67001, 17001, 5001, 1701, 701, 301, 132, 67, 23, 10, 4, 1 };
 
    for( gi = 0; gi < sizeof( gaps ) / sizeof( int ); ++gi ) {
       for( i = 0 + gaps[ gi ]; i < n; ++i ) {
          gap = gaps[ gi ];
-         memcpy( &tmp, &x[ i ], sizeof( vul_blas_svd_basis ) );
+         memcpy( &tmp, &x[ i ], sizeof( vul_linalg_svd_basis ) );
          for( j = i; j >= gap && x[ j - gap ].sigma <= tmp.sigma; j -= gap ) {
-            memcpy( &x[ j ], &x[ j - gap ], sizeof( vul_blas_svd_basis ) );
+            memcpy( &x[ j ], &x[ j - gap ], sizeof( vul_linalg_svd_basis ) );
          }
-         memcpy( &x[ j ], &tmp, sizeof( vul_blas_svd_basis ) );
+         memcpy( &x[ j ], &tmp, sizeof( vul_linalg_svd_basis ) );
       }
    }
 }
 
-static void vul__blas_qr_decomposition_gram_schmidt( vul_blas_real *Q, vul_blas_real *R, vul_blas_real *A, 
-                                                     int c, int r, int transpose )
+static void vul__linalg_qr_decomposition_gram_schmidt( vul_linalg_real *Q, vul_linalg_real *R, vul_linalg_real *A, 
+                                                       int c, int r, int transpose )
 {
    // Gram-Schmidt; numerically bad and slow, but simple.
-   vul_blas_real *u, *a, d, tmp, *At;
+   vul_linalg_real *u, *a, d, tmp, *At;
    int i, j, k;
    
    if( transpose ) {
       i = c; c = r; r = i;
    }
 
-   u = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * c * r );
-   a = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r );
+   u = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * c * r );
+   a = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r );
 
    At = 0;
    if( transpose ) {
-      At = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * c * r );
+      At = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * c * r );
       vulb__mtranspose( At, A, r, c );
       A = At;
 
@@ -2328,27 +2346,27 @@ static void vul__blas_qr_decomposition_gram_schmidt( vul_blas_real *Q, vul_blas_
    }
 
    if( At ) {
-      VUL_BLAS_FREE( A );
+      VUL_LINALG_FREE( A );
    }
-   VUL_BLAS_FREE( u );
-   VUL_BLAS_FREE( a );
+   VUL_LINALG_FREE( u );
+   VUL_LINALG_FREE( a );
 }
 
-static void vul__blas_apply_householder_column( vul_blas_real *O, vul_blas_real *A,
-                                                vul_blas_real *QO, vul_blas_real *Q,
-                                                int c, int r, int qc, int qr, int k,
-                                                vul_blas_real *Qt, vul_blas_real *u, int respect_signbit )
+static void vul__linalg_apply_householder_column( vul_linalg_real *O, vul_linalg_real *A,
+                                                  vul_linalg_real *QO, vul_linalg_real *Q,
+                                                  int c, int r, int qc, int qr, int k,
+                                                  vul_linalg_real *Qt, vul_linalg_real *u, int respect_signbit )
 {
    int i, j, l, free_u, free_Qt;
-   vul_blas_real alpha, d;
+   vul_linalg_real alpha, d;
 
    free_u = 0; free_Qt = 0;
    if( u == NULL ) {
-      u = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r );
+      u = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r );
       free_u = 1;
    }
    if( Qt == NULL ) {
-      Qt = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r * r );
+      Qt = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * r );
       free_Qt = 1;
    }
    
@@ -2380,14 +2398,14 @@ static void vul__blas_apply_householder_column( vul_blas_real *O, vul_blas_real 
       u[ i ] *= d;
    }
    // Construct Q
-   memset( Qt, 0, sizeof( vul_blas_real ) * r * r );
+   memset( Qt, 0, sizeof( vul_linalg_real ) * r * r );
    for( i = 0; i < r - k; ++i ) {
       for( j = 0; j < r - k; ++j ) {
          IDX( Qt, i, j, r - k, r - k ) = ( ( i == j ) ? 1.f : 0.f ) - 2.f * u[ i ] * u[ j ];
       }
    }
    // Calcualte new A into O
-   memcpy( O, A, c * r * sizeof( vul_blas_real ) );
+   memcpy( O, A, c * r * sizeof( vul_linalg_real ) );
    for( i = 0; i < r - k; ++i ) {
       for( j = 0; j < c; ++j ) {
          d = 0.f;
@@ -2398,7 +2416,7 @@ static void vul__blas_apply_householder_column( vul_blas_real *O, vul_blas_real 
       }
    }
    if( Q && QO ) {
-      memcpy( QO, Q, qc * qr * sizeof( vul_blas_real ) );
+      memcpy( QO, Q, qc * qr * sizeof( vul_linalg_real ) );
       for( i = 0; i < qr; ++i ) {
          for( j = 0; j < qc - k; ++j ) {
             d = 0.f;
@@ -2411,74 +2429,74 @@ static void vul__blas_apply_householder_column( vul_blas_real *O, vul_blas_real 
    }
 
    if( free_Qt ) {
-      VUL_BLAS_FREE( Qt );
+      VUL_LINALG_FREE( Qt );
    }
    if( free_u ) {
-      VUL_BLAS_FREE( u );
+      VUL_LINALG_FREE( u );
    }
 }
 
-static void vul__blas_qr_decomposition_householder( vul_blas_real *Q, vul_blas_real *R, vul_blas_real *A, 
-                                                    int c, int r, int transpose )
+static void vul__linalg_qr_decomposition_householder( vul_linalg_real *Q, vul_linalg_real *R, vul_linalg_real *A, 
+                                                      int c, int r, int transpose )
 {
-   vul_blas_real *u, *Qt, *Q0, *Q1, *R0, *R1, alpha, d;
+   vul_linalg_real *u, *Qt, *Q0, *Q1, *R0, *R1, alpha, d;
    int i, j, k, l, n;
 
    if( transpose ) {
       i = c; c = r; r = i;
    }
 
-   u = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r );
+   u = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r );
 
    n = r > c ? r : c;
-   Qt = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r * r );
-   Q0 = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r * r );
-   Q1 = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r * r );
-   R0 = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n * n );
-   R1 = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n * n );
+   Qt = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * r );
+   Q0 = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * r );
+   Q1 = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * r );
+   R0 = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n * n );
+   R1 = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n * n );
 
    if( r == 0 ) return;
    if( r == 1 ) {
       Q[ 0 ] = A[ 0 ]; // Just copy it?
       R[ 0 ] = 1.f;
    }
-   memset( R0, 0, sizeof( vul_blas_real ) * n * n );
-   memset( R1, 0, sizeof( vul_blas_real ) * n * n );
+   memset( R0, 0, sizeof( vul_linalg_real ) * n * n );
+   memset( R1, 0, sizeof( vul_linalg_real ) * n * n );
    if( transpose ) {
       vulb__mtranspose( R0, A, r, c );
    } else {
-      memcpy( R0, A, sizeof( vul_blas_real ) * r * c );
+      memcpy( R0, A, sizeof( vul_linalg_real ) * r * c );
    }
 
-   memset( Q0, 0, sizeof( vul_blas_real ) * r * r );
+   memset( Q0, 0, sizeof( vul_linalg_real ) * r * r );
    for( i = 0; i < r; ++i ) {
       IDX( Q0, i, i, r, r ) = 1.f;
    }
 
    for( k = 0; k < r - 1; ++k ) {
       // Apply householder transformation to row k
-      vul__blas_apply_householder_column( R1, R0, Q1, Q0, c, r, r, r, k, Qt, u, 1 );
+      vul__linalg_apply_householder_column( R1, R0, Q1, Q0, c, r, r, r, k, Qt, u, 1 );
 
       vulb__swap_ptr( &Q0, &Q1 );
       vulb__swap_ptr( &R0, &R1 );
    }
-   memcpy( Q, Q0, sizeof( vul_blas_real ) * r * r );
-   memcpy( R, R0, sizeof( vul_blas_real ) * r * c );
+   memcpy( Q, Q0, sizeof( vul_linalg_real ) * r * r );
+   memcpy( R, R0, sizeof( vul_linalg_real ) * r * c );
 
-   VUL_BLAS_FREE( Q0 );
-   VUL_BLAS_FREE( Q1 );
-   VUL_BLAS_FREE( Qt );
-   VUL_BLAS_FREE( R0 );
-   VUL_BLAS_FREE( R1 );
-   VUL_BLAS_FREE( u );
+   VUL_LINALG_FREE( Q0 );
+   VUL_LINALG_FREE( Q1 );
+   VUL_LINALG_FREE( Qt );
+   VUL_LINALG_FREE( R0 );
+   VUL_LINALG_FREE( R1 );
+   VUL_LINALG_FREE( u );
 }
 
-static void vul__blas_givens_rotate( vul_blas_real *A, int c, int r, 
-                                     int i, int j, float cosine, float sine,
-                                     int post_multiply )
+static void vul__linalg_givens_rotate( vul_linalg_real *A, int c, int r, 
+                                       int i, int j, float cosine, float sine,
+                                       int post_multiply )
 {
    int k;
-   vul_blas_real G[ 4 ], v0, v1, a, b;
+   vul_linalg_real G[ 4 ], v0, v1, a, b;
 
    G[ 0 ] = cosine;
    G[ 1 ] = sine;
@@ -2508,20 +2526,20 @@ static void vul__blas_givens_rotate( vul_blas_real *A, int c, int r,
    }
 }
 
-static void vul__blas_qr_decomposition_givens( vul_blas_real *Q, vul_blas_real *R, vul_blas_real *A, 
-                                               int c, int r, int transpose )
+static void vul__linalg_qr_decomposition_givens( vul_linalg_real *Q, vul_linalg_real *R, vul_linalg_real *A, 
+                                                 int c, int r, int transpose )
 {
    int i, j, k;
-   vul_blas_real theta, st, ct, G[ 4 ], v0, v1, *RA;
+   vul_linalg_real theta, st, ct, G[ 4 ], v0, v1, *RA;
    
-   RA = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r * c );
+   RA = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * c );
 
-   memset( RA, 0, sizeof( vul_blas_real ) * r * c );
+   memset( RA, 0, sizeof( vul_linalg_real ) * r * c );
    if( transpose ) {
       i = r; r = c; c = i;
       vulb__mtranspose( RA, A, r, c );
    } else {
-      memcpy( RA, A, sizeof( vul_blas_real ) * r * c );
+      memcpy( RA, A, sizeof( vul_linalg_real ) * r * c );
    }
    for( i = 0; i < r; ++i ) {
       for( j = 0; j < r; ++j ) {
@@ -2543,18 +2561,18 @@ static void vul__blas_qr_decomposition_givens( vul_blas_real *Q, vul_blas_real *
             ct = 1.f;
          }
          // Create givens rotation matrix
-         vul__blas_givens_rotate( RA, c, r, i, i + 1, ct, st, 1 );
-         vul__blas_givens_rotate( Q, r, r, i, i + 1, ct, st, 0 );
+         vul__linalg_givens_rotate( RA, c, r, i, i + 1, ct, st, 1 );
+         vul__linalg_givens_rotate( Q, r, r, i, i + 1, ct, st, 0 );
       }
    }
-   memcpy( R, RA, c * r * sizeof( vul_blas_real ) );
+   memcpy( R, RA, c * r * sizeof( vul_linalg_real ) );
 
-   VUL_BLAS_FREE( RA );
+   VUL_LINALG_FREE( RA );
 }
 
-static vul_blas_real vul__blas_matrix_norm_diagonal( vul_blas_real *A, int c, int r )
+static vul_linalg_real vul__linalg_matrix_norm_diagonal( vul_linalg_real *A, int c, int r )
 {
-   vul_blas_real v;
+   vul_linalg_real v;
    int i, n;
    
    v = 0.f;
@@ -2565,9 +2583,9 @@ static vul_blas_real vul__blas_matrix_norm_diagonal( vul_blas_real *A, int c, in
    return sqrt( v );
 }
 
-static vul_blas_real vul__blas_matrix_norm_as_single_column( vul_blas_real *A, int c, int r, int upper_diag )
+static vul_linalg_real vul__linalg_matrix_norm_as_single_column( vul_linalg_real *A, int c, int r, int upper_diag )
 {
-   vul_blas_real v;
+   vul_linalg_real v;
    int i, j;
 
    v = 0.f;
@@ -2580,15 +2598,15 @@ static vul_blas_real vul__blas_matrix_norm_as_single_column( vul_blas_real *A, i
    return v;
 }
 
-vul_blas_real vul_blas_largest_eigenvalue( vul_blas_real *A, int c, int r, vul_blas_real eps, int max_iter )
+vul_linalg_real vul_linalg_largest_eigenvalue( vul_linalg_real *A, int c, int r, vul_linalg_real eps, int max_iter )
 {
    int iter, axis, normaxis, i, j;
-   vul_blas_real *v, *y, lambda, norm, err;
+   vul_linalg_real *v, *y, lambda, norm, err;
 
    // Power method. Slow, but simple
-   v = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r );
-   y = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r );
-   memset( v, 0, sizeof( vul_blas_real ) * r );
+   v = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r );
+   y = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r );
+   memset( v, 0, sizeof( vul_linalg_real ) * r );
    v[ 0 ] = 1.f;
 
    err = eps * 2;
@@ -2618,36 +2636,36 @@ vul_blas_real vul_blas_largest_eigenvalue( vul_blas_real *A, int c, int r, vul_b
       }
    }
 
-   VUL_BLAS_FREE( v );
-   VUL_BLAS_FREE( y );
+   VUL_LINALG_FREE( v );
+   VUL_LINALG_FREE( y );
 
    return lambda;
 }
 
-void vul_blas_svd_dense_qrlq( vul_blas_svd_basis *out, int *rank,
-                              vul_blas_real *A,
-                              int c, int r, vul_blas_real eps, int itermax )
+void vul_linalg_svd_dense_qrlq( vul_linalg_svd_basis *out, int *rank,
+                                vul_linalg_real *A,
+                                int c, int r, vul_linalg_real eps, int itermax )
 {
-   vul_blas_real *U0, *U1, *V0, *V1, *S0, *S1, *Sb, *Q, err, e, f, scale;
+   vul_linalg_real *U0, *U1, *V0, *V1, *S0, *S1, *Sb, *Q, err, e, f, scale;
    int iter, n, i, j, k, ri, ci;
 
    n = r > c ? r : c;
-   U0 = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r * r );
-   U1 = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r * r );
-   V0 = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * c * c );
-   V1 = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * c * c );
-   S0 = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r * c );
-   S1 = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r * c );
-   Sb = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r * c );
-   Q = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * n * n );
-   memset( U0, 0, sizeof( vul_blas_real ) * r * r );
-   memset( U1, 0, sizeof( vul_blas_real ) * r * r );
-   memset( V0, 0, sizeof( vul_blas_real ) * c * c );
-   memset( V1, 0, sizeof( vul_blas_real ) * c * c );
-   memset( S0, 0, sizeof( vul_blas_real ) * r * c );
-   memset( S1, 0, sizeof( vul_blas_real ) * r * c );
-   memset( Sb, 0, sizeof( vul_blas_real ) * r * c );
-   memset( Q, 0, sizeof( vul_blas_real ) * n * n );
+   U0 = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * r );
+   U1 = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * r );
+   V0 = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * c * c );
+   V1 = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * c * c );
+   S0 = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * c );
+   S1 = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * c );
+   Sb = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * c );
+   Q = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n * n );
+   memset( U0, 0, sizeof( vul_linalg_real ) * r * r );
+   memset( U1, 0, sizeof( vul_linalg_real ) * r * r );
+   memset( V0, 0, sizeof( vul_linalg_real ) * c * c );
+   memset( V1, 0, sizeof( vul_linalg_real ) * c * c );
+   memset( S0, 0, sizeof( vul_linalg_real ) * r * c );
+   memset( S1, 0, sizeof( vul_linalg_real ) * r * c );
+   memset( Sb, 0, sizeof( vul_linalg_real ) * r * c );
+   memset( Q, 0, sizeof( vul_linalg_real ) * n * n );
    iter = 0;
    err = FLT_MAX;
 
@@ -2678,20 +2696,20 @@ void vul_blas_svd_dense_qrlq( vul_blas_svd_basis *out, int *rank,
    }
    while( err > eps && iter++ < itermax ) {
       // Store away last S
-      memcpy( Sb, S0, r * c * sizeof( vul_blas_real ) );
+      memcpy( Sb, S0, r * c * sizeof( vul_linalg_real ) );
 
       // Decompose
-      vul__blas_qr_decomposition_givens( Q, S1, S0, r, c, 1 );
+      vul__linalg_qr_decomposition_givens( Q, S1, S0, r, c, 1 );
       vulb__mmul_matrix( U1, U0, Q, r );
-      vul__blas_qr_decomposition_givens( Q, S0, S1, c, r, 1 );
+      vul__linalg_qr_decomposition_givens( Q, S0, S1, c, r, 1 );
       vulb__mmul_matrix( V1, V0, Q, c );
 
       vulb__swap_ptr( &U0, &U1 );
       vulb__swap_ptr( &V0, &V1 );
 
       // Calculate error
-      e = vul__blas_matrix_norm_as_single_column( S0, r, c, 1 );
-      f = vul__blas_matrix_norm_diagonal( S0, r, c );
+      e = vul__linalg_matrix_norm_as_single_column( S0, r, c, 1 );
+      f = vul__linalg_matrix_norm_diagonal( S0, r, c );
       if( f == 0.f ) {
          f = 1.f;
       }
@@ -2717,14 +2735,14 @@ void vul_blas_svd_dense_qrlq( vul_blas_svd_basis *out, int *rank,
    if( *rank == 0 || j < *rank ) {
       *rank = j;
    }
-   vul__blas_svd_sort( out, k );
+   vul__linalg_svd_sort( out, k );
 
    // Fix signs and copy U
    for( i = 0; i < *rank; ++i ) {
       out[ i ].u_length = r;
       out[ i ].v_length = c;
-      out[ i ].u = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r );
-      out[ i ].v = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * c );
+      out[ i ].u = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r );
+      out[ i ].v = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * c );
       f = IDX( S0, out[ i ].axis, out[ i ].axis , r, c ) < 0.f ? -1.f : 1.f;
       for( j = 0; j < r; ++j ) {
          out[ i ].u[ j ] = IDX( U0, j, out[ i ].axis, r, r ) * f;
@@ -2734,32 +2752,32 @@ void vul_blas_svd_dense_qrlq( vul_blas_svd_basis *out, int *rank,
       }
    }
 
-   VUL_BLAS_FREE( U0 );
-   VUL_BLAS_FREE( U1 );
-   VUL_BLAS_FREE( V0 );
-   VUL_BLAS_FREE( V1 );
-   VUL_BLAS_FREE( S0 );
-   VUL_BLAS_FREE( S1 );
-   VUL_BLAS_FREE( Sb );
-   VUL_BLAS_FREE( Q );
+   VUL_LINALG_FREE( U0 );
+   VUL_LINALG_FREE( U1 );
+   VUL_LINALG_FREE( V0 );
+   VUL_LINALG_FREE( V1 );
+   VUL_LINALG_FREE( S0 );
+   VUL_LINALG_FREE( S1 );
+   VUL_LINALG_FREE( Sb );
+   VUL_LINALG_FREE( Q );
 }
 
-void vul_blas_svd_dense( vul_blas_svd_basis *out, int *rank,
-                         vul_blas_real *A,
-                         int c, int r, vul_blas_real eps, int itermax )
+void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
+                           vul_linalg_real *A,
+                           int c, int r, vul_linalg_real eps, int itermax )
 {
-   vul_blas_real *J, *U, *V, *G, *omegas, f, scale;
+   vul_linalg_real *J, *U, *V, *G, *omegas, f, scale, max_diag;
    int iter, n, m, i, j, k, ri, ci, nonzero;
 
    n = r > c ? r : c;
    m = r < c ? r : c;
-   U = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r * r );
-   V = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * c * c );
-   G = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r * c );
-   omegas = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r );
-   memset( U, 0, sizeof( vul_blas_real ) * r * r );
-   memset( V, 0, sizeof( vul_blas_real ) * c * c );
-   memset( omegas, 0, sizeof( vul_blas_real ) * r );
+   U = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * r );
+   V = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * c * c );
+   G = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * c );
+   omegas = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r );
+   memset( U, 0, sizeof( vul_linalg_real ) * r * r );
+   memset( V, 0, sizeof( vul_linalg_real ) * c * c );
+   memset( omegas, 0, sizeof( vul_linalg_real ) * r );
    iter = 0;
    nonzero = c;
 
@@ -2785,13 +2803,24 @@ void vul_blas_svd_dense( vul_blas_svd_basis *out, int *rank,
    for( i = 0; i < c; ++i ) {
       IDX( V, i, i, c, c ) = 1.f;
    }
+   max_diag = 1.0; // Matrix is scaled
 
    while( nonzero && iter++ < itermax ) {
       nonzero = 0;
       for( i = 0; i < r - 1; ++i ) {
          for( j = i + 1; j < r; ++j ) {
-            vul_blas_real aii, aij, ajj;
+            vul_linalg_real aii, aij, ajj, threshold;
             
+            // Skip if already diagonal (or as close as we can get)
+#ifdef __FLT_DENORM_MIN__
+            threshold = eps * max_diag < __FLT_DENORM_MIN__ ? __FLT_DENORM_MIN__ : eps * max_diag;
+#else
+            threshold = eps * max_diag < FLT_MIN ? FLT_MIN : eps * max_diag;
+#endif
+            if( !( fabs( IDX( G, i, j, c, r ) ) > threshold || fabs( IDX( G, j, i, c, r ) ) > threshold ) ) {
+               continue;
+            }
+
             // Compute a_ij, a_ji, a_ii
             aii = 0.0; aij = 0.0; ajj = 0.0;
             for( k = 0; k < c; ++k ) {
@@ -2799,15 +2828,23 @@ void vul_blas_svd_dense( vul_blas_svd_basis *out, int *rank,
                ajj += IDX( G, j, k, c, r ) * IDX( G, j, k, c, r );
                aij += IDX( G, i, k, c, r ) * IDX( G, j, k, c, r );
             }
-            if( fabs( aij ) > eps ) {
+            if( fabs( aij ) > threshold ) {
                nonzero += 1;
-               vul_blas_real tau, t, ct, st;
+               vul_linalg_real tau, t, ct, st;
                tau = ( aii - ajj ) / ( 2.0 * aij );
                t = copysign( 1.0 / ( fabs( tau ) + sqrt( 1.0 + tau * tau ) ), tau );
                ct = 1.0 / sqrt( 1.0 + t * t );
                st = ct * t;
-               vul__blas_givens_rotate( G, c, r, j, i, ct, st, 1 );
-               vul__blas_givens_rotate( U, r, r, j, i, ct, st, 0 );
+               vul__linalg_givens_rotate( G, c, r, j, i, ct, st, 1 );
+               vul__linalg_givens_rotate( U, r, r, j, i, ct, st, 0 );
+               aii = IDX( G, i, i, c, r );
+               if( j < r ) {
+                  ajj = IDX( G, j, j, c, r );
+               }
+               
+               // Keep track of largest diagonal entry
+               threshold = aii > ajj ? aii : ajj;
+               max_diag = max_diag > threshold ? max_diag : threshold;
             }
          }
       }
@@ -2815,7 +2852,7 @@ void vul_blas_svd_dense( vul_blas_svd_basis *out, int *rank,
 
    // Calculate the singular values (2-norm of the columns of G)
    for( i = 0; i < r; ++i ) {
-      vul_blas_real t = 0.0;
+      vul_linalg_real t = 0.0;
       for( j = 0; j < c; ++j ) {
          t += IDX( G, i, j, c, r ) * IDX( G, i, j, c, r );
       }
@@ -2843,14 +2880,14 @@ void vul_blas_svd_dense( vul_blas_svd_basis *out, int *rank,
    if( *rank == 0 || j < *rank ) {
       *rank = j;
    }
-   vul__blas_svd_sort( out, k );
+   vul__linalg_svd_sort( out, k );
 
    // Fix signs and copy U
    for( i = 0; i < *rank; ++i ) {
       out[ i ].u_length = r;
       out[ i ].v_length = c;
-      out[ i ].u = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r );
-      out[ i ].v = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * c );
+      out[ i ].u = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r );
+      out[ i ].v = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * c );
       f = omegas[ out[ i ].axis ] < 0.f ? -1.f : 1.f;
       for( j = 0; j < r; ++j ) {
          out[ i ].u[ j ] = IDX( U, j, out[ i ].axis, r, r ) * f;
@@ -2860,57 +2897,57 @@ void vul_blas_svd_dense( vul_blas_svd_basis *out, int *rank,
       }
    }
 
-   VUL_BLAS_FREE( U );
-   VUL_BLAS_FREE( V );
-   VUL_BLAS_FREE( G );
-   VUL_BLAS_FREE( omegas );
+   VUL_LINALG_FREE( U );
+   VUL_LINALG_FREE( V );
+   VUL_LINALG_FREE( G );
+   VUL_LINALG_FREE( omegas );
 }
 
-void vul_blas_linear_least_squares_dense( vul_blas_real *out,
-                                           vul_blas_real *A,
-                                           vul_blas_real *b,
-                                           int c, int r,
-                                           int max_iterations,
-                                           vul_blas_real tolerance )
+void vul_linalg_linear_least_squares_dense( vul_linalg_real *out,
+                                            vul_linalg_real *A,
+                                            vul_linalg_real *b,
+                                            int c, int r,
+                                            int max_iterations,
+                                            vul_linalg_real tolerance )
 {
-   vul_blas_svd_basis *res;
-   vul_blas_real *U, *V, *S, *d, v;
+   vul_linalg_svd_basis *res;
+   vul_linalg_real *U, *V, *S, *d, v;
    int rank, i, j, m;
 
-   res = ( vul_blas_svd_basis* )VUL_BLAS_ALLOC( sizeof( vul_blas_svd_basis ) * c );
+   res = ( vul_linalg_svd_basis* )VUL_LINALG_ALLOC( sizeof( vul_linalg_svd_basis ) * c );
    rank = 0;
-   vul_blas_svd_dense( res, &rank, A, c, r, tolerance, max_iterations );
+   vul_linalg_svd_dense( res, &rank, A, c, r, tolerance, max_iterations );
    
-   U = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r * r );
-   V = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * c * c );
-   S = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * c );
-   d = ( vul_blas_real* )VUL_BLAS_ALLOC( sizeof( vul_blas_real ) * r );
+   U = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * r );
+   V = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * c * c );
+   S = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * c );
+   d = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r );
 
    // Reconstruct U
-   memset( U, 0, sizeof( vul_blas_real ) * r * r );
+   memset( U, 0, sizeof( vul_linalg_real ) * r * r );
    for( i = 0; i < rank; ++i ) {
       for( j = 0; j < res[ i ].u_length; ++j ) {
          IDX( U, j, res[ i ].axis, r, r ) = res[ i ].u[ j ];
       }
    }
    // Reconstruct V
-   memset( V, 0, sizeof( vul_blas_real ) * c * c );
+   memset( V, 0, sizeof( vul_linalg_real ) * c * c );
    for( i = 0; i < rank; ++i ) {
       for( j = 0; j < res[ i ].v_length; ++j ) {
          IDX( V, res[ i ].axis, j, c, c ) = res[ i ].v[ j ];
       }
    }
    // Reconstruct the diagonal of S
-   memset( S, 0, sizeof( vul_blas_real ) * c );
+   memset( S, 0, sizeof( vul_linalg_real ) * c );
    for( i = 0; i < rank; ++i ) {
       S[ res[ i ].axis ] = res[ i ].sigma;
    }
    // Free the basis'
-   vul_blas_svd_basis_destroy( res, rank );
-   VUL_BLAS_FREE( res );
+   vul_linalg_svd_basis_destroy( res, rank );
+   VUL_LINALG_FREE( res );
    
    // Calculate d = U^T * b
-   memset( d, 0, sizeof( vul_blas_real ) * r );
+   memset( d, 0, sizeof( vul_linalg_real ) * r );
    for( i = 0; i < r; ++i ) {
       v = 0.0;
       for( j = 0; j < r; ++j ) {
@@ -2921,7 +2958,7 @@ void vul_blas_linear_least_squares_dense( vul_blas_real *out,
 
    // Calculate x = V * S^+ * d
    m = r < c ? r : c;
-   memset( out, 0, sizeof( vul_blas_real ) * m );
+   memset( out, 0, sizeof( vul_linalg_real ) * m );
    for( i = 0; i < m; ++i ) {
       v = 0.0;
       for( j = 0; j < rank; ++j ) {
@@ -2930,10 +2967,10 @@ void vul_blas_linear_least_squares_dense( vul_blas_real *out,
       out[ i ] = v;
    }
 
-   VUL_BLAS_FREE( U );
-   VUL_BLAS_FREE( V );
-   VUL_BLAS_FREE( S );
-   VUL_BLAS_FREE( d );
+   VUL_LINALG_FREE( U );
+   VUL_LINALG_FREE( V );
+   VUL_LINALG_FREE( S );
+   VUL_LINALG_FREE( d );
 }
 
 #undef IDX
@@ -2942,6 +2979,6 @@ void vul_blas_linear_least_squares_dense( vul_blas_real *out,
 }
 #endif
 
-#undef vul_blas_real
+#undef vul_linalg_real
 
 #endif

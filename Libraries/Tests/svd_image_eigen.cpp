@@ -8,8 +8,11 @@
 #include "stb_image_write.h"
 
 #define VUL_DEFINE
-#include "vul_linalg.h"
 #include "vul_timer.h"
+
+#include <Eigen/SVD>
+
+using namespace Eigen;
 
 int main( int argc, char **argv )
 {
@@ -21,47 +24,41 @@ int main( int argc, char **argv )
    int w, h, n;
    unsigned char *data = stbi_load( argv[ 1 ], &w, &h, &n, 0 );
    
-   float *A = ( float* )malloc( sizeof( float ) * w * h );
    // @TODO(thynn): Don't average into grayscale, do something useful (or each channel separately)
+	MatrixXf A = MatrixXf( h, w );
    for( int y = 0; y < h; ++y ) {
       for( int x = 0; x < w; ++x ) {
          float v = ( float )data[ ( y * w + x ) * n ] / 255.f;
          for( int c = 1; c < n; ++c ) {
             v += ( float )data[ ( y * w + x ) * n + c ] / 255.f;
          }
-         A[ y * w + x ] = v / ( float )n;
+			A( y, x ) = v / ( float )n;
       }
    }
 
    char *eptr;
    int rank = strtol( argv[ 2 ], &eptr, 10 );
    int wrank = rank;
-   vul_linalg_svd_basis *res = ( vul_linalg_svd_basis* )malloc( sizeof( vul_linalg_svd_basis ) * ( w < h ? w : h ) );
 
-   int iters = 32;
-   if( argc > 3 ) {
-      iters = strtol( argv[ 3 ], &eptr, 10 );
-   }
-   
-   printf( "Computing SVD of %s (%d iterations)\n", argv[ 1 ], iters );
+   printf( "Computing SVD of %s (%dx%d)\n", argv[ 1 ], w, h );
    vul_timer *t = vul_timer_create( );
-   vul_linalg_svd_dense( res, &rank, A, w, h, 1e-4, iters ); // @TODO(thynn): eps and iter should be parameters
+	JacobiSVD< MatrixXf > svd( A, ComputeThinU | ComputeThinV );
    uint64_t mms = vul_timer_get_micros( t );
    printf( "Completed in %llu.%llus\n", mms / 1000000, mms % 1000000 );
 
-   for( int i = 0; i < rank; ++i ) {
-      printf( "S[%d]: %f, axis %d\n", i, res[ i ].sigma, res[ i ].axis );
+	VectorXf sigma = svd.singularValues();
+   for( int i = 0; i < svd.rank(); ++i ) {
+      printf( "S[%d]: %f\n", i, sigma[i] );
    }
 
-   printf( "Rank of decomposition %d, wanted at most %d\n", rank, wrank );
+   printf( "Rank of decomposition %d, wanted at most %d\n", svd.rank(), wrank );
 
-   float *B = ( float* )malloc( sizeof( float ) * w * h );
-   vul_linalg_svd_basis_reconstruct_matrix( B, res, rank );
+	MatrixXf B = svd.matrixU() * svd.singularValues().asDiagonal() * svd.matrixV().transpose();
 
    unsigned char *odata = ( unsigned char* )malloc( sizeof( unsigned char ) * w * h * 3 );
    for( int y = 0; y < h; ++y ) {
       for( int x = 0; x < w; ++x ) {
-         float v = B[ y * w + x ] * 255.f;
+         float v = B( y, x ) * 255.f;
          v = v < 0.f   ? 0.f 
            : v > 255.f ? 255.f 
            : v;
@@ -74,7 +71,7 @@ int main( int argc, char **argv )
    printf( "Wrote output to out.bmp.\n");
    for( int y = 0; y < h; ++y ) {
       for( int x = 0; x < w; ++x ) {
-         float v = A[ y * w + x ] * 255.f;
+         float v = A( y, x ) * 255.f;
          v = v < 0.f   ? 0.f 
            : v > 255.f ? 255.f 
            : v;
@@ -86,10 +83,6 @@ int main( int argc, char **argv )
    stbi_write_bmp( "source.bmp", w, h, 3, odata );
    printf( "Wrote input to source.bmp.\n");
    
-   vul_linalg_svd_basis_destroy( res, rank );
-   free( res );
-   free( A );
-   free( B );
    free( odata );
    free( data );
 }

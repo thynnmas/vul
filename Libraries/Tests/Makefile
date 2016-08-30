@@ -5,8 +5,8 @@ all: test image
 test_astar:
 	gcc $(FLAGS) test_astar.c -o test_astar -lm
 
-test_blas:
-	gcc $(FLAGS) test_blas.c -o test_blas -lm
+test_linalg:
+	gcc $(FLAGS) test_linalg.c -o test_linalg -lm
 
 test_cl:
 	gcc $(FLAGS) test_cl.c -o test_cl -lm -lOpenCL
@@ -27,11 +27,11 @@ test_prioheap:
 	gcc $(FLAGS) test_priority_queues.c -o test_priority_queues -lm
 
 
-tests: test_astar test_blas test_cl test_csp test_file test_gl test_noise test_prioheap
+tests: test_astar test_linalg test_cl test_csp test_file test_gl test_noise test_prioheap
 
 run: tests
 	./test_astar
-	./test_blas
+	./test_linalg
 #	./test_cl TODO: Fix the CL-issues we're having on this machine, and actually test this
 	./test_csp
 	./test_file
@@ -40,11 +40,14 @@ run: tests
 	./test_priority_queues
 
 image:
-	clang -I ../../../../Libs/stb_git -I ../ -DVUL_LINUX -O2 -g -o svd_image svd_image_example.c -lm
+	clang -I ../../../../Libs/stb -I ../ -DVUL_LINUX -O2 -g -o svd_image svd_image_example.c -lm
+
+image_eigen:
+	clang++ -I ../../../../Libs/stb -I ../ -I/usr/include/eigen3 -DVUL_LINUX -O2 -g -o svd_eigen svd_image_eigen.cpp -lm
 
 clean:
 	rm test_astar
-	rm test_blas
+	rm test_linalg
 	rm test_cl
 	rm test_csp
 	rm test_file

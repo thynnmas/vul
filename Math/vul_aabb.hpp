@@ -242,7 +242,9 @@ namespace vul {
 		_max = rhs._max;
 	}
 #else
+#if defined( VUL_WINDOWS ) && !defined( __MINGW32__ ) && !defined( __MINGW64__ )
 #pragma warning(disable: 6001)
+#endif
 	template< typename T, s32 n >
 	AABB< T, n > makeAABB( )
 	{
@@ -369,7 +371,9 @@ namespace vul {
 
 		return res;
 	}
+#if defined( VUL_WINDOWS ) && !defined( __MINGW32__ ) && !defined( __MINGW64__ )
 #pragma warning(default: 6001)
+#endif
 	
 	template< typename T, s32 n >
 	Point< T, n > center( const AABB< T, n > &aabb )

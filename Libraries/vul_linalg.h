@@ -2377,6 +2377,9 @@ static void vulb__mtranspose( vul_linalg_real *O, vul_linalg_real *A, int c, int
    } else {
       // We can't just iterate over the columns and rows; will lead to duplication/leaving some out.
       // Instead, iterate over the elements and calculate their index.
+#ifndef VUL_LINALG_ROW_MAJOR
+      k = c; c = r; r = k; // Swap the row and column dimensions if column major so we can share logic.
+#endif
       for( k = 0; k < r * c; ++k ) {
          i = k % c;
          j = k / c;

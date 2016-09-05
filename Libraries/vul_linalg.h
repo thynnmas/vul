@@ -81,7 +81,7 @@
 #endif
 
 #ifdef _cplusplus
-{
+extern "C" {
 #endif
 
 //--------------------
@@ -191,26 +191,56 @@ vul_linalg_vector *vul_linalg_successive_over_relaxation_sparse( vul_linalg_matr
                                                                  vul_linalg_real tolerance );
 
 /*
- * Iterative solver of the linear system Ax = b
- * Uses Choleski Decomposition. Works for matrices that are
- * HERMITIAN and POSITIVE-DEFINITE.
- *
- * If your matrix fits, this should be the fastest of the decomposition-based methods.
- * Does not currently emply iterative refinement; @TODO(thynn): Iterative refinement!
+ * Cholesky Decomposition step. Supply a matrix A that is
+ * HERMITIAN and POSITIVE-DEFINITE, and this returns the LL*
+ * decomposition of the matrix in the output matrices L and LT.
  */
-vul_linalg_vector *vul_linalg_cholesky_decomposition_sparse( vul_linalg_matrix *A,
-                                                             vul_linalg_vector *b,
-                                                             int cols, int rows );
+void vul_linalg_cholesky_decomposition_sparse( vul_linalg_matrix **L,
+															  vul_linalg_matrix **LT,
+															  vul_linalg_matrix *A,
+															  int cols, int rows );
+/*
+ * Iterative solver of the linear system Ax = b given a LL* decomposition
+ * of the matrix A. Use vul_linalg_cholesky_decomposition_sparse to create
+ * this decomposition (or use the @TODO(thynn): incomplete cholesky decomposition
+ * preconditioner).
+ *
+ * This method employs at most max_iterations of iterative refinement, or until
+ * the average square error is below tolerance.
+ */
+vul_linalg_vector *vul_linalg_cholesky_solve_sparse( vul_linalg_matrix *L,
+																	  vul_linalg_matrix *LT,
+																	  vul_linalg_matrix *A,
+																	  vul_linalg_vector *initial_guess,
+                                                     vul_linalg_vector *b,
+                                                     int cols, int rows,
+																	  int max_iterations,
+																	  vul_linalg_real tolerance );
+/*
+ * QR decomposition step. Supply a matric A and this returns the Q^T and R
+ * decomposition into their respective matrix pointers.
+ */
+void vul_linalg_qr_decomposition_sparse( vul_linalg_matrix **Q,
+													  vul_linalg_matrix **R,
+													  vul_linalg_matrix *A,
+                                         int cols, int rows );
 
 /*
- * Iterative solver of the linear system Ax = b
- * Uses QR Decomposition. Works for all matrices.
+ * Iterative solver of the linear system Ax = b given a Q^TR decomposition
+ * of the matrix A. Use vul_linalg_qr_decomposition_sparse to create
+ * this decomposition.
  *
- * Does not currently emply iterative refinement; @TODO(thynn): Iterative refinement!
+ * This method employs at most max_iterations of iterative refinement, or until
+ * the average square error is below tolerance.
  */
-vul_linalg_vector *vul_linalg_qr_decomposition_sparse( vul_linalg_matrix *A,
-                                                       vul_linalg_vector *b,
-                                                       int cols, int rows );
+vul_linalg_vector *vul_linalg_qr_solve_sparse( vul_linalg_matrix *Q,
+                                               vul_linalg_matrix *R,
+                                               vul_linalg_matrix *A,
+                                               vul_linalg_vector *initial_guess,
+                                               vul_linalg_vector *b,
+                                               int cols, int rows,
+															  int max_iterations,
+															  vul_linalg_real tolerance );
 
 //-------------------
 // Dense solvers
@@ -248,42 +278,90 @@ void vul_linalg_successive_over_relaxation_dense( vul_linalg_real *out,
                                                   vul_linalg_real tolerance );
 
 /*
- * Iterative solver of the linear system Ax = b
- * Uses LU Decomposition. Works for all matrices that are NOT SINGULAR.
+ * LU Decomposition step. Supply with a square matrix that is NOT SINGULAR,
+ * and it returns a decomposition into a lower triangular matrix L
+ * and an upper triangular matrix U, both stored in the output matrix
+ * LU. The argument indices is also an output argument, and is required
+ * due to pivoting of the decomposed matrix.
  *
- * If your matrix fits, this should be the fastest of the stable methods (not SOR).
+ * The decomposition can then be given to vul_linalg_lu_solve_dense
+ * with A and b to solve AX=b.
+ */
+void vul_linalg_lu_decomposition_dense( vul_linalg_real *LU,
+													 int *indices,
+													 vul_linalg_real *A,
+													 int n );
+
+/*
+ * Iterative solver of the linear system Ax = b given a LU decomposition and
+ * pivoting indices of A. Use vul_linalg_lu_decomposition_dense to create this 
+ * decomposition/indices pair.
+ *
  * This method employs at most max_iterations of iterative refinement, or until
  * the average square error is below tolerance.
  */
-void vul_linalg_lu_decomposition_dense( vul_linalg_real *out,
-                                        vul_linalg_real *A,
-                                        vul_linalg_real *initial_guess,
-                                        vul_linalg_real *b,
-                                        int n,
-                                        int max_iterations,
-                                        vul_linalg_real tolerance );
+void vul_linalg_lu_solve_dense( vul_linalg_real *out,
+                                vul_linalg_real *LU,
+										  int *indices,
+                                vul_linalg_real *A,
+                                vul_linalg_real *initial_guess,
+                                vul_linalg_real *b,
+                                int n,
+                                int max_iterations,
+                                vul_linalg_real tolerance );
 /*
- * Iterative solver of the linear system Ax = b
- * Uses Choleski Decomposition. Works for matrices that are
- * HERMITIAN and POSITIVE-DEFINITE.
- *
- * If your matrix fits, this should be the fastest of the decomposition-based methods.
- * Does not currently emply iterative refinement; @TODO(thynn): Iterative refinement!
+ * Cholesky Decomposition step. Supply a square matrix that is
+ * HERMITIAN and POSITIVE-DEFINITE, and this returns the LL*
+ * decomposition of the matrix (stored in the LL output argument, a
+ * preallocated matrix of size n x n).
  */
-void vul_linalg_cholesky_decomposition_dense( vul_linalg_real *out,
+void vul_linalg_cholesky_decomposition_dense( vul_linalg_real *LL,
                                               vul_linalg_real *A,
-                                              vul_linalg_real *b,
                                               int n );
 /*
- * Iterative solver of the linear system Ax = b
- * Uses QR Decomposition. Works for all matrices.
+ * Iterative solver of the linear system Ax = b given a LL* decomposition
+ * of the matrix A. Use vul_linalg_cholesky_decomposition_dense to create
+ * this decomposition.
  *
- * Does not currently emply iterative refinement; @TODO(thynn): Iterative refinement!
+ * This method employs at most max_iterations of iterative refinement, or until
+ * the average square error is below tolerance.
  */
-void vul_linalg_qr_decomposition_dense( vul_linalg_real *out,
+void vul_linalg_cholesky_solve_dense( vul_linalg_real *out,
+                                      vul_linalg_real *LL,
+                                      vul_linalg_real *A,
+												  vul_linalg_real *initial_guess,
+                                      vul_linalg_real *b,
+                                      int n,
+												  int max_iterations,
+												  vul_linalg_real tolerance );
+/*
+ * QR decomposition step. Supply a square matrix to create the 
+ * QR decomposition in the preallocated matrices Q and R (output).
+ *
+ * Uses Givens rotations.
+ */
+void vul_linalg_qr_decomposition_dense( vul_linalg_real *Q,
+                                        vul_linalg_real *R,
                                         vul_linalg_real *A,
-                                        vul_linalg_real *b,
                                         int n );
+
+/*
+ * Iterative solver of the linear system Ax = b
+ * Uses the precomputd QR Decomposition in matrices Q and R.
+ * Use vul_linalg_qr_decomposition_dense to calculate these.
+ *
+ * This method employs at most max_iterations of iterative refinement, or until
+ * the average square error is below tolerance.
+ */
+void vul_linalg_qr_solve_dense( vul_linalg_real *out,
+                                vul_linalg_real *Q,
+                                vul_linalg_real *R,
+                                vul_linalg_real *A,
+                                vul_linalg_real *initial_guess,
+                                vul_linalg_real *b,
+                                int n,
+										  int max_iterations,
+										  vul_linalg_real tolerance );
 
 //---------------------------------------
 // Dense Singular Value Decomposition
@@ -1180,25 +1258,23 @@ vul_linalg_vector *vul_linalg_successive_over_relaxation_sparse( vul_linalg_matr
    return x;
 }
 
-vul_linalg_vector *vul_linalg_cholesky_decomposition_sparse( vul_linalg_matrix *A,
-                                                             vul_linalg_vector *b,
-                                                             int cols, int rows )
+void vul_linalg_cholesky_decomposition_sparse( vul_linalg_matrix **L,
+															  vul_linalg_matrix **LT,
+															  vul_linalg_matrix *A,
+															  int cols, int rows )
 {
-   vul_linalg_vector *x, *r, rowi, rowj;
-   vul_linalg_matrix *D, *DT;
+   vul_linalg_vector rowi, rowj;
    vul_linalg_real sum, rd, rd2;
    int i, j, ki, kj, k;
 
-   D = vul_linalg_matrix_create( 0, 0, 0, 0 );
-   DT = vul_linalg_matrix_create( 0, 0, 0, 0 );
-   r = vul_linalg_vector_create( 0, 0, 0 );
-   x = vul_linalg_vector_create( 0, 0, 0 );
+   *L = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   *LT = vul_linalg_matrix_create( 0, 0, 0, 0 );
 
    for( i = 0; i < A->count; ++i ) {
       for( j = 0; j < A->rows[ i ].vec.count; ++j ) {
-         vul_linalg_matrix_insert( D, A->rows[ i ].idx, 
-                                      A->rows[ i ].vec.entries[ j ].idx,
-                                      A->rows[ i ].vec.entries[ j ].val );
+         vul_linalg_matrix_insert( *L, A->rows[ i ].idx, 
+                                       A->rows[ i ].vec.entries[ j ].idx,
+                                       A->rows[ i ].vec.entries[ j ].val );
       }
    }
 
@@ -1206,8 +1282,8 @@ vul_linalg_vector *vul_linalg_cholesky_decomposition_sparse( vul_linalg_matrix *
    for( i = 0; i < cols; ++i ) {
       for( j = i; j < rows; ++j ) {
          sum = vul_linalg_matrix_get( A, i, j );
-         rowi = vulb__linalg_matrix_get_row_by_array_index( D, i );
-         rowj = vulb__linalg_matrix_get_row_by_array_index( D, j );
+         rowi = vulb__linalg_matrix_get_row_by_array_index( *L, i );
+         rowj = vulb__linalg_matrix_get_row_by_array_index( *L, j );
          for( ki = rowi.count - 1; ki >= 0 && rowi.entries[ ki ].idx >= i; --ki )
             ; // Search backwards until ki < i
          for( kj = rowj.count - 1; kj >= 0 && rowj.entries[ kj ].idx >= i; --kj )
@@ -1224,24 +1300,61 @@ vul_linalg_vector *vul_linalg_cholesky_decomposition_sparse( vul_linalg_matrix *
          }
          if( i == j ) {
             assert( sum > 0.f ); // Cholesky decomposition is only valid for POSITIVE-DEFINITE symmetric matrices
-            vul_linalg_matrix_insert( D, i, i, sqrt( sum ) );
+            vul_linalg_matrix_insert( *L, i, i, sqrt( sum ) );
          } else {
-            rd = vul_linalg_matrix_get( D, i, i );
+            rd = vul_linalg_matrix_get( *L, i, i );
             assert( rd != 0.f ); // Determinant is sufficiently small that a divide-by-zero is imminent
-            vul_linalg_matrix_insert( D, j, i, sum / rd );
+            vul_linalg_matrix_insert( *L, j, i, sum / rd );
          }
       }
    }
-   
-   // Solve Lr = b
-   vulb__sparse_forward_substitute( r, D, b );
-   // Solve L^Tx = r
-   vulb__sparse_mtranspose( DT, D );
-   vulb__sparse_backward_substitute( x, DT, r );
+   vulb__sparse_mtranspose( *LT, *L );
+}
+vul_linalg_vector *vul_linalg_cholesky_solve_sparse( vul_linalg_matrix *L,
+																	  vul_linalg_matrix *LT,
+																	  vul_linalg_matrix *A,
+																	  vul_linalg_vector *initial_guess,
+                                                     vul_linalg_vector *b,
+                                                     int cols, int rows,
+																	  int max_iterations,
+																	  vul_linalg_real tolerance )
+{
+   vul_linalg_vector *x, *r, *y;
+	vul_linalg_real rd, rd2;
+	int k;
 
-   vul_linalg_matrix_destroy( D );
-   vul_linalg_matrix_destroy( DT );
+   r = vul_linalg_vector_create( 0, 0, 0 );
+   y = vul_linalg_vector_create( 0, 0, 0 );
+   x = vul_linalg_vector_create( 0, 0, 0 );
+	
+	/* Calculate initial residual */
+   vulb__sparse_vcopy( x, initial_guess );
+   vulb__sparse_mmul( r, A, x );
+   vulb__sparse_vsub( r, b, r );
+   rd = vulb__sparse_dot( r, r );
+
+   for( k = 0; k < max_iterations; ++k ) {
+		/* Solve Ly = r */
+		vulb__sparse_forward_substitute( y, L, r );
+		/* Solve L^Tr = y */
+		vulb__sparse_backward_substitute( r, LT, y );
+
+      /* Subtract the error from the old solution */
+      vulb__sparse_vsub( x, x, r );
+
+      /* Break if within tolerance */
+      rd2 = vulb__sparse_dot( r, r );
+      if( fabs( rd2 - rd ) < tolerance * rows ) {
+         break;
+      }
+		/* Calculate new residual */
+      vulb__sparse_mmul( r, A, x );
+      vulb__sparse_vsub( r, r, b );
+      rd = rd2;
+   }
+   
    vul_linalg_vector_destroy( r );
+   vul_linalg_vector_destroy( y );
 
    return x;
 }
@@ -1315,27 +1428,69 @@ static void vul__linalg_qr_decomposition_givens_sparse( vul_linalg_matrix *Q, vu
    }
 }
 
-vul_linalg_vector *vul_linalg_qr_decomposition_sparse( vul_linalg_matrix *A,
-                                                       vul_linalg_vector *b,
-                                                       int cols, int rows )
+void vul_linalg_qr_decomposition_sparse( vul_linalg_matrix **Q,
+													  vul_linalg_matrix **R,
+													  vul_linalg_matrix *A,
+                                         int cols, int rows )
 {
-   vul_linalg_matrix *Q, *QT, *R;
+   vul_linalg_matrix *QT;
    vul_linalg_vector *x, *d;
 
-   Q = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   *Q = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   *R = vul_linalg_matrix_create( 0, 0, 0, 0 );
    QT = vul_linalg_matrix_create( 0, 0, 0, 0 );
-   R = vul_linalg_matrix_create( 0, 0, 0, 0 );
+
+   vul__linalg_qr_decomposition_givens_sparse( QT, *R, A, cols, rows );
+   vulb__sparse_mtranspose( *Q, QT );
+
+   vul_linalg_matrix_destroy( QT );
+}
+
+vul_linalg_vector *vul_linalg_qr_solve_sparse( vul_linalg_matrix *Q,
+                                               vul_linalg_matrix *R,
+                                               vul_linalg_matrix *A,
+                                               vul_linalg_vector *initial_guess,
+                                               vul_linalg_vector *b,
+                                               int cols, int rows,
+															  int max_iterations,
+															  vul_linalg_real tolerance )
+{
+   vul_linalg_vector *x, *d, *r;
+	vul_linalg_real rd, rd2;
+	int k;
+
+   r = vul_linalg_vector_create( 0, 0, 0 );
    d = vul_linalg_vector_create( 0, 0, 0 );
    x = vul_linalg_vector_create( 0, 0, 0 );
+	
+	/* Calculate initial residual */
+   vulb__sparse_vcopy( x, initial_guess );
+   vulb__sparse_mmul( r, A, x );
+   vulb__sparse_vsub( r, b, r );
+   rd = vulb__sparse_dot( r, r );
 
-   vul__linalg_qr_decomposition_givens_sparse( Q, R, A, cols, rows );
-   vulb__sparse_mtranspose( QT, Q );
-   vulb__sparse_mmul( d, QT, b );
-   vulb__sparse_backward_substitute( x, R, d );
+   for( k = 0; k < max_iterations; ++k ) {
+		/* Calculate d = Qr */
+		vulb__sparse_mmul( d, Q, r );
+		
+		/* Solve Rr = d */
+		vulb__sparse_backward_substitute( r, R, d );
 
-   vul_linalg_matrix_destroy( Q );
-   vul_linalg_matrix_destroy( QT );
-   vul_linalg_matrix_destroy( R );
+      /* Subtract the error from the old solution */
+      vulb__sparse_vsub( x, x, r );
+
+      /* Break if within tolerance */
+      rd2 = vulb__sparse_dot( r, r );
+      if( fabs( rd2 - rd ) < tolerance * rows ) {
+         break;
+      }
+		/* Calculate new residual */
+      vulb__sparse_mmul( r, A, x );
+      vulb__sparse_vsub( r, r, b );
+      rd = rd2;
+   }
+   
+   vul_linalg_vector_destroy( r );
    vul_linalg_vector_destroy( d );
 
    return x;
@@ -1974,7 +2129,7 @@ void vul_linalg_conjugate_gradient_dense( vul_linalg_real *out,
    Ap = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
    
    x = out;
-   vulb__vcopy( out, initial_guess, n );
+   vulb__vcopy( x, initial_guess, n );
    vulb__mmul( r, A, x, n, n );
    vulb__vsub( r, r, b, n );
    vulb__vcopy( p, r, n );
@@ -2003,23 +2158,16 @@ void vul_linalg_conjugate_gradient_dense( vul_linalg_real *out,
    VUL_LINALG_FREE( Ap );
 }
 
-void vul_linalg_lu_decomposition_dense( vul_linalg_real *out,
-                                        vul_linalg_real *A,
-                                        vul_linalg_real *initial_guess,
-                                        vul_linalg_real *b,
-                                        int n,
-                                        int max_iterations,
-                                        vul_linalg_real tolerance )
+void vul_linalg_lu_decomposition_dense( vul_linalg_real *LU,
+													 int *indices,
+													 vul_linalg_real *A,
+													 int n )
 {
-   vul_linalg_real *x, *LU, *r, *scale;
-   vul_linalg_real sum, rd, rd2, tmp, largest;
-   int i, j, k, imax, iold, *indices;
+   vul_linalg_real *scale;
+   vul_linalg_real sum, tmp, largest;
+   int i, j, k, imax;
 
-   LU = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n * n );
-   r = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
    scale = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
-   indices = ( int* )VUL_LINALG_ALLOC( sizeof( int ) * n );
-   x = out;
    
    /* Crout's LUP decomposition with pivoting and scaling */
    for( i = 0; i < n; ++i ) {
@@ -2071,21 +2219,41 @@ void vul_linalg_lu_decomposition_dense( vul_linalg_real *out,
       }
    }
    
-   /* Calculate initial residual */
+   VUL_LINALG_FREE( scale );
+}
+
+void vul_linalg_lu_solve_dense( vul_linalg_real *out,
+                                vul_linalg_real *LU,
+										  int *indices,
+                                vul_linalg_real *A,
+                                vul_linalg_real *initial_guess,
+                                vul_linalg_real *b,
+                                int n,
+                                int max_iterations,
+                                vul_linalg_real tolerance )
+{
+   vul_linalg_real *x, *r, *scale;
+   vul_linalg_real sum, rd, rd2;
+   int i, j, k, imax, iold;
+
+   r = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
+   x = out;
+   
+	/* Calculate initial residual */
    vulb__vcopy( x, initial_guess, n );
    vulb__mmul( r, A, x, n, n );
    vulb__vsub( r, b, r, n );
    rd = vulb__dot( r, r, n );
 
    for( k = 0; k < max_iterations; ++k ) {
-      /* Solve Ly = r (solve for the residual error, not b)*/
+      /* Solve Ly = r (solve for the residual error, not b) */
       for( i = 0, iold = 0; i < n; ++i ) {
          imax = indices[ i ];
          sum = r[ imax ];
          r[ imax ] = r[ i ];
          if( iold ) {
             for( j = iold; j < i - 1; ++j ) {
-               sum -= IDX( A, i, j, n, n ) * r[ j ];
+               sum -= IDX( LU, i, j, n, n ) * r[ j ];
             }
          } else if( sum ) {
             iold = i;
@@ -2103,85 +2271,149 @@ void vul_linalg_lu_decomposition_dense( vul_linalg_real *out,
       if( fabs( rd2 - rd ) < tolerance * n ) {
          break;
       }
+		/* Calculate new residual */
+      vulb__mmul( r, A, x, n, n );
+      vulb__vsub( r, r, b, n );
+      rd = rd2;
+   }
+}
+
+void vul_linalg_cholesky_decomposition_dense( vul_linalg_real *LL,
+                                              vul_linalg_real *A,
+                                              int n )
+{
+   vul_linalg_real sum;
+   int i, j, k;
+
+   // Copy work matrix
+   memcpy( LL, A, sizeof( vul_linalg_real ) * n * n );
+
+   // Decomposition
+   for( i = 0; i < n; ++i ) {
+      for( j = i; j < n; ++j ) {
+         sum = IDX( LL, i, j, n, n );
+         for( k = i - 1; k >= 0; --k ) {
+            sum -= IDX( LL, i, k, n, n ) * IDX( LL, j, k, n, n );
+         }
+         if( i == j ) {
+            assert( sum > 0.f ); // Cholesky decomposition is only valid for POSITIVE-DEFINITE symmetric matrices
+            IDX( LL, i, i, n, n ) = sqrt( sum );
+         } else {
+            assert( IDX( LL, i, i, n, n ) != 0.f ); // Determinant is sufficiently small that a divide-by-zero is imminent
+            IDX( LL, j, i, n, n ) = sum / IDX( LL, i, i, n, n );
+         }
+      }
+   }
+}
+
+void vul_linalg_cholesky_solve_dense( vul_linalg_real *out,
+                                      vul_linalg_real *LL,
+                                      vul_linalg_real *A,
+												  vul_linalg_real *initial_guess,
+                                      vul_linalg_real *b,
+                                      int n,
+												  int max_iterations,
+												  vul_linalg_real tolerance )
+{
+   vul_linalg_real *x, *r, *y;
+   vul_linalg_real rd, rd2;
+   int i, j, k;
+
+   r = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
+   y = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
+   x = out;
+
+	/* Calculate initial residual */
+   vulb__vcopy( x, initial_guess, n );
+   vulb__mmul( r, A, x, n, n );
+   vulb__vsub( r, b, r, n );
+   rd = vulb__dot( r, r, n );
+
+   for( k = 0; k < max_iterations; ++k ) {
+		/* Solve Ly = r */
+		vulb__forward_substitute( y, LL, r, n, n );
+		/* Solve L^Tr = y */
+		vulb__backward_substitute( r, LL, y, n, n, 1 );
+
+      /* Subtract the error from the old solution */
+      vulb__vsub( x, x, r, n );
+
+      /* Break if within tolerance */
+      rd2 = vulb__dot( r, r, n );
+      if( fabs( rd2 - rd ) < tolerance * n ) {
+         break;
+      }
+		/* Calculate new residual */
       vulb__mmul( r, A, x, n, n );
       vulb__vsub( r, r, b, n );
       rd = rd2;
    }
    
-   VUL_LINALG_FREE( LU );
-   VUL_LINALG_FREE( r );
-   VUL_LINALG_FREE( scale );
-   VUL_LINALG_FREE( indices );
+	VUL_LINALG_FREE( r );
+	VUL_LINALG_FREE( y );
 }
 
-void vul_linalg_cholesky_decomposition_dense( vul_linalg_real *out,
-                                              vul_linalg_real *A,
-                                              vul_linalg_real *b,
-                                              int n )
-{
-   vul_linalg_real *x, *D, *r;
-   vul_linalg_real sum, rd, rd2;
-   int i, j, k;
-
-   D = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n * n );
-   r = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
-   x = out;
-   
-   // Copy work matrix
-   memcpy( D, A, sizeof( vul_linalg_real ) * n * n );
-
-   // Decomposition
-   for( i = 0; i < n; ++i ) {
-      for( j = i; j < n; ++j ) {
-         sum = IDX( D, i, j, n, n );
-         for( k = i - 1; k >= 0; --k ) {
-            sum -= IDX( D, i, k, n, n ) * IDX( D, j, k, n, n );
-         }
-         if( i == j ) {
-            assert( sum > 0.f ); // Cholesky decomposition is only valid for POSITIVE-DEFINITE symmetric matrices
-            IDX( D, i, i, n, n ) = sqrt( sum );
-         } else {
-            assert( IDX( D, i, i, n, n ) != 0.f ); // Determinant is sufficiently small that a divide-by-zero is imminent
-            IDX( D, j, i, n, n ) = sum / IDX( D, i, i, n, n );
-         }
-      }
-   }
-   // Solve Lr = b
-   vulb__forward_substitute( r, D, b, n, n );
-   // Solve L^Tx = r
-   vulb__backward_substitute( out, D, r, n, n, 1 );
-
-   VUL_LINALG_FREE( D );
-   VUL_LINALG_FREE( r );
-}
-
-void vul_linalg_qr_decomposition_dense( vul_linalg_real *out,
+void vul_linalg_qr_decomposition_dense( vul_linalg_real *Q,
+                                        vul_linalg_real *R,
                                         vul_linalg_real *A,
-                                        vul_linalg_real *b,
                                         int n )
 {
-   vul_linalg_real *d, *Q, *R, sum, rd, rd2;
+   vul__linalg_qr_decomposition_givens( Q, R, A, n, n, 0 );
+	// @TODO(thynn): Do we just expose the givens ones directly?
+}
+
+void vul_linalg_qr_solve_dense( vul_linalg_real *out,
+                                vul_linalg_real *Q,
+                                vul_linalg_real *R,
+                                vul_linalg_real *A,
+                                vul_linalg_real *initial_guess,
+                                vul_linalg_real *b,
+                                int n,
+										  int max_iterations,
+										  vul_linalg_real tolerance )
+{
+   vul_linalg_real *x, *d, *r, sum, rd, rd2;
    int i, j, k;
 
    d = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
-   Q = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n * n );
-   R = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n * n );
+   r = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
+   x = out;
+	
+	/* Calculate initial residual */
+   vulb__vcopy( x, initial_guess, n );
+   vulb__mmul( r, A, x, n, n );
+   vulb__vsub( r, b, r, n );
+   rd = vulb__dot( r, r, n );
 
-   vul__linalg_qr_decomposition_givens( Q, R, A, n, n, 0 );
+   for( k = 0; k < max_iterations; ++k ) {
+		/* Solve Qd = r */
+		for( i = 0; i < n; ++i ) {
+			sum = 0;
+			for( j = 0; j < n; ++j ) {
+				sum += IDX( Q, j, i, n, n ) * r[ j ];
+			}
+			d[ i ] = sum;
+		}
 
-   for( i = 0; i < n; ++i ) {
-      sum = 0;
-      for( j = 0; j < n; ++j ) {
-         sum += IDX( Q, j, i, n, n ) * b[ j ];
+		/* Solve Rr = d */
+		vulb__backward_substitute( r, R, d, n, n, 0 );
+
+      /* Subtract the error from the old solution */
+      vulb__vsub( x, x, r, n );
+
+      /* Break if within tolerance */
+      rd2 = vulb__dot( r, r, n );
+      if( fabs( rd2 - rd ) < tolerance * n ) {
+         break;
       }
-      d[ i ] = sum;
+		/* Calculate new residual */
+      vulb__mmul( r, A, x, n, n );
+      vulb__vsub( r, r, b, n );
+      rd = rd2;
    }
 
-   vulb__backward_substitute( out, R, d, n, n, 0 );
-
    VUL_LINALG_FREE( d );
-   VUL_LINALG_FREE( Q );
-   VUL_LINALG_FREE( R );
+   VUL_LINALG_FREE( r );
 }
 
 void vul_linalg_successive_over_relaxation_dense( vul_linalg_real *out,
@@ -2273,7 +2505,7 @@ void vul_linalg_svd_basis_destroy( vul_linalg_svd_basis *x, int n )
 
 static void vul__linalg_svd_sort( vul_linalg_svd_basis *x, int n )
 {
-   // Shell sort, gaps for up to about a 1000 singular values.
+   // Shell sort, gaps for up to about a 10M singular values.
    vul_linalg_svd_basis tmp;
    int gap, gi, i, j;
    int gaps[ ] = { 4071001, 1170001, 237001, 67001, 17001, 5001, 1701, 701, 301, 132, 67, 23, 10, 4, 1 };
@@ -2598,6 +2830,48 @@ static vul_linalg_real vul__linalg_matrix_norm_as_single_column( vul_linalg_real
    return v;
 }
 
+static vul_linalg_real vul__linalg_matrix_norm_one( vul_linalg_real *A, int c, int r )
+{
+	vul_linalg_real v, m;
+	int i, j;
+
+	m = 0.0;
+	for( i = 0; i < c; ++i ) {
+		v = 0.0;
+		for( j = 0; j < r; ++j ) {
+			v += fabs( IDX( A, i, j, c, r ) );
+		}
+		m = v > m ? v : m;
+	}
+	return m;
+}
+
+static vul_linalg_real vul__linalg_matrix_norm_inf( vul_linalg_real *A, int c, int r )
+{
+	vul_linalg_real v, m;
+	int i, j;
+
+	m = 0.0;
+	for( i = 0; i < r; ++i ) {
+		v = 0.0;
+		for( j = 0; j < c; ++j ) {
+			v += fabs( IDX( A, i, j, c, r ) );
+		}
+		m = v > m ? v : m;
+	}
+	return m;
+}
+
+vul_linalg_real vul_linalg_condition_number( vul_linalg_real *A, int c, int r )
+{
+	// @TODO(thynn): Check if singular, return inf if so!
+	// @TODO(thynn): Compute this (we should really do this different ways depending on
+	// solver etc. because SVD has this given (since 2-norm of A = largest singular value...)
+	// See http://faculty.nps.edu/rgera/MA3042/2009/ch7.4.pdf
+	// Possibly write this to a static value at each step (we calculate this anyway to stop in the iterative solvers (I think)),
+	// and have a function that can retrieve the value?
+}
+
 vul_linalg_real vul_linalg_largest_eigenvalue( vul_linalg_real *A, int c, int r, vul_linalg_real eps, int max_iter )
 {
    int iter, axis, normaxis, i, j;
@@ -2882,7 +3156,7 @@ void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
    }
    vul__linalg_svd_sort( out, k );
 
-   // Fix signs and copy U
+   // Fix signs and copy U and V
    for( i = 0; i < *rank; ++i ) {
       out[ i ].u_length = r;
       out[ i ].v_length = c;
@@ -2942,7 +3216,7 @@ void vul_linalg_linear_least_squares_dense( vul_linalg_real *out,
    for( i = 0; i < rank; ++i ) {
       S[ res[ i ].axis ] = res[ i ].sigma;
    }
-   // Free the basis'
+   // Free the bases
    vul_linalg_svd_basis_destroy( res, rank );
    VUL_LINALG_FREE( res );
    

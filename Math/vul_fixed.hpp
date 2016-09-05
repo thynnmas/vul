@@ -161,7 +161,7 @@ namespace vul {
 	template< int Q32 >
 	fixed_32< Q >::fixed_32( fixed_32< Q32 > a )
 	{
-#ifdef VUL_WINDOWS
+#if defined VUL_WINDOWS && !defined( __MINGW32__ ) && !defined( __MINGW64__ )
 	#pragma warning ( disable: 4293 ) // We are aware, and branch accordingly
 #endif
 		// Negative shifts are undefined, so branch
@@ -177,7 +177,7 @@ namespace vul {
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-#ifdef VUL_WINDOWS
+#if defined VUL_WINDOWS && !defined( __MINGW32__ ) && !defined( __MINGW64__ )
 	#pragma warning ( default: 4293 )
 #endif
 	}
@@ -206,7 +206,7 @@ namespace vul {
 	{
 		fixed_32< Q32 > r;
 
-#ifdef VUL_WINDOWS
+#if defined VUL_WINDOWS && !defined( __MINGW32__ ) && !defined( __MINGW64__ )
 	#pragma warning ( disable: 4293 ) // We are aware, and branch accordingly
 #endif
 		// Negative shifts are undefined, so branch
@@ -215,7 +215,7 @@ namespace vul {
 		} else {
 			r.data = data >> ( Q32 - Q );
 		}
-#ifdef VUL_WINDOWS
+#if defined VUL_WINDOWS && !defined( __MINGW32__ ) && !defined( __MINGW64__ )
 	#pragma warning ( default: 4293 )
 #endif
 

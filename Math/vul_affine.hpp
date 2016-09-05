@@ -128,7 +128,9 @@ namespace vul {
 		this->vec = vec;
 	}
 #else
+#if defined( VUL_WINDOWS ) && !defined( __MINGW32__ ) && !defined( __MINGW64__ )
 #pragma warning(disable: 6001)
+#endif
 	template< typename T, s32 n >
 	Affine< T, n > makeAffine( )
 	{
@@ -242,6 +244,8 @@ namespace vul {
 	}
 
 }
+#if defined( VUL_WINDOWS ) && !defined( __MINGW32__ ) && !defined( __MINGW64__ )
 #pragma warning(default: 6001)
+#endif
 
 #endif

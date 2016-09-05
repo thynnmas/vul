@@ -44,7 +44,7 @@ int main( int argc, char **argv )
    vul_timer *t = vul_timer_create( );
 	JacobiSVD< MatrixXf > svd( A, ComputeThinU | ComputeThinV );
    uint64_t mms = vul_timer_get_micros( t );
-   printf( "Completed in %llu.%llus\n", mms / 1000000, mms % 1000000 );
+   printf( "Completed in %lu.%lus\n", mms / 1000000, mms % 1000000 );
 
 	VectorXf sigma = svd.singularValues();
    for( int i = 0; i < svd.rank(); ++i ) {

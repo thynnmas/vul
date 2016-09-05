@@ -32,7 +32,6 @@
 #define VUL_HALF_HPP
 
 #include <algorithm>
-#include <limits>
 #include <climits>
 #include <cmath>
 

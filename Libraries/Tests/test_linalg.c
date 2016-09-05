@@ -133,10 +133,13 @@ void vul__test_linear_solvers_sparse( )
    vul_linalg_vector_destroy( x );
    vul_linalg_matrix_destroy( D );
    vul_linalg_matrix_destroy( D2 );
-#if 0
-   vul_linalg_lu_decomposition_dense( x, A, guess, b, 3, iters, eps );
-   CHECK_WITHIN_EPS( x, solution, 3, 1e-8f );
-#endif
+   
+	int lu_indices[ 3 ];
+	vul_linalg_lu_decomposition_sparse( &D, lu_indices, A, 3, 3 );
+   x = vul_linalg_lu_solve_sparse( D, lu_indices, A, guess, b, 3, 3, iters, eps );
+   CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-8f );
+	vul_linalg_vector_destroy( x );
+	vul_linalg_matrix_destroy( D );
    
    vul_linalg_qr_decomposition_sparse( &D, &D2, A, 3, 3 );
    x = vul_linalg_qr_solve_sparse( D, D2, A, guess, b, 3, 3, iters, eps );

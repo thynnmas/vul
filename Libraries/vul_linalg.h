@@ -190,6 +190,39 @@ vul_linalg_vector *vul_linalg_successive_over_relaxation_sparse( vul_linalg_matr
                                                                  int max_iterations,
                                                                  vul_linalg_real tolerance );
 
+
+/*
+ * LU Decomposition step. Supply with a matrix that is NOT SINGULAR,
+ * and it returns a decomposition into a lower triangular matrix L
+ * and an upper triangular matrix U, both stored in the output matrix
+ * LU. The argument indices is also an output argument, and is required
+ * due to pivoting of the decomposed matrix.
+ *
+ * The decomposition can then be given to vul_linalg_lu_solve_sparse
+ * with A and b to solve Ax = b.
+ */
+void vul_linalg_lu_decomposition_sparse( vul_linalg_matrix **LU,
+													  int *indices,
+													  vul_linalg_matrix *A,
+													  int cols, int rows );
+/*
+ * Iterative solver of the linear system Ax = b given a LL* decomposition
+ * of the matrix A. Use vul_linalg_cholesky_decomposition_sparse to create
+ * this decomposition (or use the @TODO(thynn): LU(0) or LUT
+ * preconditioners).
+ *
+ * This method employs at most max_iterations of iterative refinement, or until
+ * the average square error is below tolerance.
+ */
+vul_linalg_vector *vul_linalg_lu_solve_sparse( vul_linalg_matrix *LU,
+															  int *indices,
+															  vul_linalg_matrix *A,
+															  vul_linalg_vector *initial_guess,
+															  vul_linalg_vector *b,
+															  int cols, int rows,
+															  int max_iterations,
+															  vul_linalg_real tolerance );
+
 /*
  * Cholesky Decomposition step. Supply a matrix A that is
  * HERMITIAN and POSITIVE-DEFINITE, and this returns the LL*
@@ -1255,6 +1288,130 @@ vul_linalg_vector *vul_linalg_successive_over_relaxation_sparse( vul_linalg_matr
    }
    
    vul_linalg_vector_destroy( r );
+   return x;
+}
+
+void vul_linalg_lu_decomposition_sparse( vul_linalg_matrix **LU,
+													  int *indices,
+													  vul_linalg_matrix *A,
+													  int cols, int rows )
+{
+   vul_linalg_vector *scale;
+   vul_linalg_real sum, tmp, largest;
+   int i, j, k, imax;
+
+	*LU = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   scale = vul_linalg_vector_create( 0, 0, 0 );
+   
+   /* Crout's LUP decomposition with pivoting and scaling */
+   for( i = 0; i < A->count; ++i ) {
+      largest = 0.f;
+		for( j = 0; j < A->rows[ i ].vec.count; ++j ) {
+         if( ( tmp = fabs( A->rows[ i ].vec.entries[ j ].val ) ) > largest ) {
+            largest = tmp;
+         }
+      }
+      assert( largest != 0.f ); // LU decomposition is not valid for singular matrices
+      vul_linalg_vector_insert( scale, A->rows[ i ].idx, 1.f / largest );
+   }
+   for( j = 0; j < cols; ++j ) {
+      for( i = 0; i < j; ++i ) {
+         sum = vul_linalg_matrix_get( A, i, j );
+         for( k = 0; k < i; ++k ) {
+            sum -= vul_linalg_matrix_get( *LU, i, k ) * vul_linalg_matrix_get( *LU, k, j );
+         }
+			vul_linalg_matrix_insert( *LU, i, j, sum );
+      }
+
+      largest = 0.f;
+      for( i = j; i < rows; ++i ) {
+         sum = vul_linalg_matrix_get( A, j, i );
+         for( k = 0; k < j; ++k ) {
+            sum -= vul_linalg_matrix_get( *LU, i, k ) * vul_linalg_matrix_get( *LU, k, j );
+         }
+         vul_linalg_matrix_insert( *LU, i, j, sum );
+         if( ( tmp = vul_linalg_vector_get( scale, i ) * fabs( sum ) ) >= largest ) {
+            largest = tmp;
+            imax = i;
+         }
+      }
+      if( j != imax ) { 
+         for( k = 0; k < rows; ++k ) {
+            tmp = vul_linalg_matrix_get( *LU, imax, k );
+            vul_linalg_matrix_insert( *LU, imax, k, vul_linalg_matrix_get( *LU, j, k ) );
+            vul_linalg_matrix_insert( *LU, j, k, tmp );
+         }
+			vul_linalg_vector_insert( scale, imax, vul_linalg_vector_get( scale, j ) );
+      }
+      indices[ j ] = imax;
+      assert( vul_linalg_matrix_get( *LU, j, j ) != 0.f ); // Pivot element is close enough to zero that we're singular
+      if( j != cols - 1 ) {
+         tmp = 1.f / vul_linalg_matrix_get( *LU, j, j );
+         for( i = j + 1; i < rows; ++i ) {
+            vul_linalg_matrix_insert( *LU, i, j, vul_linalg_matrix_get( *LU, i, j ) * tmp );
+         }
+      }
+   }
+   
+	vul_linalg_vector_destroy( scale );
+}
+
+vul_linalg_vector *vul_linalg_lu_solve_sparse( vul_linalg_matrix *LU,
+															  int *indices,
+															  vul_linalg_matrix *A,
+															  vul_linalg_vector *initial_guess,
+															  vul_linalg_vector *b,
+															  int cols, int rows,
+															  int max_iterations,
+															  vul_linalg_real tolerance )
+{
+   vul_linalg_vector *x, *r, *y;
+	vul_linalg_real rd, rd2, sum;
+	int k, i, j, imax, iold;
+
+   r = vul_linalg_vector_create( 0, 0, 0 );
+   x = vul_linalg_vector_create( 0, 0, 0 );
+	
+	/* Calculate initial residual */
+   vulb__sparse_vcopy( x, initial_guess );
+   vulb__sparse_mmul( r, A, x );
+   vulb__sparse_vsub( r, b, r );
+   rd = vulb__sparse_dot( r, r );
+
+   for( k = 0; k < max_iterations; ++k ) {
+      /* Solve Ly = r (solve for the residual error, not b) */
+      for( i = 0, iold = 0; i < cols; ++i ) {
+         imax = indices[ i ];
+         sum = vul_linalg_vector_get( r, imax );
+         vul_linalg_vector_insert( r, imax, vul_linalg_vector_get( r, i ) );
+         if( iold ) {
+            for( j = iold; j < i - 1; ++j ) {
+               sum -= vul_linalg_matrix_get( LU, i, j ) * vul_linalg_vector_get( r, j );
+            }
+         } else if( sum ) {
+            iold = i;
+         }
+         vul_linalg_vector_insert( r, i, sum );
+      }
+      /* Solve Ue = y (reuse r as e) */
+      vulb__sparse_backward_substitute( r, LU, r );
+
+      /* Subtract the error from the old solution */
+      vulb__sparse_vsub( x, x, r );
+
+      /* Break if within tolerance */
+      rd2 = vulb__sparse_dot( r, r );
+      if( fabs( rd2 - rd ) < tolerance * rows ) {
+         break;
+      }
+		/* Calculate new residual */
+      vulb__sparse_mmul( r, A, x );
+      vulb__sparse_vsub( r, r, b );
+      rd = rd2;
+   }
+   
+   vul_linalg_vector_destroy( r );
+
    return x;
 }
 
@@ -2870,6 +3027,7 @@ vul_linalg_real vul_linalg_condition_number( vul_linalg_real *A, int c, int r )
 	// See http://faculty.nps.edu/rgera/MA3042/2009/ch7.4.pdf
 	// Possibly write this to a static value at each step (we calculate this anyway to stop in the iterative solvers (I think)),
 	// and have a function that can retrieve the value?
+	return -1.0;
 }
 
 vul_linalg_real vul_linalg_largest_eigenvalue( vul_linalg_real *A, int c, int r, vul_linalg_real eps, int max_iter )

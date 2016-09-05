@@ -21,6 +21,17 @@
       printf( ( ppi == ( n )- 1 ) ? "%f" : "%f, ", ( v )[ ppi ] );\
    }}\
    printf("]\n");
+#ifdef VUL_LINALG_ROW_MAJOR
+#define PRINT_MATRIX( name, m, c, r )\
+   printf("%s\n", name);\
+   {for( int ppi = 0; ppi < ( r ); ++ppi ) {\
+      printf("[");\
+      {for( int ppj = 0; ppj < ( c ); ++ppj ) {\
+         printf( ( ppj == ( c )- 1 ) ? "%f" : "%f, ", ( m )[ ppj * r + ppi ] );\
+      }}\
+      printf("]\n");\
+   }}
+#else
 #define PRINT_MATRIX( name, m, c, r )\
    printf("%s\n", name);\
    {for( int ppi = 0; ppi < ( r ); ++ppi ) {\
@@ -30,6 +41,7 @@
       }}\
       printf("]\n");\
    }}
+#endif
 #define PRINT_MATRIX_SPARSE( name, m, c, r )\
    printf("%s\n", name);\
    {for( int ppi = 0; ppi < ( r ); ++ppi ) {\

@@ -527,7 +527,35 @@ vul_linalg_vector *vul_linalg_linear_least_squares_sparse( vul_linalg_matrix *A,
  *
  * Uses the Power method (slow, but simple).
  */
-vul_linalg_real vul_linalg_largest_eigenvalue( vul_linalg_real *A, int c, int r, vul_linalg_real eps, int max_iter );
+vul_linalg_real vul_linalg_largest_eigenvalue_dense( vul_linalg_real *A, int c, int r, 
+                                                     vul_linalg_real eps, int max_iter );
+
+/*
+ * Find the condition number of the matrix A. Note that this uses the matrix norm,
+ * and computes the condition number as the fraction between largest and smallest
+ * non-singluar singular values in the singular value decomposition. This means
+ * it is very slow.
+ */
+vul_linalg_real vul_linalg_condition_number_dense( vul_linalg_real *A, int c, int r, 
+                                                   vul_linalg_real eps, int max_iter );
+
+/*
+ * Find the largest eigenvalue in the matrix A of dimentions c,r to the given
+ * epsilon or until max_iter iterations have run.
+ *
+ * Uses the Power method (slow, but simple).
+ */
+vul_linalg_real vul_linalg_largest_eigenvalue_sparse( vul_linalg_matrix *A, int c, int r, 
+                                                      vul_linalg_real eps, int max_iter );
+
+/*
+ * Find the condition number of the matrix A. Note that this uses the matrix norm,
+ * and computes the condition number as the fraction between largest and smallest
+ * non-singluar singular values in the singular value decomposition. This means
+ * it is very slow.
+ */
+vul_linalg_real vul_linalg_condition_number_sparse( vul_linalg_matrix *A, int c, int r, 
+                                                    vul_linalg_real eps, int max_iter );
 
 
 #ifdef _cplusplus
@@ -1783,6 +1811,78 @@ static void vul__linalg_svd_sort_sparse( vul_linalg_svd_basis_sparse *x, int n )
       }
    }
 }
+
+vul_linalg_real vul_linalg_largest_eigenvalue_sparse( vul_linalg_matrix *A, int c, int r, 
+                                                      vul_linalg_real eps, int max_iter )
+{
+   int iter, axis, normaxis, i, j;
+   vul_linalg_vector *v, *y;
+   vul_linalg_real lambda, norm, err, tmp;
+
+   // Power method. Slow, but simple
+   v = vul_linalg_vector_create( 0, 0, 0 );
+   y = vul_linalg_vector_create( 0, 0, 0 );
+   vul_linalg_vector_insert( v, 0, 1.0 );
+
+   err = eps * 2;
+   iter = 0;
+   axis = 0;
+   lambda = 0.f;
+   while( err > eps && iter++ < max_iter ) {
+      vulb__sparse_mmul( y, A, v );
+      for( i = 0; i < r; ++i ) {
+         tmp = 0;
+         for( j = 0; j < c; ++j ) {
+            vul_linalg_vector_insert( y, i, 0 );
+            tmp += vul_linalg_matrix_get( A, i, j ) 
+                 * vul_linalg_vector_get( v, j );
+         }
+         vul_linalg_vector_insert( y, i, tmp );
+      }
+      err = fabs( lambda - vul_linalg_vector_get( y, axis ) );
+      lambda = vul_linalg_vector_get( y, axis );
+      norm = -FLT_MAX;
+      for( i = 0; i < r; ++i ) {
+         if( vul_linalg_vector_get( y, i ) > norm ) {
+            norm = vul_linalg_vector_get( y, i );
+            normaxis = i;
+         }
+      }
+      axis = normaxis;
+      for( i = 0; i < r; ++i ) {
+         vul_linalg_vector_insert( v, i, vul_linalg_vector_get( y, i ) / norm );
+      }
+   }
+
+   vul_linalg_vector_destroy( v );
+   vul_linalg_vector_destroy( y );
+
+   return lambda;
+}
+
+vul_linalg_real vul_linalg_condition_number_sparse( vul_linalg_matrix *A, int c, int r, 
+                                                    vul_linalg_real eps, int max_iter )
+{
+   vul_linalg_svd_basis_sparse *bases;
+   vul_linalg_real ret;
+   int n;
+   
+   n = c > r ? r : c;
+   bases = ( vul_linalg_svd_basis_sparse* )VUL_LINALG_ALLOC( sizeof( vul_linalg_svd_basis_sparse ) * n );
+
+   n = 0;
+   vul_linalg_svd_sparse( bases, &n, A, c, r, eps, max_iter );
+   if( n < 2 ) {
+      ERR( "Can't compute condition number, not enough non-zero singular values (need 2)." );
+      return 0.0;
+   }
+   ret = bases[ 0 ].sigma / bases[ n - 1 ].sigma;
+   vul_linalg_svd_basis_destroy_sparse( bases, n );
+   VUL_LINALG_FREE( bases );
+
+   return ret;
+}
+
 
 void vul_linalg_svd_sparse_qrlq( vul_linalg_svd_basis_sparse *out, int *rank,
                                  vul_linalg_matrix *A,
@@ -3069,7 +3169,8 @@ static vul_linalg_real vul__linalg_matrix_norm_inf( vul_linalg_real *A, int c, i
    return m;
 }
 
-vul_linalg_real vul_linalg_largest_eigenvalue( vul_linalg_real *A, int c, int r, vul_linalg_real eps, int max_iter )
+vul_linalg_real vul_linalg_largest_eigenvalue_dense( vul_linalg_real *A, int c, int r, 
+                                                     vul_linalg_real eps, int max_iter )
 {
    int iter, axis, normaxis, i, j;
    vul_linalg_real *v, *y, lambda, norm, err;
@@ -3111,6 +3212,29 @@ vul_linalg_real vul_linalg_largest_eigenvalue( vul_linalg_real *A, int c, int r,
    VUL_LINALG_FREE( y );
 
    return lambda;
+}
+
+vul_linalg_real vul_linalg_condition_number_dense( vul_linalg_real *A, int c, int r, 
+                                                   vul_linalg_real eps, int max_iter )
+{
+   vul_linalg_svd_basis *bases;
+   vul_linalg_real ret;
+   int n;
+   
+   n = c > r ? r : c;
+   bases = ( vul_linalg_svd_basis* )VUL_LINALG_ALLOC( sizeof( vul_linalg_svd_basis ) * n );
+
+   n = 0;
+   vul_linalg_svd_dense( bases, &n, A, c, r, eps, max_iter );
+   if( n < 2 ) {
+      ERR( "Can't compute condition number, not enough non-zero singular values (need 2)." );
+      return 0.0;
+   }
+   ret = bases[ 0 ].sigma / bases[ n - 1 ].sigma;
+   vul_linalg_svd_basis_destroy( bases, n );
+   VUL_LINALG_FREE( bases );
+
+   return ret;
 }
 
 void vul_linalg_svd_dense_qrlq( vul_linalg_svd_basis *out, int *rank,

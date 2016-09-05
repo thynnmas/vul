@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #define TEST( expr ) if( !( expr ) ) {\
+   fprintf( stderr, "Failed assert at %s:%d.", __FILE__, __LINE__ );\
    fprintf( stderr, #expr );\
    exit( 1 );\
 }
@@ -53,6 +54,7 @@
 #define VUL_LINALG_ROW_MAJOR
 //#define VUL_LINALG_ALLOC malloc
 //#define VUL_LINALG_FREE free
+#define VUL_LINALG_ERROR_ASSERT
 #include "../vul_linalg.h"
 #ifdef VUL_LINALG_DOUBLE
 typedef double real;
@@ -375,8 +377,27 @@ void vul__test_eigenvalues( ) {
                         4, 8, 0, 1 };
    real solution = 15.756757465243327;
    real eps = 1e-6;
-   real v = vul_linalg_largest_eigenvalue( H, 4, 4, 1e-7, 32 );
+   real v = vul_linalg_largest_eigenvalue_dense( H, 4, 4, 1e-7, 32 );
    TEST( fabs( v - solution ) < eps );
+
+   vul_linalg_matrix *HS = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   vul_linalg_matrix_insert( HS, 0, 0, 1 );
+   vul_linalg_matrix_insert( HS, 0, 1, 2 );
+   vul_linalg_matrix_insert( HS, 0, 2, 3 );
+   vul_linalg_matrix_insert( HS, 0, 3, 4 );
+   vul_linalg_matrix_insert( HS, 1, 0, 2 );
+   vul_linalg_matrix_insert( HS, 1, 1, 6 );
+   vul_linalg_matrix_insert( HS, 1, 2, 7 );
+   vul_linalg_matrix_insert( HS, 1, 3, 8 );
+   vul_linalg_matrix_insert( HS, 2, 0, 3 );
+   vul_linalg_matrix_insert( HS, 2, 1, 7 );
+   vul_linalg_matrix_insert( HS, 3, 0, 4 );
+   vul_linalg_matrix_insert( HS, 3, 1, 8 );
+   vul_linalg_matrix_insert( HS, 3, 3, 1 );
+   v = vul_linalg_largest_eigenvalue_sparse( HS, 4, 4, 1e-7, 32 );
+   TEST( fabs( v - solution ) < eps );
+
+   vul_linalg_matrix_destroy( HS );
 }
 
 void vul__test_qr_decomposition( ) {
@@ -501,6 +522,43 @@ void vul__test_transpose( )
    CHECK_WITHIN_EPS( C, A, 3 * 2, FLT_EPSILON );
 }
 
+void vul__test_condition_number( )
+{
+   real AD[ 5 * 5 ] = { 2,  0, 8, 6, 0,
+                       1,  6, 0, 1, 7,
+                       5,  0, 7, 4, 0,
+                       7,  0, 8, 5, 0,
+                       0, 10, 0, 0, 7 };
+   real s = 51.2604; // According to matlab
+   real v = vul_linalg_condition_number_dense( AD, 5, 5, 1e-7, 32 );
+   TEST( fabs( s - v ) < 1e-4 );
+   
+   int rank = 0;
+   vul_linalg_matrix *A = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   vul_linalg_matrix_insert( A, 0, 0, 2.f );
+   vul_linalg_matrix_insert( A, 0, 2, 8.f );
+   vul_linalg_matrix_insert( A, 0, 3, 6.f );
+   
+   vul_linalg_matrix_insert( A, 1, 0, 1.f );
+   vul_linalg_matrix_insert( A, 1, 1, 6.f );
+   vul_linalg_matrix_insert( A, 1, 3, 1.f );
+   vul_linalg_matrix_insert( A, 1, 4, 7.f );
+
+   vul_linalg_matrix_insert( A, 2, 0, 5.f );
+   vul_linalg_matrix_insert( A, 2, 2, 7.f );
+   vul_linalg_matrix_insert( A, 2, 3, 4.f );
+
+   vul_linalg_matrix_insert( A, 3, 0, 7.f );
+   vul_linalg_matrix_insert( A, 3, 2, 8.f );
+   vul_linalg_matrix_insert( A, 3, 3, 5.f );
+
+   vul_linalg_matrix_insert( A, 4, 1, 10.f );
+   vul_linalg_matrix_insert( A, 4, 4, 7.f );
+   v = vul_linalg_condition_number_sparse( A, 5, 5, 1e-7, 32 );
+   TEST( fabs( s - v ) < 1e-4 );
+   vul_linalg_matrix_destroy( A );
+}
+
 int main( ) {
    // @TODO(thynn): Test all the helpers, not just the transpose
    vul__test_transpose( );
@@ -511,6 +569,8 @@ int main( ) {
    puts("Sparse solvers work.");
    vul__test_eigenvalues( );
    puts("Eigenvalue finding works.");
+   vul__test_condition_number( );
+   puts("Condition number calculation works.");
    vul__test_householder( );
    puts("Householder reflection works.");
    vul__test_qr_decomposition( );

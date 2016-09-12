@@ -8,6 +8,7 @@
 #include "stb_image_write.h"
 
 #define VUL_DEFINE
+#define VUL_LINALG_ERROR_ASSERT
 #include "vul_linalg.h"
 #include "vul_timer.h"
 

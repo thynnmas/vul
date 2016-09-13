@@ -1859,7 +1859,6 @@ vul_linalg_vector *vul_linalg_gmres_sparse( vul_linalg_matrix *A,
          break; // We converged!
       }
    }
-   
    if( err > tolerance ) {
       printf("Filed to converge to tolerance in GMRES\n");
       //ERR( "Failed to converge in GMRES!" ); // @TODO(thynn): This is the wrong way to signal this; find a better way!
@@ -2732,6 +2731,9 @@ void vul_linalg_svd_sparse( vul_linalg_svd_basis_sparse *out, int *rank,
    vul_linalg_vector_destroy( omegas );
 }
 
+// @TODO(thynn): This should cache the SVD as well. Make it 2 step or 3 step (svd_sparse -> reconstruct U, V, S
+// -> solve, or svd_sparse -> solve & reconstruct every solve, or operate directly on bases (this is the best)).
+// @TODO(thynn): Weighting (obv. independent of svd, only for the solve part!)
 vul_linalg_vector *vul_linalg_linear_least_squares_sparse( vul_linalg_matrix *A,
                                                            vul_linalg_vector *b,
                                                            int c, int r,

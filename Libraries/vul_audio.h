@@ -215,7 +215,8 @@ vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_clos
  * If no mix_function is supplied, the internal mixer is used.
  *
  * The frame-size argument is the size of the audio buffer upload frame
- * in bytes. If unsure what to use, 0x1000 seems to be a popular default.
+ * in bytes. If unsure what to use, 0x4000 is recommended (0x1000 is the
+ * typical default on linux, but may cause stutter on windows).
  *
  * The linux version takes three additional arguments: 
  * -server_name  is the name to the pulse audio server to attempt to connect 

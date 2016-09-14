@@ -130,8 +130,6 @@ typedef enum vul_linalg_precoditioner_type {
    VUL_LINALG_PRECONDITIONER_JACOBI,
    VUL_LINALG_PRECONDITIONER_INCOMPLETE_CHOLESKY,
    VUL_LINALG_PRECONDITIONER_INCOMPLETE_LU_0
-   // @TODO(thynn): SOR, where no matrix is created/supplied, but a few iterations of SOR are run to solve
-   // on the left (only).
 } vul_linalg_precoditioner_type;
 
 //----------------------------------
@@ -1593,8 +1591,6 @@ void vul__linalg_precondition_solve( vul_linalg_precoditioner_type type,
 //---------------------
 // Sparse solvers
 //
-
-// @TODO(thynn): Bi-CGSTAB (see p 72 in http://www2.imm.dtu.dk/~apek/ITSOL2011/material/tuesday/Lecture_2.pdf )
 
 vul_linalg_vector *vul_linalg_conjugate_gradient_sparse( vul_linalg_matrix *A,
                                                          vul_linalg_vector *initial_guess,

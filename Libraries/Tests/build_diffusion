@@ -1,1 +1,0 @@
-clang -g -O0 -march=native -ffast-math -I ../../../../Libs/stb -I../../../../Libs/nanovg/src/  -I. -DVUL_LINUX -DTFY_PLOT -DNANOVG_GLES2_IMPLEMENTATION -DNANOVG_GLEW  diffusion.cpp -o diffusion -lm -lGLEW -lGL -lglfw

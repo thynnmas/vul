@@ -109,8 +109,12 @@ void vul__test_linear_solvers_dense( )
    vul_linalg_qr_solve_dense( x, D, D2, A, guess, b, 3, iters, eps );
    CHECK_WITHIN_EPS( x, solution, 3, 1e-7f );
 
-   vul_linalg_linear_least_squares_dense( x, A, b, 3, 3, iters, eps );
+   vul_linalg_svd_basis res[ 3 ];
+   int rank = 0;
+   vul_linalg_svd_dense( res, &rank, A, 3, 3, iters, eps );
+   vul_linalg_linear_least_squares_dense( x, res, rank, b );
    CHECK_WITHIN_EPS( x, solution, 3, 1e-7f );
+   vul_linalg_svd_basis_destroy( res, rank );
 }
 
 void vul__test_linear_solvers_sparse( )
@@ -187,12 +191,6 @@ void vul__test_linear_solvers_sparse( )
    vul_linalg_vector_destroy( x );
 	vul_linalg_matrix_destroy( P );
 	
-   P = vul_linalg_precondition_ilu0( A, 3, 3 );
-	x = vul_linalg_gmres_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_INCOMPLETE_LU_0, 3, 1024, 1e-7 );
-   CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-4f );
-   vul_linalg_vector_destroy( x );
-	vul_linalg_matrix_destroy( P );
-   
    // Direct solvers
 	vul_linalg_matrix *D, *D2;
    vul_linalg_cholesky_decomposition_sparse( &D, &D2, A, 3, 3 );
@@ -221,8 +219,12 @@ void vul__test_linear_solvers_sparse( )
    vul_linalg_vector_destroy( x );
 
    // SVD-based solver
-   x = vul_linalg_linear_least_squares_sparse( A, b, 3, 3, iters, eps );
+   vul_linalg_svd_basis_sparse res[ 3 ];
+   int rank = 0;
+   vul_linalg_svd_sparse( res, &rank, A, 3, 3, iters, eps );
+   x = vul_linalg_linear_least_squares_sparse( res, rank, b );
    CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-7f );
+   vul_linalg_svd_basis_destroy_sparse( res, rank );
 
    vul_linalg_matrix_destroy( A );
    vul_linalg_vector_destroy( b );
@@ -257,7 +259,7 @@ void vul__test_svd_sparse( )
    vul_linalg_matrix_insert( A, 4, 1, 10.f );
    vul_linalg_matrix_insert( A, 4, 4, 7.f );
 
-   vul_linalg_svd_sparse_qrlq( res, &rank, A, 5, 5, 1e-7, 32 );
+   vul_linalg_svd_sparse_qrlq( res, &rank, A, 5, 5, 32, 1e-7 );
    TEST( rank == 5 );
    TEST( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
    TEST( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
@@ -278,7 +280,7 @@ void vul__test_svd_sparse( )
    vul_linalg_matrix_insert( A2, 3, 1, 2.f );
    vul_linalg_matrix *A3 = vul_linalg_matrix_create( 0, 0, 0, 0 );
    vulb__sparse_mtranspose( A3, A2 );
-   vul_linalg_svd_sparse_qrlq( res, &rank, A2, 5, 4, 1e-10, 32 );
+   vul_linalg_svd_sparse_qrlq( res, &rank, A2, 5, 4, 32, 1e-10 );
    TEST( rank == 3 ); // Check that we got back the rank we wanted
    TEST( fabs( res[ 0 ].sigma - 3.f ) < 1e-5 );
    TEST( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-5 );
@@ -294,7 +296,7 @@ void vul__test_svd_sparse( )
 
    // Jacobi
    rank = 0;
-   vul_linalg_svd_sparse( res, &rank, A, 5, 5, 1e-7, 32 );
+   vul_linalg_svd_sparse( res, &rank, A, 5, 5, 32, 1e-7 );
    TEST( rank == 5 );
    TEST( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
    TEST( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
@@ -309,7 +311,7 @@ void vul__test_svd_sparse( )
    vul_linalg_svd_basis_destroy_sparse( res, rank );
 
    rank = 0;
-   vul_linalg_svd_sparse( res, &rank, A2, 5, 4, 1e-10, 32 );
+   vul_linalg_svd_sparse( res, &rank, A2, 5, 4, 32, 1e-10 );
    TEST( rank == 3 ); // Check that we got back the rank we wanted
    TEST( fabs( res[ 0 ].sigma - 3.f ) < 1e-5 );
    TEST( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-5 );
@@ -360,7 +362,7 @@ void vul__test_svd_dense( )
                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
    rank = 3;
-   vul_linalg_svd_dense_qrlq( res, &rank, A, 15, 25, 1e-7, 32 );
+   vul_linalg_svd_dense_qrlq( res, &rank, A, 15, 25, 32, 1e-7 );
    TEST( rank == 3 );
    TEST( fabs( res[ 0 ].sigma - 14.72f ) < 1e-2 );
    TEST( fabs( res[ 1 ].sigma - 5.22f ) < 1e-2 );
@@ -376,7 +378,7 @@ void vul__test_svd_dense( )
                         7,  0, 8, 5, 0,
                         0, 10, 0, 0, 7 };
    rank = 0;
-   vul_linalg_svd_dense_qrlq( res, &rank, A2, 5, 5, 1e-7, 8 ); // Higher iteration count introduces error with givens rotations!
+   vul_linalg_svd_dense_qrlq( res, &rank, A2, 5, 5, 8, 1e-7 ); // Higher iteration count introduces error with givens rotations!
    TEST( rank == 5 );
    TEST( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
    TEST( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
@@ -392,7 +394,7 @@ void vul__test_svd_dense( )
                         0, 0, 3, 0, 0,
                         0, 0, 0, 0, 0,
                         0, 2, 0, 0, 0 };
-   vul_linalg_svd_dense_qrlq( res, &rank, A3, 5, 4, 1e-10, 32 );
+   vul_linalg_svd_dense_qrlq( res, &rank, A3, 5, 4, 32, 1e-10 );
    TEST( rank == 3 ); // Check that we got back the rank we wanted
    TEST( fabs( res[ 0 ].sigma - 3.f ) < 1e-5 );
    TEST( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-5 );
@@ -404,7 +406,7 @@ void vul__test_svd_dense( )
 
    // Test jacobi
    rank = 0;
-   vul_linalg_svd_dense( res, &rank, A, 15, 25, 1e-7, 32 );
+   vul_linalg_svd_dense( res, &rank, A, 15, 25, 32, 1e-7 );
    TEST( rank == 3 );
    TEST( fabs( res[ 0 ].sigma - 14.72f ) < 1e-2 );
    TEST( fabs( res[ 1 ].sigma - 5.22f ) < 1e-2 );
@@ -414,7 +416,7 @@ void vul__test_svd_dense( )
    vul_linalg_svd_basis_destroy( res, rank );
 
    rank = 0;
-   vul_linalg_svd_dense( res, &rank, A2, 5, 5, 1e-7, 8 );
+   vul_linalg_svd_dense( res, &rank, A2, 5, 5, 8, 1e-7 );
    TEST( rank == 5 );
    TEST( fabs( res[ 0 ].sigma - 17.9173f ) < 1e-2 );
    TEST( fabs( res[ 1 ].sigma - 15.1722f ) < 1e-2 );
@@ -426,7 +428,7 @@ void vul__test_svd_dense( )
    vul_linalg_svd_basis_destroy( res, rank );
 
    rank = 0;
-   vul_linalg_svd_dense( res, &rank, A3, 5, 4, 1e-10, 32 );
+   vul_linalg_svd_dense( res, &rank, A3, 5, 4, 32, 1e-10 );
    TEST( rank == 3 ); // Check that we got back the rank we wanted
    TEST( fabs( res[ 0 ].sigma - 3.f ) < 1e-2 );
    TEST( fabs( res[ 1 ].sigma - sqrtf( 5.f ) ) < 1e-2 );
@@ -444,7 +446,7 @@ void vul__test_eigenvalues( ) {
                         4, 8, 0, 1 };
    real solution = 15.756757465243327;
    real eps = 1e-6;
-   real v = vul_linalg_largest_eigenvalue_dense( H, 4, 4, 1e-7, 32 );
+   real v = vul_linalg_largest_eigenvalue_dense( H, 4, 4, 32, 1e-7 );
    TEST( fabs( v - solution ) < eps );
 
    vul_linalg_matrix *HS = vul_linalg_matrix_create( 0, 0, 0, 0 );
@@ -461,7 +463,7 @@ void vul__test_eigenvalues( ) {
    vul_linalg_matrix_insert( HS, 3, 0, 4 );
    vul_linalg_matrix_insert( HS, 3, 1, 8 );
    vul_linalg_matrix_insert( HS, 3, 3, 1 );
-   v = vul_linalg_largest_eigenvalue_sparse( HS, 4, 4, 1e-7, 32 );
+   v = vul_linalg_largest_eigenvalue_sparse( HS, 4, 4, 32, 1e-7 );
    TEST( fabs( v - solution ) < eps );
 
    vul_linalg_matrix_destroy( HS );
@@ -597,7 +599,7 @@ void vul__test_condition_number( )
                        7,  0, 8, 5, 0,
                        0, 10, 0, 0, 7 };
    real s = 51.2604; // According to matlab
-   real v = vul_linalg_condition_number_dense( AD, 5, 5, 1e-7, 32 );
+   real v = vul_linalg_condition_number_dense( AD, 5, 5, 32, 1e-7 );
    TEST( fabs( s - v ) < 1e-4 );
    
    int rank = 0;

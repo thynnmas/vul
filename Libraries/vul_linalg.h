@@ -522,7 +522,7 @@ void vul_linalg_svd_basis_destroy( vul_linalg_svd_basis *x, int n );
  */
 void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
                            vul_linalg_real *A,
-                           int c, int r, vul_linalg_real eps, int itermax );
+                           int c, int r, int itermax, vul_linalg_real eps );
 
 /*
  * Computes the singular value decomposition of A.
@@ -540,20 +540,16 @@ void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
  */
 void vul_linalg_svd_dense_qrlq( vul_linalg_svd_basis *out, int *rank,
                                 vul_linalg_real *A,
-                                int c, int r, vul_linalg_real eps, int itermax );
+                                int c, int r, int itermax, vul_linalg_real eps );
 
 /*
- * Solves the generalized linear least squares problem defined by A and b by
- * singular value decomposition. The SVD runs at most max_iterations, or
- * until the average sqare error is less than tolerance. Matrix size must
- * be given in dimensions c and r.
+ * Solves the generalized linear least squares problem defined by the
+ * given singular value decomposition of A, and b.
  */
-void vul_linalg_linear_least_squares_dense( vul_linalg_real *out,
-                                            vul_linalg_real *A,
-                                            vul_linalg_real *b,
-                                            int c, int r,
-                                            int max_iterations,
-                                            vul_linalg_real tolerance );
+void vul_linalg_linear_least_squares_dense( vul_linalg_real *x,
+                                            vul_linalg_svd_basis *bases,
+                                            int rank,
+                                            vul_linalg_real *b );
 
 //---------------------------------------
 // Sparse Singular Value Decomposition
@@ -576,7 +572,7 @@ typedef struct vul_linalg_svd_basis_sparse {
  */
 void vul_linalg_svd_sparse( vul_linalg_svd_basis_sparse *out, int *rank,
                             vul_linalg_matrix *A,
-                            int c, int r, vul_linalg_real eps, int itermax );
+                            int c, int r, int itermax, vul_linalg_real eps );
 /*
  * Computes the singular value decomposition of A.
  * If rank is set, the maximum of non-zero singular values and rank
@@ -593,19 +589,15 @@ void vul_linalg_svd_sparse( vul_linalg_svd_basis_sparse *out, int *rank,
  */
 void vul_linalg_svd_sparse_qrlq( vul_linalg_svd_basis_sparse *out, int *rank,
                                  vul_linalg_matrix *A,
-                                 int c, int r, vul_linalg_real eps, int itermax );
+                                 int c, int r, int itermax, vul_linalg_real eps );
 
 /*
  * Solves the generalized linear least squares problem defined by A and b by
- * singular value decomposition. The SVD runs at most max_iterations, or
- * until the average sqare error is less than tolerance. Matrix size must
- * be given in dimensions c and r.
+ * a given singular value decomposition of A, and b.
  */
-vul_linalg_vector *vul_linalg_linear_least_squares_sparse( vul_linalg_matrix *A,
-                                                           vul_linalg_vector *b,
-                                                           int c, int r,
-                                                           int max_iterations,
-                                                           vul_linalg_real tolerance );
+vul_linalg_vector *vul_linalg_linear_least_squares_sparse( vul_linalg_svd_basis_sparse *bases,
+                                                           int rank,
+                                                           vul_linalg_vector *b );
 
 //--------------------------------
 // Miscellanous BLAS functions
@@ -618,7 +610,7 @@ vul_linalg_vector *vul_linalg_linear_least_squares_sparse( vul_linalg_matrix *A,
  * Uses the Power method (slow, but simple).
  */
 vul_linalg_real vul_linalg_largest_eigenvalue_dense( vul_linalg_real *A, int c, int r, 
-                                                     vul_linalg_real eps, int max_iter );
+                                                     int max_iter, vul_linalg_real eps );
 
 /*
  * Find the condition number of the matrix A. Note that this uses the matrix norm,
@@ -627,7 +619,7 @@ vul_linalg_real vul_linalg_largest_eigenvalue_dense( vul_linalg_real *A, int c, 
  * it is very slow.
  */
 vul_linalg_real vul_linalg_condition_number_dense( vul_linalg_real *A, int c, int r, 
-                                                   vul_linalg_real eps, int max_iter );
+                                                   int max_iter, vul_linalg_real eps );
 
 /*
  * Find the largest eigenvalue in the matrix A of dimentions c,r to the given
@@ -636,7 +628,7 @@ vul_linalg_real vul_linalg_condition_number_dense( vul_linalg_real *A, int c, in
  * Uses the Power method (slow, but simple).
  */
 vul_linalg_real vul_linalg_largest_eigenvalue_sparse( vul_linalg_matrix *A, int c, int r, 
-                                                      vul_linalg_real eps, int max_iter );
+                                                      int max_iter, vul_linalg_real eps );
 
 /*
  * Find the condition number of the matrix A. Note that this uses the matrix norm,
@@ -2397,7 +2389,7 @@ static void vul__linalg_svd_sort_sparse( vul_linalg_svd_basis_sparse *x, int n )
 }
 
 vul_linalg_real vul_linalg_largest_eigenvalue_sparse( vul_linalg_matrix *A, int c, int r, 
-                                                      vul_linalg_real eps, int max_iter )
+                                                      int max_iter, vul_linalg_real eps )
 {
    int iter, axis, normaxis, i, j;
    vul_linalg_vector *v, *y;
@@ -2455,7 +2447,7 @@ vul_linalg_real vul_linalg_condition_number_sparse( vul_linalg_matrix *A, int c,
    bases = ( vul_linalg_svd_basis_sparse* )VUL_LINALG_ALLOC( sizeof( vul_linalg_svd_basis_sparse ) * n );
 
    n = 0;
-   vul_linalg_svd_sparse( bases, &n, A, c, r, eps, max_iter );
+   vul_linalg_svd_sparse( bases, &n, A, c, r, max_iter, eps );
    if( n < 2 ) {
       ERR( "Can't compute condition number, not enough non-zero singular values (need 2)." );
       return 0.0;
@@ -2470,7 +2462,7 @@ vul_linalg_real vul_linalg_condition_number_sparse( vul_linalg_matrix *A, int c,
 
 void vul_linalg_svd_sparse_qrlq( vul_linalg_svd_basis_sparse *out, int *rank,
                                  vul_linalg_matrix *A,
-                                 int c, int r, vul_linalg_real eps, int itermax )
+                                 int c, int r, int itermax, vul_linalg_real eps )
 {
    vul_linalg_matrix *U0, *U1, *V0, *V1, *S0, *S1, *Sb, *Q, *tmp;
    vul_linalg_real err, e, f, scale;
@@ -2586,7 +2578,7 @@ void vul_linalg_svd_sparse_qrlq( vul_linalg_svd_basis_sparse *out, int *rank,
 
 void vul_linalg_svd_sparse( vul_linalg_svd_basis_sparse *out, int *rank,
                             vul_linalg_matrix *A,
-                            int c, int r, vul_linalg_real eps, int itermax )
+                            int c, int r, int itermax, vul_linalg_real eps )
 {
    vul_linalg_matrix *J, *U, *V, *G;
    vul_linalg_vector *omegas;
@@ -2731,74 +2723,37 @@ void vul_linalg_svd_sparse( vul_linalg_svd_basis_sparse *out, int *rank,
    vul_linalg_vector_destroy( omegas );
 }
 
-// @TODO(thynn): This should cache the SVD as well. Make it 2 step or 3 step (svd_sparse -> reconstruct U, V, S
-// -> solve, or svd_sparse -> solve & reconstruct every solve, or operate directly on bases (this is the best)).
-// @TODO(thynn): Weighting (obv. independent of svd, only for the solve part!)
-vul_linalg_vector *vul_linalg_linear_least_squares_sparse( vul_linalg_matrix *A,
-                                                           vul_linalg_vector *b,
-                                                           int c, int r,
-                                                           int max_iterations,
-                                                           vul_linalg_real tolerance )
+vul_linalg_vector *vul_linalg_linear_least_squares_sparse( vul_linalg_svd_basis_sparse *bases,
+                                                           int rank,
+                                                           vul_linalg_vector *b )
 {
-   vul_linalg_svd_basis_sparse *res;
-   vul_linalg_matrix *U, *V;
-   vul_linalg_vector *S, *d, *out;
+   vul_linalg_vector *d, *out;
    vul_linalg_real v;
-   int rank, i, j, k, m;
+   int i, j;
 
-   res = ( vul_linalg_svd_basis_sparse* )VUL_LINALG_ALLOC( sizeof( vul_linalg_svd_basis_sparse ) * c );
-   rank = 0;
-   vul_linalg_svd_sparse( res, &rank, A, c, r, tolerance, max_iterations );
-   
-   U = vul_linalg_matrix_create( 0, 0, 0, 0 );
-   V = vul_linalg_matrix_create( 0, 0, 0, 0 );
-   S = vul_linalg_vector_create( 0, 0, 0 );
    d = vul_linalg_vector_create( 0, 0, 0 );
    out = vul_linalg_vector_create( 0, 0, 0 );
 
-   // Reconstruct U^T
-   for( i = 0; i < rank; ++i ) {
-      for( j = 0; j < res[ i ].u->count; ++j ) {
-         vul_linalg_matrix_insert( U, res[ i ].axis, res[ i ].u->entries[ j ].idx, res[ i ].u->entries[ j ].val );
-      }
-   }
-   // Reconstruct V
-   for( i = 0; i < rank; ++i ) {
-      for( j = 0; j < res[ i ].v->count; ++j ) {
-         vul_linalg_matrix_insert( V, res[ i ].v->entries[ j ].idx, res[ i ].axis, res[ i ].v->entries[ j ].val );
-      }
-   }
-   // Reconstruct the diagonal of S
-   for( i = 0; i < rank; ++i ) {
-      vul_linalg_vector_insert( S, res[ i ].axis, res[ i ].sigma );
-   }
-   // Free the basis'
-   vul_linalg_svd_basis_destroy_sparse( res, rank );
-   VUL_LINALG_FREE( res );
-
    // Calculate d = U^T * b
-   for( i = 0; i < U->count; ++i ) {
+   for( i = 0; i < rank; ++i ) {
       v = 0.0;
-      for( j = 0; j < U->rows[ i ].vec.count; ++j ) {
-         v += U->rows[ i ].vec.entries[ j ].val * vul_linalg_vector_get( b, U->rows[ i ].vec.entries[ j ].idx );
+      for( j = 0; j < bases[ i ].u->count; ++j ) {
+         v += bases[ i ].u->entries[ j ].val * vul_linalg_vector_get( b, bases[ i ].u->entries[ j ].idx );
       }
-      vul_linalg_vector_insert( d, U->rows[ i ].idx, v );
+      vul_linalg_vector_insert( d, bases[ i ].axis, v );
    }
 
    // Calculate x = V * S^+ * d
-   for( i = 0; i < V->count; ++i ) {
-      v = 0.0;
-      for( j = 0; j < V->rows[ i ].vec.count; ++j ) {
-         v += V->rows[ i ].vec.entries[ j ].val
-            * vul_linalg_vector_get( d, V->rows[ i ].vec.entries[ j ].idx )
-            / vul_linalg_vector_get( S, V->rows[ i ].vec.entries[ j ].idx );
+   for( i = 0; i < rank; ++i ) {
+      for( j = 0; j < bases[ i ].v->count; ++j ) {
+         vul_linalg_vector_insert( out, bases[ i ].v->entries[ j ].idx, 
+                                   vul_linalg_vector_get( out, bases[ i ].v->entries[ j ].idx )
+                                 + bases[ i ].v->entries[ j ].val 
+                                 * vul_linalg_vector_get( d, bases[ i ].axis )
+                                 / bases[ i ].sigma );
       }
-      vul_linalg_vector_insert( out, V->rows[ i ].idx, v );
    }
    
-   vul_linalg_matrix_destroy( U );
-   vul_linalg_matrix_destroy( V );
-   vul_linalg_vector_destroy( S );
    vul_linalg_vector_destroy( d );
 
    return out;
@@ -3941,7 +3896,7 @@ static vul_linalg_real vul__linalg_matrix_norm_inf( vul_linalg_real *A, int c, i
 }
 
 vul_linalg_real vul_linalg_largest_eigenvalue_dense( vul_linalg_real *A, int c, int r, 
-                                                     vul_linalg_real eps, int max_iter )
+                                                     int max_iter, vul_linalg_real eps )
 {
    int iter, axis, normaxis, i, j;
    vul_linalg_real *v, *y, lambda, norm, err;
@@ -3986,7 +3941,7 @@ vul_linalg_real vul_linalg_largest_eigenvalue_dense( vul_linalg_real *A, int c, 
 }
 
 vul_linalg_real vul_linalg_condition_number_dense( vul_linalg_real *A, int c, int r, 
-                                                   vul_linalg_real eps, int max_iter )
+                                                   int max_iter, vul_linalg_real eps )
 {
    vul_linalg_svd_basis *bases;
    vul_linalg_real ret;
@@ -3996,7 +3951,7 @@ vul_linalg_real vul_linalg_condition_number_dense( vul_linalg_real *A, int c, in
    bases = ( vul_linalg_svd_basis* )VUL_LINALG_ALLOC( sizeof( vul_linalg_svd_basis ) * n );
 
    n = 0;
-   vul_linalg_svd_dense( bases, &n, A, c, r, eps, max_iter );
+   vul_linalg_svd_dense( bases, &n, A, c, r, max_iter, eps );
    if( n < 2 ) {
       ERR( "Can't compute condition number, not enough non-zero singular values (need 2)." );
       return 0.0;
@@ -4010,7 +3965,7 @@ vul_linalg_real vul_linalg_condition_number_dense( vul_linalg_real *A, int c, in
 
 void vul_linalg_svd_dense_qrlq( vul_linalg_svd_basis *out, int *rank,
                                 vul_linalg_real *A,
-                                int c, int r, vul_linalg_real eps, int itermax )
+                                int c, int r, int itermax, vul_linalg_real eps )
 {
    vul_linalg_real *U0, *U1, *V0, *V1, *S0, *S1, *Sb, *Q, err, e, f, scale;
    int iter, n, i, j, k, ri, ci;
@@ -4130,7 +4085,7 @@ void vul_linalg_svd_dense_qrlq( vul_linalg_svd_basis *out, int *rank,
 
 void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
                            vul_linalg_real *A,
-                           int c, int r, vul_linalg_real eps, int itermax )
+                           int c, int r, int itermax, vul_linalg_real eps )
 {
    vul_linalg_real *J, *U, *V, *G, *omegas, f, scale, max_diag;
    int iter, n, m, i, j, k, ri, ci, nonzero;
@@ -4273,73 +4228,35 @@ void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
    VUL_LINALG_FREE( omegas );
 }
 
-void vul_linalg_linear_least_squares_dense( vul_linalg_real *out,
-                                            vul_linalg_real *A,
-                                            vul_linalg_real *b,
-                                            int c, int r,
-                                            int max_iterations,
-                                            vul_linalg_real tolerance )
+void vul_linalg_linear_least_squares_dense( vul_linalg_real *x,
+                                            vul_linalg_svd_basis *bases,
+                                            int rank,
+                                            vul_linalg_real *b )
 {
-   vul_linalg_svd_basis *res;
-   vul_linalg_real *U, *V, *S, *d, v;
-   int rank, i, j, m;
+   vul_linalg_real *d, v;
+   int i, j, m;
 
-   res = ( vul_linalg_svd_basis* )VUL_LINALG_ALLOC( sizeof( vul_linalg_svd_basis ) * c );
-   rank = 0;
-   vul_linalg_svd_dense( res, &rank, A, c, r, tolerance, max_iterations );
-   
-   U = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * r );
-   V = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * c * c );
-   S = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * c );
-   d = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r );
+   m = bases[ 0 ].u_length < bases[ 0 ].v_length ? bases[ 0 ].u_length : bases[ 0 ].v_length;
+   d = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * bases[ 0 ].u_length );
+   memset( d, 0, sizeof( vul_linalg_real ) * bases[ 0 ].u_length );
+   memset( x, 0, sizeof( vul_linalg_real ) * m );
 
-   // Reconstruct U
-   memset( U, 0, sizeof( vul_linalg_real ) * r * r );
-   for( i = 0; i < rank; ++i ) {
-      for( j = 0; j < res[ i ].u_length; ++j ) {
-         IDX( U, j, res[ i ].axis, r, r ) = res[ i ].u[ j ];
-      }
-   }
-   // Reconstruct V
-   memset( V, 0, sizeof( vul_linalg_real ) * c * c );
-   for( i = 0; i < rank; ++i ) {
-      for( j = 0; j < res[ i ].v_length; ++j ) {
-         IDX( V, res[ i ].axis, j, c, c ) = res[ i ].v[ j ];
-      }
-   }
-   // Reconstruct the diagonal of S
-   memset( S, 0, sizeof( vul_linalg_real ) * c );
-   for( i = 0; i < rank; ++i ) {
-      S[ res[ i ].axis ] = res[ i ].sigma;
-   }
-   // Free the bases
-   vul_linalg_svd_basis_destroy( res, rank );
-   VUL_LINALG_FREE( res );
-   
    // Calculate d = U^T * b
-   memset( d, 0, sizeof( vul_linalg_real ) * r );
-   for( i = 0; i < r; ++i ) {
+   for( i = 0; i < rank; ++i ) {
       v = 0.0;
-      for( j = 0; j < r; ++j ) {
-         v += IDX( U, j, i, r, r ) * b[ j ]; // Transposed
+      for( j = 0; j < bases[ i ].u_length; ++j ) {
+         v += bases[ i ].u[ j ] * b[ j ];
       }
-      d[ i ] = v;
+      d[ bases[ i ].axis ] = v;
    }
 
    // Calculate x = V * S^+ * d
-   m = r < c ? r : c;
-   memset( out, 0, sizeof( vul_linalg_real ) * m );
-   for( i = 0; i < m; ++i ) {
-      v = 0.0;
-      for( j = 0; j < rank; ++j ) {
-         v += IDX( V, j, i, c, c ) * ( d[ j ] / S[ j ] );
+   for( i = 0; i < rank; ++i ) {
+      for( j = 0; j < m; ++j ) {
+         x[ j ] += bases[ i ].v[ j ] * d[ bases[ i ].axis ] / bases[ i ].sigma;
       }
-      out[ i ] = v;
    }
 
-   VUL_LINALG_FREE( U );
-   VUL_LINALG_FREE( V );
-   VUL_LINALG_FREE( S );
    VUL_LINALG_FREE( d );
 }
 

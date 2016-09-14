@@ -85,8 +85,8 @@ void vul__test_linear_solvers_dense( )
    real b[ 3 ] = { 1.f, 3.f, 5.f };
    real x[ 3 ], guess[ 3 ] = { 0.f, 0.f, 0.f };
    real solution[ 3 ] = { 17.f / 225.f, 14.f / 135.f,  22.f/ 45.f };
-	real D[ 3 * 3 ], D2[ 3 * 3 ];
-	int lu_indices[ 3 ];
+   real D[ 3 * 3 ], D2[ 3 * 3 ];
+   int lu_indices[ 3 ];
 
    vul_linalg_conjugate_gradient_dense( x, A, guess, b, 3, iters, eps );
    CHECK_WITHIN_EPS( x, solution, 3, 1e-7f );
@@ -146,53 +146,53 @@ void vul__test_linear_solvers_sparse( )
    // CG with various preconditioners
    vul_linalg_vector *x;
    vul_linalg_matrix *P;
-	x = vul_linalg_conjugate_gradient_sparse( A, guess, b, NULL, VUL_LINALG_PRECONDITIONER_NONE, 1024, eps );
+   x = vul_linalg_conjugate_gradient_sparse( A, guess, b, NULL, VUL_LINALG_PRECONDITIONER_NONE, 1024, eps );
    CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-7f );
    vul_linalg_vector_destroy( x );
 
-	P = vul_linalg_precondition_jacobi( A, 3, 3 );
-	x = vul_linalg_conjugate_gradient_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_JACOBI, 1024, eps );
+   P = vul_linalg_precondition_jacobi( A, 3, 3 );
+   x = vul_linalg_conjugate_gradient_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_JACOBI, 1024, eps );
    CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-5f );
    vul_linalg_vector_destroy( x );
-	vul_linalg_matrix_destroy( P );
+   vul_linalg_matrix_destroy( P );
 
-	P = vul_linalg_precondition_ichol( A, 3, 3 );
-	x = vul_linalg_conjugate_gradient_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_INCOMPLETE_CHOLESKY, 1024, eps );
+   P = vul_linalg_precondition_ichol( A, 3, 3 );
+   x = vul_linalg_conjugate_gradient_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_INCOMPLETE_CHOLESKY, 1024, eps );
    CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-5f );
    vul_linalg_vector_destroy( x );
-	vul_linalg_matrix_destroy( P );
+   vul_linalg_matrix_destroy( P );
 
    P = vul_linalg_precondition_ilu0( A, 3, 3 );
-	x = vul_linalg_conjugate_gradient_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_INCOMPLETE_LU_0, 1024, eps );
+   x = vul_linalg_conjugate_gradient_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_INCOMPLETE_LU_0, 1024, eps );
    CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-5f );
    vul_linalg_vector_destroy( x );
-	vul_linalg_matrix_destroy( P );
+   vul_linalg_matrix_destroy( P );
    
    // GMRES with various preconditioners
    x = vul_linalg_gmres_sparse( A, guess, b, NULL, VUL_LINALG_PRECONDITIONER_NONE, 3, 1024, 1e-8 );
    CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-5f );
    vul_linalg_vector_destroy( x );
    
-	P = vul_linalg_precondition_jacobi( A, 3, 3 );
-	x = vul_linalg_gmres_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_JACOBI, 3, 1024, 1e-7 );
+   P = vul_linalg_precondition_jacobi( A, 3, 3 );
+   x = vul_linalg_gmres_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_JACOBI, 3, 1024, 1e-7 );
    CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-5f );
    vul_linalg_vector_destroy( x );
-	vul_linalg_matrix_destroy( P );
+   vul_linalg_matrix_destroy( P );
    
-	P = vul_linalg_precondition_ichol( A, 3, 3 );
-	x = vul_linalg_gmres_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_INCOMPLETE_CHOLESKY, 3, 1024, 1e-7 );
+   P = vul_linalg_precondition_ichol( A, 3, 3 );
+   x = vul_linalg_gmres_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_INCOMPLETE_CHOLESKY, 3, 1024, 1e-7 );
    CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-4f );
    vul_linalg_vector_destroy( x );
-	vul_linalg_matrix_destroy( P );
+   vul_linalg_matrix_destroy( P );
    
-	P = vul_linalg_precondition_ilu0( A, 3, 3 );
-	x = vul_linalg_gmres_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_INCOMPLETE_LU_0, 3, 1024, 1e-7 );
+   P = vul_linalg_precondition_ilu0( A, 3, 3 );
+   x = vul_linalg_gmres_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_INCOMPLETE_LU_0, 3, 1024, 1e-7 );
    CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-4f );
    vul_linalg_vector_destroy( x );
-	vul_linalg_matrix_destroy( P );
-	
+   vul_linalg_matrix_destroy( P );
+   
    // Direct solvers
-	vul_linalg_matrix *D, *D2;
+   vul_linalg_matrix *D, *D2;
    vul_linalg_cholesky_decomposition_sparse( &D, &D2, A, 3, 3 );
    x = vul_linalg_cholesky_solve_sparse( D, D2, A, guess, b, 3, 3, iters, eps );
    CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-7f );
@@ -200,12 +200,12 @@ void vul__test_linear_solvers_sparse( )
    vul_linalg_matrix_destroy( D );
    vul_linalg_matrix_destroy( D2 );
    
-	int lu_indices[ 3 ];
-	vul_linalg_lu_decomposition_sparse( &D, lu_indices, A, 3, 3 );
+   int lu_indices[ 3 ];
+   vul_linalg_lu_decomposition_sparse( &D, lu_indices, A, 3, 3 );
    x = vul_linalg_lu_solve_sparse( D, lu_indices, A, guess, b, 3, 3, iters, eps );
    CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-8f );
-	vul_linalg_vector_destroy( x );
-	vul_linalg_matrix_destroy( D );
+   vul_linalg_vector_destroy( x );
+   vul_linalg_matrix_destroy( D );
    
    vul_linalg_qr_decomposition_sparse( &D, &D2, A, 3, 3 );
    x = vul_linalg_qr_solve_sparse( D, D2, A, guess, b, 3, 3, iters, eps );

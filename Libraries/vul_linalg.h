@@ -1195,7 +1195,7 @@ static void vulb__sparse_mmul_matrix( vul_linalg_matrix *O, vul_linalg_matrix *A
             s += A->rows[ i ].vec.entries[ k ].val 
                * vul_linalg_matrix_get( B, A->rows[ i ].vec.entries[ k ].idx, j );
          }
-         vul_linalg_matrix_insert( O, i, j, s );
+         vul_linalg_matrix_insert( O, A->rows[ i ].idx, j, s );
       }
    }
 }
@@ -1239,7 +1239,8 @@ static void vulb__sparse_forward_substitute( vul_linalg_vector *out, vul_linalg_
       for( ; j >= 0 ; --j ) {
          sum -= A->rows[ i ].vec.entries[ j ].val * vul_linalg_vector_get( out, A->rows[ i ].vec.entries[ j ].idx );
       }
-      vul_linalg_vector_insert( out, i, sum / vul_linalg_matrix_get( A, A->rows[ i ].idx, A->rows[ i ].idx ) );
+      vul_linalg_vector_insert( out, A->rows[ i ].idx, 
+                                sum / vul_linalg_matrix_get( A, A->rows[ i ].idx, A->rows[ i ].idx ) );
    }
 }
 
@@ -1256,7 +1257,8 @@ static void vulb__sparse_backward_substitute( vul_linalg_vector *out, vul_linalg
          sum -= A->rows[ i ].vec.entries[ j ].val * vul_linalg_vector_get( out, A->rows[ i ].vec.entries[ j ].idx );
          ++j;
       }
-      vul_linalg_vector_insert( out, i, sum / vul_linalg_matrix_get( A, A->rows[ i ].idx, A->rows[ i ].idx ) );
+      vul_linalg_vector_insert( out, A->rows[ i ].idx, 
+                                sum / vul_linalg_matrix_get( A, A->rows[ i ].idx, A->rows[ i ].idx ) );
    }
 }
 static void vulb__sparse_backward_substitute_submatrix( vul_linalg_vector *out, vul_linalg_matrix *A, 
@@ -1277,7 +1279,8 @@ static void vulb__sparse_backward_substitute_submatrix( vul_linalg_vector *out, 
          sum -= A->rows[ i ].vec.entries[ j ].val * vul_linalg_vector_get( out, A->rows[ i ].vec.entries[ j ].idx );
          ++j;
       }
-      vul_linalg_vector_insert( out, i, sum / vul_linalg_matrix_get( A, A->rows[ i ].idx, A->rows[ i ].idx ) );
+      vul_linalg_vector_insert( out, A->rows[ i ].idx, 
+                                sum / vul_linalg_matrix_get( A, A->rows[ i ].idx, A->rows[ i ].idx ) );
       --i;
    }
 }
@@ -1360,43 +1363,81 @@ static void vulb__sparse_mclean( vul_linalg_matrix *A )
 
 vul_linalg_matrix *vul_linalg_precondition_ilu0( vul_linalg_matrix *A, int c, int r )
 {
-   vul_linalg_matrix *P;
+   // @TODO(thynn): Use this algorithm for sparse LU as well!
+   vul_linalg_matrix *P, *Ap;
    vul_linalg_real pivot, sum;
-   int i, j, k;
+   int i, j, k, n;
 
    P = vul_linalg_matrix_create( 0, 0, 0, 0 );
-   for( j = 0; j < c; ++j ) {
-      for( i = 0; i < j; ++i ) {
-         sum = vul_linalg_matrix_get( A, i, j );
-         if( sum != 0.0 ) {
-            for( k = 0; k < i; ++k ) {
-               sum -= vul_linalg_matrix_get( P, i, k ) * vul_linalg_matrix_get( P, k, j );
-            }
-            vul_linalg_matrix_insert( P, i, j, sum );
+
+   vul_linalg_matrix *LT, *U;
+   n = r < c ? r : c;
+   LT = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   U = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   for( i = 0; i < n; ++i ) {
+      vul_linalg_matrix_insert( U, i, i, 1.0 );
+      vul_linalg_matrix_insert( LT, i, i, 1.0 );
+   }
+   vul_linalg_vector *s = vul_linalg_vector_create( 0, 0, 0 );
+   for( i = 0; i < A->count; ++i ) {
+      // Solve Lx = A(i:)^T (This is me testing if something works!)
+      if( i != 0 ) {
+         vulb__sparse_vclear( s );
+      }
+      vulb__sparse_vcopy( s, &A->rows[ i ].vec );
+      for( j = 0; j < s->count; ++j ) {
+         for( k = 0; 
+              k < LT->rows[ s->entries[ j ].idx ].vec.count && 
+              LT->rows[ s->entries[ j ].idx ].vec.entries[ k ].idx <= s->entries[ j ].idx; 
+              ++k )
+            ; // Find k == j
+         while( k < LT->rows[ s->entries[ j ].idx ].vec.count ) {
+            vul_linalg_real v = vul_linalg_vector_get( s, LT->rows[ s->entries[ j ].idx ].vec.entries[ k ].idx );
+            v -= LT->rows[ s->entries[ j ].idx ].vec.entries[ k ].val * s->entries[ j ].val;
+            vul_linalg_vector_insert( s, LT->rows[ s->entries[ j ].idx ].vec.entries[ k ].idx, v );
+            ++k;
          }
       }
-      for( i = j; i < r; ++i ) {
-         sum = vul_linalg_matrix_get( A, j, i );
-         if( sum != 0.0 ) {
-            for( k = 0; k < j; ++k ) {
-               sum -= vul_linalg_matrix_get( P, i, k ) * vul_linalg_matrix_get( P, k, j );
-            }
-            vul_linalg_matrix_insert( P, i, j, sum );
+      // @TODO(thynn): This can be improved with partial pivoting on s
+      // Form U
+      for( j = 0; j < s->count && s->entries[ j ].idx < A->rows[ i ].idx; ++j )
+         ; // Find j == k
+      while( j < s->count ) {
+         if( vul_linalg_matrix_get( A, A->rows[ i ].idx, s->entries[ j ].idx ) != 0.0 ) {
+            vul_linalg_matrix_insert( U, A->rows[ i ].idx, s->entries[ j ].idx, s->entries[ j ].val );
          }
+         ++j;
       }
-      if( j != c - 1 ) {
-         pivot = 1.f / vul_linalg_matrix_get( P, j, j );
-         for( i = j + 1; i < r; ++i ) {
-            vul_linalg_matrix_insert( P, i, j, vul_linalg_matrix_get( P, i, j ) * pivot );
+      // Form L^T
+      for( j = 0; j < s->count && s->entries[ j ].idx < A->rows[ i ].idx; ++j )
+         ; // Find j == i
+      while( j < s->count ) {
+         if( vul_linalg_matrix_get( A, s->entries[ j ].idx, A->rows[ i ].idx ) != 0.0 ) {
+            vul_linalg_matrix_insert( LT, A->rows[ i ].idx, s->entries[ j ].idx, s->entries[ j ].val
+                                                             / vul_linalg_matrix_get( U, A->rows[ i ].idx,
+                                                                                         A->rows[ i ].idx ) );
+         }
+         ++j;
+      }
+   }
+   // @TODO(thynn): Instead of forming P here, make preconditioner a struct with more than one matrix if needed?
+   vulb__sparse_mcopy( P, U );
+   for( i = 0; i < LT->count; ++i ) {
+      for( j = 0; j < LT->rows[ i ].vec.count; ++j ) {
+         if( LT->rows[ i ].idx != LT->rows[ i ].vec.entries[ j ].idx && vul_linalg_matrix_get( A, LT->rows[ i ].idx, LT->rows[ i ].vec.entries[ j ].idx ) != 0.0 ) {
+            vul_linalg_matrix_insert( P, LT->rows[ i ].vec.entries[ j ].idx, LT->rows[ i ].idx,
+                                      LT->rows[ i ].vec.entries[ j ].val );
          }
       }
    }
+   
+   vul_linalg_vector_destroy( s );
+   vul_linalg_matrix_destroy( LT );
+   vul_linalg_matrix_destroy( U );
+
    return P;
 }
 
-/*
- * Returns the inverse of the diagonal matrix consisting of only the diagonal entries of A.
- */
 vul_linalg_matrix *vul_linalg_precondition_ichol( vul_linalg_matrix *A, int c, int r )
 {
    vul_linalg_matrix *P;
@@ -1407,7 +1448,7 @@ vul_linalg_matrix *vul_linalg_precondition_ichol( vul_linalg_matrix *A, int c, i
    P = vul_linalg_matrix_create( 0, 0, 0, 0 );
    for( i = 0; i < A->count; ++i ) {
       for( j = 0; j < A->rows[ i ].vec.count; ++j ) {
-         if( A->rows[ i ].vec.entries[ j ].idx >= A->rows[ i ].idx ) {
+         if( A->rows[ i ].vec.entries[ j ].idx <= A->rows[ i ].idx ) {
             vul_linalg_matrix_insert( P, A->rows[ i ].idx, 
                                          A->rows[ i ].vec.entries[ j ].idx, 
                                          A->rows[ i ].vec.entries[ j ].val );
@@ -1415,14 +1456,18 @@ vul_linalg_matrix *vul_linalg_precondition_ichol( vul_linalg_matrix *A, int c, i
       }
    }
    
-   for( i = 0; i < c; ++i ) {
-      for( j = i; j < r; ++j ) {
-         d = vul_linalg_matrix_get( A, i, j );
-         rowi = vulb__linalg_matrix_get_row_by_array_index( P, i );
-         rowj = vulb__linalg_matrix_get_row_by_array_index( P, j );
-         for( ki = rowi.count - 1; ki >= 0 && rowi.entries[ ki ].idx >= i; --ki )
+   for( i = 0; i < A->count; ++i ) {
+      for( j = 0; j < A->rows[ i ].vec.count && A->rows[ i ].vec.entries[ j ].idx < A->rows[ i ].idx; ++j )
+         ; // Find first entry that is above or on the diagonal
+      while( j < A->rows[ i ].vec.count ) {
+         d = vul_linalg_matrix_get( A, A->rows[ i ].vec.entries[ j ].idx, A->rows[ i ].idx );
+         // We store in the lower half so we can easily iterate over row members here, instead of columns
+         // When solving we need to backsub instead of fwdsub on the left due to this!
+         rowi = vulb__linalg_matrix_get_row_by_array_index( P, A->rows[ i ].vec.entries[ j ].idx );
+         rowj = vulb__linalg_matrix_get_row_by_array_index( P, A->rows[ i ].idx );
+         for( ki = rowi.count - 1; ki >= 0 && rowi.entries[ ki ].idx >= A->rows[ i ].idx; --ki )
             ; // Search backwards until ki < i
-         for( kj = rowj.count - 1; kj >= 0 && rowj.entries[ kj ].idx >= i; --kj )
+         for( kj = rowj.count - 1; kj >= 0 && rowj.entries[ kj ].idx >= A->rows[ i ].idx; --kj )
             ; // Search backwards until kj < i
          while( ki >= 0 && kj >= 0 ) {
             if( rowi.entries[ ki ].idx == rowj.entries[ kj ].idx ) {
@@ -1434,20 +1479,21 @@ vul_linalg_matrix *vul_linalg_precondition_ichol( vul_linalg_matrix *A, int c, i
                --kj;
             }
          }
-         if( i == j ) {
+         if( A->rows[ i ].idx == A->rows[ i ].vec.entries[ j ].idx ) {
             if( d <= 0.f ) {
                ERR( "Cholesky decomposition is only valid for POSITIVE-DEFINITE symmetric matrices." );
                return NULL;
             }
-            vul_linalg_matrix_insert( P, i, i, sqrt( d ) );
-         } else if( vul_linalg_matrix_get( P, j, i ) != 0.0 ) {
-            v = vul_linalg_matrix_get( P, i, i );
+            vul_linalg_matrix_insert( P, A->rows[ i ].idx, A->rows[ i ].idx, sqrt( d ) );
+         } else {
+            v = vul_linalg_matrix_get( P, A->rows[ i ].idx, A->rows[ i ].idx );
             if( v == 0.f ) {
                ERR( "Determinant is sufficiently small that a divide-by-zero is imminent." );
                return NULL;
             }
-            vul_linalg_matrix_insert( P, j, i, d / v );
+            vul_linalg_matrix_insert( P, A->rows[ i ].vec.entries[ j ].idx,A->rows[ i ].idx,  d / v );
          }
+         ++j;
       }
    }
 
@@ -1479,7 +1525,7 @@ void vul__linalg_precondition_solve( vul_linalg_precoditioner_type type,
                                      vul_linalg_matrix *P, vul_linalg_vector *b,
                                      enum vul__linalg_precondition_apply_side side )
 {
-   int i, set;
+   int i, k, j, set;
 
    vulb__sparse_vclear( x );
    set = 0;
@@ -1488,35 +1534,29 @@ void vul__linalg_precondition_solve( vul_linalg_precoditioner_type type,
       switch( type ) {
       case VUL_LINALG_PRECONDITIONER_JACOBI: {
          for( i = 0; i < b->count; ++i ) {
-            vul_linalg_vector_insert( x, i, vul_linalg_matrix_get( P, i, i ) * vul_linalg_vector_get( b, i ) );
+            vul_linalg_vector_insert( x, b->entries[ i ].idx, 
+                                      vul_linalg_matrix_get( P, b->entries[ i ].idx, b->entries[ i ].idx ) *
+                                      b->entries[ i ].val );
          }
          set = 1;
       } break;
       case VUL_LINALG_PRECONDITIONER_INCOMPLETE_CHOLESKY: {
-         vulb__sparse_forward_substitute( x, P, b );
+         // Backward because we store it in the lower part
+         vulb__sparse_backward_substitute( x, P, b );
          set = 1;
       } break;
       case VUL_LINALG_PRECONDITIONER_INCOMPLETE_LU_0: {
-         int i, j, m;
          vul_linalg_real sum;
          
-         /* Find number of columns at most */
-         for( i = 0, m = 0; i < P->count; ++i ) {
-            for( j = 0; j < P->rows[ i ].vec.count; ++j ) {
-               if( P->rows[ i ].vec.entries[ j ].idx > m ) {
-                  m = P->rows[ i ].vec.entries[ j ].idx;
-               }
-            }
-         }
-
          /* Solve Lx = b */
          vulb__sparse_vcopy( x, b );
-         for( i = 0; i <= m; ++i ) {
-            sum = vul_linalg_vector_get( x, i );
-            for( j = 0; j < i; ++j ) {
-               sum -= vul_linalg_matrix_get( P, i, j ) * vul_linalg_vector_get( x, j );
+         for( i = 0; i < P->count; ++i ) {
+            sum = vul_linalg_vector_get( x, P->rows[ i ].idx );
+            for( j = 0; j < P->rows[ i ].vec.count && P->rows[ i ].vec.entries[ j ].idx < P->rows[ i ].idx; ++j ){
+               sum -= P->rows[ i ].vec.entries[ j ].val 
+                    * vul_linalg_vector_get( x, P->rows[ i ].vec.entries[ j ].idx );
             }
-            vul_linalg_vector_insert( x, i, sum );
+            vul_linalg_vector_insert( x, P->rows[ i ].idx, sum );
          }
          set = 1;
       } break;
@@ -1530,7 +1570,6 @@ void vul__linalg_precondition_solve( vul_linalg_precoditioner_type type,
    if( side & VUL__LINALG_PRECONDITION_LEFT ) {
       switch( type ) {
       case VUL_LINALG_PRECONDITIONER_INCOMPLETE_CHOLESKY: {
-         int k, j, m;
          vul_linalg_vector *y;
 
          y = vul_linalg_vector_create( 0, 0, 0 );
@@ -1540,22 +1579,18 @@ void vul__linalg_precondition_solve( vul_linalg_precoditioner_type type,
             vulb__sparse_vcopy( y, b );
          }
 
-         /* Find number of columns at most */
-         for( i = 0, m = 0; i < P->count; ++i ) {
-            for( j = 0; j < P->rows[ i ].vec.count; ++j ) {
-               if( P->rows[ i ].vec.entries[ j ].idx > m ) {
-                  m = P->rows[ i ].vec.entries[ j ].idx;
-               }
-            }
-         }
          /* Backward substitute */
-         for( k = P->count - 1; k >= 0; --k ) {
-            i = P->rows[ k ].idx;
-            vul_linalg_real sum = vul_linalg_vector_get( y, i );
-            for( j = i + 1; j <= m; ++j ) {
-               sum -= vul_linalg_matrix_get( P, j, i ) * vul_linalg_vector_get( x, j );
+         for( i = P->count - 1; i >= 0; --i ) {
+            vul_linalg_real pivot, sum = vul_linalg_vector_get( y, P->rows[ i ].idx );
+            for( j = 0; j < P->rows[ i ].vec.count && P->rows[ i ].vec.entries[ j ].idx < P->rows[ i ].idx; ++j )
+               ; // Find j = i
+            pivot = P->rows[ i ].vec.entries[ j++ ].val; // Store P[i][i]
+            while( j < P->rows[ i ].vec.count ) {
+               sum -= P->rows[ i ].vec.entries[ j ].val 
+                    * vul_linalg_vector_get( x, P->rows[ i ].vec.entries[ j ].idx );
+               ++j;
             }
-            vul_linalg_vector_insert( x, i, sum / vul_linalg_matrix_get( P, i, i ) );
+            vul_linalg_vector_insert( x, P->rows[ i ].idx, sum / pivot );
          }
          vul_linalg_vector_destroy( y );
          set = 1;
@@ -1722,6 +1757,7 @@ vul_linalg_vector *vul_linalg_gmres_sparse( vul_linalg_matrix *A,
    vul_linalg_vector_insert( e, 0, 1.0 );
 
    for( k = 0; k < max_iterations; ++k ) {
+      printf("iter %d, %e\n", k, rd);
       // v_1 = r / norm( r )
       for( i = 0; i < r->count; ++i ) {
          vul_linalg_matrix_insert( V, 0, r->entries[ i ].idx, r->entries[ i ].val / rd );
@@ -1801,6 +1837,7 @@ vul_linalg_vector *vul_linalg_gmres_sparse( vul_linalg_matrix *A,
                                           + sines[ i ]   * vul_linalg_matrix_get( H, i + 1, i ) );
          vul_linalg_matrix_insert( H, i + 1, i, 0.0 );
          err = fabs( vul_linalg_vector_get( s, i ) ) / bd;
+         printf("r-iter %d, err %e\n", i, err);
          if( err <= tolerance ) {
             // Update x by solving Hy=s and adding y to x
             vulb__sparse_backward_substitute_submatrix( y, H, s, i+1, i+1 );

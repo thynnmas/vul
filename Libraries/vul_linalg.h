@@ -281,7 +281,6 @@ vul_linalg_vector *vul_linalg_successive_over_relaxation_sparse( vul_linalg_matr
  * with A and b to solve Ax = b.
  */
 void vul_linalg_lu_decomposition_sparse( vul_linalg_matrix **LU,
-                                         int *indices,
                                          vul_linalg_matrix *A,
                                          int cols, int rows );
 /*
@@ -293,7 +292,6 @@ void vul_linalg_lu_decomposition_sparse( vul_linalg_matrix **LU,
  * the average square error is below tolerance.
  */
 vul_linalg_vector *vul_linalg_lu_solve_sparse( vul_linalg_matrix *LU,
-                                               int *indices,
                                                vul_linalg_matrix *A,
                                                vul_linalg_vector *initial_guess,
                                                vul_linalg_vector *b,
@@ -1363,14 +1361,12 @@ static void vulb__sparse_mclean( vul_linalg_matrix *A )
 
 vul_linalg_matrix *vul_linalg_precondition_ilu0( vul_linalg_matrix *A, int c, int r )
 {
-   // @TODO(thynn): Use this algorithm for sparse LU as well!
-   vul_linalg_matrix *P, *Ap;
-   vul_linalg_real pivot, sum;
+   vul_linalg_matrix *P, *LT, *U;
+   vul_linalg_real v;
    int i, j, k, n;
 
    P = vul_linalg_matrix_create( 0, 0, 0, 0 );
 
-   vul_linalg_matrix *LT, *U;
    n = r < c ? r : c;
    LT = vul_linalg_matrix_create( 0, 0, 0, 0 );
    U = vul_linalg_matrix_create( 0, 0, 0, 0 );
@@ -1392,7 +1388,7 @@ vul_linalg_matrix *vul_linalg_precondition_ilu0( vul_linalg_matrix *A, int c, in
               ++k )
             ; // Find k == j
          while( k < LT->rows[ s->entries[ j ].idx ].vec.count ) {
-            vul_linalg_real v = vul_linalg_vector_get( s, LT->rows[ s->entries[ j ].idx ].vec.entries[ k ].idx );
+            v = vul_linalg_vector_get( s, LT->rows[ s->entries[ j ].idx ].vec.entries[ k ].idx );
             v -= LT->rows[ s->entries[ j ].idx ].vec.entries[ k ].val * s->entries[ j ].val;
             vul_linalg_vector_insert( s, LT->rows[ s->entries[ j ].idx ].vec.entries[ k ].idx, v );
             ++k;
@@ -1420,11 +1416,11 @@ vul_linalg_matrix *vul_linalg_precondition_ilu0( vul_linalg_matrix *A, int c, in
          ++j;
       }
    }
-   // @TODO(thynn): Instead of forming P here, make preconditioner a struct with more than one matrix if needed?
    vulb__sparse_mcopy( P, U );
    for( i = 0; i < LT->count; ++i ) {
       for( j = 0; j < LT->rows[ i ].vec.count; ++j ) {
-         if( LT->rows[ i ].idx != LT->rows[ i ].vec.entries[ j ].idx && vul_linalg_matrix_get( A, LT->rows[ i ].idx, LT->rows[ i ].vec.entries[ j ].idx ) != 0.0 ) {
+         if( LT->rows[ i ].idx != LT->rows[ i ].vec.entries[ j ].idx && 
+             vul_linalg_matrix_get( A, LT->rows[ i ].idx, LT->rows[ i ].vec.entries[ j ].idx ) != 0.0 ) {
             vul_linalg_matrix_insert( P, LT->rows[ i ].vec.entries[ j ].idx, LT->rows[ i ].idx,
                                       LT->rows[ i ].vec.entries[ j ].val );
          }
@@ -1581,7 +1577,9 @@ void vul__linalg_precondition_solve( vul_linalg_precoditioner_type type,
 
          /* Backward substitute */
          for( i = P->count - 1; i >= 0; --i ) {
-            vul_linalg_real pivot, sum = vul_linalg_vector_get( y, P->rows[ i ].idx );
+            vul_linalg_real pivot, sum;
+            
+            sum = vul_linalg_vector_get( y, P->rows[ i ].idx );
             for( j = 0; j < P->rows[ i ].vec.count && P->rows[ i ].vec.entries[ j ].idx < P->rows[ i ].idx; ++j )
                ; // Find j = i
             pivot = P->rows[ i ].vec.entries[ j++ ].val; // Store P[i][i]
@@ -1953,78 +1951,76 @@ vul_linalg_vector *vul_linalg_successive_over_relaxation_sparse( vul_linalg_matr
 }
 
 void vul_linalg_lu_decomposition_sparse( vul_linalg_matrix **LU,
-                                         int *indices,
                                          vul_linalg_matrix *A,
                                          int cols, int rows )
 {
-   vul_linalg_vector *scale;
-   vul_linalg_real sum, tmp, largest;
-   int i, j, k, imax;
+   vul_linalg_matrix *LT, *U;
+   vul_linalg_real v;
+   int i, j, k, n;
 
    *LU = vul_linalg_matrix_create( 0, 0, 0, 0 );
-   scale = vul_linalg_vector_create( 0, 0, 0 );
-   
-   /* Crout's LUP decomposition with pivoting and scaling */
-   for( i = 0; i < A->count; ++i ) {
-      largest = 0.f;
-      for( j = 0; j < A->rows[ i ].vec.count; ++j ) {
-         if( ( tmp = fabs( A->rows[ i ].vec.entries[ j ].val ) ) > largest ) {
-            largest = tmp;
-         }
-      }
-      if( largest == 0.f ) {
-         ERR( "LU decomposition is not valid for singular matrices." );
-         return;
-      }
-      vul_linalg_vector_insert( scale, A->rows[ i ].idx, 1.f / largest );
-   }
-   for( j = 0; j < cols; ++j ) {
-      for( i = 0; i < j; ++i ) {
-         sum = vul_linalg_matrix_get( A, i, j );
-         for( k = 0; k < i; ++k ) {
-            sum -= vul_linalg_matrix_get( *LU, i, k ) * vul_linalg_matrix_get( *LU, k, j );
-         }
-         vul_linalg_matrix_insert( *LU, i, j, sum );
-      }
 
-      largest = 0.f;
-      for( i = j; i < rows; ++i ) {
-         sum = vul_linalg_matrix_get( A, j, i );
-         for( k = 0; k < j; ++k ) {
-            sum -= vul_linalg_matrix_get( *LU, i, k ) * vul_linalg_matrix_get( *LU, k, j );
-         }
-         vul_linalg_matrix_insert( *LU, i, j, sum );
-         if( ( tmp = vul_linalg_vector_get( scale, i ) * fabs( sum ) ) >= largest ) {
-            largest = tmp;
-            imax = i;
+   n = rows < cols ? rows : cols;
+   LT = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   U = vul_linalg_matrix_create( 0, 0, 0, 0 );
+   for( i = 0; i < n; ++i ) {
+      vul_linalg_matrix_insert( U, i, i, 1.0 );
+      vul_linalg_matrix_insert( LT, i, i, 1.0 );
+   }
+   vul_linalg_vector *s = vul_linalg_vector_create( 0, 0, 0 );
+   for( i = 0; i < A->count; ++i ) {
+      // Solve Lx = A(i:)^T (This is me testing if something works!)
+      if( i != 0 ) {
+         vulb__sparse_vclear( s );
+      }
+      vulb__sparse_vcopy( s, &A->rows[ i ].vec );
+      for( j = 0; j < s->count; ++j ) {
+         for( k = 0; 
+              k < LT->rows[ s->entries[ j ].idx ].vec.count && 
+              LT->rows[ s->entries[ j ].idx ].vec.entries[ k ].idx <= s->entries[ j ].idx; 
+              ++k )
+            ; // Find k == j
+         while( k < LT->rows[ s->entries[ j ].idx ].vec.count ) {
+            v = vul_linalg_vector_get( s, LT->rows[ s->entries[ j ].idx ].vec.entries[ k ].idx );
+            v -= LT->rows[ s->entries[ j ].idx ].vec.entries[ k ].val * s->entries[ j ].val;
+            vul_linalg_vector_insert( s, LT->rows[ s->entries[ j ].idx ].vec.entries[ k ].idx, v );
+            ++k;
          }
       }
-      if( j != imax ) { 
-         for( k = 0; k < rows; ++k ) {
-            tmp = vul_linalg_matrix_get( *LU, imax, k );
-            vul_linalg_matrix_insert( *LU, imax, k, vul_linalg_matrix_get( *LU, j, k ) );
-            vul_linalg_matrix_insert( *LU, j, k, tmp );
-         }
-         vul_linalg_vector_insert( scale, imax, vul_linalg_vector_get( scale, j ) );
+      // @TODO(thynn): This can be improved with partial pivoting on s
+      // Form U
+      for( j = 0; j < s->count && s->entries[ j ].idx < A->rows[ i ].idx; ++j )
+         ; // Find j == k
+      while( j < s->count ) {
+         vul_linalg_matrix_insert( U, A->rows[ i ].idx, s->entries[ j ].idx, s->entries[ j ].val );
+         ++j;
       }
-      indices[ j ] = imax;
-      if( vul_linalg_matrix_get( *LU, j, j ) == 0.f ) {
-         ERR( "Pivot element is close enough to zero that we're singular." );
-         return;
+      // Form L^T
+      for( j = 0; j < s->count && s->entries[ j ].idx < A->rows[ i ].idx; ++j )
+         ; // Find j == i
+      while( j < s->count ) {
+         vul_linalg_matrix_insert( LT, A->rows[ i ].idx, s->entries[ j ].idx, s->entries[ j ].val
+                                                          / vul_linalg_matrix_get( U, A->rows[ i ].idx,
+                                                                                      A->rows[ i ].idx ) );
+         ++j;
       }
-      if( j != cols - 1 ) {
-         tmp = 1.f / vul_linalg_matrix_get( *LU, j, j );
-         for( i = j + 1; i < rows; ++i ) {
-            vul_linalg_matrix_insert( *LU, i, j, vul_linalg_matrix_get( *LU, i, j ) * tmp );
+   }
+   vulb__sparse_mcopy( *LU, U );
+   for( i = 0; i < LT->count; ++i ) {
+      for( j = 0; j < LT->rows[ i ].vec.count; ++j ) {
+         if( LT->rows[ i ].idx != LT->rows[ i ].vec.entries[ j ].idx ) {
+            vul_linalg_matrix_insert( *LU, LT->rows[ i ].vec.entries[ j ].idx, LT->rows[ i ].idx,
+                                      LT->rows[ i ].vec.entries[ j ].val );
          }
       }
    }
    
-   vul_linalg_vector_destroy( scale );
+   vul_linalg_vector_destroy( s );
+   vul_linalg_matrix_destroy( LT );
+   vul_linalg_matrix_destroy( U );
 }
 
 vul_linalg_vector *vul_linalg_lu_solve_sparse( vul_linalg_matrix *LU,
-                                               int *indices,
                                                vul_linalg_matrix *A,
                                                vul_linalg_vector *initial_guess,
                                                vul_linalg_vector *b,
@@ -2038,6 +2034,7 @@ vul_linalg_vector *vul_linalg_lu_solve_sparse( vul_linalg_matrix *LU,
 
    r = vul_linalg_vector_create( 0, 0, 0 );
    x = vul_linalg_vector_create( 0, 0, 0 );
+   y = vul_linalg_vector_create( 0, 0, 0 );
    
    /* Calculate initial residual */
    vulb__sparse_vcopy( x, initial_guess );
@@ -2047,19 +2044,7 @@ vul_linalg_vector *vul_linalg_lu_solve_sparse( vul_linalg_matrix *LU,
 
    for( k = 0; k < max_iterations; ++k ) {
       /* Solve Ly = r (solve for the residual error, not b) */
-      for( i = 0, iold = 0; i < cols; ++i ) {
-         imax = indices[ i ];
-         sum = vul_linalg_vector_get( r, imax );
-         vul_linalg_vector_insert( r, imax, vul_linalg_vector_get( r, i ) );
-         if( iold ) {
-            for( j = iold; j < i - 1; ++j ) {
-               sum -= vul_linalg_matrix_get( LU, i, j ) * vul_linalg_vector_get( r, j );
-            }
-         } else if( sum ) {
-            iold = i;
-         }
-         vul_linalg_vector_insert( r, i, sum );
-      }
+      vulb__sparse_forward_substitute( y, LU, r );
       /* Solve Ue = y (reuse r as e) */
       vulb__sparse_backward_substitute( r, LU, r );
 
@@ -2078,6 +2063,7 @@ vul_linalg_vector *vul_linalg_lu_solve_sparse( vul_linalg_matrix *LU,
    }
    
    vul_linalg_vector_destroy( r );
+   vul_linalg_vector_destroy( y );
 
    return x;
 }

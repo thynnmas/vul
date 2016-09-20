@@ -189,14 +189,13 @@ void vul_linalg_vector_destroy( vul_linalg_vector *v );
 /*
  * Returns the preconditioner matrix for an incomplete sparse LU(0) decomposition.
  * In this incomplete decomposition, only the entries in LU that are non-zero in
- * A are used. Both L and U are returned in a single matrix.
+ * A are used. The preconditioner applies only on the left, so only U is returned.
  */
 vul_linalg_matrix *vul_linalg_precondition_ilu0( vul_linalg_matrix *A, int c, int r );
 
 /*
  * Returns the preconditioner matrix for an incomplete cholesky decomposition.
- * Only the entries in L that are non-zero in A are used. Only L is returned, L* is
- * constructed on the fly in the solver (L is real, so it's just a transposed index).
+ * Only the entries in L that are non-zero in A are used. Only L is returned.
  */
 vul_linalg_matrix *vul_linalg_precondition_ichol( vul_linalg_matrix *A, int c, int r );
 
@@ -240,11 +239,7 @@ vul_linalg_vector *vul_linalg_conjugate_gradient_sparse( vul_linalg_matrix *A,
  * An optional preconditioner can be supplied. If none is wanted, select preconditioner
  * type VUL_LINALG_PRECONDITIONER_NONE, and set P to null. Otherwise set P to a
  * precalculated preconditioner matrix (see the vul_linalg_precondition_* functions).
- * If a Jacobi preconditioner is used, it is applied on the right. If an incomplete
- * decomposition is used, the lower diagonal matrix is applied on the left, and the
- * upper diagonal matrix is applied on the right. @NOTE(thynn): This gave the best results
- * in testing, but feel free to let me know why this is fundamentally wrong and I should be
- * ashamed of doing it this way.
+ * The preconditioner is applied on the left.
  */
 vul_linalg_vector *vul_linalg_gmres_sparse( vul_linalg_matrix *A,
                                             vul_linalg_vector *initial_guess,
@@ -677,6 +672,10 @@ static void vulb__sparse_mcopy( vul_linalg_matrix *out, vul_linalg_matrix *A );
 static void vulb__sparse_mclear( vul_linalg_matrix *A );
 // Helper that returns an empty vector if the row doesn't exist; simplifies some loops
 static vul_linalg_vector vulb__linalg_matrix_get_row_by_array_index( vul_linalg_matrix *m, unsigned int r );
+
+static void vul__linalg_precondition_solve( vul_linalg_precoditioner_type type,
+                                            vul_linalg_vector *x,
+                                            vul_linalg_matrix *P, vul_linalg_vector *b );
 /*
  * When inserting zeroes into places that previously held non-zeroes, the memory is not freed.
  * This "compacts" the matrix back into a fully sparse memory pattern.
@@ -1369,9 +1368,8 @@ vul_linalg_matrix *vul_linalg_precondition_ilu0( vul_linalg_matrix *A, int c, in
 
    n = r < c ? r : c;
    LT = vul_linalg_matrix_create( 0, 0, 0, 0 );
-   U = vul_linalg_matrix_create( 0, 0, 0, 0 );
    for( i = 0; i < n; ++i ) {
-      vul_linalg_matrix_insert( U, i, i, 1.0 );
+      vul_linalg_matrix_insert( P, i, i, 1.0 );
       vul_linalg_matrix_insert( LT, i, i, 1.0 );
    }
    vul_linalg_vector *s = vul_linalg_vector_create( 0, 0, 0 );
@@ -1400,7 +1398,7 @@ vul_linalg_matrix *vul_linalg_precondition_ilu0( vul_linalg_matrix *A, int c, in
          ; // Find j == k
       while( j < s->count ) {
          if( vul_linalg_matrix_get( A, A->rows[ i ].idx, s->entries[ j ].idx ) != 0.0 ) {
-            vul_linalg_matrix_insert( U, A->rows[ i ].idx, s->entries[ j ].idx, s->entries[ j ].val );
+            vul_linalg_matrix_insert( P, A->rows[ i ].idx, s->entries[ j ].idx, s->entries[ j ].val );
          }
          ++j;
       }
@@ -1410,26 +1408,15 @@ vul_linalg_matrix *vul_linalg_precondition_ilu0( vul_linalg_matrix *A, int c, in
       while( j < s->count ) {
          if( vul_linalg_matrix_get( A, s->entries[ j ].idx, A->rows[ i ].idx ) != 0.0 ) {
             vul_linalg_matrix_insert( LT, A->rows[ i ].idx, s->entries[ j ].idx, s->entries[ j ].val
-                                                             / vul_linalg_matrix_get( U, A->rows[ i ].idx,
+                                                             / vul_linalg_matrix_get( P, A->rows[ i ].idx,
                                                                                          A->rows[ i ].idx ) );
          }
          ++j;
       }
    }
-   vulb__sparse_mcopy( P, U );
-   for( i = 0; i < LT->count; ++i ) {
-      for( j = 0; j < LT->rows[ i ].vec.count; ++j ) {
-         if( LT->rows[ i ].idx != LT->rows[ i ].vec.entries[ j ].idx && 
-             vul_linalg_matrix_get( A, LT->rows[ i ].idx, LT->rows[ i ].vec.entries[ j ].idx ) != 0.0 ) {
-            vul_linalg_matrix_insert( P, LT->rows[ i ].vec.entries[ j ].idx, LT->rows[ i ].idx,
-                                      LT->rows[ i ].vec.entries[ j ].val );
-         }
-      }
-   }
    
    vul_linalg_vector_destroy( s );
    vul_linalg_matrix_destroy( LT );
-   vul_linalg_matrix_destroy( U );
 
    return P;
 }
@@ -1510,114 +1497,37 @@ vul_linalg_matrix *vul_linalg_precondition_jacobi( vul_linalg_matrix *A, int c, 
    return P;
 }
 
-enum vul__linalg_precondition_apply_side {
-   VUL__LINALG_PRECONDITION_LEFT = 1,
-   VUL__LINALG_PRECONDITION_RIGHT = 2,
-   VUL__LINALG_PRECONDITION_BOTH = VUL__LINALG_PRECONDITION_LEFT | VUL__LINALG_PRECONDITION_RIGHT
-} vul__linalg_precondition_apply_side;
-
-void vul__linalg_precondition_solve( vul_linalg_precoditioner_type type,
-                                     vul_linalg_vector *x,
-                                     vul_linalg_matrix *P, vul_linalg_vector *b,
-                                     enum vul__linalg_precondition_apply_side side )
+static void vul__linalg_precondition_solve( vul_linalg_precoditioner_type type,
+                                            vul_linalg_vector *x,
+                                            vul_linalg_matrix *P, vul_linalg_vector *b )
 {
-   int i, k, j, set;
+   int i;
 
    vulb__sparse_vclear( x );
-   set = 0;
 
-   if( side & VUL__LINALG_PRECONDITION_RIGHT ) {
-      switch( type ) {
-      case VUL_LINALG_PRECONDITIONER_JACOBI: {
-         for( i = 0; i < b->count; ++i ) {
-            vul_linalg_vector_insert( x, b->entries[ i ].idx, 
-                                      vul_linalg_matrix_get( P, b->entries[ i ].idx, b->entries[ i ].idx ) *
-                                      b->entries[ i ].val );
-         }
-         set = 1;
-      } break;
-      case VUL_LINALG_PRECONDITIONER_INCOMPLETE_CHOLESKY: {
-         // Backward because we store it in the lower part
-         vulb__sparse_backward_substitute( x, P, b );
-         set = 1;
-      } break;
-      case VUL_LINALG_PRECONDITIONER_INCOMPLETE_LU_0: {
-         vul_linalg_real sum;
-         
-         /* Solve Lx = b */
-         vulb__sparse_vcopy( x, b );
-         for( i = 0; i < P->count; ++i ) {
-            sum = vul_linalg_vector_get( x, P->rows[ i ].idx );
-            for( j = 0; j < P->rows[ i ].vec.count && P->rows[ i ].vec.entries[ j ].idx < P->rows[ i ].idx; ++j ){
-               sum -= P->rows[ i ].vec.entries[ j ].val 
-                    * vul_linalg_vector_get( x, P->rows[ i ].vec.entries[ j ].idx );
-            }
-            vul_linalg_vector_insert( x, P->rows[ i ].idx, sum );
-         }
-         set = 1;
-      } break;
-      case VUL_LINALG_PRECONDITIONER_NONE: {
-         // Do nothing
-      } break;
-      default:
-         ERR( "Unknown preconditioner, can't solve for it!" );
+   switch( type ) {
+   case VUL_LINALG_PRECONDITIONER_JACOBI: {
+      /* Solve Dx = b, where D is the pre-inverted P */
+      for( i = 0; i < b->count; ++i ) {
+         vul_linalg_vector_insert( x, b->entries[ i ].idx, 
+                                   vul_linalg_matrix_get( P, b->entries[ i ].idx, b->entries[ i ].idx ) *
+                                   b->entries[ i ].val );
       }
-   }
-   if( side & VUL__LINALG_PRECONDITION_LEFT ) {
-      switch( type ) {
-      case VUL_LINALG_PRECONDITIONER_INCOMPLETE_CHOLESKY: {
-         vul_linalg_vector *y;
-
-         y = vul_linalg_vector_create( 0, 0, 0 );
-         if( side == VUL__LINALG_PRECONDITION_BOTH ) {
-            vulb__sparse_vcopy( y, x );
-         } else {
-            vulb__sparse_vcopy( y, b );
-         }
-
-         /* Backward substitute */
-         for( i = P->count - 1; i >= 0; --i ) {
-            vul_linalg_real pivot, sum;
-            
-            sum = vul_linalg_vector_get( y, P->rows[ i ].idx );
-            for( j = 0; j < P->rows[ i ].vec.count && P->rows[ i ].vec.entries[ j ].idx < P->rows[ i ].idx; ++j )
-               ; // Find j = i
-            pivot = P->rows[ i ].vec.entries[ j++ ].val; // Store P[i][i]
-            while( j < P->rows[ i ].vec.count ) {
-               sum -= P->rows[ i ].vec.entries[ j ].val 
-                    * vul_linalg_vector_get( x, P->rows[ i ].vec.entries[ j ].idx );
-               ++j;
-            }
-            vul_linalg_vector_insert( x, P->rows[ i ].idx, sum / pivot );
-         }
-         vul_linalg_vector_destroy( y );
-         set = 1;
-      } break;
-      case VUL_LINALG_PRECONDITIONER_INCOMPLETE_LU_0: {
-         vul_linalg_vector *y;
-         
-         y = vul_linalg_vector_create( 0, 0, 0 );
-         if( side == VUL__LINALG_PRECONDITION_BOTH ) {
-            vulb__sparse_vcopy( y, x );
-         } else {
-            vulb__sparse_vcopy( y, b );
-         }
-         /* Solve Ux = y */
-         vulb__sparse_backward_substitute( x, P, y );
-         vul_linalg_vector_destroy( y );
-         set = 1;
-      } break;
-      case VUL_LINALG_PRECONDITIONER_JACOBI:
-      case VUL_LINALG_PRECONDITIONER_NONE: {
-         // Do nothing
-      } break;
-      default:
-         ERR( "Unknown preconditioner, can't solve for it!" );
-      }
-   }
-
-   if( !set ) {
+   } break;
+   case VUL_LINALG_PRECONDITIONER_INCOMPLETE_CHOLESKY: {
+      /* Solve Lx = b */
+      vulb__sparse_forward_substitute( x, P, b );
+   } break;
+   case VUL_LINALG_PRECONDITIONER_INCOMPLETE_LU_0: {
+      /* Solve Ux = b */
+      vulb__sparse_backward_substitute( x, P, b );
+   } break;
+   case VUL_LINALG_PRECONDITIONER_NONE: {
+      // Just copy b
       vulb__sparse_vcopy( x, b );
+   } break;
+   default:
+      ERR( "Unknown preconditioner, can't solve for it!" );
    }
 }
 
@@ -1634,76 +1544,63 @@ vul_linalg_vector *vul_linalg_conjugate_gradient_sparse( vul_linalg_matrix *A,
                                                          vul_linalg_real tolerance )
 {
    vul_linalg_vector *x, *r, *Ap, *p, *z;
-   vul_linalg_real rd, rd2, alpha, beta, tmp;
+   vul_linalg_real rd, bd, rho, rho0, alpha, beta, tmp;
    int i, j, k, idx, found;
 
-   r = vul_linalg_vector_create( 0, 0, 0 );
-   z = vul_linalg_vector_create( 0, 0, 0 );
-   p = vul_linalg_vector_create( 0, 0, 0 );
-   Ap = vul_linalg_vector_create( 0, 0, 0 );
-   
    x = vul_linalg_vector_create( 0, 0, 0 );
+   r = vul_linalg_vector_create( 0, 0, 0 );
+
    vulb__sparse_vcopy( x, initial_guess );
    vulb__sparse_mmul( r, A, x );
    vulb__sparse_vsub( r, b, r );
-   vul__linalg_precondition_solve( ptype, p, P, r, VUL__LINALG_PRECONDITION_BOTH );
-   vulb__sparse_vcopy( p, r );
+   rd = vulb__sparse_dot( r, r ); rd = sqrt( rd );
+   bd = vulb__sparse_dot( b, b ); bd = sqrt( bd );
 
-   rd = vulb__sparse_dot( p, r );
-   for( i = 0; i < max_iterations; ++i ) {
-      vulb__sparse_mmul( Ap, A, p );
-      alpha = rd / vulb__sparse_dot( p, Ap );
-      for( j = 0; j < p->count; ++j ) {
-         idx = p->entries[ j ].idx;
-         tmp = p->entries[ j ].val * alpha;
-         found = 0;
-         for( k = 0; k < x->count; ++k ) {
-            if( x->entries[ k ].idx == idx ) {
-               x->entries[ k ].val -= tmp;
-               found = 1;
-               break;
-            }
-         }
-         if( !found ) {
-            vul_linalg_vector_insert( x, idx, -tmp );
-         }
-      }
-      for( j = 0; j < Ap->count; ++j ) {
-         idx = Ap->entries[ j ].idx;
-         tmp = Ap->entries[ j ].val * alpha;
-         found = 0;
-         for( k = 0; k < r->count; ++k ) {
-            if( r->entries[ k ].idx == idx ) {
-               r->entries[ k ].val -= tmp;
-               found = 1;
-               break;
-            }
-         }
-         if( !found ) {
-            vul_linalg_vector_insert( r, idx, -tmp );
-         }
-      }
-      rd2 = vulb__sparse_dot( r, r );
-      if( fabs( rd2 - rd ) < tolerance * r->count ) {
-         break;
-      }
-      vul__linalg_precondition_solve( ptype, z, P, r, VUL__LINALG_PRECONDITION_BOTH );
-      rd2 = vulb__sparse_dot( z, r );
-      beta = rd2 / rd;
-      for( j = 0, k = 0; j < p->count && k < z->count; ) {
-         if( p->entries[ j ].idx == z->entries[ k ].idx ) {
-            p->entries[ j ].val = z->entries[ k ].val + p->entries[ j ].val * beta;
-            ++j; ++k;
-         } else if( p->entries[ j ].idx < z->entries[ k ].idx ) {
-            ++j;
-         } else {
-            vul_linalg_vector_insert( p, z->entries[ k ].idx, z->entries[ k ].val );
-            ++k;
-         }
-      }
-      rd = rd2;
+   if( ( rd / bd ) <= tolerance ) {
+      // Initial guess is good enough
+      vul_linalg_vector_destroy( r );
+      return x;
    }
 
+   z = vul_linalg_vector_create( 0, 0, 0 );
+   p = vul_linalg_vector_create( 0, 0, 0 );
+   Ap = vul_linalg_vector_create( 0, 0, 0 );
+
+   for( i = 0; i < max_iterations; ++i ) {
+      // Solve Pz = r and update p
+      vul__linalg_precondition_solve( ptype, z, P, r );
+      rho = vulb__sparse_dot( z, r );
+      if( i != 0 ) {
+         beta = rho / rho0;
+         for( j = 0; j < p->count; ++j ) {
+            p->entries[ j ].val *= beta;
+         }
+         vulb__sparse_vadd( p, p, z );
+      } else {
+         vulb__sparse_vcopy( p, z );
+      }
+
+      // Update estimate
+      vulb__sparse_mmul( Ap, A, p );
+      alpha = rho / vulb__sparse_dot( Ap, p );
+      for( j = 0; j < p->count; ++j ) {
+         p->entries[ j ].val *= alpha;
+      }
+      vulb__sparse_vsub( x, x, p );
+
+      // Update residual
+      for( j = 0; j < Ap->count; ++j ) {
+         Ap->entries[ j ].val *= alpha;
+      }
+      vulb__sparse_vsub( r, r, Ap );
+
+      // Break if within tolerance
+      rd = vulb__sparse_dot( r, r ); rd = sqrt( rd );
+      if( ( rd / bd ) <= tolerance ) {
+         break;
+      }
+      rho0 = rho;
+   }
    vul_linalg_vector_destroy( z );
    vul_linalg_vector_destroy( p );
    vul_linalg_vector_destroy( r );
@@ -1723,7 +1620,7 @@ vul_linalg_vector *vul_linalg_gmres_sparse( vul_linalg_matrix *A,
    vul_linalg_matrix *V, *H;
    vul_linalg_vector *r, *x, *e, *y, *s, *w;
    vul_linalg_real bd, rd, err, tmp, *cosines, *sines, v0, v1;
-   int i, j, k, l, m;
+   int i, j, k, l, m, vcols;
 
    x = vul_linalg_vector_create( 0, 0, 0 );
    r = vul_linalg_vector_create( 0, 0, 0 );
@@ -1731,7 +1628,7 @@ vul_linalg_vector *vul_linalg_gmres_sparse( vul_linalg_matrix *A,
    vulb__sparse_vcopy( x, initial_guess );
    vulb__sparse_mmul( r, A, x );
    vulb__sparse_vsub( w, b, r );
-   vul__linalg_precondition_solve( ptype, r, P, w, VUL__LINALG_PRECONDITION_LEFT );
+   vul__linalg_precondition_solve( ptype, r, P, w );
    bd = vulb__sparse_dot( b, b ); bd = sqrt( bd );
    rd = vulb__sparse_dot( r, r ); rd = sqrt( rd );
 
@@ -1753,13 +1650,14 @@ vul_linalg_vector *vul_linalg_gmres_sparse( vul_linalg_matrix *A,
    memset( sines,   0, sizeof( vul_linalg_real ) * restart_interval );
 
    vul_linalg_vector_insert( e, 0, 1.0 );
+   vcols = 0;
 
    for( k = 0; k < max_iterations; ++k ) {
-      printf("iter %d, %e\n", k, rd);
       // v_1 = r / norm( r )
       for( i = 0; i < r->count; ++i ) {
          vul_linalg_matrix_insert( V, 0, r->entries[ i ].idx, r->entries[ i ].val / rd );
       }
+      vcols = r->entries[ r->count - 1 ].idx;
       // s = norm(r)*e
       vulb__sparse_vclear( s );
       for( i = 0; i < e->count; ++i ) {
@@ -1780,8 +1678,8 @@ vul_linalg_vector *vul_linalg_gmres_sparse( vul_linalg_matrix *A,
          }
          vulb__sparse_vclear( w );
          vulb__sparse_vclear( y );
-         vul__linalg_precondition_solve( ptype, y, P, &V->rows[ l ].vec, VUL__LINALG_PRECONDITION_RIGHT );
-         vulb__sparse_mmul( w, A, y );
+         vulb__sparse_mmul( y, A, &V->rows[l].vec );
+         vul__linalg_precondition_solve( ptype, w, P, y );
 
          // Construct orthonormal basis using Gram-Schmidt
          for( j = 0; j <= i; ++j ) {
@@ -1801,13 +1699,14 @@ vul_linalg_vector *vul_linalg_gmres_sparse( vul_linalg_matrix *A,
          for( j = 0; j < w->count; ++j ) {
             vul_linalg_matrix_insert( V, i + 1, w->entries[ j ].idx, w->entries[ j ].val / tmp );
          }
+         vcols = vcols >= w->entries[ w->count - 1 ].idx ? vcols : w->entries[ w->count - 1 ].idx;
 
          // Apply givens rotation to H to form R part of QR factorization in H
          for( j = 0; j < i; ++j ) {
             tmp = cosines[ j ] * vul_linalg_matrix_get( H, j,     i )
                 + sines[ j ]   * vul_linalg_matrix_get( H, j + 1, i );
-            vul_linalg_matrix_insert( H, j + 1, i, cosines[ j ] * vul_linalg_matrix_get( H, j,     i )
-                                                 + sines[ j ]   * vul_linalg_matrix_get( H, j + 1, i ) );
+            vul_linalg_matrix_insert( H, j + 1, i, cosines[ j ] * vul_linalg_matrix_get( H, j + 1, i )
+                                                 - sines[ j ]   * vul_linalg_matrix_get( H, j,     i ) );
             vul_linalg_matrix_insert( H, j, i, tmp );
          }
 
@@ -1834,47 +1733,50 @@ vul_linalg_vector *vul_linalg_gmres_sparse( vul_linalg_matrix *A,
          vul_linalg_matrix_insert( H, i, i, cosines[ i ] * vul_linalg_matrix_get( H, i,     i )
                                           + sines[ i ]   * vul_linalg_matrix_get( H, i + 1, i ) );
          vul_linalg_matrix_insert( H, i + 1, i, 0.0 );
-         err = fabs( vul_linalg_vector_get( s, i ) ) / bd;
-         printf("r-iter %d, err %e\n", i, err);
+         err = fabs( vul_linalg_vector_get( s, i + 1 ) ) / bd;
          if( err <= tolerance ) {
             // Update x by solving Hy=s and adding y to x
             vulb__sparse_backward_substitute_submatrix( y, H, s, i+1, i+1 );
-            for( j = 0, l = -1; j < V->count; ++j ) {
-               if( V->rows[ j ].idx == i ) {
-                  l = j;
-                  break;
+            //  w = V*y, but we store V^T for speed above
+            vulb__sparse_vclear( w );
+            for( j = 0; j <= vcols; ++j ) {
+               tmp = 0.0;
+               for( l = 0, m = 0; l < V->count && V->rows[ l ].idx <= i && m < y->count; ++l ) {
+                  while( m < y->count && y->entries[ m ].idx != V->rows[ l ].idx )
+                     ++m; // Find next entry in y. It can't be before the last one, as the index is increasing.
+                  tmp += y->entries[ m ].val * vul_linalg_vector_get( &V->rows[ l ].vec, y->entries[ j ].idx );
                }
+               vul_linalg_vector_insert( w, j, tmp );
             }
-            if( l == -1 ) {
-               ERR( "GMRES has encountered an all-zero orthonormal basis, which isn't really possible. Is the"
-                    " matrix singular? Returning current estimate (likely wrong)." );
-               return x;
-            }
-            for( j = 0; j < V->rows[ l ].vec.count && V->rows[ l ].vec.entries[ j ].idx < i; ++j ) {
-               vul_linalg_vector_insert( x, V->rows[ l ].vec.entries[ j ].idx, 
-                                         vul_linalg_vector_get( x, V->rows[ l ].vec.entries[ j ].idx )
-                                       - V->rows[ l ].vec.entries[ j ].val 
-                                       * vul_linalg_vector_get( y, V->rows[ l ].vec.entries[ j ].idx ) );
-            }
+            vulb__sparse_vadd( x, x, w );
             break;
          }
       }
 
-      // Check if done!
+      // Check if donev!
       if( err <= tolerance ) {
          break; // We converged!
       }
 
       // Update x by solving Hy=s and adding y to x
       vulb__sparse_backward_substitute_submatrix( y, H, s, restart_interval, restart_interval );
-      vulb__sparse_mmul_submatrix( r, V, y, restart_interval, restart_interval );
-      vul__linalg_precondition_solve( ptype, y, P, r, VUL__LINALG_PRECONDITION_RIGHT );
-      vulb__sparse_vadd( x, x, y );
+      //  r = V*y, but we store V^T for speed above
+      vulb__sparse_vclear( r );
+      for( j = 0; j <= vcols; ++j ) {
+         tmp = 0.0;
+         for( l = 0, m = 0; l < V->count && V->rows[ l ].idx < restart_interval && m < y->count; ++l ) {
+            while( m < y->count && y->entries[ m ].idx != V->rows[ l ].idx )
+               ++m; // Find next entry in y. It can't be before the last one, as the index is increasing.
+            tmp += y->entries[ m ].val * vul_linalg_vector_get( &V->rows[ l ].vec, y->entries[ j ].idx );
+         }
+         vul_linalg_vector_insert( r, j, tmp );
+      }
+      vulb__sparse_vadd( x, x, r );
 
       // Update residual
       vulb__sparse_mmul( r, A, x );
       vulb__sparse_vsub( w, b, r );
-      vul__linalg_precondition_solve( ptype, r, P, w, VUL__LINALG_PRECONDITION_LEFT );
+      vul__linalg_precondition_solve( ptype, r, P, w );
       rd = vulb__sparse_dot( r, r ); rd = sqrt( rd );
       vul_linalg_vector_insert( s, i + 1, rd );
       err = rd / bd;
@@ -1969,7 +1871,7 @@ void vul_linalg_lu_decomposition_sparse( vul_linalg_matrix **LU,
    }
    vul_linalg_vector *s = vul_linalg_vector_create( 0, 0, 0 );
    for( i = 0; i < A->count; ++i ) {
-      // Solve Lx = A(i:)^T (This is me testing if something works!)
+      // Solve Lx = A(i:)^T
       if( i != 0 ) {
          vulb__sparse_vclear( s );
       }

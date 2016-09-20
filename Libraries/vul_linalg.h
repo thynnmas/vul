@@ -2926,6 +2926,8 @@ void vul_linalg_gmres_dense( vul_linalg_real *x,
                              int max_iterations,
                              vul_linalg_real tolerance )
 {
+   // @TODO(thynn): Make sure this actually works (we know the sparse works now, so make this
+   // functionally equivalent!)
    vul_linalg_real *V, *H, *r, *e, *y, *s, *w;
    vul_linalg_real bd, rd, err, tmp, *cosines, *sines, v0, v1;
    int i, j, k, l, m;
@@ -2999,8 +3001,8 @@ void vul_linalg_gmres_dense( vul_linalg_real *x,
             tmp = cosines[ j ] * H[   j       * restart_interval + i ]
                 + sines[ j ]   * H[ ( j + 1 ) * restart_interval + i ];
             H[ ( j + 1 ) * restart_interval + i ] = 
-                  cosines[ j ] * H[   j       * restart_interval + i ]
-                + sines[ j ]   * H[ ( j + 1 ) * restart_interval + i ];
+                  cosines[ j ] * H[ ( j + 1 ) * restart_interval + i ]
+                - sines[ j ]   * H[   j       * restart_interval + i ];
             H[ j * restart_interval + i ] = tmp;
          }
 
@@ -3028,7 +3030,7 @@ void vul_linalg_gmres_dense( vul_linalg_real *x,
                cosines[ i ] * H[   i       * restart_interval + i ]
              + sines[ i ]   * H[ ( i + 1 ) * restart_interval + i ];
          H[ ( i + 1 ) * restart_interval + i ] = 0.0;
-         err = fabs( s[ i ] ) / bd;
+         err = fabs( s[ i + 1 ] ) / bd;
          if( err <= tolerance ) {
             // Update x by solving Hy=s and adding y to x
             // we do this by backward substitution (without the helper functions since H is always ordered
@@ -3040,8 +3042,12 @@ void vul_linalg_gmres_dense( vul_linalg_real *x,
                }
                y[ l ] = tmp / H[ l * restart_interval + l ];
             }
-            for( j = 0; j < i; ++j ) {
-               x[ j ] -= V[ i * n + j ] * y[ j ];
+            for( j = 0; j < n; ++j ) {
+               tmp = 0.0;
+               for( l = 0; l <= i; ++l ) {
+                  tmp += y[ l ] * V[ l * n + j ];
+               }
+               x[ j ] += tmp;
             }
             break;
          }
@@ -3063,14 +3069,13 @@ void vul_linalg_gmres_dense( vul_linalg_real *x,
          y[ l ] = tmp / H[ l * restart_interval + l ];
       }
       // Multiply out results, again not using the helper function because V's layout is fixed
-      for( i = 0; i < restart_interval; ++i ) {
-         r[ i ] = 0;
-         for( j = 0; j < restart_interval; ++j ) {
-            r[ i ] += V[ i * n + j ] * y[ j ];
+      for( j = 0; j < n; ++j ) {
+         tmp = 0.0;
+         for( l = 0; l < restart_interval; ++l ) {
+            tmp += y[ l ] * V[ l * n + j ];
          }
+         x[ j ] += tmp;
       }
-      vulb__vadd( x, x, r, restart_interval );
-
 
       // Update residual
       vulb__mmul( r, A, x, n, n );

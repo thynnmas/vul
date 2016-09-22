@@ -151,8 +151,8 @@ void vul__test_linear_solvers_sparse( )
    vul_linalg_vector_destroy( x );
 
    P = vul_linalg_precondition_jacobi( A, 3, 3 );
-   x = vul_linalg_conjugate_gradient_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_JACOBI, 1024, eps );
-   CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-5f );
+   x = vul_linalg_conjugate_gradient_sparse( A, guess, b, P, VUL_LINALG_PRECONDITIONER_JACOBI, 1024, 1e-8 );
+   CHECK_WITHIN_EPS_SPARSE( x, solution, 3, 1e-3f );
    vul_linalg_vector_destroy( x );
    vul_linalg_matrix_destroy( P );
 

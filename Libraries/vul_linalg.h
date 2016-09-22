@@ -1553,8 +1553,8 @@ vul_linalg_vector *vul_linalg_conjugate_gradient_sparse( vul_linalg_matrix *A,
    vulb__sparse_vcopy( x, initial_guess );
    vulb__sparse_mmul( r, A, x );
    vulb__sparse_vsub( r, b, r );
-   rd = vulb__sparse_dot( r, r ); rd = sqrt( rd );
-   bd = vulb__sparse_dot( b, b ); bd = sqrt( bd );
+   rd = vulb__sparse_dot( r, r );
+   bd = vulb__sparse_dot( b, b );
 
    if( ( rd / bd ) <= tolerance ) {
       // Initial guess is good enough
@@ -1565,13 +1565,24 @@ vul_linalg_vector *vul_linalg_conjugate_gradient_sparse( vul_linalg_matrix *A,
    z = vul_linalg_vector_create( 0, 0, 0 );
    p = vul_linalg_vector_create( 0, 0, 0 );
    Ap = vul_linalg_vector_create( 0, 0, 0 );
-   vulb__sparse_vcopy( p, z );
-   rho = rd;
 
    for( i = 0; i < max_iterations; ++i ) {
+      // Solve Pz = r and update p
+      vul__linalg_precondition_solve( ptype, z, P, r );
+      rho = vulb__sparse_dot( z, r );
+      if( i == 0 ) {
+         vulb__sparse_vcopy( p, z );
+      } else {
+         beta = rho / rho0;
+         for( j = 0; j < p->count; ++j ) {
+            p->entries[ j ].val *= beta;
+         }
+         vulb__sparse_vadd( p, z, p );
+      }
+
       // Update estimate
       vulb__sparse_mmul( Ap, A, p );
-      alpha = rd / sqrt( vulb__sparse_dot( Ap, p ) );
+      alpha = rho / vulb__sparse_dot( Ap, p );
       for( j = 0; j < p->count; ++j ) {
          p->entries[ j ].val *= alpha;
       }
@@ -1584,20 +1595,12 @@ vul_linalg_vector *vul_linalg_conjugate_gradient_sparse( vul_linalg_matrix *A,
       vulb__sparse_vsub( r, r, Ap );
 
       // Break if within tolerance
-      rd = vulb__sparse_dot( r, r ); rd = sqrt( rd );
+      rd = vulb__sparse_dot( r, r );
       if( ( rd / bd ) <= tolerance ) {
          break;
       }
       rho0 = rho;
       
-      // Solve Pz = r and update p
-      vul__linalg_precondition_solve( ptype, z, P, r );
-      rho = vulb__sparse_dot( z, r );
-      beta = rho / rho0;
-      for( j = 0; j < p->count; ++j ) {
-         p->entries[ j ].val *= beta;
-      }
-      vulb__sparse_vadd( p, p, z );
    }
    vul_linalg_vector_destroy( z );
    vul_linalg_vector_destroy( p );

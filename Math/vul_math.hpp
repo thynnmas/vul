@@ -89,4 +89,42 @@
 	#undef NOMINMAX
 #endif
 
+namespace vul {
+   template< typename T >
+   T clamp( T v, T mn, T mx );
+
+   template< typename T >
+   T saturate( T v );
+
+   template< typename T, typename T_t >
+   T lerp( T a, T b, T_t t );
+}
+#endif
+
+#ifdef VUL_DEFINE
+namespace vul {
+   template< typename T >
+   T clamp( T v, T mn, T mx )
+   {
+      return v < mn ? mn
+           : v > mx ? mx
+           : v;
+   }
+
+   template< typename T >
+   T saturate( T v )
+   {
+      return v < static_cast< T >( 0.f ) ? static_cast< T >( 0.f )
+           : v > static_cast< T >( 1.f ) ? static_cast< T >( 1.f )
+           : v;
+   }
+
+   template< typename T, typename T_t >
+   T lerp( T a, T b, T_t t )
+   {
+      T_t t1 = static_cast< T_t >( 1.f ) - t;
+      return a * t + b * t1;
+   }
+}
+
 #endif

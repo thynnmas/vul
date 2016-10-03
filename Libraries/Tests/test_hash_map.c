@@ -33,7 +33,7 @@
 }
 
 #define VUL_DEFINE
-#include "../vul_map_robin_hood.h"
+#include "../vul_hash_map.h"
 
 typedef struct vul_test_map_key {
    char *str;
@@ -68,7 +68,7 @@ uint32_t vul_test_map_hash( const void *key, uint32_t len )
    return h;
 }
 
-void vul_test_map_iterate( vul_map_element *e )
+void vul_test_map_iterate( vul_map_element *e, void *data )
 {
    vul_test_map_key*k;
    size_t *v;
@@ -77,6 +77,7 @@ void vul_test_map_iterate( vul_map_element *e )
    v = ( size_t* )e->value;
 
    TEST( k->len == *v );
+   TEST( *( ( size_t* )data ) == 47 );
 }
 
 int main( )
@@ -127,7 +128,8 @@ int main( )
    }
    
    // Test iteration
-   vul_map_iterate( map, vul_test_map_iterate );
+   size_t pass = 47;
+   vul_map_iterate( map, vul_test_map_iterate, &pass );
 
    // Finally, test collissions!
    vul_map_destroy( map );

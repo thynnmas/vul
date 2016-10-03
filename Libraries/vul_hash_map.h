@@ -113,8 +113,9 @@ void vul_map_destroy( vul_hash_map *map );
  * Iterate over all elements in the map. Useful for destruction etc.
  * @NOTE: If func alters the list (the element e, not the data
  * e contains), behaviour is undefined!
+ * The data parameter is passed through to func.
  */
-void vul_map_iterate( vul_hash_map *map, void ( *func )( vul_map_element *e ) );
+void vul_map_iterate( vul_hash_map *map, void ( *func )( vul_map_element *e, void *data ), void *data );
 
 #ifdef _cplusplus
 }
@@ -395,7 +396,7 @@ void vul_map_destroy( vul_hash_map *map )
 #endif
 }
 
-void vul_map_iterate( vul_hash_map *map, void ( *func )( vul_map_element *e ) )
+void vul_map_iterate( vul_hash_map *map, void ( *func )( vul_map_element *e, void *data ), void *data )
 {
    u32 i;
    for( i = 0; i < map->size; ++i )
@@ -403,7 +404,7 @@ void vul_map_iterate( vul_hash_map *map, void ( *func )( vul_map_element *e ) )
       // @TODO(thynn): We need to make sure it's not zero and not deleted before entering it!
       // whcih means we need to iterate over size, not count!
       if( map->hashes[ i ] != 0 && ( map->hashes[ i ] >> 31 ) == 0 ) {
-         func( &map->entries[ i ] );
+         func( &map->entries[ i ], data );
       }
    }
 }

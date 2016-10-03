@@ -279,7 +279,6 @@ vul_hash_map *vul_map_create( u32 initial_size, f32 load_factor,
                               void( *deallocator )( void *ptr ) )
 {
    vul_hash_map *map;
-   u32 i;
 
    map = ( vul_hash_map* )allocator( sizeof( vul_hash_map ) );
    assert( map != NULL ); // Make sure allocation didn't fail
@@ -359,7 +358,7 @@ b32 vul_map_remove( vul_hash_map *map, const void *key )
 
 void *vul_map_get( vul_hash_map *map, void *key )
 {
-   u32 hash, idx;
+   u32 idx;
 
    idx = vul__map_lookup_index( map, key );
    return idx != -1 ? map->entries[ idx ].value : NULL;

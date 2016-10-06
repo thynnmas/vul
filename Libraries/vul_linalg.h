@@ -2949,18 +2949,19 @@ void vul_linalg_gmres_dense( vul_linalg_real *x,
       return; // Initial guess is close enough!
    }
 
+   m = n > ( restart_interval + 2 ) ? n : ( restart_interval + 2 );
    w = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
    e = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
-   s = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * ( restart_interval + 2 ) );
-   y = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
+   s = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * m );
+   y = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * m );
    V = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n * ( restart_interval + 1 ) );
    H = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * restart_interval * ( restart_interval + 1 ) );
    cosines = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * restart_interval );
    sines   = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * restart_interval );
    memset( w, 0, sizeof( vul_linalg_real ) * n );
    memset( e, 0, sizeof( vul_linalg_real ) * n );
-   memset( s, 0, sizeof( vul_linalg_real ) * ( restart_interval + 2 ) );
-   memset( y, 0, sizeof( vul_linalg_real ) * n );
+   memset( s, 0, sizeof( vul_linalg_real ) * m );
+   memset( y, 0, sizeof( vul_linalg_real ) * m );
    memset( V, 0, sizeof( vul_linalg_real ) * n * ( restart_interval + 1 ) );
    memset( H, 0, sizeof( vul_linalg_real ) * restart_interval * ( restart_interval + 1 ) );
    memset( cosines, 0, sizeof( vul_linalg_real ) * restart_interval );

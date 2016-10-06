@@ -2105,7 +2105,7 @@ static void vul__linalg_givens_rotate_sparse( vul_linalg_matrix *A, int c, int r
       for( k = 0; k < r; ++k ) {
          v0 = G[ 0 ] * vul_linalg_matrix_get( A, k, i ) 
             + G[ 2 ] * vul_linalg_matrix_get( A, k, j );
-         v1 = G[ 1 ] * vul_linalg_matrix_get( A, k, i) 
+         v1 = G[ 1 ] * vul_linalg_matrix_get( A, k, i ) 
             + G[ 3 ] * vul_linalg_matrix_get( A, k, j );
          vul_linalg_matrix_insert( A, k, i, v0 );
          vul_linalg_matrix_insert( A, k, j, v1 );
@@ -2126,6 +2126,7 @@ static void vul__linalg_qr_decomposition_givens_sparse( vul_linalg_matrix *Q, vu
       vul_linalg_matrix_insert( Q, i, i, 1.f );
    }
    
+   // @TODO(thynn): Optimize this, it's very slow. Only iterate over the entries that are non-zero?
    for( j = 0; j < c; ++j ) {
       for( i = r - 2; i >= j; --i ) {
          v0 = vul_linalg_matrix_get( R, i, j );

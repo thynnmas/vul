@@ -2082,8 +2082,9 @@ static void vul__linalg_givens_rotate_sparse( vul_linalg_matrix *A, int c, int r
                                               int i, int j, float cosine, float sine,
                                               int post_multiply )
 {
-   int k;
-   vul_linalg_real G[ 4 ], v0, v1;
+   int k, ki, kj;
+   vul_linalg_real G[ 4 ], v0, v1, vi, vj;
+   vul_linalg_vector *ri, *rj;
 
    G[ 0 ] = cosine;
    G[ 1 ] = sine;
@@ -2091,24 +2092,49 @@ static void vul__linalg_givens_rotate_sparse( vul_linalg_matrix *A, int c, int r
    G[ 3 ] = cosine;
 
    if( post_multiply ) {
-      // R = G^T * R
-      for( k = 0; k < c; ++k ) {
-         v0 = G[ 0 ] * vul_linalg_matrix_get( A, i, k ) 
-            + G[ 2 ] * vul_linalg_matrix_get( A, j, k ); // G[ 2 ]: T is transposed
-         v1 = G[ 1 ] * vul_linalg_matrix_get( A, i, k ) 
-            + G[ 3 ] * vul_linalg_matrix_get( A, j, k ); // G[ 1 ]: T is transposed
-         vul_linalg_matrix_insert( A, i, k, v0 );
-         vul_linalg_matrix_insert( A, j, k, v1 );
+      ri = 0;
+      rj = 0;
+      for( k = 0; k < A->count; ++k ) {
+         if( A->rows[ k ].idx == i ) {
+            ri = &A->rows[ k ].vec;
+         }
+         if( A->rows[ k ].idx == j ) {
+            rj = &A->rows[ k ].vec;
+         }
+         if( ri && rj ) {
+            break;
+         }
+      }
+      if( !( ri && rj ) ) {
+         // R = G^T * R
+         for( k = 0; k < c; ++k ) {
+            v0 = G[ 0 ] * vul_linalg_matrix_get( A, i, k ) 
+               + G[ 2 ] * vul_linalg_matrix_get( A, j, k ); // G[ 2 ]: T is transposed
+            v1 = G[ 1 ] * vul_linalg_matrix_get( A, i, k ) 
+               + G[ 3 ] * vul_linalg_matrix_get( A, j, k ); // G[ 1 ]: T is transposed
+            vul_linalg_matrix_insert( A, i, k, v0 );
+            vul_linalg_matrix_insert( A, j, k, v1 );
+         }
+      } else {
+         // R = G^T * R
+         for( k = 0; k < c; ++k ) {
+            v0 = G[ 0 ] * vul_linalg_vector_get( ri, k ) 
+               + G[ 2 ] * vul_linalg_vector_get( rj, k ); // G[ 2 ]: T is transposed
+            v1 = G[ 1 ] * vul_linalg_vector_get( ri, k ) 
+               + G[ 3 ] * vul_linalg_vector_get( rj, k ); // G[ 1 ]: T is transposed
+            vul_linalg_vector_insert( ri, k, v0 );
+            vul_linalg_vector_insert( rj, k, v1 );
+         }
       }
    } else {
       // Q = Q * G
-      for( k = 0; k < r; ++k ) {
-         v0 = G[ 0 ] * vul_linalg_matrix_get( A, k, i ) 
-            + G[ 2 ] * vul_linalg_matrix_get( A, k, j );
-         v1 = G[ 1 ] * vul_linalg_matrix_get( A, k, i ) 
-            + G[ 3 ] * vul_linalg_matrix_get( A, k, j );
-         vul_linalg_matrix_insert( A, k, i, v0 );
-         vul_linalg_matrix_insert( A, k, j, v1 );
+      for( k = 0; k < A->count; ++k ) {
+         vi = vul_linalg_vector_get( &A->rows[ k ].vec, i );
+         vj = vul_linalg_vector_get( &A->rows[ k ].vec, j );
+         v0 = G[ 0 ] * vi + G[ 2 ] * vj;
+         v1 = G[ 1 ] * vi + G[ 3 ] * vj;
+         vul_linalg_vector_insert( &A->rows[ k ].vec, i, v0 );
+         vul_linalg_vector_insert( &A->rows[ k ].vec, j, v1 );
       }
    }
 }

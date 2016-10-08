@@ -58,6 +58,13 @@
  *    and do whatever you want with the error message (printf style formatting/arguments)
  *    before failing.
  *
+ * A small-vector optimization is used in the sparse vector type, where vectors of at most
+ * VUL_LINALG_SMALL_VEC_SIZE elements are included directly in the vector struct. If not defined,
+ * this default to 5 (for a single precision on 64-bit systems, this results in a 32byte struct,
+ * leaving two per cacheline on typical desktop CPUs these days). Different sizes may yield 
+ * better performance for your use case though, and if the value is predefined when the file
+ * is included, the defined value is used.
+ *
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
@@ -93,7 +100,6 @@
 #define vul_linalg_real float
 #endif
 
-// The default size is 5 = 20 bytes with float, leaving each vector to be 32 bytes w/ 64-bit ptrs.
 #ifndef VUL_LINALG_SMALL_VEC_SIZE
 #define VUL_LINALG_SMALL_VEC_SIZE 5
 #endif

@@ -65,6 +65,10 @@
  * better performance for your use case though, and if the value is predefined when the file
  * is included, the defined value is used.
  *
+ *
+ * 2016-10-08: 1.0   - Public release.
+ * 2016-10-09: 1.0.1 - Incorporated style tips, fixed C++ macro typo.
+ *
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
@@ -90,7 +94,7 @@
 #define VUL_LINALG_FREE free
 #else
    #ifndef VUL_LINALG_FREE
-      vul_linalg.h: You must also specify a deallocation function to go with VUL_LINALG_ALLOC
+      #error vul_linalg.h: You must also specify a deallocation function to go with VUL_LINALG_ALLOC
    #endif
 #endif
 
@@ -104,7 +108,7 @@
 #define VUL_LINALG_SMALL_VEC_SIZE 5
 #endif
 
-#ifdef _cplusplus
+#ifdef ___cplusplus
 extern "C" {
 #endif
 
@@ -642,7 +646,7 @@ vul_linalg_real vul_linalg_condition_number_sparse( vul_linalg_matrix *A, int c,
                                                     int max_iter, vul_linalg_real eps );
 
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -650,7 +654,7 @@ vul_linalg_real vul_linalg_condition_number_sparse( vul_linalg_matrix *A, int c,
 
 #ifdef VUL_DEFINE
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -658,11 +662,9 @@ extern "C" {
 // Sparse datatype local functions
 //
 
-#define DECLARE_VECTOR_OP( name, op ) static void name( vul_linalg_vector *out, vul_linalg_vector *a, vul_linalg_vector *b );
-DECLARE_VECTOR_OP( vulb__sparse_vadd, + )
-DECLARE_VECTOR_OP( vulb__sparse_vsub, - )
-DECLARE_VECTOR_OP( vulb__sparse_vmul, * )
-#undef DECLARE_VECTOR_OP
+static void vulb__sparse_vadd( vul_linalg_vector *out, vul_linalg_vector *a, vul_linalg_vector *b );
+static void vulb__sparse_vsuv( vul_linalg_vector *out, vul_linalg_vector *a, vul_linalg_vector *b );
+static void vulb__sparse_vmul( vul_linalg_vector *out, vul_linalg_vector *a, vul_linalg_vector *b );
 
 static void vulb__sparse_vmul_sub( vul_linalg_vector *out, vul_linalg_vector *a, vul_linalg_vector *x, vul_linalg_vector *b );
 static void vulb__sparse_vmul_add( vul_linalg_vector *out, vul_linalg_vector *a, vul_linalg_vector *x, vul_linalg_vector *b );
@@ -711,11 +713,9 @@ static void vul__linalg_qr_decomposition_givens_sparse( vul_linalg_matrix *Q, vu
 // Dense local functions
 //
 
-#define DECLARE_VECTOR_OP( name, op ) static void name( vul_linalg_real *out, vul_linalg_real *a, vul_linalg_real *b, int n );
-DECLARE_VECTOR_OP( vulb__vadd, + )
-DECLARE_VECTOR_OP( vulb__vsub, - )
-DECLARE_VECTOR_OP( vulb__vmul, * )
-#undef DECLARE_VECTOR_OP
+static void vulb__vadd( vul_linalg_real *out, vul_linalg_real *a, vul_linalg_real *b, int n );
+static void vulb__vsuv( vul_linalg_real *out, vul_linalg_real *a, vul_linalg_real *b, int n );
+static void vulb__vmul( vul_linalg_real *out, vul_linalg_real *a, vul_linalg_real *b, int n );
 
 static void vulb__vmul_sub( vul_linalg_real *out, vul_linalg_real *a, vul_linalg_real x, vul_linalg_real *b, int n );
 static void vulb__vmul_add( vul_linalg_real *out, vul_linalg_real *a, vul_linalg_real x, vul_linalg_real *b, int n );
@@ -810,33 +810,33 @@ static vul_linalg_real vul__linalg_matrix_norm_as_single_column_sparse( vul_lina
  */
 static void vul__linalg_svd_sort_sparse( vul_linalg_svd_basis_sparse *x, int n );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 #endif
 
 #ifdef VUL_DEFINE
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 #ifdef VUL_LINALG_ERROR_STDERR
-#define ERR( ... )\
+#define VUL_ERR( ... )\
    fprintf( stderr, __VA_ARGS__ );
 #elif defined( VUL_LINALG_ERROR_STR )
 char vul_linalg_last_error[ 1024 ];
-#define ERR( ... )\
+#define VUL_ERR( ... )\
    snprintf( vul_last_error, 1023, __VA_ARGS__ );\
    vul_linalg_last_error[ 1023 ] = 0;
 #elif defined( VUL_LINALG_ERROR_ASSERT )
-#define ERR( ... )\
+#define VUL_ERR( ... )\
    assert( 0 );
 #elif defined( VUL_LINALG_ERROR_QUIET )
-#define ERR( ... )\
+#define VUL_ERR( ... )\
    {(void)0;}
 #elif defined( VUL_LINALG_ERROR_CUSTOM )
-#define ERR( ... )\
+#define VUL_ERR( ... )\
    VUL_LINALG_ERROR_CUSTOM( __VA_ARGS__)
 #endif
 
@@ -1498,14 +1498,14 @@ vul_linalg_matrix *vul_linalg_precondition_ichol( vul_linalg_matrix *A, int c, i
          }
          if( A->rows[ i ].idx == A->rows[ i ].vec.entries[ j ].idx ) {
             if( d <= 0.f ) {
-               ERR( "Cholesky decomposition is only valid for POSITIVE-DEFINITE symmetric matrices." );
+               VUL_ERR( "Cholesky decomposition is only valid for POSITIVE-DEFINITE symmetric matrices." );
                return NULL;
             }
             vul_linalg_matrix_insert( P, A->rows[ i ].idx, A->rows[ i ].idx, sqrt( d ) );
          } else {
             v = vul_linalg_matrix_get( P, A->rows[ i ].idx, A->rows[ i ].idx );
             if( v == 0.f ) {
-               ERR( "Determinant is sufficiently small that a divide-by-zero is imminent." );
+               VUL_ERR( "Determinant is sufficiently small that a divide-by-zero is imminent." );
                return NULL;
             }
             vul_linalg_matrix_insert( P, A->rows[ i ].vec.entries[ j ].idx,A->rows[ i ].idx,  d / v );
@@ -1561,7 +1561,7 @@ static void vul__linalg_precondition_solve( vul_linalg_precoditioner_type type,
       vulb__sparse_vcopy( x, b );
    } break;
    default:
-      ERR( "Unknown preconditioner, can't solve for it!" );
+      VUL_ERR( "Unknown preconditioner, can't solve for it!" );
    }
 }
 
@@ -1707,8 +1707,8 @@ vul_linalg_vector *vul_linalg_gmres_sparse( vul_linalg_matrix *A,
             }
          }
          if( l == -1 ) {
-            ERR( "GMRES has encountered an all-zero orthonormal basis, which isn't really possible. Is the"
-                 " matrix singular? Returning current estimate (likely wrong)." );
+            VUL_ERR( "GMRES has encountered an all-zero orthonormal basis, which isn't really possible. Is the"
+                     " matrix singular? Returning current estimate (likely wrong)." );
             return x;
          }
          vulb__sparse_vclear( w );
@@ -1821,7 +1821,7 @@ vul_linalg_vector *vul_linalg_gmres_sparse( vul_linalg_matrix *A,
    }
    if( err > tolerance ) {
       printf("Filed to converge to tolerance in GMRES\n");
-      //ERR( "Failed to converge in GMRES!" ); // @TODO(thynn): This is the wrong way to signal this; find a better way!
+      //VUL_ERR( "Failed to converge in GMRES!" ); // @TODO(thynn): This is the wrong way to signal this; find a better way!
    }
 
    vul_linalg_matrix_destroy( V );
@@ -2047,14 +2047,14 @@ void vul_linalg_cholesky_decomposition_sparse( vul_linalg_matrix **L,
          }
          if( i == j ) {
             if( sum <= 0.f ) {
-               ERR( "Cholesky decomposition is only valid for POSITIVE-DEFINITE symmetric matrices." );
+               VUL_ERR( "Cholesky decomposition is only valid for POSITIVE-DEFINITE symmetric matrices." );
                return;
             }
             vul_linalg_matrix_insert( *L, i, i, sqrt( sum ) );
          } else {
             rd = vul_linalg_matrix_get( *L, i, i );
             if( rd == 0.f ) {
-               ERR( "Determinant is sufficiently small that a divide-by-zero is imminent." );
+               VUL_ERR( "Determinant is sufficiently small that a divide-by-zero is imminent." );
                return;
             }
             vul_linalg_matrix_insert( *L, j, i, sum / rd );
@@ -2432,7 +2432,7 @@ vul_linalg_real vul_linalg_condition_number_sparse( vul_linalg_matrix *A, int c,
    n = 0;
    vul_linalg_svd_sparse( bases, &n, A, c, r, max_iter, eps );
    if( n < 2 ) {
-      ERR( "Can't compute condition number, not enough non-zero singular values (need 2)." );
+      VUL_ERR( "Can't compute condition number, not enough non-zero singular values (need 2)." );
       return 0.0;
    }
    ret = bases[ 0 ].sigma / bases[ n - 1 ].sigma;
@@ -2751,9 +2751,9 @@ vul_linalg_vector *vul_linalg_linear_least_squares_sparse( vul_linalg_svd_basis_
 // and once I discovered the bug I had been consistent enough that simply swapping indices meant it all worked.
 // So now we index (y,x) instead of (x,y). Oops. But it's only internal in this file anyway.
 #ifdef VUL_LINALG_ROW_MAJOR
-#define IDX( A, y, x, c, r ) A[ ( y ) * ( c ) + ( x ) ]
+#define VUL_IDX( A, y, x, c, r ) A[ ( y ) * ( c ) + ( x ) ]
 #else
-#define IDX( A, y, x, c, r ) A[ ( x ) * ( r ) + ( y ) ]
+#define VUL_IDX( A, y, x, c, r ) A[ ( x ) * ( r ) + ( y ) ]
 #endif
 
 #define DEFINE_VECTOR_OP( name, op )\
@@ -2820,7 +2820,7 @@ static void vulb__mmul( vul_linalg_real *out, vul_linalg_real *A, vul_linalg_rea
    for( i = 0; i < r; ++i ) {
       out[ i ] = 0;
       for( j = 0; j < c; ++j ) {
-         out[ i ] += IDX( A, i, j, c, r ) * x[ j ];
+         out[ i ] += VUL_IDX( A, i, j, c, r ) * x[ j ];
       }
    }
 }
@@ -2833,9 +2833,9 @@ static void vulb__mmul_matrix( vul_linalg_real *O, vul_linalg_real *A, vul_linal
       for( j = 0; j < n; ++j ) {
          s = 0.f;
          for( k = 0; k < n; ++k ) {
-            s += IDX( A, i, k, n, n ) * IDX( B, k, j, n, n );
+            s += VUL_IDX( A, i, k, n, n ) * VUL_IDX( B, k, j, n, n );
          }
-         IDX( O, i, j, n, n ) = s;
+         VUL_IDX( O, i, j, n, n ) = s;
       }
    }
 }
@@ -2847,7 +2847,7 @@ static void vulb__mmul_add( vul_linalg_real *out, vul_linalg_real *A, vul_linalg
    for( i = 0; i < r; ++i ) {
       out[ i ] = b[ i ];
       for( j = 0; j < c; ++j ) {
-         out[ i ] += IDX( A, i, j, c, r ) * x[ j ];
+         out[ i ] += VUL_IDX( A, i, j, c, r ) * x[ j ];
       }
    }
 }
@@ -2859,9 +2859,9 @@ static void vulb__forward_substitute( vul_linalg_real *out, vul_linalg_real *A, 
    for( i = 0; i < r; ++i ) {
       vul_linalg_real sum = b[ i ];
       for( j = i - 1; j >= 0; --j ) {
-         sum -= IDX( A, i, j, c, r ) * out[ j ];
+         sum -= VUL_IDX( A, i, j, c, r ) * out[ j ];
       }
-      out[ i ] = sum / IDX( A, i, i, c, r );
+      out[ i ] = sum / VUL_IDX( A, i, i, c, r );
    }
 }
 
@@ -2874,17 +2874,17 @@ static void vulb__backward_substitute( vul_linalg_real *out, vul_linalg_real *A,
       for( i = c - 1; i >= 0; --i ) {
          vul_linalg_real sum = b[ i ];
          for( j = i + 1; j < r; ++j ) {
-            sum -= IDX( A, j, i, c, r ) * out[ j ];
+            sum -= VUL_IDX( A, j, i, c, r ) * out[ j ];
          }
-         out[ i ] = sum / IDX( A, i, i, c, r );
+         out[ i ] = sum / VUL_IDX( A, i, i, c, r );
       }
    } else {
       for( i = r - 1; i >= 0; --i ) {
          vul_linalg_real sum = b[ i ];
          for( j = i + 1; j < c; ++j ) {
-            sum -= IDX( A, i, j, c, r ) * out[ j ];
+            sum -= VUL_IDX( A, i, j, c, r ) * out[ j ];
          }
-         out[ i ] = sum / IDX( A, i, i, c, r );
+         out[ i ] = sum / VUL_IDX( A, i, i, c, r );
       }
    }
 }
@@ -2896,7 +2896,7 @@ static void vulb__mtranspose( vul_linalg_real *O, vul_linalg_real *A, int c, int
       // Square is trivial and cache friendly
       for( i = 0; i < r; ++i ) {
          for( j = 0; j < c; ++j ) {
-            IDX( O, i, j, c, r ) = IDX( A, j, i, c, r );
+            VUL_IDX( O, i, j, c, r ) = VUL_IDX( A, j, i, c, r );
          }
       }
    } else {
@@ -2908,7 +2908,7 @@ static void vulb__mtranspose( vul_linalg_real *O, vul_linalg_real *A, int c, int
       for( k = 0; k < r * c; ++k ) {
          i = k % c;
          j = k / c;
-         IDX( O, i, j, r, c ) = IDX( A, j, i, c, r );
+         VUL_IDX( O, i, j, r, c ) = VUL_IDX( A, j, i, c, r );
       }
    }
 }
@@ -2922,9 +2922,9 @@ static void vulb__mmul_matrix_rect( vul_linalg_real *O, vul_linalg_real *A, vul_
       for( j = 0; j < cb; ++j ) {
          d = 0.f;
          for( k = 0; k < rb_ca; ++k ) {
-            d += IDX( A, i, k, rb_ca, ra ) * IDX( B, k, j, cb, rb_ca );
+            d += VUL_IDX( A, i, k, rb_ca, ra ) * VUL_IDX( B, k, j, cb, rb_ca );
          }
-         IDX( O, i, j, cb, ra ) = d;
+         VUL_IDX( O, i, j, cb, ra ) = d;
       }
    }
 }
@@ -3153,7 +3153,7 @@ void vul_linalg_gmres_dense( vul_linalg_real *x,
 
    if( err > tolerance ) {
       printf("Filed to converge to tolerance in GMRES\n");
-      //ERR( "Failed to converge in GMRES!" ); // @TODO(thynn): This is the wrong way to signal this; find a better way!
+      //VUL_ERR( "Failed to converge in GMRES!" ); // @TODO(thynn): This is the wrong way to signal this; find a better way!
    }
 
    VUL_LINALG_FREE( V );
@@ -3182,32 +3182,32 @@ void vul_linalg_lu_decomposition_dense( vul_linalg_real *LU,
    for( i = 0; i < n; ++i ) {
       largest = 0.f;
       for( j = 0; j < n; ++ j ) {
-         if( ( tmp = fabs( IDX( A, i, j, n, n ) ) ) > largest ) {
+         if( ( tmp = fabs( VUL_IDX( A, i, j, n, n ) ) ) > largest ) {
             largest = tmp;
          }
       }
       if( largest == 0.f ) {
-         ERR( "LU decomposition is not valid for singular matrices." );
+         VUL_ERR( "LU decomposition is not valid for singular matrices." );
          return;
       }
       scale[ i ] = 1.f / largest;
    }
    for( j = 0; j < n; ++j ) {
       for( i = 0; i < j; ++i ) {
-         sum = IDX( A, i, j, n, n );
+         sum = VUL_IDX( A, i, j, n, n );
          for( k = 0; k < i; ++k ) {
-            sum -= IDX( LU, i, k, n, n ) * IDX( LU, k, j, n, n );
+            sum -= VUL_IDX( LU, i, k, n, n ) * VUL_IDX( LU, k, j, n, n );
          }
-         IDX( LU, i, j, n, n ) = sum;
+         VUL_IDX( LU, i, j, n, n ) = sum;
       }
 
       largest = 0.f;
       for( i = j; i < n; ++i ) {
-         sum = IDX( A, j, i, n, n );
+         sum = VUL_IDX( A, j, i, n, n );
          for( k = 0; k < j; ++k ) {
-            sum -= IDX( LU, i, k, n, n ) * IDX( LU, k, j, n, n );
+            sum -= VUL_IDX( LU, i, k, n, n ) * VUL_IDX( LU, k, j, n, n );
          }
-         IDX( LU, i, j, n, n ) = sum;
+         VUL_IDX( LU, i, j, n, n ) = sum;
          if( ( tmp = scale[ i ] * fabs( sum ) ) >= largest ) {
             largest = tmp;
             imax = i;
@@ -3215,21 +3215,21 @@ void vul_linalg_lu_decomposition_dense( vul_linalg_real *LU,
       }
       if( j != imax ) { 
          for( k = 0; k < n; ++k ) {
-            tmp = IDX( LU, imax, k, n, n );
-            IDX( LU, imax, k, n, n ) = IDX( LU, j, k, n, n );
-            IDX( LU, j, k ,n, n ) = tmp;
+            tmp = VUL_IDX( LU, imax, k, n, n );
+            VUL_IDX( LU, imax, k, n, n ) = VUL_IDX( LU, j, k, n, n );
+            VUL_IDX( LU, j, k ,n, n ) = tmp;
          }
          scale[ imax ] = scale[ j ];
       }
       indices[ j ] = imax;
-      if( IDX( LU, j, j, n, n ) == 0.f ) {
-         ERR( "Pivot element is close enough to zero that we're singular." );
+      if( VUL_IDX( LU, j, j, n, n ) == 0.f ) {
+         VUL_ERR( "Pivot element is close enough to zero that we're singular." );
          return;
       }
       if( j != n - 1 ) {
-         tmp = 1.f / IDX( LU, j, j, n, n );
+         tmp = 1.f / VUL_IDX( LU, j, j, n, n );
          for( i = j + 1; i < n; ++i ) {
-            IDX( LU, i, j, n, n ) *= tmp;
+            VUL_IDX( LU, i, j, n, n ) *= tmp;
          }
       }
    }
@@ -3268,7 +3268,7 @@ void vul_linalg_lu_solve_dense( vul_linalg_real *out,
          r[ imax ] = r[ i ];
          if( iold ) {
             for( j = iold; j < i - 1; ++j ) {
-               sum -= IDX( LU, i, j, n, n ) * r[ j ];
+               sum -= VUL_IDX( LU, i, j, n, n ) * r[ j ];
             }
          } else if( sum ) {
             iold = i;
@@ -3308,22 +3308,22 @@ void vul_linalg_cholesky_decomposition_dense( vul_linalg_real *LL,
    // Decomposition
    for( i = 0; i < n; ++i ) {
       for( j = i; j < n; ++j ) {
-         sum = IDX( LL, i, j, n, n );
+         sum = VUL_IDX( LL, i, j, n, n );
          for( k = i - 1; k >= 0; --k ) {
-            sum -= IDX( LL, i, k, n, n ) * IDX( LL, j, k, n, n );
+            sum -= VUL_IDX( LL, i, k, n, n ) * VUL_IDX( LL, j, k, n, n );
          }
          if( i == j ) {
             if( sum <= 0.f ) {
-               ERR( "Cholesky decomposition is only valid for POSITIVE-DEFINITE symmetric matrices." );
+               VUL_ERR( "Cholesky decomposition is only valid for POSITIVE-DEFINITE symmetric matrices." );
                return;
             }
-            IDX( LL, i, i, n, n ) = sqrt( sum );
+            VUL_IDX( LL, i, i, n, n ) = sqrt( sum );
          } else {
-            if( IDX( LL, i, i, n, n ) == 0.f ) {
-               ERR( "Determinant is sufficiently small that a divide-by-zero is imminent." );
+            if( VUL_IDX( LL, i, i, n, n ) == 0.f ) {
+               VUL_ERR( "Determinant is sufficiently small that a divide-by-zero is imminent." );
                return;
             }
-            IDX( LL, j, i, n, n ) = sum / IDX( LL, i, i, n, n );
+            VUL_IDX( LL, j, i, n, n ) = sum / VUL_IDX( LL, i, i, n, n );
          }
       }
    }
@@ -3412,7 +3412,7 @@ void vul_linalg_qr_solve_dense( vul_linalg_real *out,
       for( i = 0; i < n; ++i ) {
          sum = 0;
          for( j = 0; j < n; ++j ) {
-            sum += IDX( Q, j, i, n, n ) * r[ j ];
+            sum += VUL_IDX( Q, j, i, n, n ) * r[ j ];
          }
          d[ i ] = sum;
       }
@@ -3466,11 +3466,11 @@ void vul_linalg_successive_over_relaxation_dense( vul_linalg_real *out,
          omega = 0.f;
          for( j = 0; j < n; ++j ) {
             if( i != j ) {
-               omega += IDX( A, i, j, n, n ) * x[ j ];
+               omega += VUL_IDX( A, i, j, n, n ) * x[ j ];
             }
          }
          x[ i ] = ( 1.f - relaxation_factor ) * x[ i ]
-               + ( relaxation_factor / IDX( A, i, i, n, n ) ) * ( b[ i ] - omega );
+               + ( relaxation_factor / VUL_IDX( A, i, i, n, n ) ) * ( b[ i ] - omega );
       }
       /* Check for convergence */
       vulb__mmul( r, A, x, n, n );
@@ -3503,7 +3503,7 @@ void vul_linalg_svd_basis_reconstruct_matrix( vul_linalg_real *M, vul_linalg_svd
    for( k = n - 1; k >= 0; --k ) {
       for( i = 0; i < x[ k ].u_length; ++i ) {
          for( j = 0; j < x[ k ].v_length; ++j ) {
-            IDX( M, i, j, x[ k ].v_length, x[ k ].u_length ) += x[ k ].sigma * x[ k ].u[ i ] * x[ k ].v[ j ];
+            VUL_IDX( M, i, j, x[ k ].v_length, x[ k ].u_length ) += x[ k ].sigma * x[ k ].u[ i ] * x[ k ].v[ j ];
          }
       }
    }
@@ -3568,7 +3568,7 @@ static void vul__linalg_qr_decomposition_gram_schmidt( vul_linalg_real *Q, vul_l
    // Fill Q
    for( i = 0; i < c; ++i ) {
       for( j = 0; j < r; ++j ) {
-         a[ j ] = IDX( A, j, i, c, r );
+         a[ j ] = VUL_IDX( A, j, i, c, r );
       }
       d = 0.f;
       for( j = 0; j < r; ++j ) {
@@ -3585,7 +3585,7 @@ static void vul__linalg_qr_decomposition_gram_schmidt( vul_linalg_real *Q, vul_l
          d = 1.f / sqrt( d );
       }
       for( j = 0; j < r; ++j ) {
-         IDX( Q, j, i, r, r ) = u[ i * r + j] * d;
+         VUL_IDX( Q, j, i, r, r ) = u[ i * r + j] * d;
       }
    }
 
@@ -3594,7 +3594,7 @@ static void vul__linalg_qr_decomposition_gram_schmidt( vul_linalg_real *Q, vul_l
       for( j = 0; j < c; ++j ) {
          R[ i * c + j ] = 0.f;
          for( k = 0; k < r; ++k ) {
-            IDX( R, i, j, c, r ) += IDX( Q, k, i, r, r ) * IDX( A, k, j, c, r ); // Q^T
+            VUL_IDX( R, i, j, c, r ) += VUL_IDX( Q, k, i, r, r ) * VUL_IDX( A, k, j, c, r ); // Q^T
          }
       }
    }
@@ -3626,7 +3626,7 @@ static void vul__linalg_apply_householder_column( vul_linalg_real *O, vul_linalg
    
    // Construct u
    for( i = 0; i < ( r - k ); ++i ) {
-      u[ i ] = IDX( A, ( i + k ), k, c, r );
+      u[ i ] = VUL_IDX( A, ( i + k ), k, c, r );
    }
    // Calculate and add alpha
    alpha = 0.f;
@@ -3655,7 +3655,7 @@ static void vul__linalg_apply_householder_column( vul_linalg_real *O, vul_linalg
    memset( Qt, 0, sizeof( vul_linalg_real ) * r * r );
    for( i = 0; i < r - k; ++i ) {
       for( j = 0; j < r - k; ++j ) {
-         IDX( Qt, i, j, r - k, r - k ) = ( ( i == j ) ? 1.f : 0.f ) - 2.f * u[ i ] * u[ j ];
+         VUL_IDX( Qt, i, j, r - k, r - k ) = ( ( i == j ) ? 1.f : 0.f ) - 2.f * u[ i ] * u[ j ];
       }
    }
    // Calcualte new A into O
@@ -3664,9 +3664,9 @@ static void vul__linalg_apply_householder_column( vul_linalg_real *O, vul_linalg
       for( j = 0; j < c; ++j ) {
          d = 0.f;
          for( l = 0; l < r - k; ++l ) {
-            d += IDX( Qt, i, l, r - k, r - k ) * IDX( A, l + k, j, c, r );
+            d += VUL_IDX( Qt, i, l, r - k, r - k ) * VUL_IDX( A, l + k, j, c, r );
          }
-         IDX( O, i + k, j, c, r ) = d;
+         VUL_IDX( O, i + k, j, c, r ) = d;
       }
    }
    if( Q && QO ) {
@@ -3675,9 +3675,9 @@ static void vul__linalg_apply_householder_column( vul_linalg_real *O, vul_linalg
          for( j = 0; j < qc - k; ++j ) {
             d = 0.f;
             for( l = 0; l < r - k; ++l ) {
-               d += IDX( Q, i, l + k, qc, qr ) * IDX( Qt, l, j, r - k, r - k );
+               d += VUL_IDX( Q, i, l + k, qc, qr ) * VUL_IDX( Qt, l, j, r - k, r - k );
             }
-            IDX( QO, i, j + k, qc, qr ) = d;
+            VUL_IDX( QO, i, j + k, qc, qr ) = d;
          }
       }
    }
@@ -3724,7 +3724,7 @@ static void vul__linalg_qr_decomposition_householder( vul_linalg_real *Q, vul_li
 
    memset( Q0, 0, sizeof( vul_linalg_real ) * r * r );
    for( i = 0; i < r; ++i ) {
-      IDX( Q0, i, i, r, r ) = 1.f;
+      VUL_IDX( Q0, i, i, r, r ) = 1.f;
    }
 
    for( k = 0; k < r - 1; ++k ) {
@@ -3760,22 +3760,22 @@ static void vul__linalg_givens_rotate( vul_linalg_real *A, int c, int r,
       // Apply it to the two affected rows, that is calculate the below for those rows that change
       // R = G^T * R
       for( k = 0; k < c; ++k ) {
-         a = i < r ? IDX( A, i, k, c, r ) : 0.0;
-         b = j < r ? IDX( A, j, k, c, r ) : 0.0;
+         a = i < r ? VUL_IDX( A, i, k, c, r ) : 0.0;
+         b = j < r ? VUL_IDX( A, j, k, c, r ) : 0.0;
          v0 = G[ 0 ] * a + G[ 2 ] * b; // G[ 2 ]: T is transposed
          v1 = G[ 1 ] * a + G[ 3 ] * b; // G[ 1 ]: T is transposed
-         if( i < r ) IDX( A, i, k, c, r ) = v0;
-         if( j < r ) IDX( A, j, k, c, r ) = v1;
+         if( i < r ) VUL_IDX( A, i, k, c, r ) = v0;
+         if( j < r ) VUL_IDX( A, j, k, c, r ) = v1;
       }
    } else {
       // Calculate new Q = Q * G
       for( k = 0; k < r; ++k ) {
-         a = i < c ? IDX( A, k, i, c, r ) : 0.0;
-         b = j < c ? IDX( A, k, j, c, r ) : 0.0;
+         a = i < c ? VUL_IDX( A, k, i, c, r ) : 0.0;
+         b = j < c ? VUL_IDX( A, k, j, c, r ) : 0.0;
          v0 = G[ 0 ] * a + G[ 2 ] * b; // G[ 2 ]: T is transposed
          v1 = G[ 1 ] * a + G[ 3 ] * b; // G[ 1 ]: T is transposed
-         if( i < c ) IDX( A, k, i, c, r ) = v0;
-         if( j < c ) IDX( A, k, j, c, r ) = v1;
+         if( i < c ) VUL_IDX( A, k, i, c, r ) = v0;
+         if( j < c ) VUL_IDX( A, k, j, c, r ) = v1;
       }
    }
 }
@@ -3797,14 +3797,14 @@ static void vul__linalg_qr_decomposition_givens( vul_linalg_real *Q, vul_linalg_
    }
    for( i = 0; i < r; ++i ) {
       for( j = 0; j < r; ++j ) {
-         IDX( Q, i, j, r, r ) = ( i == j ) ? 1.f : 0.f;
+         VUL_IDX( Q, i, j, r, r ) = ( i == j ) ? 1.f : 0.f;
       }
    }
    
    for( j = 0; j < c; ++j ) {
       for( i = r - 2; i >= j; --i ) {
-         v0 = IDX( RA, i, j, c, r );
-         v1 = IDX( RA, i + 1, j, c, r );
+         v0 = VUL_IDX( RA, i, j, c, r );
+         v1 = VUL_IDX( RA, i + 1, j, c, r );
          theta = v0 * v0 + v1 * v1;
          if( theta != 0.f ) {
             theta = sqrt( theta );
@@ -3832,7 +3832,7 @@ static vul_linalg_real vul__linalg_matrix_norm_diagonal( vul_linalg_real *A, int
    v = 0.f;
    n = c < r ? c : r;
    for( i = 0; i < n; ++i ) {
-      v += IDX( A, i, i, c, r ) * IDX( A, i, i, c, r );
+      v += VUL_IDX( A, i, i, c, r ) * VUL_IDX( A, i, i, c, r );
    }
    return sqrt( v );
 }
@@ -3846,7 +3846,7 @@ static vul_linalg_real vul__linalg_matrix_norm_as_single_column( vul_linalg_real
    for( i = 0; i < r; ++i ) {
       for( j = i + upper_diag < 0 ? 0 : i + upper_diag;
            j < c; ++j ) {
-         v += IDX( A, i, j, c, r ) * IDX( A, i, j, c, r );
+         v += VUL_IDX( A, i, j, c, r ) * VUL_IDX( A, i, j, c, r );
       }
    }
    return v;
@@ -3861,7 +3861,7 @@ static vul_linalg_real vul__linalg_matrix_norm_one( vul_linalg_real *A, int c, i
    for( i = 0; i < c; ++i ) {
       v = 0.0;
       for( j = 0; j < r; ++j ) {
-         v += fabs( IDX( A, i, j, c, r ) );
+         v += fabs( VUL_IDX( A, i, j, c, r ) );
       }
       m = v > m ? v : m;
    }
@@ -3877,7 +3877,7 @@ static vul_linalg_real vul__linalg_matrix_norm_inf( vul_linalg_real *A, int c, i
    for( i = 0; i < r; ++i ) {
       v = 0.0;
       for( j = 0; j < c; ++j ) {
-         v += fabs( IDX( A, i, j, c, r ) );
+         v += fabs( VUL_IDX( A, i, j, c, r ) );
       }
       m = v > m ? v : m;
    }
@@ -3905,7 +3905,7 @@ vul_linalg_real vul_linalg_largest_eigenvalue_dense( vul_linalg_real *A, int c, 
       for( i = 0; i < r; ++i ) {
          y[ i ] = 0;
          for( j = 0; j < c; ++j ) {
-            y[ i ] += IDX( A, i, j, c, r ) * v[ j ];
+            y[ i ] += VUL_IDX( A, i, j, c, r ) * v[ j ];
          }
       }
       err = fabs( lambda - y[ axis ] );
@@ -3942,7 +3942,7 @@ vul_linalg_real vul_linalg_condition_number_dense( vul_linalg_real *A, int c, in
    n = 0;
    vul_linalg_svd_dense( bases, &n, A, c, r, max_iter, eps );
    if( n < 2 ) {
-      ERR( "Can't compute condition number, not enough non-zero singular values (need 2)." );
+      VUL_ERR( "Can't compute condition number, not enough non-zero singular values (need 2)." );
       return 0.0;
    }
    ret = bases[ 0 ].sigma / bases[ n - 1 ].sigma;
@@ -3986,23 +3986,23 @@ void vul_linalg_svd_dense_qrlq( vul_linalg_svd_basis *out, int *rank,
    scale = -FLT_MAX;
    for( i = 0; i < r; ++i ) {
       for( j = 0; j < c; ++j ) {
-         scale = fabs( IDX( S0, i, j, c, r ) ) > scale 
-               ? fabs( IDX( S0, i, j, c, r ) ) : scale;
+         scale = fabs( VUL_IDX( S0, i, j, c, r ) ) > scale 
+               ? fabs( VUL_IDX( S0, i, j, c, r ) ) : scale;
       }
    }
    f = 1.0 / scale;
    for( i = 0; i < r; ++i ) {
       for( j = 0; j < c; ++j ) {
-         IDX( S0, i, j, c, r ) *= f;
+         VUL_IDX( S0, i, j, c, r ) *= f;
       }
    }
 
    // Initialize U and V as identity matrix
    for( i = 0; i < r; ++i ) {
-      IDX( U0, i, i, r, r ) = 1.f;
+      VUL_IDX( U0, i, i, r, r ) = 1.f;
    }
    for( i = 0; i < c; ++i ) {
-      IDX( V0, i, i, c, c ) = 1.f;
+      VUL_IDX( V0, i, i, c, c ) = 1.f;
    }
    while( err > eps && iter++ < itermax ) {
       // Store away last S
@@ -4036,7 +4036,7 @@ void vul_linalg_svd_dense_qrlq( vul_linalg_svd_basis *out, int *rank,
    // Grap sigmas and rank, sort decreasing
    k = r < c ? r : c;
    for( j = 0, i = 0; i < k; ++i ) { // Since we're transposed, S is indexed with r and not c
-      out[ i ].sigma = fabs( IDX( S0, i, i, r, c ) ) * scale;
+      out[ i ].sigma = fabs( VUL_IDX( S0, i, i, r, c ) ) * scale;
       out[ i ].axis = i;
       if( out[ i ].sigma > eps ) {
          ++j;
@@ -4053,12 +4053,12 @@ void vul_linalg_svd_dense_qrlq( vul_linalg_svd_basis *out, int *rank,
       out[ i ].v_length = c;
       out[ i ].u = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r );
       out[ i ].v = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * c );
-      f = IDX( S0, out[ i ].axis, out[ i ].axis , r, c ) < 0.f ? -1.f : 1.f;
+      f = VUL_IDX( S0, out[ i ].axis, out[ i ].axis , r, c ) < 0.f ? -1.f : 1.f;
       for( j = 0; j < r; ++j ) {
-         out[ i ].u[ j ] = IDX( U0, j, out[ i ].axis, r, r ) * f;
+         out[ i ].u[ j ] = VUL_IDX( U0, j, out[ i ].axis, r, r ) * f;
       }
       for( j = 0; j < c; ++j ) {
-         out[ i ].v[ j ] = IDX( V0, j, out[ i ].axis, c, c );
+         out[ i ].v[ j ] = VUL_IDX( V0, j, out[ i ].axis, c, c );
       }
    }
 
@@ -4095,23 +4095,23 @@ void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
    scale = -FLT_MAX;
    for( i = 0; i < r; ++i ) {
       for( j = 0; j < c; ++j ) {
-         scale = fabs( IDX( A, i, j, c, r ) ) > scale 
-               ? fabs( IDX( A, i, j, c, r ) ) : scale;
+         scale = fabs( VUL_IDX( A, i, j, c, r ) ) > scale 
+               ? fabs( VUL_IDX( A, i, j, c, r ) ) : scale;
       }
    }
    f = 1.0 / scale;
    for( i = 0; i < r; ++i ) {
       for( j = 0; j < c; ++j ) {
-         IDX( G, i, j, c, r ) = IDX( A, i, j, c, r ) * f;
+         VUL_IDX( G, i, j, c, r ) = VUL_IDX( A, i, j, c, r ) * f;
       }
    }
    
    // Initialize U and V as identity matrices
    for( i = 0; i < r; ++i ) {
-      IDX( U, i, i, r, r ) = 1.f;
+      VUL_IDX( U, i, i, r, r ) = 1.f;
    }
    for( i = 0; i < c; ++i ) {
-      IDX( V, i, i, c, c ) = 1.f;
+      VUL_IDX( V, i, i, c, c ) = 1.f;
    }
    max_diag = 1.0; // Matrix is scaled
 
@@ -4127,8 +4127,8 @@ void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
 #else
             threshold = eps * max_diag < FLT_MIN ? FLT_MIN : eps * max_diag;
 #endif
-            aii = ( i < r && j < c ) ? IDX( G, i, j, c, r ) : 0.0;
-            ajj = ( i < c && j < r ) ? IDX( G, j, i, c, r ) : 0.0;
+            aii = ( i < r && j < c ) ? VUL_IDX( G, i, j, c, r ) : 0.0;
+            ajj = ( i < c && j < r ) ? VUL_IDX( G, j, i, c, r ) : 0.0;
             if( !( fabs( aii ) > threshold || fabs( ajj ) > threshold ) ) {
                continue;
             }
@@ -4136,9 +4136,9 @@ void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
             // Compute a_ij, a_ji, a_ii
             aii = 0.0; aij = 0.0; ajj = 0.0;
             for( k = 0; k < c; ++k ) {
-               aii += IDX( G, i, k, c, r ) * IDX( G, i, k, c, r );
-               ajj += IDX( G, j, k, c, r ) * IDX( G, j, k, c, r );
-               aij += IDX( G, i, k, c, r ) * IDX( G, j, k, c, r );
+               aii += VUL_IDX( G, i, k, c, r ) * VUL_IDX( G, i, k, c, r );
+               ajj += VUL_IDX( G, j, k, c, r ) * VUL_IDX( G, j, k, c, r );
+               aij += VUL_IDX( G, i, k, c, r ) * VUL_IDX( G, j, k, c, r );
             }
             if( fabs( aij ) > threshold ) {
                nonzero += 1;
@@ -4149,9 +4149,9 @@ void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
                st = ct * t;
                vul__linalg_givens_rotate( G, c, r, j, i, ct, st, 1 );
                vul__linalg_givens_rotate( U, r, r, j, i, ct, st, 0 );
-               aii = IDX( G, i, i, c, r );
+               aii = VUL_IDX( G, i, i, c, r );
                if( j < r && j < c ) {
-                  ajj = IDX( G, j, j, c, r );
+                  ajj = VUL_IDX( G, j, j, c, r );
                } else {
                   ajj = 0.0;
                }
@@ -4168,7 +4168,7 @@ void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
    for( i = 0; i < r; ++i ) {
       vul_linalg_real t = 0.0;
       for( j = 0; j < c; ++j ) {
-         t += IDX( G, i, j, c, r ) * IDX( G, i, j, c, r );
+         t += VUL_IDX( G, i, j, c, r ) * VUL_IDX( G, i, j, c, r );
       }
       omegas[ i ] = sqrt( t );
    }
@@ -4177,7 +4177,7 @@ void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
    for( i = 0; i < c; ++i ) { // The rest is zero
       if( i < r && fabs( omegas[ i ] ) > eps ) { // Ignore zero singular values
          for( j = 0; j < c; ++j ) {
-            IDX( V, j, i, c, c ) = IDX( G, i, j, c, r ) / omegas[ i ];
+            VUL_IDX( V, j, i, c, c ) = VUL_IDX( G, i, j, c, r ) / omegas[ i ];
          }
       }
    }
@@ -4204,10 +4204,10 @@ void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
       out[ i ].v = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * c );
       f = omegas[ out[ i ].axis ] < 0.f ? -1.f : 1.f;
       for( j = 0; j < r; ++j ) {
-         out[ i ].u[ j ] = IDX( U, j, out[ i ].axis, r, r ) * f;
+         out[ i ].u[ j ] = VUL_IDX( U, j, out[ i ].axis, r, r ) * f;
       }
       for( j = 0; j < c; ++j ) {
-         out[ i ].v[ j ] = IDX( V, j, out[ i ].axis, c, c );
+         out[ i ].v[ j ] = VUL_IDX( V, j, out[ i ].axis, c, c );
       }
    }
 
@@ -4249,10 +4249,10 @@ void vul_linalg_linear_least_squares_dense( vul_linalg_real *x,
    VUL_LINALG_FREE( d );
 }
 
-#undef IDX
-#undef ERR
+#undef VUL_IDX
+#undef VUL_ERR
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

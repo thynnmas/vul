@@ -93,6 +93,11 @@
 #define vul_linalg_real float
 #endif
 
+// The default size is 5 = 20 bytes with float, leaving each vector to be 32 bytes w/ 64-bit ptrs.
+#ifndef VUL_LINALG_SMALL_VEC_SIZE
+#define VUL_LINALG_SMALL_VEC_SIZE 5
+#endif
+
 #ifdef _cplusplus
 extern "C" {
 #endif
@@ -107,7 +112,7 @@ typedef struct vul_linalg_sparse_entry {
 } vul_linalg_sparse_entry;
 
 typedef struct vul_linalg_vector {
-   vul_linalg_sparse_entry *entries;
+   vul_linalg_sparse_entry *entries, first[ VUL_LINALG_SMALL_VEC_SIZE ];
    unsigned int count;
 } vul_linalg_vector;
 
@@ -840,7 +845,7 @@ vul_linalg_vector *vul_linalg_vector_create( unsigned *idxs, vul_linalg_real *va
 
    v = ( vul_linalg_vector* )VUL_LINALG_ALLOC( sizeof( vul_linalg_vector ) );
    v->count = 0;
-   v->entries = 0;
+   v->entries = v->first;
    for( i = 0; i < n; ++i ) {
       vul_linalg_vector_insert( v, idxs[ i ], vals[ i ] );
    }
@@ -866,7 +871,7 @@ void vul_linalg_matrix_destroy( vul_linalg_matrix *m )
 {
    unsigned int i;
    for( i = 0; i < m->count; ++i ) {
-      if( m->rows[ i ].vec.count ) {
+      if( m->rows[ i ].vec.count && m->rows[ i ].vec.entries != m->rows[ i ].vec.first ) {
          VUL_LINALG_FREE( m->rows[ i ].vec.entries );
       }
    }
@@ -879,7 +884,7 @@ void vul_linalg_matrix_destroy( vul_linalg_matrix *m )
 void vul_linalg_vector_insert( vul_linalg_vector *v, unsigned int idx, vul_linalg_real val )
 {
    vul_linalg_sparse_entry *e;
-   unsigned int i, j, inserted;
+   int i, j, inserted;
 
    // Overwrite, even if zero
    for( i = 0; i < v->count; ++i ) {
@@ -894,14 +899,18 @@ void vul_linalg_vector_insert( vul_linalg_vector *v, unsigned int idx, vul_linal
       return;
    }
 
-   e = ( vul_linalg_sparse_entry* )VUL_LINALG_ALLOC( sizeof( vul_linalg_sparse_entry ) * ( v->count + 1 ) );
+   if( v->count + 1 < VUL_LINALG_SMALL_VEC_SIZE ) {
+      e = v->first;
+   } else {
+      e = ( vul_linalg_sparse_entry* )VUL_LINALG_ALLOC( sizeof( vul_linalg_sparse_entry ) * ( v->count + 1 ) );
+   }
    inserted = 0;
    if( v->count ) {
-      for( i = 0, j = 0; i < v->count + 1; ++i ) {
-         if( j < v->count && ( v->entries[ j ].idx < idx || inserted ) ) {
+      for( j = v->count - 1, i = v->count; i >= 0; --i ) {
+         if( j >= 0 && ( v->entries[ j ].idx > idx || inserted ) ) {
             e[ i ].idx = v->entries[ j ].idx;
             e[ i ].val = v->entries[ j ].val;
-            ++j;
+            --j;
          } else {
             e[ i ].idx = idx;
             e[ i ].val = val;
@@ -912,7 +921,7 @@ void vul_linalg_vector_insert( vul_linalg_vector *v, unsigned int idx, vul_linal
       e[ 0 ].idx = idx;
       e[ 0 ].val = val;
    }
-   if( v->entries ) {
+   if( v->entries && v->entries != v->first ) {
       VUL_LINALG_FREE( v->entries );
    }
    v->entries = e;
@@ -921,7 +930,8 @@ void vul_linalg_vector_insert( vul_linalg_vector *v, unsigned int idx, vul_linal
 
 void vul_linalg_matrix_insert( vul_linalg_matrix *m, unsigned int r, unsigned int c, vul_linalg_real val )
 {
-   unsigned int i, j, inserted;
+   int i, j, k, inserted;
+   int insidx;
    vul_linalg_matrix_row *e;
    
    // Overwrite, even if zero
@@ -940,15 +950,22 @@ void vul_linalg_matrix_insert( vul_linalg_matrix *m, unsigned int r, unsigned in
    e = ( vul_linalg_matrix_row* )VUL_LINALG_ALLOC( sizeof( vul_linalg_matrix_row ) * ( m->count + 1 ) );
    inserted = 0;
    if( m->count ) {
-      for( i = 0, j = 0; i < m->count + 1; ++i ) {
-         if( j < m->count && ( m->rows[ j ].idx < r || inserted ) ) {
+      for( j = m->count - 1, i = m->count; i >= 0; --i ) {
+         if( j >= 0 && ( m->rows[ j ].idx > r || inserted ) ) {
             e[ i ].idx = m->rows[ j ].idx;
             e[ i ].vec = m->rows[ j ].vec;
-            ++j;
+            if( m->rows[ j ].vec.entries == m->rows[ j ].vec.first ) {
+               for( k = 0; k < m->rows[ j ].vec.count; ++k ) {
+                  e[ i ].vec.first[ k ].idx = m->rows[ j ].vec.first[ k ].idx;
+                  e[ i ].vec.first[ k ].val = m->rows[ j ].vec.first[ k ].val;
+               }
+               e[ i ].vec.entries = e[ i ].vec.first;
+            }
+            --j;
          } else {
             e[ i ].idx = r;
             e[ i ].vec.count = 0;
-            e[ i ].vec.entries = 0;
+            e[ i ].vec.entries = e[ i ].vec.first;
             vul_linalg_vector_insert( &e[ i ].vec, c, val );
             inserted = 1;
          }
@@ -956,7 +973,7 @@ void vul_linalg_matrix_insert( vul_linalg_matrix *m, unsigned int r, unsigned in
    } else {
       e[ 0 ].idx = r;
       e[ 0 ].vec.count = 0;
-      e[ 0 ].vec.entries = 0;
+      e[ 0 ].vec.entries = e[ 0 ].vec.first;
       vul_linalg_vector_insert( &e[ 0 ].vec, c, val );
    }
    if( m->rows ) {
@@ -1003,7 +1020,7 @@ static vul_linalg_vector vulb__linalg_matrix_get_row_by_array_index( vul_linalg_
 
 void vul_linalg_vector_destroy( vul_linalg_vector *v )
 {
-   if( v->entries ) {
+   if( v->entries && v->entries != v->first ) {
       VUL_LINALG_FREE( v->entries );
    }
    VUL_LINALG_FREE( v );
@@ -1092,20 +1109,24 @@ static void vulb__sparse_vcopy( vul_linalg_vector *out, vul_linalg_vector *x )
 
    if( out->count ) {
       out->count = 0;
-      if( out->entries ) {
+      if( out->entries && out->entries != out->first ) {
          VUL_LINALG_FREE( out->entries );
       }
    }
    if( x->count ) {
-      out->entries = ( vul_linalg_sparse_entry* )VUL_LINALG_ALLOC( sizeof( vul_linalg_sparse_entry ) * 
-                                                                           x->count );
+      if( x->count <= VUL_LINALG_SMALL_VEC_SIZE ) {
+         out->entries = out->first;
+      } else {
+         out->entries = ( vul_linalg_sparse_entry* )VUL_LINALG_ALLOC( sizeof( vul_linalg_sparse_entry ) * 
+                                                                              x->count );
+      }
       for( i = 0; i < x->count; ++i ) {
          out->entries[ i ].idx = x->entries[ i ].idx;
          out->entries[ i ].val = x->entries[ i ].val;
       }
       out->count = x->count;
    } else {
-      out->entries = 0;
+      out->entries = out->first;
       out->count = 0;
    }
 }
@@ -1129,10 +1150,10 @@ static vul_linalg_real vulb__sparse_dot( vul_linalg_vector *a, vul_linalg_vector
 }
 static void vulb__sparse_vclear( vul_linalg_vector *v )
 {
-   if( v->entries ) {
+   if( v->entries && v->entries != v->first ) {
       VUL_LINALG_FREE( v->entries );
    }
-   v->entries = 0;
+   v->entries = v->first;
    v->count = 0;
 }
 static void vulb__sparse_mmul( vul_linalg_vector *out, vul_linalg_matrix *A, vul_linalg_vector *x )
@@ -1313,10 +1334,11 @@ static void vulb__sparse_mclear( vul_linalg_matrix *A )
    int i;
 
    for( i = 0; i < A->count; ++i ) {
-      if( A->rows[ i ].vec.count ) {
+      if( A->rows[ i ].vec.count && A->rows[ i ].vec.entries != A->rows[ i ].vec.first ) {
          VUL_LINALG_FREE( A->rows[ i ].vec.entries );
       }
       A->rows[ i ].vec.count = 0;
+      A->rows[ i ].vec.entries = A->rows[ i ].vec.first;
    }
    VUL_LINALG_FREE( A->rows );
    A->rows = 0;
@@ -1336,7 +1358,11 @@ static void vulb__sparse_mclean( vul_linalg_matrix *A )
       }
       if( c != A->rows[ i ].vec.count ) {
          if( c != 0 ) {
-            n = ( vul_linalg_sparse_entry* )VUL_LINALG_ALLOC( sizeof( vul_linalg_sparse_entry ) * c );
+            if( c <= VUL_LINALG_SMALL_VEC_SIZE ) {
+               n = A->rows[ i ].vec.first;
+            } else {
+               n = ( vul_linalg_sparse_entry* )VUL_LINALG_ALLOC( sizeof( vul_linalg_sparse_entry ) * c );
+            }
             for( j = 0, k = 0; j < A->rows[ i ].vec.count; ++j ) {
                if( A->rows[ i ].vec.entries[ j ].val != 0.f ) {
                   n[ k ].val = A->rows[ i ].vec.entries[ j ].val;
@@ -1347,7 +1373,9 @@ static void vulb__sparse_mclean( vul_linalg_matrix *A )
          } else {
             n = 0;
          }
-         VUL_LINALG_FREE( A->rows[ i ].vec.entries );
+         if( A->rows[ i ].vec.entries != A->rows[ i ].vec.first ) {
+            VUL_LINALG_FREE( A->rows[ i ].vec.entries );
+         }
          A->rows[ i ].vec.entries = n;
          A->rows[ i ].vec.count = c;
       }

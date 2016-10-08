@@ -46,7 +46,7 @@ typedef struct vul_benchmark_histogram {
    u64 smallest, largest;
 } vul_benchmark_histogram;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -86,7 +86,7 @@ void vul_benchmark_print_histogram_millis( u64 *times, u32 left, u32 right, u32 
  */
 void vul_benchmark_print_histogram_micros( u64 *times, u32 left, u32 right, u32 buckets );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -110,7 +110,7 @@ void vul_benchmark_print_histogram_micros( u64 *times, u32 left, u32 right, u32 
 #define u64 uint64_t
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -521,7 +521,7 @@ void vul_benchmark_print_histogram_micros( u64 *times, u32 left, u32 right, u32 
    free( hist.buckets );
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

@@ -61,7 +61,7 @@ typedef struct vul_hash_map {
    void  ( *deallocator )( void *ptr );
 } vul_hash_map;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -117,7 +117,7 @@ void vul_map_destroy( vul_hash_map *map );
  */
 void vul_map_iterate( vul_hash_map *map, void ( *func )( vul_map_element *e, void *data ), void *data );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -139,7 +139,7 @@ void vul_map_iterate( vul_hash_map *map, void ( *func )( vul_map_element *e, voi
 #define b32 u32
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -408,7 +408,7 @@ void vul_map_iterate( vul_hash_map *map, void ( *func )( vul_map_element *e, voi
    }
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

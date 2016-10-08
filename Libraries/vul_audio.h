@@ -186,7 +186,7 @@ typedef struct vul_audio_device {
 #endif
 } vul_audio_device;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -311,7 +311,7 @@ vul_audio_return vul_audio_clip_volume( vul_audio_device *dev, u64 id, f32 vol )
 vul_audio_return vul_audio_set_global_volume( vul_audio_device *dev, f32 volume );
 
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -336,7 +336,7 @@ vul_audio_return vul_audio_set_global_volume( vul_audio_device *dev, f32 volume 
 error in vul_audio.h: Must define sample size at compile time!
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -1606,7 +1606,7 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 
 #undef ERR
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

@@ -31,7 +31,7 @@
 #endif
 #define idx_type VUL_SHAPES_INDEX_TYPE
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -60,7 +60,7 @@ void vul_shape_sphere_refine_tetrahedron_faces_verts( u32 *vertices, u32 *faces,
  */
 void vul_shape_sphere_refine_tetrahedron( f32 **verts, idx_type **indices, u32 recursion_level, f32 radius );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -78,7 +78,7 @@ void vul_shape_sphere_refine_tetrahedron( f32 **verts, idx_type **indices, u32 r
 #define u32 uint32_t
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 

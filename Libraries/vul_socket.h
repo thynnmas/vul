@@ -85,7 +85,7 @@ typedef struct vul_packet {
 	uint8_t *data;
 } vul_packet;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -135,14 +135,14 @@ int vul_socket_address_create( vul_address *a, const char *ip, unsigned short po
  * Destroy and address struct
  */
 void vul_socket_address_destroy( vul_address *a );
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 #endif
 
 #ifdef VUL_DEFINE
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -371,7 +371,7 @@ void vul_socket_address_destroy( vul_address *a )
 #endif
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

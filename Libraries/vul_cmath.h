@@ -104,7 +104,7 @@ typedef struct m44 {
    };
 } m44;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
    
@@ -302,14 +302,14 @@ v3 vmulm3( const m33 *m, const v3 v );
 /* Right side matrix-vector multiplication */
 v4 vmulm4( const m44 *m, const v4 v );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 #endif // VUL_CMATH_H
 
 #ifdef VUL_DEFINE
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -1103,7 +1103,7 @@ v4 vmulm4( const m44 *m, const v4 v ) {
    return r;
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

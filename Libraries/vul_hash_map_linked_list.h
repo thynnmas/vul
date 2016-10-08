@@ -71,7 +71,7 @@ typedef struct vul_hash_map_element {
    u32 data_size;
 } vul_hash_map_element;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -116,7 +116,7 @@ void vul_map_destroy( vul_hash_map *map );
  */
 void vul_map_iterate( vul_hash_map *map, void ( *func )( vul_list_element *e ) );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -134,7 +134,7 @@ void vul_map_iterate( vul_hash_map *map, void ( *func )( vul_list_element *e ) )
 #define u8 uint8_t
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -276,7 +276,7 @@ void vul_map_iterate( vul_hash_map *map, void ( *func )( vul_list_element *e ) )
    }
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

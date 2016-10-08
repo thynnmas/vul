@@ -121,7 +121,7 @@ typedef struct vul_gac_astar_graph_user_data {
    void *user_data;
 } vul_gac_astar_graph_user_data;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /*
@@ -223,7 +223,7 @@ f64 vul_gac_heuristic( vul_astar_node *s, vul_astar_node *e );
 */
 f64 vul_gac_cost_neighbors( vul_astar_node *s, vul_astar_node *t );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -259,7 +259,7 @@ f64 vul_gac_cost_neighbors( vul_astar_node *s, vul_astar_node *t );
 #define b32 uint32_t
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -989,7 +989,7 @@ f64 vul_gac_cost_neighbors( vul_astar_node *s, vul_astar_node *t )
    return 1.0;
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

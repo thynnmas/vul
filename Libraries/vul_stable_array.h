@@ -57,7 +57,7 @@ typedef struct vul_svector {
    void ( *deallocator )( void *ptr );
 } vul_svector;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -131,7 +131,7 @@ u32 vul_svector_size( vul_svector *vec );
 * Returns true if the vector is empty
 */
 b32 vul_svector_is_empty( vul_svector *vec );
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -155,7 +155,7 @@ b32 vul_svector_is_empty( vul_svector *vec );
 #define f32 float
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -374,7 +374,7 @@ b32 vul_svector_is_empty( vul_svector *vec )
    return vec->size == 0;
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

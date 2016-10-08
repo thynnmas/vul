@@ -121,7 +121,7 @@ typedef enum vul_astar_strategy {
    VUL_ASTAR_STRATEGY_Count
 } vul_astar_strategy;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /*
@@ -180,7 +180,7 @@ vul_astar_path_node *vul_astar_calculate_path( vul_astar_node *end );
 */
 void vul_astar_path_finalize( vul_astar_path_node *root );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -216,7 +216,7 @@ void vul_astar_path_finalize( vul_astar_path_node *root );
 #define b32 uint32_t
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -517,7 +517,7 @@ static int vul__astar_open_set_is_empty( vul_astar_strategy strategy, void *set 
    return 1;
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

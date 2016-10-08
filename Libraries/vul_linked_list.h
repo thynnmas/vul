@@ -39,7 +39,7 @@ typedef struct vul_list_element
    struct vul_list_element *next;
 } vul_list_element;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -90,7 +90,7 @@ void vul_list_destroy( vul_list_element *list_head, void ( *deallocator )( void 
  * Creates a copy of the given list.
  */
 vul_list_element *vul_list_copy( vul_list_element *list_head, void *( *allocator )( size_t size ) );
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -106,7 +106,7 @@ vul_list_element *vul_list_copy( vul_list_element *list_head, void *( *allocator
 #define u32 uint32_t
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -272,7 +272,7 @@ vul_list_element *vul_list_copy( vul_list_element *list_head, void *( *allocator
    return nhead;
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

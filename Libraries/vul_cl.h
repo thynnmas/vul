@@ -126,7 +126,7 @@ typedef struct vul_cl_buffer {
 	cl_mem_flags flags;
 } vul_cl_buffer;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -290,7 +290,7 @@ void vul_cl_print_platform_vendor_strings( );
  */
 void vul_cl_print_platform_info( );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 #endif
@@ -307,7 +307,7 @@ void vul_cl_print_platform_info( );
 }
 // @TODO(thynn): Make sure we don't assert in release builds...
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 	
@@ -1113,7 +1113,7 @@ void vul_cl_print_platform_info( )
 // or "type_of_given_device" to find the best devices for a certain thing.
 // Also better support GL interop by having aquire/release GL resources abstracted!
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

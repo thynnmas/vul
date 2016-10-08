@@ -64,7 +64,7 @@ typedef struct vul_priority_heap {
 } vul_priority_heap;
 
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 //-----------------------
@@ -140,7 +140,7 @@ static void vul__fheap_cut_node( vul_priority_heap *heap, vul__fheap_element *el
  */
 static void vul__fheap_delete( vul_priority_heap *heap, vul__fheap_element *element );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -158,7 +158,7 @@ static void vul__fheap_delete( vul_priority_heap *heap, vul__fheap_element *elem
 #define b32 uint32_t
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -426,7 +426,7 @@ vul_priority_heap *vul_priority_heap_merge( vul_priority_heap *heap1, vul_priori
    return res;
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

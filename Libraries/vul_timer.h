@@ -75,7 +75,7 @@ typedef struct vul_timer {
 #endif
 } vul_timer;
 	
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -114,7 +114,7 @@ u64 vul_timer_get_micros( vul_timer *c );
  */
 u32 vul_sleep( u32 milliseconds );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -134,7 +134,7 @@ u32 vul_sleep( u32 milliseconds );
 #define u64 uint64_t
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -335,7 +335,7 @@ unsigned int vul_sleep( unsigned int milliseconds )
 #endif
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

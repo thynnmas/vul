@@ -25,7 +25,7 @@
 #define f32 float
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -87,7 +87,7 @@ void vul_gl_perspective_fov_offset( f32 *mat44,
  */
 int vul_gl_check_error_print( char *out_str );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -103,7 +103,7 @@ int vul_gl_check_error_print( char *out_str );
 #define f32 float
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -321,7 +321,7 @@ int vul_gl_check_error_print( char *out_str )
    return 0;
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

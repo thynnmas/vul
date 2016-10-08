@@ -41,7 +41,7 @@ struct vul__string_search_table
    int *entries;
 };
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 //--------------------------
@@ -127,7 +127,7 @@ char *vul_string_divide_get_first( const char *str, const char divisor );
  */
 vul_wchar *vul_wstring_divide_get_first( const vul_wchar *str, const vul_wchar divisor );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -147,7 +147,7 @@ vul_wchar *vul_wstring_divide_get_first( const vul_wchar *str, const vul_wchar d
 #define u8 uint8_t
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -454,7 +454,7 @@ vul_wchar *vul_wstring_divide_get_first( const vul_wchar *str, const vul_wchar d
    return ( vul_wchar* )( str + index );
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

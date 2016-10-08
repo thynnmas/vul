@@ -76,7 +76,7 @@ typedef struct vul_vector {
    void *( *reallocator )( void *ptr, size_t size );
 } vul_vector;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -298,7 +298,7 @@ void vul_vector_tighten( vul_vector *vec );
    #endif
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -318,7 +318,7 @@ void vul_vector_tighten( vul_vector *vec );
 #define u8 uint8_t
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 

@@ -40,7 +40,7 @@ typedef vul_svector vul_stack;
 #define vul_stack_size vul_svector_size
 #define vul_stack_is_empty vul_svector_is_empty
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -51,14 +51,14 @@ void vul_stack_pop( vul_stack *stack, void *out );
 * Returns the top element of the stack without altering the stack itself.
 */
 void *vul_stack_peek( vul_stack *stack );
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 #endif
 
 #ifdef VUL_DEFINE
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -75,7 +75,7 @@ void *vul_stack_peek( vul_stack *stack )
 	return vul_svector_get( stack, vul_stack_size( stack ) - 1 );
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

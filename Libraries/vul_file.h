@@ -110,7 +110,7 @@ NOT IMPLEMENTED
 #endif
 } vul_file_watch;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -133,7 +133,7 @@ vul_file_watch vul_file_monitor_change( const char *path );
 b32 vul_file_monitor_check( vul_file_watch w );
 b32 vul_file_monitor_stop( vul_file_watch w );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -153,7 +153,7 @@ b32 vul_file_monitor_stop( vul_file_watch w );
 #define b32 uint32_t
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -660,7 +660,7 @@ b32 vul_file_monitor_stop( vul_file_watch w )
 #endif
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

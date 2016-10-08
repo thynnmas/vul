@@ -63,7 +63,7 @@ typedef struct vul_queue
    void( *deallocator )( void *ptr );
 } vul_queue;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -107,7 +107,7 @@ void *vul_queue_peek( vul_queue *q );
  */
 void vul_queue_destroy( vul_queue *q );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -129,7 +129,7 @@ void vul_queue_destroy( vul_queue *q );
 #define u8 uint8_t
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -286,7 +286,7 @@ void vul_queue_destroy( vul_queue *q )
    }
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

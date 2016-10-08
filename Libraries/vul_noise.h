@@ -24,7 +24,7 @@
 #define VUL_NOISE_RNG_LCG
 #define VUL_NOISE_WORLEY_TILE_SIZE 256
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -51,14 +51,14 @@ float vul_noise_worley_1d( float x, int bands, float *weights );
 float vul_noise_worley_2d( float x, float y, int bands, float *weights );
 float vul_noise_worley_3d( float x, float y, float z, int bands, float *weights );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 #endif
 
 #ifdef VUL_DEFINE
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -401,7 +401,7 @@ float vul_noise_worley_3d( float x, float y, float z, int bands, float *weights 
 	return result;
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

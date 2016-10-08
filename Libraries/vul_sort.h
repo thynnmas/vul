@@ -68,7 +68,7 @@ struct vul__sort_merge_stack_pair {
 	s32 length;
 };
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -183,14 +183,14 @@ static void vul__sort_merge_collapse( vul_vector *list, s32 (*comparator)( const
  * Merges runs until only one remains
  */
 static void vul__sort_force_merge_collapse( vul_vector *list, s32 (*comparator)( const void *a, const void *b ), vul_vector *stack );
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 #endif
 
 #ifdef VUL_DEFINE
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -1031,7 +1031,7 @@ void vul_sort_vector( vul_vector *list, s32 (*comparator)( const void *a, const 
 	}
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

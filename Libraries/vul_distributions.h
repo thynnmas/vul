@@ -36,7 +36,7 @@ typedef struct vul_halton {
 	f32 inv_base;
 } vul_halton;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -54,7 +54,7 @@ void vul_halton_series_destroy( vul_halton *r );
  */
 f32 vul_halton_series_next( vul_halton *rng );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -72,7 +72,7 @@ f32 vul_halton_series_next( vul_halton *rng );
 #define u32 uint32_t
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -117,7 +117,7 @@ f32 vul_halton_series_next( vul_halton *rng )
 	return rng->value;
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

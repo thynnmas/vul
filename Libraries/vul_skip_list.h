@@ -48,7 +48,7 @@ typedef struct vul_skip_list {
    void( *deallocator )( void *ptr );
 } vul_skip_list;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -101,7 +101,7 @@ void vul_skip_list_destroy( vul_skip_list *list );
 vul_skip_list *vul_skip_list_copy( vul_skip_list *src,
                                    void *( *allocator )( size_t size ),
                                    void( *deallocator )( void *ptr ) );
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -121,7 +121,7 @@ vul_skip_list *vul_skip_list_copy( vul_skip_list *src,
 #define f32 float
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -328,7 +328,7 @@ vul_skip_list *vul_skip_list_copy( vul_skip_list *src,
    return dst;
 }
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

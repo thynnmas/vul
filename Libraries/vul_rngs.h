@@ -54,7 +54,7 @@ typedef struct vul_rng_tu {
    u32 c;
 } vul_rng_tu;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -74,7 +74,7 @@ u32 vul_rng_tu_next_unsigned( vul_rng_tu *r );
  * The float has been rounded down to the neares multiple of 1/2^32
  */
 f32 vul_rng_tu_next_float( vul_rng_tu *r );
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -89,7 +89,7 @@ typedef struct vul_rng_xorshift {
    u32 x, y, z, w;
 } vul_rng_xorshift;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -105,7 +105,7 @@ u32 vul_rng_xorshift_next_unsigned( vul_rng_xorshift *r );
  * The float has been rounded down to the neares multiple of 1/2^32
  */
 f32 vul_rng_xorshift_next_float( vul_rng_xorshift *r );
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -120,7 +120,7 @@ typedef struct vul_rng_xorhash {
    u32 s;
 } vul_rng_xorhash;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -141,7 +141,7 @@ u32 vul_rng_xorhash_next_unsigned( vul_rng_xorhash *r );
  * Returns the next f32 in range [0,1) in the given vul_rng_xorhash state, and advances it.
  */
 f32 vul_rng_xorhash_next_float( vul_rng_xorhash *r );
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -157,7 +157,7 @@ typedef struct vul_rng_mt19937 {
    u32 index;
 } vul_rng_mt19937;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 /**
@@ -183,7 +183,7 @@ u32 vul_rng_mt19937_next_unsigned( vul_rng_mt19937 *r );
  * The float has been rounded down to the neares multiple of 1/2^32
  */
 f32 vul_rng_mt19937_next_float( vul_rng_mt19937 *r );
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -199,7 +199,7 @@ typedef struct vul_rng_pcg32 {
    u64 inc;
 } vul_rng_pcg32;
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -224,7 +224,7 @@ u32 vul_rng_pcg32_next_unsigned( vul_rng_pcg32 *r );
  */
 f32 vul_rng_pcg32_next_float( vul_rng_pcg32 *r );
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -248,7 +248,7 @@ f32 vul_rng_pcg32_next_float( vul_rng_pcg32 *r );
 #define f32 float
 #endif
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -460,7 +460,7 @@ f32 vul_rng_pcg32_next_float( vul_rng_pcg32 *r )
 {
    return ( f32 )ldexp( vul_rng_pcg32_next_unsigned( r ), -32 );
 }
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

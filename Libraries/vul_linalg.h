@@ -110,7 +110,7 @@
 #define VUL_LINALG_SMALL_VEC_SIZE 5
 #endif
 
-#ifdef ___cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 

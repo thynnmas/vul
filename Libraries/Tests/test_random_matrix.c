@@ -13,6 +13,45 @@ typedef double real;
 typedef float real;
 #endif
 
+void generate_square_symmetric_positive_definite_matrix_dense( real *A, int n, real density )
+{
+   real *A2 = ( real* )malloc( sizeof( real ) * n * n );
+   real *A3 = ( real* )malloc( sizeof( real ) * n * n );
+   vul_rng_pcg32 *rng = vul_rng_pcg32_create( 0xbeefcafe, 0xdeadf012 );
+   
+   for( int y = 0; y < n; ++y ) {
+      for( int x = 0; x < n; ++x ) {
+         real chance = vul_rng_pcg32_next_float( rng );
+         if( chance < 0.5 * density ) {
+            real val = vul_rng_pcg32_next_float( rng );
+            A2[ x * n + y ] = val;
+         }
+      }
+   }
+   // A*A'
+   vulb__mtranspose( A3, A2, n, n );
+   vulb__mmul_matrix( A, A2, A3, n );
+
+   for( int i = 0; i < n; ++i ) {
+      A[ i * n + i ] += n;
+   }
+
+   vul_rng_pcg32_destroy( rng );
+   free( A2 );
+   free( A3 );
+}
+
+void generate_random_vector_dense( real *v, int n )
+{
+   vul_rng_pcg32 *rng = vul_rng_pcg32_create( 0xabad1dea, 0xc00010ff );
+
+   for( int i = 0; i < n; ++i ) {
+      v[ i ] = vul_rng_pcg32_next_float( rng );
+   }
+
+   vul_rng_pcg32_destroy( rng );
+}
+
 vul_linalg_matrix *generate_square_symmetric_positive_definite_matrix( int n, real density )
 {
    vul_linalg_matrix *A = vul_linalg_matrix_create( 0, 0, 0, 0 );
@@ -70,18 +109,16 @@ vul_linalg_vector *generate_random_vector( int n )
    return v;
 }
 
-void save_vector( const char *pth, vul_linalg_vector *v, int n )
-{
-   FILE *f = fopen( pth, "w" );
-
-   assert( f != NULL );
-
-   fprintf( f, "%d\n", n );
-   for( int i = 0; i < n; ++i ) {
-      fprintf( f, "%f ", vul_linalg_vector_get( v, i ) );
-   }
-   fclose( f );
+#define TEST( expr ) if( !( expr ) ) {\
+   fprintf( stderr, "Failed assert at %s:%d.", __FILE__, __LINE__ );\
+   fprintf( stderr, #expr );\
+   exit( 1 );\
 }
+
+#define CHECK_WITHIN_EPS_SPARSE( a, b, n, eps )\
+   {for( int ppi = 0; ppi < ( n ); ++ppi ) {\
+      TEST( fabs( vul_linalg_vector_get( a, ppi ) - vul_linalg_vector_get( b, ppi ) ) < ( eps ) );\
+   }}
 
 #include <cholmod.h>
 vul_linalg_vector *solve_cholmod( vul_linalg_matrix *vA, vul_linalg_vector *vb, int n )
@@ -95,10 +132,8 @@ vul_linalg_vector *solve_cholmod( vul_linalg_matrix *vA, vul_linalg_vector *vb, 
    vul_timer *t;
    uint64_t pre, post;
    int i, j, k;
-
    cholmod_start( &c );
    t = vul_timer_create( );
-
    k = 0;
    for( i = 0; i < vA->count; ++i ) {
       for( j = 0; j < vA->rows[ i ].vec.count; ++j ) {
@@ -133,7 +168,6 @@ vul_linalg_vector *solve_cholmod( vul_linalg_matrix *vA, vul_linalg_vector *vb, 
    T->nnz = k;
    A = cholmod_triplet_to_sparse( T, n*n, &c );
    cholmod_free_triplet( &T, &c );
-
    b = cholmod_zeros( n, 1, A->xtype, &c );
    for( i = 0; i < vb->count; ++i ) {
       if( b->dtype == CHOLMOD_DOUBLE ) {
@@ -159,7 +193,6 @@ vul_linalg_vector *solve_cholmod( vul_linalg_matrix *vA, vul_linalg_vector *vb, 
    printf("Cholmod residual norm: %e\n", cholmod_norm_dense( r, 0, &c ));
    printf("Cholmod normalized error: %e\n", cholmod_norm_dense( r, 0, &c ) / sqrt( vulb__sparse_dot( vb, vb ) ) );
    printf("\n");fflush(stdout);
-
    vul_linalg_vector *vx = vul_linalg_vector_create( 0, 0, 0 );
    for( k = 0; k < n; ++k ) {
       if( b->dtype == CHOLMOD_DOUBLE ) {
@@ -168,28 +201,14 @@ vul_linalg_vector *solve_cholmod( vul_linalg_matrix *vA, vul_linalg_vector *vb, 
          vul_linalg_vector_insert( vx, k, ( ( float* )x->x )[ k ] );
       }
    }
-
    cholmod_free_factor( &L, &c );
    cholmod_free_sparse( &A, &c );
    cholmod_free_dense( &r, &c );
    cholmod_free_dense( &x, &c );
    cholmod_free_dense( &b, &c );
-
    cholmod_finish( &c );
-
    return vx;
 }
-
-#define TEST( expr ) if( !( expr ) ) {\
-   fprintf( stderr, "Failed assert at %s:%d.", __FILE__, __LINE__ );\
-   fprintf( stderr, #expr );\
-   exit( 1 );\
-}
-
-#define CHECK_WITHIN_EPS_SPARSE( a, b, n, eps )\
-   {for( int ppi = 0; ppi < ( n ); ++ppi ) {\
-      TEST( fabs( vul_linalg_vector_get( a, ppi ) - vul_linalg_vector_get( b, ppi ) ) < ( eps ) );\
-   }}
 
 #define TEST_CHOLMOD
 #define TEST_SVD
@@ -205,6 +224,238 @@ vul_linalg_vector *solve_cholmod( vul_linalg_matrix *vA, vul_linalg_vector *vb, 
 #define TEST_CG_JACOBI
 #define TEST_CG_ILU0
 #define TEST_CG_ILDTT0
+
+void test_dense( vul_linalg_matrix *vA, vul_linalg_vector *vb, int n, real d, real eps, int iters, int gmres_restart, int gmres_iters, vul_timer *t )
+{
+   uint64_t pre, post;
+   int rank = 0;
+
+   //-----------------------------------
+   // Dense
+   //
+   printf("------------------------\n");
+   printf("DENSE MATRICES\n\n");
+
+   pre = vul_timer_get_micros( t );
+   real *A = ( real* )malloc( sizeof( real * ) * n * n );
+   real *b = ( real* )malloc( sizeof( real * ) * n );
+   memset( A, 0, sizeof( real ) * n * n );
+   memset( b, 0, sizeof( real ) * n );
+   for( int y = 0; y < n; ++y ) {
+      for( int x = 0; x < n; ++x ) {
+         A[ x * n + y ] = vul_linalg_matrix_get( vA, x, y );
+      }
+      b[ y ] = vul_linalg_vector_get( vb, y );
+   }
+   post = vul_timer_get_micros( t );
+   printf("Generation step %lu.%3lums for (%d^2 matrix @ %f density)\n\n", (post-pre)/1000, (post-pre)%1000, n, d);
+
+   real *x = ( real* )malloc( sizeof( real * ) * n );
+   real *r = ( real* )malloc( sizeof( real * ) * n );
+   real *e = ( real* )malloc( sizeof( real * ) * n );
+   real *guess = ( real* )malloc( sizeof( real * ) * n );
+   real *P = ( real* )malloc( sizeof( real * ) * n * n );
+   real *P2 = ( real* )malloc( sizeof( real * ) * n * n );
+   memset( P, 0, sizeof( real ) * n * n );
+   memset( P2, 0, sizeof( real ) * n * n );
+   memset( guess, 0, sizeof( real ) * n );
+   memset( x, 0, sizeof( real ) * n );
+   memset( r, 0, sizeof( real ) * n );
+   memset( e, 0, sizeof( real ) * n );
+
+#ifdef TEST_SVD
+   vul_linalg_svd_basis *res = ( vul_linalg_svd_basis* )malloc( n * sizeof( vul_linalg_svd_basis ) );
+   pre = vul_timer_get_micros( t );
+   vul_linalg_svd_dense( res, &rank, A, n, n, 32, eps );
+   post = vul_timer_get_micros( t );
+   printf("SVD decompose %lu.%3lums\n", (post-pre)/1000, (post-pre)%1000);
+   pre = vul_timer_get_micros( t );
+   vul_linalg_linear_least_squares_dense( r, res, rank, b );
+   post = vul_timer_get_micros( t );
+   printf("SVD solve %lu.%3lums\n", (post-pre)/1000, (post-pre)%1000);
+   vulb__mmul( e, A, r, n, n );
+   vulb__vsub( e, b, e, n );
+   printf("Residual: %e\n", sqrt( vulb__dot( e, e, n ) ) );
+   vul_linalg_svd_basis_destroy( res, rank );
+   free( res );
+   printf("\n");fflush( stdout );
+#endif
+
+#ifdef TEST_QR
+   // QR decompose
+   pre = vul_timer_get_micros( t );
+   vul_linalg_qr_decomposition_dense( P, P2, A, n );
+   post = vul_timer_get_micros( t );
+   printf("QR decompose %lu.%3lums\n", (post-pre)/1000, (post-pre)%1000);
+   pre = vul_timer_get_micros( t );
+   vul_linalg_qr_solve_dense( x, P, P2, A, guess, b, n, iters, eps );
+   post = vul_timer_get_micros( t );
+   printf("QR solve %lu.%3lums\n", (post-pre)/1000, (post-pre)%1000);
+   memset( e, 0, sizeof( real ) * n );
+   vulb__mmul( e, A, x, n, n );
+   vulb__vsub( e, b, e, n );
+   printf("Residual: %e\n", sqrt( vulb__dot( e, e, n ) ) );
+   if( r ) {
+      for( int i = 0; i < n; ++i ) {
+         if( fabs( x[ i ] - r[ i ] ) > 1e-2 ) {
+            printf( "At least one error is large: %f != %f (idx %d)\n", x[ i ], r[ i ], i );
+         }
+      }
+      vulb__vsub( x, x, r, n );
+      printf( "Metrics QR: err2: %e, normed %e\n", vulb__dot( x, x, n ), sqrt( vulb__dot( x, x, n ) ) / sqrt( vulb__dot( r, r, n ) ) );
+   } else {
+      r = x;
+   }
+   printf("\n");fflush( stdout );
+#endif
+
+#ifdef TEST_LU
+   // LU decompose
+   memset( x, 0, sizeof( real ) * n );
+   pre = vul_timer_get_micros( t );
+   memset( P, 0, sizeof( real ) * n * n );
+   int *indices = ( int* )malloc( sizeof( int ) * n );
+   vul_linalg_lu_decomposition_dense( P, indices, A, n );
+   post = vul_timer_get_micros( t );
+   printf("LU decompose %lu.%3lums\n", (post-pre)/1000, (post-pre)%1000);
+   pre = vul_timer_get_micros( t );
+   vul_linalg_lu_solve_dense( x, P, indices, A, guess, b, n, iters, eps );
+   post = vul_timer_get_micros( t );
+   printf("LU solve %lu.%3lums\n", (post-pre)/1000, (post-pre)%1000);
+   memset( e, 0, sizeof( real ) * n );
+   vulb__mmul( e, A, x, n, n );
+   vulb__vsub( e, b, e, n );
+   printf("Residual: %e\n", sqrt( vulb__dot( e, e, n ) ) );
+   if( r ) {
+      for( int i = 0; i < n; ++i ) {
+         if( fabs( x[ i ] - r[ i ] ) > 1e-2 ) {
+            printf( "At least one error is large: %f != %f (idx %d)\n", x[ i ], r[ i ], i );
+         }
+      }
+      vulb__vsub( x, x, r, n );
+      printf( "Metrics LU: err2: %e, normed %e\n", vulb__dot( x, x, n ), sqrt( vulb__dot( x, x, n ) ) / sqrt( vulb__dot( r, r, n ) ) );
+   } else {
+      r = x;
+   }
+   free( indices );
+   printf("\n");fflush( stdout );
+#endif
+
+#ifdef TEST_CHOLESKY
+   // Cholesky decompose
+   memset( x, 0, sizeof( real ) * n );
+   pre = vul_timer_get_micros( t );
+   memset( P, 0, sizeof( real ) * n * n );
+   vul_linalg_cholesky_decomposition_dense( P, A, n );
+   post = vul_timer_get_micros( t );
+   printf("Cholesky decompose %lu.%3lums\n", (post-pre)/1000, (post-pre)%1000);
+   pre = vul_timer_get_micros( t );
+   vul_linalg_cholesky_solve_dense( x, P, A, guess, b, n, iters, eps );
+   post = vul_timer_get_micros( t );
+   printf("Cholesky solve %lu.%3lums\n", (post-pre)/1000, (post-pre)%1000);
+   memset( e, 0, sizeof( real ) * n );
+   vulb__mmul( e, A, x, n, n );
+   vulb__vsub( e, b, e, n );
+   printf("Residual: %e\n", sqrt( vulb__dot( e, e, n ) ) );
+   if( r ) {
+      for( int i = 0; i < n; ++i ) {
+         if( fabs( x[ i ] - r[ i ] ) > 1e-2 ) {
+            printf( "At least one error is large: %f != %f (idx %d)\n", x[ i ], r[ i ], i );
+         }
+      }
+      vulb__vsub( x, x, r, n );
+      printf( "Metrics Cholesky: err2: %e, normed %e\n", vulb__dot( x, x, n ), sqrt( vulb__dot( x, x, n ) ) / sqrt( vulb__dot( r, r, n ) ) );
+   } else {
+      r = x;
+   }
+   printf("\n");fflush( stdout );
+#endif
+
+#ifdef TEST_SOR
+   // SOR
+   memset( x, 0, sizeof( real ) * n );
+   pre = vul_timer_get_micros( t );
+   vul_linalg_successive_over_relaxation_dense( x, A, guess, b, 1.05, n, iters, eps );
+   post = vul_timer_get_micros( t );
+   printf("SOR solve %lu.%3lums\n", (post-pre)/1000, (post-pre)%1000);
+   memset( e, 0, sizeof( real ) * n );
+   vulb__mmul( e, A, x, n, n );
+   vulb__vsub( e, b, e, n );
+   printf("Residual: %e\n", sqrt( vulb__dot( e, e, n ) ) );
+   if( r ) {
+      for( int i = 0; i < n; ++i ) {
+         if( fabs( x[ i ] - r[ i ] ) > 1e-2 ) {
+            printf( "At least one error is large: %f != %f (idx %d)\n",x[ i ], r[ i ], i );
+         }
+      }
+      vulb__vsub( x, x, r, n );
+      printf( "Metrics SOR: err2: %e, normed %e\n", vulb__dot( x, x, n ), sqrt( vulb__dot( x, x, n ) ) / sqrt( vulb__dot( r, r, n ) ) );
+   } else {
+      r = x;
+   }
+   printf("\n");fflush( stdout );
+#endif
+
+#ifdef TEST_GMRES_NONE
+   // GMRES - no preconditioner
+   memset( x, 0, sizeof( real ) * n );
+   pre = vul_timer_get_micros( t );
+   vul_linalg_gmres_dense( x, A, guess, b, n, gmres_restart, gmres_iters, eps );
+   post = vul_timer_get_micros( t );
+   printf("GMRES - NONE solve %lu.%3lums\n", (post-pre)/1000, (post-pre)%1000);
+   memset( e, 0, sizeof( real ) * n );
+   vulb__mmul( e, A, x, n, n );
+   vulb__vsub( e, b, e, n );
+   printf("Residual: %e\n", sqrt( vulb__dot( e, e, n ) ) );
+   if( r ) {
+      for( int i = 0; i < n; ++i ) {
+         if( fabs( x[ i ] - r[ i ] ) > 1e-2 ) {
+            printf( "At least one error is large: %f != %f (idx %d)\n",x[ i ], r[ i ], i );
+         }
+      }
+      vulb__vsub( x, x, r, n );
+      printf( "Metrics GMRES - NONE: err2: %e, normed %e\n", vulb__dot( x, x, n ), sqrt( vulb__dot( x, x, n ) ) / sqrt( vulb__dot( r, r, n ) ) );
+   } else {
+      r = x;
+   }
+   printf("\n");fflush( stdout );
+#endif
+
+#ifdef TEST_CG_NONE
+   // CG - no preconditioner
+   memset( x, 0, sizeof( real ) * n );
+   pre = vul_timer_get_micros( t );
+   vul_linalg_conjugate_gradient_dense( x, A, guess, b, n, iters, eps );
+   post = vul_timer_get_micros( t );
+   printf("CG - NONE solve %lu.%3lums\n", (post-pre)/1000, (post-pre)%1000);
+   memset( e, 0, sizeof( real ) * n );
+   vulb__mmul( e, A, x, n, n );
+   vulb__vsub( e, b, e, n );
+   printf("Residual: %e\n", sqrt( vulb__dot( e, e, n ) ) );
+   if( r ) {
+      for( int i = 0; i < n; ++i ) {
+         if( fabs( x[ i ] - r[ i ] ) > 1e-2 ) {
+            printf( "At least one error is large: %f != %f (idx %d)\n",x[ i ], r[ i ], i );
+         }
+      }
+      vulb__vsub( x, x, r, n );
+      printf( "Metrics CG - NONE: err2: %e, normed %e\n", vulb__dot( x, x, n ), sqrt( vulb__dot( x, x, n ) ) / sqrt( vulb__dot( r, r, n ) ) );
+   } else {
+      r = x;
+   }
+   printf("\n");fflush( stdout );
+#endif
+
+   free( x );
+   free( r );
+   free( guess );
+   free( b );
+   free( e );
+   free( P2 );
+   free( P );
+   free( A );
+}
+
 int main( int argc, char **argv )
 {
    uint64_t pre, post;
@@ -223,10 +474,11 @@ int main( int argc, char **argv )
    float eps = 1e-10;
    int iters = 512, gmres_iters = 64, gmres_restart = 64;
 
+   e = vul_linalg_vector_create( 0, 0, 0 );
+
 #ifdef TEST_CHOLMOD
    r = solve_cholmod( A, b, n );
 #endif
-   e = vul_linalg_vector_create( 0, 0, 0 );
 
 #ifdef TEST_SVD
    vul_linalg_svd_basis_sparse *res = ( vul_linalg_svd_basis_sparse* )malloc( n * sizeof( vul_linalg_svd_basis_sparse ) );
@@ -594,6 +846,7 @@ int main( int argc, char **argv )
    }
    vul_linalg_matrix_destroy( P );
    printf("\n");fflush( stdout );
+
 #endif
 
    if( ILU ) {
@@ -601,6 +854,9 @@ int main( int argc, char **argv )
    }
    vul_linalg_vector_destroy( e );
    vul_linalg_vector_destroy( guess );
+   test_dense( A, b, n, d, eps, iters, gmres_restart, gmres_iters, t );
    vul_linalg_matrix_destroy( A );
+   vul_linalg_vector_destroy( b );
+
    vul_timer_destroy( t );
 }

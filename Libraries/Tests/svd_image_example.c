@@ -46,7 +46,7 @@ int main( int argc, char **argv )
    
    printf( "Computing SVD of %s (%d iterations)\n", argv[ 1 ], iters );
    vul_timer *t = vul_timer_create( );
-   vul_linalg_svd_dense( res, &rank, A, w, h, 1e-4, iters ); // @TODO(thynn): eps and iter should be parameters
+   vul_linalg_svd_dense( res, &rank, A, w, h, iters, 1e-4 ); // @TODO(thynn): eps and iter should be parameters
    uint64_t mms = vul_timer_get_micros( t );
    printf( "Completed in %lu.%lus\n", mms / 1000000, mms % 1000000 );
 

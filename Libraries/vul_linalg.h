@@ -1161,7 +1161,7 @@ static void vulb__sparse_mmul_matrix( vul_linalg_matrix *O,
    vul_linalg_real s;
    int i, j, k;
    
-   //@TODO(thynn): Strassen instead of this naïve approach.
+   //@TODO(thynn): Strassen instead of ijk
    for( i = 0; i < A->count; ++i ) {
       for( j = 0; j < n; ++j ) {
          s = 0.f;
@@ -2112,7 +2112,7 @@ static void vul__linalg_qr_decomposition_givens_sparse( vul_linalg_matrix *Q, vu
       vul_linalg_matrix_insert( Q, i, i, 1.f );
    }
    
-   // @TODO(thynn): Optimize this, it's very slow. Only iterate over the entries that are non-zero?
+   // @TODO(thynn): Optimize this. Only iterate over the entries that are non-zero?
    for( j = 0; j < c; ++j ) {
       for( i = r - 2; i >= j; --i ) {
          v0 = vul_linalg_matrix_get( R, i, j );
@@ -2741,7 +2741,7 @@ static void vulb__mmul_matrix( vul_linalg_real *O,
 {
    vul_linalg_real s;
    int i, j, k;
-   // @TODO(thynn): Strassen instead of this naïve approach.
+   // @TODO(thynn): Strassen instead of ijk.
    for( i = 0; i < n; ++i ) {
       for( j = 0; j < n; ++j ) {
          s = 0.f;
@@ -2819,7 +2819,7 @@ static void vulb__mmul_matrix_rect( vul_linalg_real *O, const vul_linalg_real *A
 {
 	int i, j, k;
 	vul_linalg_real d;
-	// @TODO(thynn): Strassen instead of this naïve approach.
+	// @TODO(thynn): Strassen instead of ijk
 	for( i = 0; i < ra; ++i ) {
 		for( j = 0; j < cb; ++j ) {
 			d = 0.f;
@@ -2890,8 +2890,6 @@ void vul_linalg_gmres_dense( vul_linalg_real *x,
                              const int max_iterations,
                              const vul_linalg_real tolerance )
 {
-   // @TODO(thynn): Make sure this actually works (we know the sparse works now, so make this
-   // functionally equivalent!)
    vul_linalg_real *V, *H, *r, *e, *y, *s, *w;
    vul_linalg_real bd, rd, err, tmp, *cosines, *sines, v0, v1;
    int i, j, k, l, m;

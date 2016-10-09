@@ -655,7 +655,7 @@ void vul_vector_tighten( vul_vector *vec )
    vul_vector_resize( vec, vec->size, VUL_TRUE, VUL_TRUE );
 }
 
-#ifdef _cpluspluc
+#ifdef __cplusplus
 }
 #endif
 

@@ -522,7 +522,7 @@ namespace vul {
 #elif defined( VUL_HALF_SSE )
 		unsigned int j;
 
-		#define CONSTF(name) _mm_castsi128_ps(name)
+		#define VUL_CONSTF(name) _mm_castsi128_ps(name)
 		for ( i = 0; i < ( count & 0xfffffffc ); i += 4 ) { // i < count - ( count % 4 )
 			__m128 f = _mm_set_ps( in[ i + 3 ], in[ i + 2 ], in[ i + 1 ], in[ i ] );
 #ifdef VUL_HALF_ROUND_NEAREST_EVEN
@@ -534,7 +534,7 @@ namespace vul {
 			__m128i c_subnorm_magic = _mm_set1_epi32( ( ( 127 - 15 ) + ( 23 - 10 ) + 1 ) << 23 );
 			__m128i c_normal_bias   = _mm_set1_epi32( 0xfff - ( ( 127 - 15 ) << 23 ) );
 
-			__m128  msign       = CONSTF( mask_sign );
+			__m128  msign       = VUL_CONSTF( mask_sign );
 			__m128  justsign    = _mm_and_ps( msign, f );
 			__m128  absf        = _mm_xor_ps( f, justsign );
 			__m128i absf_int    = _mm_castps_si128( absf );
@@ -547,7 +547,7 @@ namespace vul {
 			__m128i min_normal  = c_min_normal;
 			__m128i b_issub     = _mm_cmpgt_epi32( min_normal, absf_int );
 
-			__m128  subnorm1    = _mm_add_ps( absf, CONSTF( c_subnorm_magic ) );
+			__m128  subnorm1    = _mm_add_ps( absf, VUL_CONSTF( c_subnorm_magic ) );
 			__m128i subnorm2    = _mm_sub_epi32( _mm_castps_si128( subnorm1 ), c_subnorm_magic );
 
 			__m128i mantoddbit  = _mm_slli_epi32( absf_int, 31 - 13 );
@@ -572,11 +572,11 @@ namespace vul {
 			__m128i c_infty_as_fp16 = _mm_set1_epi32( 0x7c00 );
 			__m128i c_clamp         = _mm_set1_epi32( ( 31 << 23 ) - 0x1000 );
 
-			__m128  msign       = CONSTF( mask_sign );
+			__m128  msign       = VUL_CONSTF( mask_sign );
 			__m128  justsign    = _mm_and_ps( msign, f );
 			__m128i f32infty    = c_f32infty;
 			__m128  absf        = _mm_xor_ps( f, justsign );
-			__m128  mround      = CONSTF( mask_round );
+			__m128  mround      = VUL_CONSTF( mask_round );
 			__m128i absf_int    = _mm_castps_si128( absf );
 			__m128i b_isnan     = _mm_cmpgt_epi32( absf_int, f32infty );
 			__m128i b_isnormal  = _mm_cmpgt_epi32( f32infty, _mm_castps_si128( absf ) );
@@ -584,8 +584,8 @@ namespace vul {
 			__m128i inf_or_nan  = _mm_or_si128( nanbit, c_infty_as_fp16 );
 
 			__m128  fnosticky   = _mm_and_ps( absf, mround );
-			__m128  scaled      = _mm_mul_ps( fnosticky, CONSTF( c_magic ) );
-			__m128  clamped     = _mm_min_ps( scaled, CONSTF( c_clamp ) );
+			__m128  scaled      = _mm_mul_ps( fnosticky, VUL_CONSTF( c_magic ) );
+			__m128  clamped     = _mm_min_ps( scaled, VUL_CONSTF( c_clamp ) );
 			__m128i biased      = _mm_sub_epi32( _mm_castps_si128( clamped ), _mm_castps_si128( mround ) );
 			__m128i shifted     = _mm_srli_epi32( biased, 13 );
 			__m128i normal      = _mm_and_si128( shifted, b_isnormal );
@@ -599,7 +599,7 @@ namespace vul {
 				out[ i + j ].data = o.m128i_u16[ j * 2 ];
 			}
 		}
-		#undef CONSTF
+		#undef VUL_CONSTF
 		// Do the last 3 non-sse
 		for( j = count & 3; j > 0; --j ) {
 			out[ i + j ] = half( in[ i + j ] );
@@ -715,7 +715,7 @@ namespace vul {
 #elif defined( VUL_HALF_SSE )
 		unsigned int j;
 
-		#define CONSTF(name) _mm_castsi128_ps(name)
+		#define VUL_CONSTF(name) _mm_castsi128_ps(name)
 		for ( i = 0; i < ( count & 0xfffffffc ); i += 4 ) { // i < count - ( count % 4 )
 			__m128 f = _mm_set_ps( ( float )in[ i + 3 ], ( float )in[ i + 2 ], ( float )in[ i + 1 ], ( float )in[ i ] );
 #ifdef VUL_HALF_ROUND_NEAREST_EVEN
@@ -727,7 +727,7 @@ namespace vul {
 			__m128i c_subnorm_magic = _mm_set1_epi32( ( ( 127 - 15 ) + ( 23 - 10 ) + 1 ) << 23 );
 			__m128i c_normal_bias   = _mm_set1_epi32( 0xfff - ( ( 127 - 15 ) << 23 ) );
 
-			__m128  msign       = CONSTF( mask_sign );
+			__m128  msign       = VUL_CONSTF( mask_sign );
 			__m128  justsign    = _mm_and_ps( msign, f );
 			__m128  absf        = _mm_xor_ps( f, justsign );
 			__m128i absf_int    = _mm_castps_si128( absf );
@@ -740,7 +740,7 @@ namespace vul {
 			__m128i min_normal  = c_min_normal;
 			__m128i b_issub     = _mm_cmpgt_epi32( min_normal, absf_int );
 
-			__m128  subnorm1    = _mm_add_ps( absf, CONSTF( c_subnorm_magic ) );
+			__m128  subnorm1    = _mm_add_ps( absf, VUL_CONSTF( c_subnorm_magic ) );
 			__m128i subnorm2    = _mm_sub_epi32( _mm_castps_si128( subnorm1 ), c_subnorm_magic );
 
 			__m128i mantoddbit  = _mm_slli_epi32( absf_int, 31 - 13 );
@@ -765,11 +765,11 @@ namespace vul {
 			__m128i c_infty_as_fp16 = _mm_set1_epi32( 0x7c00 );
 			__m128i c_clamp         = _mm_set1_epi32( ( 31 << 23 ) - 0x1000 );
 
-			__m128  msign       = CONSTF( mask_sign );
+			__m128  msign       = VUL_CONSTF( mask_sign );
 			__m128  justsign    = _mm_and_ps( msign, f );
 			__m128i f32infty    = c_f32infty;
 			__m128  absf        = _mm_xor_ps( f, justsign );
-			__m128  mround      = CONSTF( mask_round );
+			__m128  mround      = VUL_CONSTF( mask_round );
 			__m128i absf_int    = _mm_castps_si128( absf );
 			__m128i b_isnan     = _mm_cmpgt_epi32( absf_int, f32infty );
 			__m128i b_isnormal  = _mm_cmpgt_epi32( f32infty, _mm_castps_si128( absf ) );
@@ -777,8 +777,8 @@ namespace vul {
 			__m128i inf_or_nan  = _mm_or_si128( nanbit, c_infty_as_fp16 );
 
 			__m128  fnosticky   = _mm_and_ps( absf, mround );
-			__m128  scaled      = _mm_mul_ps( fnosticky, CONSTF( c_magic ) );
-			__m128  clamped     = _mm_min_ps( scaled, CONSTF( c_clamp ) );
+			__m128  scaled      = _mm_mul_ps( fnosticky, VUL_CONSTF( c_magic ) );
+			__m128  clamped     = _mm_min_ps( scaled, VUL_CONSTF( c_clamp ) );
 			__m128i biased      = _mm_sub_epi32( _mm_castps_si128( clamped ), _mm_castps_si128( mround ) );
 			__m128i shifted     = _mm_srli_epi32( biased, 13 );
 			__m128i normal      = _mm_and_si128( shifted, b_isnormal );
@@ -792,7 +792,7 @@ namespace vul {
 				out[ i + j ].data = o.m128i_u16[ j * 2 ];
 			}
 		}
-		#undef CONSTF
+		#undef VUL_CONSTF
 		// Do the last 3 non-sse
 		for( j = count & 3; j > 0; --j ) {
 			out[ i + j ] = half( in[ i + j ] );
@@ -832,7 +832,7 @@ namespace vul {
 #elif defined( VUL_HALF_SSE )
 		unsigned int j;
 
-		#define CONSTF(name) _mm_castsi128_ps(name)
+		#define VUL_CONSTF(name) _mm_castsi128_ps(name)
 		for ( i = 0; i < ( count & 0xfffffffc ); i += 4 ) { // i < count - ( count % 4 )
 			__m128i h = _mm_setr_epi32( in[ i ].data, in[ i + 1 ].data, in[ i + 2 ].data, in[ i + 3 ].data );
 			
@@ -867,7 +867,7 @@ namespace vul {
 				out[ i + j ] = ( double )f.m128_f32[ j ];
 			}
 		}
-		#undef CONSTF
+		#undef VUL_CONSTF
 		// Do the last 3 non-sse
 		for( j = count & 3; j > 0; --j ) {
 			out[ i + j ] = ( double )in[ i + j ];

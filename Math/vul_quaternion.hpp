@@ -59,9 +59,13 @@ namespace vul {
 		Quaternion< T >( const Quaternion< T > &rhs );
 #endif
       T &x( ) { return data[ 0 ]; }
+      const T &x( ) const { return data[ 0 ]; }
       T &y( ) { return data[ 1 ]; }
+      const T &y( ) const { return data[ 1 ]; }
       T &z( ) { return data[ 2 ]; }
+      const T &z( ) const { return data[ 2 ]; }
       T &w( ) { return data[ 3 ]; }
+      const T &w( ) const { return data[ 3 ]; }
 		Vector< T, 3 > & xyz( ) { return reinterpret_cast< Vector< T, 3 > & >( data ); }
 		const Vector< T, 3 > & xyz( ) const { return reinterpret_cast< const Vector< T, 3 > & >( data ); }
 		Vector< T, 4 > & as_vec4( ) { return reinterpret_cast< Vector< T, 4 > & >( data ); }
@@ -546,7 +550,7 @@ namespace vul {
 		bias = T( 1e-7 );
 		renorm = sqrt( one - bias * bias );
 
-		if( -bias < q.w && q.w < bias ) {
+		if( -bias < q.w( ) && q.w( ) < bias ) {
 			q.data[ 3 ] = q.data[ 3 ] > zero ? bias : -bias;
 			q.data[ 0 ] *= renorm;
 			q.data[ 1 ] *= renorm;

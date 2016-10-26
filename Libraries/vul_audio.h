@@ -88,7 +88,7 @@
 #define smp s32
 #define smx s64
 #else
-error in vul_audio.h: Must define sample size at compile time!
+#error "vul_audio.h: Must define sample size at compile time!"
 #endif
 
 typedef struct vul__audio_mixer_clip {
@@ -318,9 +318,35 @@ vul_audio_return vul_audio_set_global_volume( vul_audio_device *dev, f32 volume 
 #undef smp
 #undef smx
 
+#ifndef VUL_TYPES_H
+#undef s8
+#undef s16
+#undef s32
+#undef s64
+#undef u8t
+#undef u16
+#undef u32
+#undef u64
+#undef f32
+#undef f64
+#endif // VUL_TYPES_H
+
 #endif // VUL_AUDIO_H
 
 #ifdef VUL_DEFINE
+
+#ifndef VUL_TYPES_H
+#define s8 int8_t
+#define s16 int16_t
+#define s32 int32_t
+#define s64 int64_t
+#define u8 uint8_t
+#define u16 uint16_t
+#define u32 uint32_t
+#define u64 uint64_t
+#define f32 float
+#define f64 double
+#endif
 
 #ifdef VUL_AUDIO_SAMPLE_16BIT
 #define smp s16

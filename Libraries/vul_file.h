@@ -363,7 +363,7 @@ s32 vul_file_exists( const char *filename )
 vul_file *vul_file_open( const char *filename, const char *mode, void* ( *allocator )( size_t ) )
 {
    vul_file *f = ( vul_file* )allocator( sizeof( vul_file ) );
-   size_t p;
+   size_t p, len;
    char name_full[ 4096 ];
    char temp_full[ sizeof( name_full ) + 12 ];
 #ifdef VUL_WINDOWS
@@ -393,7 +393,8 @@ vul_file *vul_file_open( const char *filename, const char *mode, void* ( *alloca
       return NULL;
    
    /* Try to generate a temporary file in the same directory */
-   p = strlen( name_full ) - 1;
+   len = strlen( name_full );
+   p = len - 1;
    while( p > 0 && name_full[ p ] != '/' && name_full[ p ] != '\\'
                 && name_full[ p ] != ':' && name_full[ p ] != '~' )
          --p;
@@ -438,13 +439,14 @@ vul_file *vul_file_open( const char *filename, const char *mode, void* ( *alloca
 #endif
    if( f->file != NULL ) {
       /* Store the information */
-#ifdef VUL_WINDOWS
-      f->tmp_path = _strdup( temp_full );
-      f->path = _strdup( name_full );
-#else
-      f->tmp_path = strdup( temp_full );
-      f->path = strdup( name_full );
-#endif
+      f->path = ( char* )allocator( len + 1 );
+      memcpy( f->path, name_full, len );
+      f->path[ len ] = 0;
+
+      len = strlen( temp_full );
+      f->tmp_path = ( char* )allocator( len + 1 );
+      memcpy( f->tmp_path, temp_full, len );
+      f->tmp_path[ len ] = 0;
 
       /* And return the file */
       return f;
@@ -625,7 +627,7 @@ b32 vul_file_monitor_check( vul_file_watch w )
    int s = 0;
    while( ( s = read( w.fd, &e, sizeof( e ) ) ) > 0 ) {
       if( s != sizeof( e ) ) {
-         printf("size %d (expected %lu)\n", s, sizeof( e ) );
+         printf("size %d (expected %zu)\n", s, sizeof( e ) );
       }
       if( e.wd == w.wd ) return 1;
    }
@@ -641,7 +643,7 @@ b32 vul_file_monitor_check( vul_file_watch w )
       return 0;
    }
 #else
-   vul_file.h Error: Must specify OS
+   #error "#vul_file.h: Must specify OS"
 #endif
 }
 
@@ -655,6 +657,7 @@ b32 vul_file_monitor_stop( vul_file_watch w )
    NOT IMPLEMENTED
 #elif VUL_WINDOWS
    // Do nothing...
+   return 1;
 #else
    vul_file.h Error: Must specify OS
 #endif

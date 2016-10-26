@@ -337,7 +337,7 @@ b32 vul_map_remove( vul_hash_map *map, const void *key )
 
    idx = vul__map_lookup_index( map, key );
    
-   if( idx == -1 ) {
+   if( idx == ( u32 )-1 ) {
       // No element to delete, signal failure
       return 0;
    }
@@ -361,7 +361,7 @@ void *vul_map_get( vul_hash_map *map, void *key )
    u32 idx;
 
    idx = vul__map_lookup_index( map, key );
-   return idx != -1 ? map->entries[ idx ].value : NULL;
+   return idx != ( u32 )-1 ? map->entries[ idx ].value : NULL;
 }
 
 const void *vul_map_get_const( vul_hash_map *map, void *key )

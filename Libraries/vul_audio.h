@@ -368,40 +368,40 @@ extern "C" {
 
 // Mutex helpers
 vul_audio_return vul__audio_mixer_wait_and_lock( vul_audio_device *dev );
-void vul__audio_mixer_release( vul_audio_device *dev );
+vul_audio_return vul__audio_mixer_release( vul_audio_device *dev );
 
 #ifdef VUL_AUDIO_ERROR_STDERR
-#define ERR( ... )\
+#define VUL__AUDIO_ERR( ... )\
 	fprintf( stderr, __VA_ARGS__ );\
 	return VUL_ERROR;
-#define ERR_NORETURN( ... )\
+#define VUL__AUDIO_ERR_NORETURN( ... )\
 	fprintf( stderr, __VA_ARGS__ );
 #elif defined( VUL_AUDIO_ERROR_STR )
 char vul_last_error[ 1024 ];
-#define ERR( ... )\
+#define VUL__AUDIO_ERR( ... )\
 	snprintf( vul_last_error, 1023, __VA_ARGS__ );\
 	vul_last_error[ 1023 ] = 0;\
 	return VUL_ERROR;
-#define ERR_NORETURN( ... )\
+#define VUL__AUDIO_ERR_NORETURN( ... )\
 	snprintf( vul_last_error, 1023, __VA_ARGS__ );\
 	vul_last_error[ 1023 ] = 0;
 #elif defined( VUL_AUDIO_ERROR_ASSERT )
-#define ERR( ... )\
+#define VUL__AUDIO_ERR( ... )\
 	assert( 0 );\
 	return VUL_ERROR;
-#define ERR_NORETURN( ... )\
+#define VUL__AUDIO_ERR_NORETURN( ... )\
 	assert( 0 );
 #elif defined( VUL_AUDIO_ERROR_QUIET )
-#define ERR( ... )\
+#define VUL__AUDIO_ERR( ... )\
 	return VUL_ERROR;
-#define ERR_NORETURN( ... )\
+#define VUL__AUDIO_ERR_NORETURN( ... )\
    {(void)0;}
 #elif defined( VUL_AUDIO_ERROR_CUSTOM )
-#define ERR( ... )\
-   VUL_AUDIO_ERROR_CUSTOM( __VA_ARGS__)\
+#define VUL__AUDIO_ERR( ... )\
+   VUL_AUDIO_ERROR_CUSTOM( __VA_ARGS__ )\
    return VUL_ERROR;
-#define ERR_NORETURN( ... )\
-   VUL_AUDIO_ERROR_CUSTOM( __VA_ARGS__)
+#define VUL__AUDIO_ERR_NORETURN( ... )\
+   VUL_AUDIO_ERROR_CUSTOM( __VA_ARGS__ )
 #endif
 
 vul_audio_return vul__audio_write( vul_audio_device *dev, void *samples, u32 sample_count );
@@ -454,20 +454,21 @@ void vul__audio_clip_remove_internal( vul__audio_mixer *mixer, u64 idx )
 u64 vul_audio_clip_add( vul_audio_device *dev, smp *data, u64 sample_count, u32 channels, f32 volume )
 {
 	if( !dev ) {
-      ERR_NORETURN( "No audio device supplied.\n" );
+      VUL__AUDIO_ERR_NORETURN( "No audio device supplied.\n" );
 		return 0;
 	}
 
    if( VUL_ERROR == vul__audio_mixer_wait_and_lock( dev ) ) {
-      ERR_NORETURN( "Failed to lock audio mixer.\n" );
+      VUL__AUDIO_ERR_NORETURN( "Failed to lock audio mixer.\n" );
 		return 0;
    }
 
 	if( dev->mixer.count == dev->mixer.size - 1 ) {
 		vul__audio_mixer_clip* ptr;
-		ptr = realloc( dev->mixer.clips, sizeof( vul__audio_mixer_clip ) * dev->mixer.size * 2 );
+		ptr = ( vul__audio_mixer_clip* )realloc( dev->mixer.clips, 
+                                               sizeof( vul__audio_mixer_clip ) * dev->mixer.size * 2 );
 		if( ptr == 0 ) {
-			ERR_NORETURN( "Failed to reallocate mixer clip collection." );
+			VUL__AUDIO_ERR_NORETURN( "Failed to reallocate mixer clip collection." );
 			return 0;
 		}
 		dev->mixer.clips = ptr;
@@ -484,7 +485,7 @@ u64 vul_audio_clip_add( vul_audio_device *dev, smp *data, u64 sample_count, u32 
 	clip->looping = 0;
    clip->keep_after_finish = 0;
 	if( volume < 0.f || volume > 1.f ) {
-		ERR_NORETURN( "Volume should be in range [0,1]. Value was clamped." );
+		VUL__AUDIO_ERR_NORETURN( "Volume should be in range [0,1]. Value was clamped." );
 	}
 	clip->volume = volume > 1.f ? 1.f : volume < 0.f ? 0.f : volume;
    dev->mixer.count++;
@@ -499,10 +500,10 @@ vul_audio_return vul_audio_clip_pause( vul_audio_device *dev, u64 id, b32 reset 
    u64 idx;
 
    if( !dev ) {
-      ERR( "No audio device supplied.\n" );
+      VUL__AUDIO_ERR( "No audio device supplied.\n" );
    }
    if( VUL_ERROR == vul__audio_mixer_wait_and_lock( dev ) ) {
-      ERR( "Failed to lock audio mixer.\n" );
+      VUL__AUDIO_ERR( "Failed to lock audio mixer.\n" );
    }
 
    idx = dev->mixer.count;
@@ -514,7 +515,7 @@ vul_audio_return vul_audio_clip_pause( vul_audio_device *dev, u64 id, b32 reset 
    }
 
 	if( idx >= dev->mixer.count ) {
-      ERR( "Clip not found, can't pause it." );
+      VUL__AUDIO_ERR( "Clip not found, can't pause it." );
 	}
 
 	dev->mixer.clips[ idx ].playing = 0;
@@ -532,10 +533,10 @@ vul_audio_return vul_audio_clip_play( vul_audio_device *dev, u64 id, b32 looping
    u64 idx;
 
    if( !dev ) {
-      ERR( "No audio device supplied.\n" );
+      VUL__AUDIO_ERR( "No audio device supplied.\n" );
    }
    if( VUL_ERROR == vul__audio_mixer_wait_and_lock( dev ) ) {
-      ERR( "Failed to lock audio mixer.\n" );
+      VUL__AUDIO_ERR( "Failed to lock audio mixer.\n" );
    }
 
    idx = dev->mixer.count;
@@ -547,7 +548,7 @@ vul_audio_return vul_audio_clip_play( vul_audio_device *dev, u64 id, b32 looping
    }
 
 	if( idx >= dev->mixer.count ) {
-      ERR( "Clip not found, can't play it." );
+      VUL__AUDIO_ERR( "Clip not found, can't play it." );
 	}
 
 	dev->mixer.clips[ idx ].playing = 1;
@@ -564,10 +565,10 @@ vul_audio_return vul_audio_clip_resume( vul_audio_device *dev, u64 id )
    u64 idx;
 
    if( !dev ) {
-      ERR( "No audio device supplied.\n" );
+      VUL__AUDIO_ERR( "No audio device supplied.\n" );
    }
    if( VUL_ERROR == vul__audio_mixer_wait_and_lock( dev ) ) {
-      ERR( "Failed to lock audio mixer.\n" );
+      VUL__AUDIO_ERR( "Failed to lock audio mixer.\n" );
    }
 
    idx = dev->mixer.count;
@@ -579,7 +580,7 @@ vul_audio_return vul_audio_clip_resume( vul_audio_device *dev, u64 id )
    }
 
 	if( idx >= dev->mixer.count ) {
-      ERR( "Clip not found, can't resume it." );
+      VUL__AUDIO_ERR( "Clip not found, can't resume it." );
 	}
 
 	dev->mixer.clips[ idx ].playing = 1;
@@ -593,10 +594,10 @@ vul_audio_return vul_audio_clip_remove( vul_audio_device *dev, u64 id )
 {
    u64 idx;
    if( !dev ) {
-      ERR( "No audio device supplied.\n" );
+      VUL__AUDIO_ERR( "No audio device supplied.\n" );
    }
    if( VUL_ERROR == vul__audio_mixer_wait_and_lock( dev ) ) {
-      ERR( "Failed to lock audio mixer.\n" );
+      VUL__AUDIO_ERR( "Failed to lock audio mixer.\n" );
    }
 
    idx = dev->mixer.count;
@@ -608,7 +609,7 @@ vul_audio_return vul_audio_clip_remove( vul_audio_device *dev, u64 id )
    }
 
 	if( idx >= dev->mixer.count ) {
-      ERR( "Clip not found, can't remove it." );
+      VUL__AUDIO_ERR( "Clip not found, can't remove it." );
 	}
 
    vul__audio_clip_remove_internal( &dev->mixer, idx );
@@ -623,10 +624,10 @@ vul_audio_return vul_audio_clip_volume( vul_audio_device *dev, u64 id, f32 vol )
    u64 idx;
 
    if( !dev ) {
-      ERR( "No audio device supplied.\n" );
+      VUL__AUDIO_ERR( "No audio device supplied.\n" );
    }
    if( VUL_ERROR == vul__audio_mixer_wait_and_lock( dev ) ) {
-      ERR( "Failed to lock audio mixer.\n" );
+      VUL__AUDIO_ERR( "Failed to lock audio mixer.\n" );
    }
 
    idx = dev->mixer.count;
@@ -638,7 +639,7 @@ vul_audio_return vul_audio_clip_volume( vul_audio_device *dev, u64 id, f32 vol )
    }
 
 	if( idx >= dev->mixer.count ) {
-      ERR( "Clip not found, can't remove it." );
+      VUL__AUDIO_ERR( "Clip not found, can't remove it." );
 	}
 
 	if( vol > 1.f || vol < 0.f ) {
@@ -655,10 +656,10 @@ vul_audio_return vul_audio_clip_volume( vul_audio_device *dev, u64 id, f32 vol )
 vul_audio_return vul_audio_set_global_volume( vul_audio_device *dev, f32 volume )
 {
    if( !dev ) {
-      ERR( "No audio device supplied.\n" );
+      VUL__AUDIO_ERR( "No audio device supplied.\n" );
    }
    if( VUL_ERROR == vul__audio_mixer_wait_and_lock( dev ) ) {
-      ERR( "Failed to lock audio mixer.\n" );
+      VUL__AUDIO_ERR( "Failed to lock audio mixer.\n" );
    }
 
 	if( volume < 0.f || volume > 1.f ) {
@@ -679,7 +680,6 @@ vul_audio_return vul_audio_set_global_volume( vul_audio_device *dev, f32 volume 
 void vul__audio_mix( vul__audio_mixer *mixer )
 {
 	u32 sample_count, min_channels, ofs;
-	smp sample;
 
 	// Mix
 	memset( mixer->mixbuf, 0, mixer->mixbuf_sample_count * mixer->channels * sizeof( smx ) );
@@ -751,7 +751,7 @@ vul_audio_return vul__audio_callback_internal( vul_audio_device *dev )
                          dev->mix_function_data );
    } else {
       if( VUL_ERROR == vul__audio_mixer_wait_and_lock( dev ) ) {
-         ERR( "Failed to lock audio mixer.\n" );
+         VUL__AUDIO_ERR( "Failed to lock audio mixer.\n" );
       }
 
       vul__audio_mix( &dev->mixer );
@@ -772,7 +772,7 @@ vul_audio_return vul__audio_callback_internal( vul_audio_device *dev )
 #define DLLOAD( sym, lib, name )\
 	sym = ( void* )GetProcAddress( lib, name );\
 	if( sym == NULL ) {\
-		ERR( "Failed to load symbol %s from DLL.\n", name );\
+		VUL__AUDIO_ERR( "Failed to load symbol %s from DLL.\n", name );\
 	}
 
 
@@ -850,7 +850,7 @@ static vul_audio_return vul__audio_write_waveout( vul_audio_device *dev, void *s
       if( pWaveOutWrite( dev->device.waveout.handle,
                          &dev->device.waveout.headers[ i ], 
                          sizeof( WAVEHDR ) ) != MMSYSERR_NOERROR ) {
-         ERR( "Failed to write audio data.\n" );
+         VUL__AUDIO_ERR( "Failed to write audio data.\n" );
       }
       uploaded = 1;
    }
@@ -874,7 +874,7 @@ static vul_audio_return vul__audio_destroy_waveout( vul_audio_device *dev, int d
       }
    }
 	if( pWaveOutClose( dev->device.waveout.handle ) != MMSYSERR_NOERROR ) {
-		ERR( "Failed to close waveOut device.\n" );
+		VUL__AUDIO_ERR( "Failed to close waveOut device.\n" );
 	}
 	return VUL_OK;
 }
@@ -883,7 +883,7 @@ static vul_audio_return vul__audio_init_waveout( vul_audio_device *out, u32 fram
 {
 	HMODULE waveout;
 	if( ( waveout = LoadLibrary( "winmm.dll" ) ) == NULL ) {
-		ERR( "Failed to load winmm.dll.\n" );
+		VUL__AUDIO_ERR( "Failed to load winmm.dll.\n" );
 	}
 	DLLOAD( pWaveOutOpen, waveout, "waveOutOpen" );
 	DLLOAD( pWaveOutPrepareHeader, waveout, "waveOutPrepareHeader" );
@@ -893,7 +893,7 @@ static vul_audio_return vul__audio_init_waveout( vul_audio_device *out, u32 fram
 	
    out->device.waveout.event = CreateEvent( 0, FALSE, FALSE, 0 );
    if( !out->device.waveout.event ) {
-      ERR( "Failed to create event for waveout.\n" );
+      VUL__AUDIO_ERR( "Failed to create event for waveout.\n" );
    }
 
 	WAVEFORMATEX format;
@@ -907,7 +907,7 @@ static vul_audio_return vul__audio_init_waveout( vul_audio_device *out, u32 fram
 
 	if( pWaveOutOpen( &out->device.waveout.handle, WAVE_MAPPER, &format,
                      ( DWORD_PTR )out->device.waveout.event, 0, CALLBACK_EVENT ) != MMSYSERR_NOERROR ) {
-		ERR( "Failed to open waveOut library.\n" );
+		VUL__AUDIO_ERR( "Failed to open waveOut library.\n" );
 	}
 
    for( int i = 0; i < 2; ++i ) {
@@ -919,7 +919,7 @@ static vul_audio_return vul__audio_init_waveout( vul_audio_device *out, u32 fram
       if( MMSYSERR_NOERROR != pWaveOutPrepareHeader( out->device.waveout.handle,
                                                      &out->device.waveout.headers[ i ],
                                                      sizeof( WAVEHDR ) ) ) {
-         ERR( "Failed to prepare waveout upload header %d.\n", i );
+         VUL__AUDIO_ERR( "Failed to prepare waveout upload header %d.\n", i );
       }
    }
 
@@ -934,7 +934,7 @@ vul_audio_return vul__audio_write( vul_audio_device *dev, void *samples, u32 sam
 		return vul__audio_write_waveout( dev, samples, sample_count );
 	} break;
 	default: {
-		ERR( "Unknown device library in use.\n" );
+		VUL__AUDIO_ERR( "Unknown device library in use.\n" );
 	}
 	}
 }
@@ -960,7 +960,7 @@ vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_clos
 		return vul__audio_destroy_waveout( dev, drain_before_close );
 	} break;
 	default: {
-		ERR( "Unknown device library in use.\n" );
+		VUL__AUDIO_ERR( "Unknown device library in use.\n" );
 	}
 	}
 }
@@ -989,23 +989,23 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 	// Try waveOut
    ret = vul__audio_init_waveout( out, frame_size );
    if( ret != VUL_OK ) {
-      ERR( "Failed to open audio device with any of the attempted libraries.\n" );
+      VUL__AUDIO_ERR( "Failed to open audio device with any of the attempted libraries.\n" );
       return VUL_ERROR;
    }
 
    out->close_event = CreateEvent( 0, FALSE, FALSE, 0 );
    if( !out->close_event ) {
-      ERR( "Failed to create event for waveout.\n" );
+      VUL__AUDIO_ERR( "Failed to create event for waveout.\n" );
    }
    out->mixer_mutex = CreateMutex( NULL, FALSE, NULL );
    if( !out->mixer_mutex ) {
-      ERR( "Failed to create mutex to lock mixer.\n" );
+      VUL__AUDIO_ERR( "Failed to create mutex to lock mixer.\n" );
    }
    out->thread = CreateThread( NULL, 0, 
                                ( LPTHREAD_START_ROUTINE )vul__audio_callback,
                                ( LPVOID )out, 0, NULL );
    if( !out->thread ) {
-      ERR( "Failed to create audio callback thread (%lu).\n", GetLastError( ) );
+      VUL__AUDIO_ERR( "Failed to create audio callback thread (%lu).\n", GetLastError( ) );
    }
    return VUL_OK;
 }
@@ -1105,14 +1105,14 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
                               NULL, NULL, 0, 
                               &out->queue );
    if( res ) {
-      ERR( "Failed to create core audio queue.\n" );
+      VUL__AUDIO_ERR( "Failed to create core audio queue.\n" );
    }
 
    for( i = 0; i < 2; ++i ) {
       AudioQueueBufferRef buffer;
       res = AudioQueueAllocateBuffer( out->queue, frame_size, &buffer );
       if( res ) {
-         ERR( "Failed to create core audio buffer.\n" );
+         VUL__AUDIO_ERR( "Failed to create core audio buffer.\n" );
       }
       buffer->mAudioDataByteSize = frame_size;
       memset( buffer->mAudioData, 0, buffer->mAudioDataByteSize );
@@ -1121,7 +1121,7 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 
    res = AudioQueueStart( out->queue, NULL );
    if( res ) {
-      ERR( "Failed to start core audio queue playback.\n" );
+      VUL__AUDIO_ERR( "Failed to start core audio queue playback.\n" );
    }
 
    pthread_mutex_init( &out->mixer_mutex, NULL );
@@ -1134,10 +1134,10 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 
 #elif defined( VUL_LINUX )
 
-#define DLLOAD( sym, lib, name )\
-	sym = dlsym( lib, name );\
+#define DLLOAD( fn_sym, sym, lib, name )\
+	sym = ( fn_sym )dlsym( lib, name );\
 	if( sym == NULL ) {\
-		ERR( "Failed to load symbol %s, error: %s.\n", name, dlerror() );\
+		VUL__AUDIO_ERR( "Failed to load symbol %s, error: %s.\n", name, dlerror() );\
 	}
 
 vul_audio_return vul__audio_mixer_wait_and_lock( vul_audio_device *dev )
@@ -1146,9 +1146,10 @@ vul_audio_return vul__audio_mixer_wait_and_lock( vul_audio_device *dev )
    return res == 0 ? VUL_OK : VUL_ERROR;
 }
 
-void vul__audio_mixer_release( vul_audio_device *dev )
+vul_audio_return vul__audio_mixer_release( vul_audio_device *dev )
 {
    int res = pthread_mutex_unlock( &dev->mixer_mutex );
+   return res == 0 ? VUL_OK : VUL_ERROR;
 }
 
 void *vul__audio_callback( void *data )
@@ -1200,7 +1201,7 @@ static vul_audio_return vul__audio_init_oss( vul_audio_device *dev, int mode )
 {
 	s32 tmp, fd;
 	if( ( fd = open( "/dev/dsp", mode, 0 ) ) == -1 ) {
-		ERR( "Unable to open device /dev/dsp.\n" );
+		VUL__AUDIO_ERR( "Unable to open device /dev/dsp.\n" );
 	}
 
 	// Set format
@@ -1213,15 +1214,15 @@ static vul_audio_return vul__audio_init_oss( vul_audio_device *dev, int mode )
    #endif
 	if( ioctl( fd, SNDCTL_DSP_SETFMT, &tmp ) == -1 ) {
 		close( fd );
-		ERR( "Failed to set sample format.\n" );
+		VUL__AUDIO_ERR( "Failed to set sample format.\n" );
 	}
    #ifdef VUL_AUDIO_SAMPLE_16BIT
    if( tmp != AFMT_S16_NE ) {
-      ERR( "Sample format returned from device does not match wanted format.\n" );return VUL_ERROR;
+      VUL__AUDIO_ERR( "Sample format returned from device does not match wanted format.\n" );return VUL_ERROR;
    }
    #elif VUL_AUDIO_SAMPLE_32BIT
    if( tmp != AFMT_S32_NE ) {
-      ERR( "Sample format returned from device does not match wanted format.\n" );return VUL_ERROR;
+      VUL__AUDIO_ERR( "Sample format returned from device does not match wanted format.\n" );return VUL_ERROR;
    }
    #else
       Error in vul_audio: Must define sample size
@@ -1230,19 +1231,19 @@ static vul_audio_return vul__audio_init_oss( vul_audio_device *dev, int mode )
 	// Set channel count
 	tmp = dev->channels;
 	if( ioctl( fd, SNDCTL_DSP_CHANNELS, &tmp ) == -1 ) {
-		ERR( "Failed to set channel count.\n" );
+		VUL__AUDIO_ERR( "Failed to set channel count.\n" );
 	}
 	if( tmp != dev->channels ) {
-		ERR( "Channel count returned does not match wanted count.\n" );
+		VUL__AUDIO_ERR( "Channel count returned does not match wanted count.\n" );
 	}
 
 	// Set sample rate
 	tmp = dev->sample_rate;
 	if( ioctl( fd, SNDCTL_DSP_SPEED, &tmp ) == -1 ) {
-		ERR( "Failed to set sample rate.\n" );
+		VUL__AUDIO_ERR( "Failed to set sample rate.\n" );
 	}
 	if( tmp != dev->sample_rate ) {
-		ERR( "Sample rate returned does not match wanted rate.\n" );
+		VUL__AUDIO_ERR( "Sample rate returned does not match wanted rate.\n" );
 	}
 
 	// Store file descriptor
@@ -1256,7 +1257,7 @@ static vul_audio_return vul__audio_write_oss( vul_audio_device *dev, void *sampl
 {
 	u32 size = sample_count * sizeof( smp ) * dev->channels;
 	if( write( dev->device.oss_device_fd, samples, size ) != size ) {
-		ERR( "Failed to write samples to device.\n" );
+		VUL__AUDIO_ERR( "Failed to write samples to device.\n" );
 	}
 	return VUL_OK;
 }
@@ -1264,29 +1265,51 @@ static vul_audio_return vul__audio_write_oss( vul_audio_device *dev, void *sampl
 // ------
 // ALSA
 //
+typedef snd_pcm_sframes_t ( *fn_alsa_write )( snd_pcm_t *, const void *, snd_pcm_uframes_t );
+typedef int ( *fn_alsa_prepare )( snd_pcm_t * );
+typedef const char * ( *fn_alsa_strerror )( int );
+typedef int ( *fn_alsa_open )( snd_pcm_t **, const char *, snd_pcm_stream_t, int );
+typedef int ( *fn_alsa_hw_malloc )( snd_pcm_hw_params_t ** );
+typedef int ( *fn_alsa_hw_any )( snd_pcm_t *, snd_pcm_hw_params_t * );
+typedef int ( *fn_alsa_hw_set_access )( snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_access_t );
+typedef int ( *fn_alsa_hw_set_format )( snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_format_t );
+typedef int ( *fn_alsa_hw_set_rate_near )( snd_pcm_t *, snd_pcm_hw_params_t *, unsigned int *, int * );
+typedef int ( *fn_alsa_hw_set_buffer_size )( snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_uframes_t );
+typedef int ( *fn_alsa_hw_set_period_size )( snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_uframes_t, int );
+typedef int ( *fn_alsa_hw_set_channels )( snd_pcm_t *, snd_pcm_hw_params_t *, unsigned int );
+typedef int ( *fn_alsa_hw_params )( snd_pcm_t *, snd_pcm_hw_params_t * );
+typedef void ( *fn_alsa_hw_free )( snd_pcm_hw_params_t * );
+typedef int( *fn_alsa_sw_malloc )( snd_pcm_sw_params_t ** );
+typedef int( *fn_alsa_sw_current )( snd_pcm_t *, snd_pcm_sw_params_t * );
+typedef int( *fn_alsa_sw_set_avail_min )( snd_pcm_t *, snd_pcm_sw_params_t *, snd_pcm_uframes_t );
+typedef int( *fn_alsa_sw_set_start_threshold )( snd_pcm_t *, snd_pcm_sw_params_t *, snd_pcm_uframes_t );
+typedef int( *fn_alsa_sw_params )( snd_pcm_t *, snd_pcm_sw_params_t * );
+typedef int( *fn_alsa_sw_free )( snd_pcm_sw_params_t * );
+typedef int( *fn_alsa_drain )( snd_pcm_t * );
+typedef int( *fn_alsa_close )( snd_pcm_t * );
 
-snd_pcm_sframes_t ( *alsa_write )( snd_pcm_t *, const void *, snd_pcm_uframes_t ) = 0;
-int ( *alsa_prepare )( snd_pcm_t * ) = 0;
-const char * ( *alsa_strerror )( int ) = 0;
-int ( *alsa_open )( snd_pcm_t **, const char *, snd_pcm_stream_t, int ) = 0;
-int ( *alsa_hw_malloc )( snd_pcm_hw_params_t ** ) = 0;
-int ( *alsa_hw_any )( snd_pcm_t *, snd_pcm_hw_params_t * ) = 0;
-int ( *alsa_hw_set_access )( snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_access_t ) = 0;
-int ( *alsa_hw_set_format )( snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_format_t ) = 0;
-int ( *alsa_hw_set_rate_near )( snd_pcm_t *, snd_pcm_hw_params_t *, unsigned int *, int * ) = 0;
-int ( *alsa_hw_set_buffer_size )( snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_uframes_t ) = 0;
-int ( *alsa_hw_set_period_size )( snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_uframes_t, int ) = 0;
-int ( *alsa_hw_set_channels )( snd_pcm_t *, snd_pcm_hw_params_t *, unsigned int ) = 0;
-int ( *alsa_hw_params )( snd_pcm_t *, snd_pcm_hw_params_t * ) = 0;
-void ( *alsa_hw_free )( snd_pcm_hw_params_t * ) = 0;
-int( *alsa_sw_malloc )( snd_pcm_sw_params_t ** ) = 0;
-int( *alsa_sw_current )( snd_pcm_t *, snd_pcm_sw_params_t * ) = 0;
-int( *alsa_sw_set_avail_min )( snd_pcm_t *, snd_pcm_sw_params_t *, snd_pcm_uframes_t ) = 0;
-int( *alsa_sw_set_start_threshold )( snd_pcm_t *, snd_pcm_sw_params_t *, snd_pcm_uframes_t ) = 0;
-int( *alsa_sw_params )( snd_pcm_t *, snd_pcm_sw_params_t * ) = 0;
-int( *alsa_sw_free )( snd_pcm_sw_params_t * ) = 0;
-int( *alsa_drain )( snd_pcm_t * ) = 0;
-int( *alsa_close )( snd_pcm_t * ) = 0;
+fn_alsa_write alsa_write = 0;
+fn_alsa_prepare alsa_prepare = 0;
+fn_alsa_strerror alsa_strerror = 0;
+fn_alsa_open alsa_open = 0;
+fn_alsa_hw_malloc alsa_hw_malloc = 0;
+fn_alsa_hw_any alsa_hw_any = 0;
+fn_alsa_hw_set_access alsa_hw_set_access = 0;
+fn_alsa_hw_set_format alsa_hw_set_format = 0;
+fn_alsa_hw_set_rate_near alsa_hw_set_rate_near = 0;
+fn_alsa_hw_set_buffer_size alsa_hw_set_buffer_size = 0;
+fn_alsa_hw_set_period_size alsa_hw_set_period_size = 0;
+fn_alsa_hw_set_channels alsa_hw_set_channels = 0;
+fn_alsa_hw_params alsa_hw_params = 0;
+fn_alsa_hw_free alsa_hw_free = 0;
+fn_alsa_sw_malloc alsa_sw_malloc = 0;
+fn_alsa_sw_current alsa_sw_current = 0;
+fn_alsa_sw_set_avail_min alsa_sw_set_avail_min = 0;
+fn_alsa_sw_set_start_threshold alsa_sw_set_start_threshold = 0;
+fn_alsa_sw_params alsa_sw_params = 0;
+fn_alsa_sw_free alsa_sw_free = 0;
+fn_alsa_drain alsa_drain = 0;
+fn_alsa_close alsa_close = 0;
 
 // @TODO(thynn): Make this work properly (as in, poll for when to continue writing,
 // and not hardcode the wait!), see write_and_poll_loop in
@@ -1303,13 +1326,13 @@ static vul_audio_return vul__audio_write_alsa( vul_audio_device *dev, void *samp
 	if( r == -EPIPE ) {
 		// Reprepare before failing
 		alsa_prepare( dev->device.alsa.handle );
-		ERR( "ALSA write returned in a buffer overrun.\n" )
+		VUL__AUDIO_ERR( "ALSA write returned in a buffer overrun.\n" )
 	}
 	if( r < 0 ) { // @TODO(thynn): Underrun, attempt a recovery
-		ERR( "ALSA write failed: %s.\n", alsa_strerror( r ) );
+		VUL__AUDIO_ERR( "ALSA write failed: %s.\n", alsa_strerror( r ) );
 	}
 	if( r != size ) {
-		ERR( "Frame count write (%d) does not match wanted count (%d).\n", r, size );
+		VUL__AUDIO_ERR( "Frame count write (%d) does not match wanted count (%d).\n", r, size );
 	}
    vul_sleep(20);
 	return VUL_OK;
@@ -1319,54 +1342,52 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 {
 	snd_pcm_hw_params_t *hwp;
 	snd_pcm_sw_params_t *swp;
-	snd_pcm_sframes_t frames_to_deliver;
-	int devices, err;
-	struct pollfd *device_fds;
+	int err;
 	
 	// Library loads
 	if( ( dev->device.alsa.dlib = dlopen( "libasound.so", RTLD_NOW ) ) == NULL ) {
-		ERR( "Failed to load ALSA library.\n" );
+		VUL__AUDIO_ERR( "Failed to load ALSA library.\n" );
 	}
-	DLLOAD( alsa_prepare, dev->device.alsa.dlib, "snd_pcm_prepare" );
-	DLLOAD( alsa_write, dev->device.alsa.dlib, "snd_pcm_writei" );
-	DLLOAD( alsa_strerror, dev->device.alsa.dlib, "snd_strerror" );
-	DLLOAD( alsa_open, dev->device.alsa.dlib, "snd_pcm_open" );
-	DLLOAD( alsa_hw_malloc, dev->device.alsa.dlib, "snd_pcm_hw_params_malloc" );
-	DLLOAD( alsa_hw_any, dev->device.alsa.dlib, "snd_pcm_hw_params_any" );
-	DLLOAD( alsa_hw_set_access, dev->device.alsa.dlib, "snd_pcm_hw_params_set_access" );
-	DLLOAD( alsa_hw_set_format, dev->device.alsa.dlib, "snd_pcm_hw_params_set_format" );
-	DLLOAD( alsa_hw_set_rate_near, dev->device.alsa.dlib, "snd_pcm_hw_params_set_rate_near" );
-	DLLOAD( alsa_hw_set_buffer_size, dev->device.alsa.dlib, "snd_pcm_hw_params_set_buffer_size" );
-	DLLOAD( alsa_hw_set_period_size, dev->device.alsa.dlib, "snd_pcm_hw_params_set_period_size" );
-	DLLOAD( alsa_hw_set_channels, dev->device.alsa.dlib, "snd_pcm_hw_params_set_channels" );
-	DLLOAD( alsa_hw_params, dev->device.alsa.dlib, "snd_pcm_hw_params" );
-	DLLOAD( alsa_hw_free, dev->device.alsa.dlib, "snd_pcm_hw_params_free" );
-	DLLOAD( alsa_sw_malloc, dev->device.alsa.dlib, "snd_pcm_sw_params_malloc" );
-	DLLOAD( alsa_sw_current, dev->device.alsa.dlib, "snd_pcm_sw_params_current" );
-	DLLOAD( alsa_sw_set_avail_min, dev->device.alsa.dlib, "snd_pcm_sw_params_set_avail_min" );
-	DLLOAD( alsa_sw_set_start_threshold, dev->device.alsa.dlib, "snd_pcm_sw_params_set_start_threshold" );
-	DLLOAD( alsa_sw_params, dev->device.alsa.dlib, "snd_pcm_sw_params" );
-	DLLOAD( alsa_sw_free, dev->device.alsa.dlib, "snd_pcm_sw_params_free" );
-	DLLOAD( alsa_drain, dev->device.alsa.dlib, "snd_pcm_drain" );
-	DLLOAD( alsa_close, dev->device.alsa.dlib, "snd_pcm_close" );
+	DLLOAD( fn_alsa_prepare, alsa_prepare, dev->device.alsa.dlib, "snd_pcm_prepare" );
+	DLLOAD( fn_alsa_write, alsa_write, dev->device.alsa.dlib, "snd_pcm_writei" );
+	DLLOAD( fn_alsa_strerror, alsa_strerror, dev->device.alsa.dlib, "snd_strerror" );
+	DLLOAD( fn_alsa_open, alsa_open, dev->device.alsa.dlib, "snd_pcm_open" );
+	DLLOAD( fn_alsa_hw_malloc, alsa_hw_malloc, dev->device.alsa.dlib, "snd_pcm_hw_params_malloc" );
+	DLLOAD( fn_alsa_hw_any, alsa_hw_any, dev->device.alsa.dlib, "snd_pcm_hw_params_any" );
+	DLLOAD( fn_alsa_hw_set_access, alsa_hw_set_access, dev->device.alsa.dlib, "snd_pcm_hw_params_set_access" );
+	DLLOAD( fn_alsa_hw_set_format, alsa_hw_set_format, dev->device.alsa.dlib, "snd_pcm_hw_params_set_format" );
+	DLLOAD( fn_alsa_hw_set_rate_near, alsa_hw_set_rate_near, dev->device.alsa.dlib, "snd_pcm_hw_params_set_rate_near" );
+	DLLOAD( fn_alsa_hw_set_buffer_size, alsa_hw_set_buffer_size, dev->device.alsa.dlib, "snd_pcm_hw_params_set_buffer_size" );
+	DLLOAD( fn_alsa_hw_set_period_size, alsa_hw_set_period_size, dev->device.alsa.dlib, "snd_pcm_hw_params_set_period_size" );
+	DLLOAD( fn_alsa_hw_set_channels, alsa_hw_set_channels, dev->device.alsa.dlib, "snd_pcm_hw_params_set_channels" );
+	DLLOAD( fn_alsa_hw_params, alsa_hw_params, dev->device.alsa.dlib, "snd_pcm_hw_params" );
+	DLLOAD( fn_alsa_hw_free, alsa_hw_free, dev->device.alsa.dlib, "snd_pcm_hw_params_free" );
+	DLLOAD( fn_alsa_sw_malloc, alsa_sw_malloc, dev->device.alsa.dlib, "snd_pcm_sw_params_malloc" );
+	DLLOAD( fn_alsa_sw_current, alsa_sw_current, dev->device.alsa.dlib, "snd_pcm_sw_params_current" );
+	DLLOAD( fn_alsa_sw_set_avail_min, alsa_sw_set_avail_min, dev->device.alsa.dlib, "snd_pcm_sw_params_set_avail_min" );
+	DLLOAD( fn_alsa_sw_set_start_threshold, alsa_sw_set_start_threshold, dev->device.alsa.dlib, "snd_pcm_sw_params_set_start_threshold" );
+	DLLOAD( fn_alsa_sw_params, alsa_sw_params, dev->device.alsa.dlib, "snd_pcm_sw_params" );
+	DLLOAD( fn_alsa_sw_free, alsa_sw_free, dev->device.alsa.dlib, "snd_pcm_sw_params_free" );
+	DLLOAD( fn_alsa_drain, alsa_drain, dev->device.alsa.dlib, "snd_pcm_drain" );
+	DLLOAD( fn_alsa_close, alsa_close, dev->device.alsa.dlib, "snd_pcm_close" );
 	// Hardware parameters
 
 	if( ( err = alsa_open( &dev->device.alsa.handle, device_name, SND_PCM_STREAM_PLAYBACK, 0 ) ) < 0 ) {
-		ERR( "Failed to open ALSA device %s.\n", device_name );
+		VUL__AUDIO_ERR( "Failed to open ALSA device %s.\n", device_name );
 	}
 
 	if( ( err = alsa_hw_malloc( &hwp ) ) < 0 ) {
-		ERR( "Failed to allocate ALSA hardware parameters struct.\n" );
+		VUL__AUDIO_ERR( "Failed to allocate ALSA hardware parameters struct.\n" );
 	}
 	if( ( err = alsa_hw_any( dev->device.alsa.handle, hwp ) ) < 0 ) {
-		ERR( "Failed to get initial ALSA hardware parameters.\n" );
+		VUL__AUDIO_ERR( "Failed to get initial ALSA hardware parameters.\n" );
 	}
 
 	if( ( err = alsa_hw_set_access( dev->device.alsa.handle, hwp, SND_PCM_ACCESS_RW_INTERLEAVED ) ) < 0 ) {
-		ERR( "Failed to set ALSA access pattern.\n" );
+		VUL__AUDIO_ERR( "Failed to set ALSA access pattern.\n" );
 	}
 
-	int fmt;
+	snd_pcm_format_t fmt;
    #ifdef VUL_AUDIO_SAMPLE_16BIT
    fmt = SND_PCM_FORMAT_S16_LE;
    #elif VUL_AUDIO_SAMPLE_32BIT
@@ -1375,50 +1396,50 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 		Error in vul_audio: Must define sample size
    #endif
 	if( ( err = alsa_hw_set_format( dev->device.alsa.handle, hwp, fmt ) ) < 0 ) {
-		ERR( "Failed to set ALSA sample format.\n" );
+		VUL__AUDIO_ERR( "Failed to set ALSA sample format.\n" );
 	}
    int rate = dev->sample_rate;
 	if( ( err = alsa_hw_set_rate_near( dev->device.alsa.handle, hwp, &dev->sample_rate, 0 ) ) < 0 ) {
-		ERR( "Failed to set ALSA sample rate.\n" );
+		VUL__AUDIO_ERR( "Failed to set ALSA sample rate.\n" );
 	}
    if( rate != dev->sample_rate ) {
-      ERR( "Failed to set ALSA sample rate to desired rate (%d vs %d desired).\n", dev->sample_rate, rate );
+      VUL__AUDIO_ERR( "Failed to set ALSA sample rate to desired rate (%d vs %d desired).\n", dev->sample_rate, rate );
    }
 	if( ( err = alsa_hw_set_channels( dev->device.alsa.handle, hwp, dev->channels ) ) < 0 ) {
-		ERR( "Failed to set ALSA channel count.\n" );
+		VUL__AUDIO_ERR( "Failed to set ALSA channel count.\n" );
 	}
    if( ( err = alsa_hw_set_buffer_size( dev->device.alsa.handle, hwp, frame_size ) ) < 0 ) {
-      ERR( "Failed to set ALSA buffer size.\n" );
+      VUL__AUDIO_ERR( "Failed to set ALSA buffer size.\n" );
    }
    if( ( err = alsa_hw_set_period_size( dev->device.alsa.handle, hwp, frame_size / 4, 0 ) ) < 0 ) {
-      ERR( "Failed to set ALSA period size.\n" );
+      VUL__AUDIO_ERR( "Failed to set ALSA period size.\n" );
    }
 	if( ( err = alsa_hw_params( dev->device.alsa.handle, hwp ) ) < 0 ) {
-		ERR( "Failed to set final ALSA hardware parameters.\n" );
+		VUL__AUDIO_ERR( "Failed to set final ALSA hardware parameters.\n" );
 	}
 
 	alsa_hw_free( hwp );
 
 	// Software parameters
 	if( ( err = alsa_sw_malloc( &swp ) ) < 0 ) {
-		ERR( "Failed to allocate ALSA software parameters struct.\n" );
+		VUL__AUDIO_ERR( "Failed to allocate ALSA software parameters struct.\n" );
 	}
 	if( ( err = alsa_sw_current( dev->device.alsa.handle, swp ) ) < 0 ) {
-		ERR( "Failed to get current ALSA software parameters.\n" );
+		VUL__AUDIO_ERR( "Failed to get current ALSA software parameters.\n" );
 	}
 	if( ( err = alsa_sw_set_avail_min( dev->device.alsa.handle, swp, frame_size ) ) < 0 ) {
-		ERR( "Failed to set ALSA frame size.\n" );
+		VUL__AUDIO_ERR( "Failed to set ALSA frame size.\n" );
 	}
 	if( ( err = alsa_sw_set_start_threshold( dev->device.alsa.handle, swp, frame_size ) ) < 0 ) {
-		ERR( "Failed to set ALSA start threshold.\n" );
+		VUL__AUDIO_ERR( "Failed to set ALSA start threshold.\n" );
 	}
 	if( ( err = alsa_sw_params( dev->device.alsa.handle, swp ) ) < 0 ) {
-		ERR( "Failed to set final ALSA software parameters.\n" );
+		VUL__AUDIO_ERR( "Failed to set final ALSA software parameters.\n" );
 	}
 
 	// Prepare device
 	if( ( err = alsa_prepare( dev->device.alsa.handle ) ) < 0 ) {
-		ERR( "Failed to start ALSA device.\n" );
+		VUL__AUDIO_ERR( "Failed to start ALSA device.\n" );
 	}
 
 	dev->lib = VUL__AUDIO_LINUX_ALSA;
@@ -1429,28 +1450,34 @@ static vul_audio_return vul__audio_init_alsa( vul_audio_device *dev, const char 
 // Pulse audio
 //
 
-pa_simple * ( *pulse_new )( const char *, const char *, pa_stream_direction_t, 
-									 const char *, const char *, const pa_sample_spec*, 
-									 const pa_channel_map*, const pa_buffer_attr*, int * ) = 0;
-void ( *pulse_free )( pa_simple * ) = 0;
-int ( *pulse_write )( pa_simple *, const void *, size_t, int * ) = 0;
-int ( *pulse_drain )( pa_simple *, int * ) = 0;
-const char* ( *pulse_error )( int ) = 0;
+typedef pa_simple * ( *fn_pulse_new )( const char *, const char *, pa_stream_direction_t, 
+                                       const char *, const char *, const pa_sample_spec*, 
+                                       const pa_channel_map*, const pa_buffer_attr*, int * );
+typedef void ( *fn_pulse_free )( pa_simple * );
+typedef int ( *fn_pulse_write )( pa_simple *, const void *, size_t, int * );
+typedef int ( *fn_pulse_drain )( pa_simple *, int * );
+typedef const char* ( *fn_pulse_error )( int );
+
+fn_pulse_new pulse_new = 0;
+fn_pulse_free pulse_free = 0;
+fn_pulse_write pulse_write = 0;
+fn_pulse_drain pulse_drain = 0;
+fn_pulse_error pulse_error = 0;
 
 vul_audio_return vul__audio_init_pulse( vul_audio_device *dev, const char *name, const char *description, const char *server_name, const char *device_name )
 {
 	// Library loads
 	if( ( dev->device.pulse.dlib = dlopen( "libpulse.so", RTLD_NOW ) ) == NULL ) {
-		ERR( "Failed to load PulseAudio library.\n" );
+		VUL__AUDIO_ERR( "Failed to load PulseAudio library.\n" );
 	}
 	if( ( dev->device.pulse.dlib_simple = dlopen( "libpulse-simple.so", RTLD_NOW ) ) == NULL ) {
-		ERR( "Failed to load PulseAudio Simple API library.\n" );
+		VUL__AUDIO_ERR( "Failed to load PulseAudio Simple API library.\n" );
 	}
-	DLLOAD( pulse_new, dev->device.pulse.dlib_simple, "pa_simple_new" );
-	DLLOAD( pulse_free, dev->device.pulse.dlib_simple, "pa_simple_free" );
-	DLLOAD( pulse_write, dev->device.pulse.dlib_simple, "pa_simple_write" );
-	DLLOAD( pulse_drain, dev->device.pulse.dlib_simple, "pa_simple_drain" );
-	DLLOAD( pulse_error, dev->device.pulse.dlib, "pa_strerror" );
+	DLLOAD( fn_pulse_new, pulse_new, dev->device.pulse.dlib_simple, "pa_simple_new" );
+	DLLOAD( fn_pulse_free, pulse_free, dev->device.pulse.dlib_simple, "pa_simple_free" );
+	DLLOAD( fn_pulse_write, pulse_write, dev->device.pulse.dlib_simple, "pa_simple_write" );
+	DLLOAD( fn_pulse_drain, pulse_drain, dev->device.pulse.dlib_simple, "pa_simple_drain" );
+	DLLOAD( fn_pulse_error, pulse_error, dev->device.pulse.dlib, "pa_strerror" );
 
 	pa_sample_spec ss;
    #ifdef VUL_AUDIO_SAMPLE_16BIT
@@ -1475,7 +1502,7 @@ vul_audio_return vul__audio_init_pulse( vul_audio_device *dev, const char *name,
 		assert( 0 && "Not supported yet" );
 		break;
 	default:
-		ERR( "Unkown device mode encountered.\n" );
+		VUL__AUDIO_ERR( "Unkown device mode encountered.\n" );
 	}
 	
 	dev->device.pulse.client = pulse_new( server_name,
@@ -1488,7 +1515,7 @@ vul_audio_return vul__audio_init_pulse( vul_audio_device *dev, const char *name,
 													  NULL, // Default buffering attributes
 													  NULL ); // Ignore error code
    if( !dev->device.pulse.client ) {
-      ERR( "Failed to open pulse device.\n" );
+      VUL__AUDIO_ERR( "Failed to open pulse device.\n" );
    }
 
 	dev->lib = VUL__AUDIO_LINUX_PULSE;
@@ -1503,7 +1530,7 @@ vul_audio_return vul__audio_write_pulse( vul_audio_device *dev, void *samples, u
 						  samples,
 						  size,
 						  &err ) < 0 ) {
-		ERR( "Failed to write samples to PulseAudio: %s.\n", pulse_error( err ) );
+		VUL__AUDIO_ERR( "Failed to write samples to PulseAudio: %s.\n", pulse_error( err ) );
 	}
 	return VUL_OK;
 }
@@ -1511,7 +1538,7 @@ vul_audio_return vul__audio_write_pulse( vul_audio_device *dev, void *samples, u
 vul_audio_return vul__audio_write( vul_audio_device *dev, void *samples, u32 sample_count )
 {
 	if( !( dev->mode == VUL_AUDIO_MODE_PLAYBACK || dev->mode == VUL_AUDIO_MODE_DUPLEX ) ) {
-		ERR( "Device write requested while not in playback or duplex mode.\n" );
+		VUL__AUDIO_ERR( "Device write requested while not in playback or duplex mode.\n" );
 	}
 
 	switch( dev->lib ) {
@@ -1522,7 +1549,7 @@ vul_audio_return vul__audio_write( vul_audio_device *dev, void *samples, u32 sam
 	case VUL__AUDIO_LINUX_PULSE:
 		return vul__audio_write_pulse( dev, samples, sample_count );
 	default:
-		ERR( "Unknown device library in use.\n" );
+		VUL__AUDIO_ERR( "Unknown device library in use.\n" );
 	}
 	return VUL_OK;
 }
@@ -1537,7 +1564,7 @@ vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_clos
    
    res = pthread_mutex_lock( &dev->thread_mutex );
    if( res != 0 ) {
-      ERR( "Failed to obtain thread mutex.\n" );
+      VUL__AUDIO_ERR( "Failed to obtain thread mutex.\n" );
    }
    dev->thread_dead = 1;
    pthread_mutex_unlock( &dev->thread_mutex );
@@ -1564,7 +1591,7 @@ vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_clos
 		dlclose( dev->device.pulse.dlib_simple );
 	} break;
 	default:
-		ERR( "Unknown device library in use.\n" );
+		VUL__AUDIO_ERR( "Unknown device library in use.\n" );
 	}
    return VUL_OK;
 }
@@ -1610,7 +1637,7 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
          int fdmode = O_WRONLY;
          ret = vul__audio_init_oss( out, fdmode );
          if( VUL_OK != ret ) {
-            ERR( "Failed to open audio device with any of the attempted libraries.\n" );
+            VUL__AUDIO_ERR( "Failed to open audio device with any of the attempted libraries.\n" );
          }
       }
    }
@@ -1621,7 +1648,7 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
 
    res = pthread_create( &out->thread, NULL, vul__audio_callback, out );
    if( res != 0 ) {
-      ERR( "Failed to create audio callback thread (%d).\n", res );
+      VUL__AUDIO_ERR( "Failed to create audio callback thread (%d).\n", res );
    }
    return VUL_OK;
 }

@@ -43,7 +43,7 @@
 typedef struct vul__queue_buffer {
    u8 data[ VUL_QUEUE_BUFFER_BYTE_SIZE ];
    u32 first, next;
-   u32 buffer_id; // incrementally unique, used to sort in the dumiy
+   u32 buffer_id; // incrementally unique, used to sort in the dummy
 } vul__queue_buffer;
 
 /**
@@ -214,10 +214,10 @@ void vul_queue_push( vul_queue *q, void *data )
       // Create the new next_root
       nbuf.buffer_id = 0;
       q->next_root = vul_list_insert( NULL, 
-                              &nbuf, 
-                              sizeof( vul__queue_buffer ), 
-                              vul__queue_comparator,
-                              q->allocator );
+                                      &nbuf, 
+                                      sizeof( vul__queue_buffer ), 
+                                      vul__queue_comparator,
+                                      q->allocator );
       // If first root is null, it should be this
       if( !q->first_root ) {
          q->first_root = q->next_root;
@@ -225,14 +225,14 @@ void vul_queue_push( vul_queue *q, void *data )
    }
    // If no more room, create a new buffer
    buf = ( vul__queue_buffer* )q->next_root->data;
-   if( buf->next >= ( VUL_QUEUE_BUFFER_BYTE_SIZE / q->data_size ) - q->data_size )
+   if( buf->next * q->data_size > VUL_QUEUE_BUFFER_BYTE_SIZE - q->data_size )
    {
       nbuf.buffer_id = buf->buffer_id + 1;
       q->next_root = vul_list_insert( q->next_root, 
-                              &nbuf, 
-                              sizeof( vul__queue_buffer ), 
-                              vul__queue_comparator,
-                              q->allocator );
+                                      &nbuf, 
+                                      sizeof( vul__queue_buffer ), 
+                                      vul__queue_comparator,
+                                      q->allocator );
       buf = ( vul__queue_buffer* )q->next_root->data;
    }
    // Insert it
@@ -248,9 +248,12 @@ void vul_queue_pop( vul_queue *q, void *out )
       buf = ( vul__queue_buffer* )q->first_root->data;
       memcpy( out, buf->data + ( buf->first * q->data_size ), q->data_size );
       ++buf->first;
-      if( buf->first >= ( VUL_QUEUE_BUFFER_BYTE_SIZE / q->data_size ) - q->data_size ) {
+      if( buf->first * q->data_size > VUL_QUEUE_BUFFER_BYTE_SIZE - q->data_size ) {
          // Buffer is empty, free it
          if( q->first_root->next != NULL ) {
+            if( q->next_root == q->first_root ) {
+               q->next_root = q->first_root->next;
+            }
             q->first_root = q->first_root->next;
             q->deallocator( q->first_root->prev->data );
             q->deallocator( q->first_root->prev );
@@ -258,6 +261,9 @@ void vul_queue_pop( vul_queue *q, void *out )
          } else {
             q->deallocator( q->first_root->data );
             q->deallocator( q->first_root );
+            if( q->next_root == q->first_root ) {
+               q->next_root = NULL;
+            }
             q->first_root = NULL;
          }
       }

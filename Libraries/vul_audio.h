@@ -974,8 +974,11 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
                                  void *mix_function_user_data )
 {
    vul_audio_return ret;
-	assert( out );
-	memset( out, 0, sizeof( vul_audio_device ) );
+	if( !out ) {
+      VUL__AUDIO_ERR( "No vul_audio_device supplied as out argument.\n" );
+      return VUL_ERROR;
+   }
+   memset( out, 0, sizeof( vul_audio_device ) );
 
 	out->channels = channels;
 	out->sample_rate = sample_rate;
@@ -1074,7 +1077,10 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
    OSStatus res;
    s32 i;
 
-	assert( out );
+	if( !out ) {
+      VUL__AUDIO_ERR( "No vul_audio_device supplied as out argument.\n" );
+      return VUL_ERROR;
+   }
 	memset( out, 0, sizeof( vul_audio_device ) );
 
 	out->channels = channels;
@@ -1499,10 +1505,11 @@ vul_audio_return vul__audio_init_pulse( vul_audio_device *dev, const char *name,
 		dir = PA_STREAM_RECORD;
 		break;
 	case VUL_AUDIO_MODE_DUPLEX:
-		assert( 0 && "Not supported yet" );
-		break;
+		VUL__AUDIO_ERR( "Duplex not yet supported in vul_audio.\n" );
+      return VUL_ERROR;
 	default:
 		VUL__AUDIO_ERR( "Unkown device mode encountered.\n" );
+      return VUL_ERROR;
 	}
 	
 	dev->device.pulse.client = pulse_new( server_name,
@@ -1610,7 +1617,10 @@ vul_audio_return vul_audio_init( vul_audio_device *out,
    vul_audio_return ret;
    int res;
 
-	assert( out );
+	if( !out ) {
+      VUL__AUDIO_ERR( "No vul_audio_device supplied as out argument.\n" );
+      return VUL_ERROR;
+   }
 	memset( out, 0, sizeof( vul_audio_device ) );
 
 	out->channels = channels;

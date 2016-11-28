@@ -31,9 +31,12 @@
 #ifndef VUL_OSX
 #include <malloc.h>
 #endif
-#include <assert.h>
 #include <math.h> // For ldexp
 
+#ifndef VUL_RNGS_CUSTOM_ASSERT
+#include <assert.h>
+#define VUL_RNGS_CUSTOM_ASSERT
+#endif
 /**
  * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!
  */
@@ -256,7 +259,7 @@ vul_rng_tu *vul_rng_tu_create( u32 seed )
 {
    u32 i, j;
    vul_rng_tu *r = ( vul_rng_tu* )malloc( sizeof( vul_rng_tu ) );
-   assert( r != NULL );
+   VUL_RNGS_CUSTOM_ASSERT( r != NULL );
 
    j = seed;
    for ( i = 0; i < VUL_RNG_TU_SEED_COUNT; ++i ) {
@@ -273,7 +276,7 @@ vul_rng_tu *vul_rng_tu_create( u32 seed )
 
 void vul_rng_tu_destroy( vul_rng_tu *r )
 {
-   assert( r != NULL );
+   VUL_RNGS_CUSTOM_ASSERT( r != NULL );
    free( r );
 }
 
@@ -282,7 +285,7 @@ u32 vul_rng_tu_next_unsigned( vul_rng_tu *r )
    u64 t;
    u32 x, val;
 
-   assert( r != NULL );
+   VUL_RNGS_CUSTOM_ASSERT( r != NULL );
    r->i = (r->i + 1) & VUL_RNG_TU_SEED_COUNT - 1;
    t = VUL_RNG_TU_SEED_A * r->q[ r->i ] + r->c;
    r->c = ( u32 ) ( t >> 32 );
@@ -306,7 +309,7 @@ f32 vul_rng_tu_next_float( vul_rng_tu *r )
 vul_rng_xorshift *vul_rng_xorshift_create( )
 {
    vul_rng_xorshift *r = ( vul_rng_xorshift* )malloc( sizeof( vul_rng_xorshift ) );
-   assert( r );
+   VUL_RNGS_CUSTOM_ASSERT( r );
 
    r->x = 123456789;
    r->y = 362436069;
@@ -334,7 +337,7 @@ f32 vul_rng_xorshift_next_float( vul_rng_xorshift *r )
 vul_rng_xorhash *vul_rng_xorhash_create( u32 seed )
 {
    vul_rng_xorhash *r = ( vul_rng_xorhash* )malloc( sizeof( vul_rng_xorhash ) );
-   assert( r != NULL );
+   VUL_RNGS_CUSTOM_ASSERT( r != NULL );
 
    seed = ( seed ^61 ) ^ ( seed >> 16 );
    seed = seed + ( seed < 9 );
@@ -348,7 +351,7 @@ vul_rng_xorhash *vul_rng_xorhash_create( u32 seed )
 
 void vul_rng_xorhash_destroy( vul_rng_xorhash *r )
 {
-   assert( r != NULL );
+   VUL_RNGS_CUSTOM_ASSERT( r != NULL );
    free( r );
 }
 
@@ -370,7 +373,7 @@ vul_rng_mt19937 *vul_rng_mt19937_create( u32 seed )
    u32 i;
 
    vul_rng_mt19937 *r = ( vul_rng_mt19937* )malloc( sizeof( vul_rng_mt19937 ) );
-   assert( r != NULL );
+   VUL_RNGS_CUSTOM_ASSERT( r != NULL );
 
    r->index = 0;
    r->state[ 0 ] = seed;
@@ -398,7 +401,7 @@ void vul_rng_mt19937_generate( vul_rng_mt19937 * r )
 
 void vul_rng_mt19937_destroy( vul_rng_mt19937 *r )
 {
-   assert( r != NULL );
+   VUL_RNGS_CUSTOM_ASSERT( r != NULL );
    free( r );
 }
 
@@ -429,7 +432,7 @@ f32 vul_rng_mt19937_next_float( vul_rng_mt19937 *r )
 vul_rng_pcg32 *vul_rng_pcg32_create( u64 initstate, u64 initseq )
 {
    vul_rng_pcg32 *r = ( vul_rng_pcg32* )malloc( sizeof( vul_rng_pcg32 ) );
-   assert( r != NULL );
+   VUL_RNGS_CUSTOM_ASSERT( r != NULL );
 
    r->state = initstate;
    r->inc = initseq;

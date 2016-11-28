@@ -20,7 +20,6 @@
 #define VUL_RESIZEABLE_ARRAY_H
 
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 
 #ifndef VUL_TYPES_H
@@ -32,6 +31,12 @@
 
 #define VUL_TRUE 1
 #define VUL_FALSE 0
+
+
+#ifndef VUL_DATATYPES_CUSTOM_ASSERT
+#include <VUL_DATATYPES_CUSTOM_ASSERT.h>
+#define VUL_DATATYPES_CUSTOM_ASSERT VUL_DATATYPES_CUSTOM_ASSERT
+#endif
 
 /**
  * If defined, the functions are defined and not just declared. Only do this in _one_ c/cpp file!
@@ -261,11 +266,11 @@ void vul_vector_tighten( vul_vector *vec );
 #ifdef VUL_DEBUG
    // @Note: Debug versions attempt to spot if you alter the list in the middle of a loop. That might cause a resize and in turn mayhem.
    // Normal iterator
-#define vul_foreach( T, list ) for ( T *it = ( T* )vul_vector_begin( list ), *first = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ); assert( first == ( T* )vul_vector_begin( list ) ), assert( last == ( T* )vul_vector_end( list ) ), it != last; ++it )
+#define vul_foreach( T, list ) for ( T *it = ( T* )vul_vector_begin( list ), *first = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ); VUL_DATATYPES_CUSTOM_ASSERT( first == ( T* )vul_vector_begin( list ) ), VUL_DATATYPES_CUSTOM_ASSERT( last == ( T* )vul_vector_end( list ) ), it != last; ++it )
    // Easier for list of values; copies
-#define vul_foreachval( T, ref, list ) for ( T *it = ( T* )vul_vector_begin( list ), *first = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ), ref = ( ( it != last ) ? *it : T( ) ); assert( first == ( T* )vul_vector_begin( list ) ), assert( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
+#define vul_foreachval( T, ref, list ) for ( T *it = ( T* )vul_vector_begin( list ), *first = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ), ref = ( ( it != last ) ? *it : T( ) ); VUL_DATATYPES_CUSTOM_ASSERT( first == ( T* )vul_vector_begin( list ) ), VUL_DATATYPES_CUSTOM_ASSERT( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
    // Easier for list of pointers
-#define vul_foreachptr( T, ref, list ) for ( T **it = ( T** )vul_vector_begin( list ), **first = ( T** )vul_vector_begin( list ), **last = ( T** )vul_vector_end( list ), *ref = ( ( it != last ) ? *it : NULL ); assert( first == ( T* )vul_vector_begin( list ) ), assert( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
+#define vul_foreachptr( T, ref, list ) for ( T **it = ( T** )vul_vector_begin( list ), **first = ( T** )vul_vector_begin( list ), **last = ( T** )vul_vector_end( list ), *ref = ( ( it != last ) ? *it : NULL ); VUL_DATATYPES_CUSTOM_ASSERT( first == ( T* )vul_vector_begin( list ) ), VUL_DATATYPES_CUSTOM_ASSERT( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
 #else
    // Normal iterator
    #define vul_foreach( T, list ) for ( T *it = ( T* )vul_vector_begin( list ), *last = ( T* )vul_vector_end( list ); it != last; ++it )
@@ -283,11 +288,11 @@ void vul_vector_tighten( vul_vector *vec );
    #ifdef VUL_DEBUG
       // @Note: Debug versions attempt to spot if you alter the list in the middle of a loop. That might cause a resize and in turn mayhem.
       // Normal iterator
-      #define vul_foreach( T, it, first, last, list ) for ( it = ( T* )vul_vector_begin( list ), first = ( T* )vul_vector_begin( list ), last = ( T* )vul_vector_end( list ); internal_functional_assert( first == ( T* )vul_vector_begin( list ) ), internal_functional_assert( last == ( T* )vul_vector_end( list ) ), it != last; ++it )
+      #define vul_foreach( T, it, first, last, list ) for ( it = ( T* )vul_vector_begin( list ), first = ( T* )vul_vector_begin( list ), last = ( T* )vul_vector_end( list ); internal_functional_VUL_DATATYPES_CUSTOM_ASSERT( first == ( T* )vul_vector_begin( list ) ), internal_functional_VUL_DATATYPES_CUSTOM_ASSERT( last == ( T* )vul_vector_end( list ) ), it != last; ++it )
       // Easier for list of values; copies
-      #define vul_foreachval( T, ref, it, first, last, list ) for ( it = ( T* )vul_vector_begin( list ), first = ( T* )vul_vector_begin( list ), last = ( T* )vul_vector_end( list ), ref = ( ( it != last ) ? *it : T( ) ); internal_functional_assert( first == ( T* )vul_vector_begin( list ) ), internal_functional_assert( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
+      #define vul_foreachval( T, ref, it, first, last, list ) for ( it = ( T* )vul_vector_begin( list ), first = ( T* )vul_vector_begin( list ), last = ( T* )vul_vector_end( list ), ref = ( ( it != last ) ? *it : T( ) ); internal_functional_VUL_DATATYPES_CUSTOM_ASSERT( first == ( T* )vul_vector_begin( list ) ), internal_functional_VUL_DATATYPES_CUSTOM_ASSERT( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
       // Easier for list of pointers
-      #define vul_foreachptr( T, ref, it, first, last, list ) for ( it = ( T** )vul_vector_begin( list ), first = ( T** )vul_vector_begin( list ), last = ( T** )vul_vector_end( list ), *ref = ( ( it != last ) ? *it : NULL ); internal_functional_assert( first == ( T* )vul_vector_begin( list ) ), internal_functional_assert( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
+      #define vul_foreachptr( T, ref, it, first, last, list ) for ( it = ( T** )vul_vector_begin( list ), first = ( T** )vul_vector_begin( list ), last = ( T** )vul_vector_end( list ), *ref = ( ( it != last ) ? *it : NULL ); internal_functional_VUL_DATATYPES_CUSTOM_ASSERT( first == ( T* )vul_vector_begin( list ) ), internal_functional_VUL_DATATYPES_CUSTOM_ASSERT( last == ( T* )vul_vector_end( list ) ), it != last; ref = *( ++it ) )
    #else
       // Normal iterator
       #define vul_foreach( T, it, last, list ) for ( it = ( T* )vul_vector_begin( list ), last = ( T* )vul_vector_end( list ); it != last; ++it )
@@ -324,32 +329,32 @@ extern "C" {
 
 void *vul_vector_begin( vul_vector *vec )
 {
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
    return vec->list;
 }
 
 void *vul_vector_end( vul_vector *vec )
 {
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
    return ( void* )( &vec->list[ vec->element_size * vec->size ] );
 }
 const u32 vul_vector_size( const vul_vector *vec )
 {
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
    return vec->size;
 }
 
 void *vul_vector_get( vul_vector *vec, const u32 index )
 {
-   assert( vec != NULL );
-   assert( index < vec->size );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( index < vec->size );
    return ( void* )( &vec->list[ vec->element_size * index ] );
 }
 
 const void *vul_vector_get_const( vul_vector *vec, const u32 index )
 {
-   assert( vec != NULL );
-   assert( index < vec->size );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( index < vec->size );
    return ( void* )( &vec->list[ vec->element_size * index ] );
 }
 
@@ -357,16 +362,16 @@ void *vul_vector_resize( vul_vector *vec, u32 size, u32 free_zero, u32 alloc_exa
 {
    u32 new_size;
 
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
 
    vec->size = size;
 
    if( vec->size == vec->reserved_size ) {
       // Size matches exactly. Assert that things are well then leave.
       if( vec->reserved_size == 0 ) {
-         assert( vec->list == NULL );
+         VUL_DATATYPES_CUSTOM_ASSERT( vec->list == NULL );
       } else  {
-         assert( vec->list != NULL );
+         VUL_DATATYPES_CUSTOM_ASSERT( vec->list != NULL );
       }
       return vec->list;
    } else if( vec->size < vec->reserved_size ) {
@@ -384,7 +389,7 @@ void *vul_vector_resize( vul_vector *vec, u32 size, u32 free_zero, u32 alloc_exa
       }
    }
    // We need to resize
-   assert( vec->size > 0 );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec->size > 0 );
    new_size = vec->size;
    if( !alloc_exactly ) {
       // Grow by 50% and make sure it's not too small
@@ -392,19 +397,19 @@ void *vul_vector_resize( vul_vector *vec, u32 size, u32 free_zero, u32 alloc_exa
       if( new_size < 8 ) {
          new_size = 8;
       }
-      assert( new_size > vec->reserved_size );
+      VUL_DATATYPES_CUSTOM_ASSERT( new_size > vec->reserved_size );
    }
    if( vec->list == NULL ) {
-      assert( vec->reserved_size == 0 );
+      VUL_DATATYPES_CUSTOM_ASSERT( vec->reserved_size == 0 );
       vec->list = ( u8* )vec->allocator( vec->element_size * new_size );
-      assert( vec->list != NULL ); // Make sure allocation didn't fail
+      VUL_DATATYPES_CUSTOM_ASSERT( vec->list != NULL ); // Make sure allocation didn't fail
    } else {
-      assert( vec->reserved_size > 0 );
-#pragma warning(suppress: 6308) // We know it might leak, but the assert will trigger if it does!
+      VUL_DATATYPES_CUSTOM_ASSERT( vec->reserved_size > 0 );
+#pragma warning(suppress: 6308) // We know it might leak, but the VUL_DATATYPES_CUSTOM_ASSERT will trigger if it does!
       vec->list = ( u8* )vec->reallocator( vec->list, vec->element_size * new_size );
-      assert( vec->list != NULL ); // Make sure reallocation didn't fail
+      VUL_DATATYPES_CUSTOM_ASSERT( vec->list != NULL ); // Make sure reallocation didn't fail
    }
-   assert( vec->list != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec->list != NULL );
    vec->reserved_size = new_size;
    return vec->list;
 }
@@ -412,9 +417,9 @@ void *vul_vector_resize( vul_vector *vec, u32 size, u32 free_zero, u32 alloc_exa
 void vul_vector_reserve( vul_vector *vec, u32 size, s32 allocExactly )
 {
    unsigned int old_size;
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
 
-   assert( size >= vec->size );
+   VUL_DATATYPES_CUSTOM_ASSERT( size >= vec->size );
    if( size <= vec->reserved_size ) {
       return;
    }
@@ -426,7 +431,7 @@ void vul_vector_reserve( vul_vector *vec, u32 size, s32 allocExactly )
 
 void vul_vector_initialize( vul_vector *vec, u32 initialSize, u32 initialReservedSize )
 {
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
    vec->list = NULL;
    vec->size = 0;
    vec->reserved_size = 0;
@@ -445,7 +450,7 @@ vul_vector *vul_vector_create( unsigned int sizeOfType,
                                void *( *reallocator )( void *ptr, size_t size ) )
 {
    vul_vector *vec = ( vul_vector* )allocator( sizeof( vul_vector ) );
-   assert( vec != NULL ); // Make sure allocation didn't fail
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL ); // Make sure allocation didn't fail
    vec->element_size = sizeOfType;
    vec->allocator = allocator;
    vec->deallocator = deallocator;
@@ -456,13 +461,13 @@ vul_vector *vul_vector_create( unsigned int sizeOfType,
 
 void vul_vector_destroy( vul_vector *vec )
 {
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
    if( vec->list == NULL ) {
-      assert( vec->reserved_size == 0 );
-      assert( vec->size == 0 );
+      VUL_DATATYPES_CUSTOM_ASSERT( vec->reserved_size == 0 );
+      VUL_DATATYPES_CUSTOM_ASSERT( vec->size == 0 );
    } else {
-      assert( vec->reserved_size > 0 );
-      assert( vec->size >= 0 );
+      VUL_DATATYPES_CUSTOM_ASSERT( vec->reserved_size > 0 );
+      VUL_DATATYPES_CUSTOM_ASSERT( vec->size >= 0 );
       vec->deallocator( vec->list );
       vec->reserved_size = 0;
       vec->size = 0;
@@ -473,16 +478,16 @@ void vul_vector_destroy( vul_vector *vec )
 
 void vul_vector_freemem( vul_vector *vec )
 {
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
    vul_vector_resize( vec, 0, VUL_TRUE, VUL_FALSE );
 }
 
 void vul_vector_remove_swap( vul_vector *vec, u32 index )
 {
    u32 elem, last, i;
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
 
-   assert( index < vec->size );
+   VUL_DATATYPES_CUSTOM_ASSERT( index < vec->size );
    elem = index * vec->element_size;
    last = ( vec->size - 1 ) * vec->element_size;
    for( i = 0; i < vec->element_size; ++i ) {
@@ -494,9 +499,9 @@ void vul_vector_remove_swap( vul_vector *vec, u32 index )
 void vul_vector_remove_cascade( vul_vector *vec, u32 index )
 {
    u32 i;
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
 
-   assert( index < vec->size );
+   VUL_DATATYPES_CUSTOM_ASSERT( index < vec->size );
    for( i = ( index + 1 ) * vec->element_size; i < ( vec->size * vec->element_size ); i += vec->element_size ) {
       memcpy( &vec->list[ i - vec->element_size ], &vec->list[ i ], vec->element_size );
    }
@@ -505,7 +510,7 @@ void vul_vector_remove_cascade( vul_vector *vec, u32 index )
 
 void *vul_vector_add_empty( vul_vector *vec )
 {
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
    vul_vector_resize( vec, vec->size + 1, VUL_TRUE, VUL_FALSE );
    return ( void* )( &vec->list[ ( vec->size - 1 ) * vec->element_size ] );
 }
@@ -514,7 +519,7 @@ void vul_vector_add( vul_vector *vec, void *item )
 {
    void *slot;
 
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
 
    slot = vul_vector_add_empty( vec );
    memcpy( slot, item, vec->element_size );
@@ -524,8 +529,8 @@ void *vul_vector_insert_empty( vul_vector *vec, u32 index )
 {
    u32 i, last, first;
 
-   assert( vec != NULL );
-   assert( index <= vec->size );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( index <= vec->size );
 
    vul_vector_resize( vec, vec->size + 1, VUL_TRUE, VUL_FALSE );
    last = vec->size - 1;
@@ -540,7 +545,7 @@ void vul_vector_insert( vul_vector *vec, void *item, u32 index )
 {
    void *slot;
 
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
 
    slot = vul_vector_insert_empty( vec, index );
    memcpy( slot, item, vec->element_size );
@@ -550,12 +555,12 @@ void vul_vector_swap( vul_vector *vec, u32 indexA, u32 indexB )
 {
    void *temp;
 
-   assert( vec != NULL );
-   assert( indexA < vec->size );
-   assert( indexB < vec->size );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( indexA < vec->size );
+   VUL_DATATYPES_CUSTOM_ASSERT( indexB < vec->size );
 
    temp = vec->allocator( vec->element_size );
-   assert( temp != NULL ); // Make sure allocation didn't fail
+   VUL_DATATYPES_CUSTOM_ASSERT( temp != NULL ); // Make sure allocation didn't fail
    memcpy( temp, &vec->list[ indexA * vec->element_size ], vec->element_size );
    memcpy( &vec->list[ indexA * vec->element_size ], &vec->list[ indexB * vec->element_size ], vec->element_size );
    memcpy( &vec->list[ indexB * vec->element_size ], temp, vec->element_size );
@@ -566,7 +571,7 @@ void vul_vector_copy( vul_vector *dest, u32 index,
 {
    void *first;
 
-   assert( dest != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( dest != NULL );
 
    if( dest->size < ( index + count ) ) {
       vul_vector_resize( dest, index + count, VUL_TRUE, VUL_FALSE );
@@ -582,13 +587,13 @@ void vul_vector_copy_partial( vul_vector *dest, u32 index,
    void *firstLocal;
    const void *firstOther;
 
-   assert( dest != NULL );
-   assert( list != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( dest != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( list != NULL );
 
    if( dest->size < ( index + otherCount ) ) {
       vul_vector_resize( dest, index + otherCount, VUL_TRUE, VUL_FALSE );
    }
-   assert( vul_vector_size( list ) >= ( otherFirstIndex + otherCount ) );
+   VUL_DATATYPES_CUSTOM_ASSERT( vul_vector_size( list ) >= ( otherFirstIndex + otherCount ) );
    firstLocal = vul_vector_get( dest, index );
    firstOther = vul_vector_get_const( list, otherFirstIndex );
    memcpy( firstLocal, firstOther, otherCount * dest->element_size );
@@ -599,8 +604,8 @@ void vul_vector_append( vul_vector *dest, vul_vector *list,
 {
    u32 first;
 
-   assert( dest != NULL );
-   assert( list != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( dest != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( list != NULL );
 
    first = dest->size;
    vul_vector_resize( dest, first + otherCount, VUL_TRUE, VUL_FALSE );
@@ -611,7 +616,7 @@ u32 vul_vector_find( vul_vector *vec, void *item )
 {
    u32 i;
 
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
 
    for( i = 0; i < vec->size; ++i ) {
       if( &vec->list[ i * vec->element_size ] == item ) {
@@ -625,7 +630,7 @@ u32 vul_vector_find_val( vul_vector *vec, void *item )
 {
    u32 i;
 
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
 
    for( i = 0; i < vec->size; ++i ) {
       if( memcmp( &vec->list[ i * vec->element_size ], item, vec->element_size ) == 0 ) {
@@ -639,7 +644,7 @@ u32 vul_vector_find_comparator( vul_vector *vec, void *item, s32 ( *comparator )
 {
    u32 i;
 
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
 
    for( i = 0; i < vec->size; ++i ) {
       if( comparator( &vec->list[ i * vec->element_size ], item ) == 0 ) {
@@ -651,7 +656,7 @@ u32 vul_vector_find_comparator( vul_vector *vec, void *item, s32 ( *comparator )
 
 void vul_vector_tighten( vul_vector *vec )
 {
-   assert( vec != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec != NULL );
    vul_vector_resize( vec, vec->size, VUL_TRUE, VUL_TRUE );
 }
 

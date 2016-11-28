@@ -22,9 +22,13 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 #ifndef VUL_OSX
 #include <malloc.h>
+#endif
+
+#ifndef VUL_FILE_CUSTOM_ASSERT
+#include <assert.h>
+#define VUL_FILE_CUSTOM_ASSERT assert
 #endif
 
 #ifdef VUL_WINDOWS
@@ -568,9 +572,9 @@ b32 vul_file_monitor_wait( const char* path )
    b32 ret = 0;
 #ifdef VUL_LINUX
    int fd = inotify_init( );
-   assert( fd );
+   VUL_FILE_CUSTOM_ASSERT( fd );
    int wd = inotify_add_watch( fd, path, IN_MODIFY );
-   assert( wd );
+   VUL_FILE_CUSTOM_ASSERT( wd );
    struct inotify_event e;
    int s;
    while( ( s = read( fd, &e, sizeof( e ) ) ) > 0 ) {
@@ -583,7 +587,7 @@ b32 vul_file_monitor_wait( const char* path )
    close( fd );
 #elif VUL_WINDOWS
    HANDLE h = FindFirstChangeNotification( path, FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE );
-   assert( h != INVALID_HANDLE_VALUE );
+   VUL_FILE_CUSTOM_ASSERT( h != INVALID_HANDLE_VALUE );
    DWORD status = WaitForSingleObject( h, INFINITE );
    switch( status ) {
    case WAIT_OBJECT_0:
@@ -605,15 +609,15 @@ vul_file_watch vul_file_monitor_change( const char *path )
    vul_file_watch ret;
 #ifdef VUL_LINUX
    ret.fd = inotify_init1( IN_NONBLOCK );
-   assert( ret.fd );
+   VUL_FILE_CUSTOM_ASSERT( ret.fd );
 
    ret.wd = inotify_add_watch( ret.fd, path, IN_MODIFY );
-   assert( ret.wd );
+   VUL_FILE_CUSTOM_ASSERT( ret.wd );
 #elif VUL_OSX
    NOT IMPLEMENTED
 #elif VUL_WINDOWS
    ret.h = FindFirstChangeNotification( path, FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE );
-   assert( ret.h );
+   VUL_FILE_CUSTOM_ASSERT( ret.h );
 #else
    vul_file.h Error: Must specify OS
 #endif

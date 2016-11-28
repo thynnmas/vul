@@ -27,10 +27,14 @@
 #ifndef VUL_SORT_H
 #define VUL_SORT_H
 
-#include <assert.h>
 #include <stdlib.h>
 #ifndef VUL_OSX
 #include <malloc.h>
+#endif
+
+#ifndef VUL_DATATYPES_CUSTOM_ASSERT
+#include <assert.h>
+#define VUL_DATATYPES_CUSTOM_ASSERT assert
 #endif
 
 // Define in exactly_one_ C/CPP file.
@@ -206,10 +210,10 @@ void vul_sort_vector_shell( vul_vector *list, s32 (*comparator)( const void *a, 
 	s32 gaps[ ] = { 4071001, 1170001, 237001, 67001, 17001, 5001, 1701, 701, 301, 132, 67, 23, 10, 4, 1 }; // @TODO(thynn): Larger numbers!
 	
 	// Check range
-	assert( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_shell: Range check failed" );
+	VUL_DATATYPES_CUSTOM_ASSERT( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_shell: Range check failed" );
 
 	temp = malloc( list->element_size );
-	assert( temp != NULL ); // Make sure malloc didn't fail
+	VUL_DATATYPES_CUSTOM_ASSERT( temp != NULL ); // Make sure malloc didn't fail
 
 	for ( gi = 0; gi < sizeof( gaps ) / sizeof( s32 ); ++gi ) {
 		// Insertion sort for each gap size
@@ -260,9 +264,9 @@ void vul_sort_vector_quick( vul_vector *list, s32 (*comparator)( const void *a, 
 	s32 top, pivot;
 	
 	// Check range
-	assert( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_quick: Range check failed" );
+	VUL_DATATYPES_CUSTOM_ASSERT( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_quick: Range check failed" );
 	stack = ( s32* )malloc( sizeof( s32 ) * ( high - low + 1 ) );
-	assert( stack != NULL && "vul_sort_vector_quick: Could not allocate memory for the stack" );
+	VUL_DATATYPES_CUSTOM_ASSERT( stack != NULL && "vul_sort_vector_quick: Could not allocate memory for the stack" );
     top = -1;
 	
 	stack[ ++top ] = low;
@@ -302,11 +306,11 @@ void vul_sort_vector_insertion( vul_vector *list, s32 (*comparator)( const void 
 		start = high;
 	}
 	// Check range
-	assert( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_insertion: Range check failed" );
+	VUL_DATATYPES_CUSTOM_ASSERT( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_insertion: Range check failed" );
 	
 	// Alloc pivot
 	pivot = malloc( list->element_size );
-	assert( pivot != NULL ); // Make sure malloc didn't fail
+	VUL_DATATYPES_CUSTOM_ASSERT( pivot != NULL ); // Make sure malloc didn't fail
 	while( start <= high )
 	{
 		memcpy( pivot, vul_vector_get_const( list, start ), list->element_size );
@@ -325,7 +329,7 @@ void vul_sort_vector_insertion( vul_vector *list, s32 (*comparator)( const void 
 				left = mid + 1;
 			}
 		}
-		assert( left == right && "vul_sort_vector_insertion: Something is wrong in binary sort" );
+		VUL_DATATYPES_CUSTOM_ASSERT( left == right && "vul_sort_vector_insertion: Something is wrong in binary sort" );
 
 		for( n = start - left; n > 0; --n ) {
 			memcpy( vul_vector_get( list, left + n ), vul_vector_get( list, left + ( n - 1 ) ), list->element_size );
@@ -350,7 +354,7 @@ static s32 vul__sort_count_ascend_run( vul_vector *list, s32 (*comparator)( cons
 {
 	s32 i;
 
-	assert( low < high && "vul__sort_count_ascend_run: Cannot count a 0-length run." );
+	VUL_DATATYPES_CUSTOM_ASSERT( low < high && "vul__sort_count_ascend_run: Cannot count a 0-length run." );
 	if ( high - low == 1 ) {
 		return 1; // Trivially
 	}
@@ -378,7 +382,7 @@ static s32 vul__sort_compute_minrun( s32 length )
 {
 	s32 r;
 
-	assert( length >= 0 && "vul__sort_compute_minrun: Length is less than 0" );
+	VUL_DATATYPES_CUSTOM_ASSERT( length >= 0 && "vul__sort_compute_minrun: Length is less than 0" );
 	r = 0;
 	while( length >= VUL_SORT_THYNN_MIN_MERGE )
 	{
@@ -393,10 +397,7 @@ static s32 vul__sort_gallop_right( const void *key, vul_vector *list, s32 (*comp
 	s32 last_ofs, ofs, max_ofs, tmp;
 
 	// Check range
-	assert( length > 0
-			&& hint >= 0
-			&& hint < length
-			&& "vul__sort_gallop_right: Range is invalid" );
+	VUL_DATATYPES_CUSTOM_ASSERT( length > 0 && hint >= 0 && hint < length && "vul__sort_gallop_right: Range is invalid" );
 
 	last_ofs = 0;
 	ofs = 1;
@@ -437,10 +438,7 @@ static s32 vul__sort_gallop_right( const void *key, vul_vector *list, s32 (*comp
 	}
 	
 	// Check that ofs and last_ofs are sane
-	assert( -1 <= last_ofs
-			&& last_ofs < ofs
-			&& ofs <= length
-			&& "vul__sort_gallop_right: Offset calculation has gone a-stray." );
+	VUL_DATATYPES_CUSTOM_ASSERT( -1 <= last_ofs && last_ofs < ofs && ofs <= length && "vul__sort_gallop_right: Offset calculation has gone a-stray." );
 	
 	// list[ base + last_ofs ] < key <= list[ base + ofs ]. Binary search the rest of the way
 	++last_ofs;
@@ -453,7 +451,7 @@ static s32 vul__sort_gallop_right( const void *key, vul_vector *list, s32 (*comp
 			last_ofs = tmp + 1;
 		}
 	}
-	assert( last_ofs == ofs && "vul__sort_gallop_right: Binary search has failed." );
+	VUL_DATATYPES_CUSTOM_ASSERT( last_ofs == ofs && "vul__sort_gallop_right: Binary search has failed." );
 
 	return ofs;
 }
@@ -463,10 +461,7 @@ static s32 vul__sort_gallop_left( const void *key, vul_vector *list, s32 (*compa
 	s32 last_ofs, ofs, max_ofs, tmp;
 
 	// Check range
-	assert( length > 0
-			&& hint >= 0
-			&& hint < length
-			&& "vul__sort_gallop_left: Range is invalid" );
+	VUL_DATATYPES_CUSTOM_ASSERT( length > 0 && hint >= 0 && hint < length && "vul__sort_gallop_left: Range is invalid" );
 
 	last_ofs = 0;
 	ofs = 1;
@@ -507,10 +502,7 @@ static s32 vul__sort_gallop_left( const void *key, vul_vector *list, s32 (*compa
 	}
 	
 	// Check that ofs and last_ofs are sane
-	assert( -1 <= last_ofs
-			&& last_ofs < ofs
-			&& ofs <= length
-			&& "vul__sort_gallop_left: Offset calculation has gone a-stray." );
+	VUL_DATATYPES_CUSTOM_ASSERT( -1 <= last_ofs && last_ofs < ofs && ofs <= length && "vul__sort_gallop_left: Offset calculation has gone a-stray." );
 	
 	// list[ base + last_ofs ] < key <= list[ base + ofs ]. Binary search the rest of the way
 	++last_ofs;
@@ -523,7 +515,7 @@ static s32 vul__sort_gallop_left( const void *key, vul_vector *list, s32 (*compa
 			ofs = tmp;
 		}
 	}
-	assert( last_ofs == ofs && "vul__sort_gallop_left: Binary search has failed." );
+	VUL_DATATYPES_CUSTOM_ASSERT( last_ofs == ofs && "vul__sort_gallop_left: Binary search has failed." );
 
 	return ofs;
 }
@@ -537,10 +529,7 @@ static void vul__sort_merge_low( vul_vector *list, s32 (*comparator)( const void
 	s32 c1, c2, dest, minG, running, count1, count2;
 
 	// Range checks
-	assert( length1 > 0
-			&& length2 > 0
-			&& ( base1 + length1 ) == base2
-			&& "vul__sort_merge_low: Ranges are invalid." );
+	VUL_DATATYPES_CUSTOM_ASSERT( length1 > 0 && length2 > 0 && ( base1 + length1 ) == base2 && "vul__sort_merge_low: Ranges are invalid." );
 
 	// Copy 1st list to a temporary list
 	vul_vector_copy_partial( temp_list, 0, list, base1, length1 );
@@ -572,9 +561,7 @@ static void vul__sort_merge_low( vul_vector *list, s32 (*comparator)( const void
 		while( count1 < minG && count2 < minG ) 
 		{
 			// Check sanity of lengths
-			assert( length1 > 1
-					&& length2 > 0
-					&& "vul__sort_merge_low: Length problems in traversal stage." );
+			VUL_DATATYPES_CUSTOM_ASSERT( length1 > 1 && length2 > 0 && "vul__sort_merge_low: Length problems in traversal stage." );
 
 			if( comparator( vul_vector_get_const( list, c2 ), vul_vector_get_const( temp_list, c1 ) ) < 0 )
 			{
@@ -605,9 +592,7 @@ static void vul__sort_merge_low( vul_vector *list, s32 (*comparator)( const void
 		while( count1 >= VUL_SORT_THYNN_MIN_GALLOP || count2 >= VUL_SORT_THYNN_MIN_GALLOP )
 		{
 			// Check sanity of lengths
-			assert( length1 > 1
-					&& length2 > 0
-					&& "vul__sort_merge_low: Length problems in gallop stage." );
+			VUL_DATATYPES_CUSTOM_ASSERT( length1 > 1 && length2 > 0 && "vul__sort_merge_low: Length problems in gallop stage." );
 
 			count1 = vul__sort_gallop_right( vul_vector_get_const( list, c2 ), temp_list, comparator, c1, length1, 0 );
 			if( count1 != 0 )
@@ -658,15 +643,13 @@ static void vul__sort_merge_low( vul_vector *list, s32 (*comparator)( const void
 	}
 
 	if( length1 == 1 ) {
-		assert( length2 > 0 && "vul__sort_merge_low: Length2 is too small." );
+		VUL_DATATYPES_CUSTOM_ASSERT( length2 > 0 && "vul__sort_merge_low: Length2 is too small." );
 		memcpy( vul_vector_get( list, dest ), vul_vector_get( list, c2 ), length2 * list->element_size );
 		memcpy( vul_vector_get( list, dest + length2 ), vul_vector_get( temp_list, c1 ), list->element_size );
 	} else if ( length1 == 0 ) {
 		
 	} else {
-		assert( length2 == 0
-				&& length1 > 1
-				&& "vul__sort_merge_low: Lengths are not sane at the end of function." );
+		VUL_DATATYPES_CUSTOM_ASSERT( length2 == 0 && length1 > 1 && "vul__sort_merge_low: Lengths are not sane at the end of function." );
 		memcpy( vul_vector_get( list, dest ), vul_vector_get( temp_list, c1 ), length1 * list->element_size );
 	}
 	vul_vector_destroy( temp_list );
@@ -681,10 +664,7 @@ static void vul__sort_merge_high( vul_vector *list, s32 (*comparator)( const voi
 	s32 c1, c2, dest, minG, running, count1, count2;
 
 	// Range checks
-	assert( length1 > 0
-			&& length2 > 0
-			&& ( base1 + length1 ) == base2
-			&& "vul__sort_merge_high: Ranges are invalid." );
+	VUL_DATATYPES_CUSTOM_ASSERT( length1 > 0 && length2 > 0 && ( base1 + length1 ) == base2 && "vul__sort_merge_high: Ranges are invalid." );
 
 	// Copy 1st list to a temporary list
 	vul_vector_copy_partial( temp_list, 0, list, base2, length2 );
@@ -718,9 +698,7 @@ static void vul__sort_merge_high( vul_vector *list, s32 (*comparator)( const voi
 		while( count1 < minG && count2 < minG ) 
 		{
 			// Check sanity of lengths
-			assert( length1 > 0
-					&& length2 > 1
-					&& "vul__sort_merge_high: Length problems in traversal stage." );
+			VUL_DATATYPES_CUSTOM_ASSERT( length1 > 0 && length2 > 1 && "vul__sort_merge_high: Length problems in traversal stage." );
 
 			if( comparator( vul_vector_get_const( temp_list, c2 ), vul_vector_get_const( list, c1 ) ) < 0 )
 			{
@@ -751,9 +729,7 @@ static void vul__sort_merge_high( vul_vector *list, s32 (*comparator)( const voi
 		while( count1 >= VUL_SORT_THYNN_MIN_GALLOP || count2 >= VUL_SORT_THYNN_MIN_GALLOP )
 		{
 			// Check sanity of lengths
-			assert( length1 > 0
-					&& length2 > 1
-					&& "vul__sort_merge_high: Length problems in gallop stage." );
+			VUL_DATATYPES_CUSTOM_ASSERT( length1 > 0 && length2 > 1 && "vul__sort_merge_high: Length problems in gallop stage." );
 
 			count1 = length1 - vul__sort_gallop_right( vul_vector_get_const( temp_list, c2 ), list, comparator, base1, length1, length1 - 1 );
 			if( count1 != 0 )
@@ -804,16 +780,14 @@ static void vul__sort_merge_high( vul_vector *list, s32 (*comparator)( const voi
 	}
 
 	if( length2 == 1 ) {
-		assert( length1 > 0 && "vul__sort_merge_high: Length1 is too small." );
+		VUL_DATATYPES_CUSTOM_ASSERT( length1 > 0 && "vul__sort_merge_high: Length1 is too small." );
 		dest -= length1;
 		c1 -= length1;
 		memcpy( vul_vector_get( list, dest + 1 ), vul_vector_get( list, c1 + 1 ), length1 * list->element_size );
 		memcpy( vul_vector_get( list, dest ), vul_vector_get( temp_list, c2 ), list->element_size );
 	} else if ( length2 == 0 ) {
 	} else {
-		assert( length1 == 0
-				&& length2 > 1
-				&& "vul__sort_merge_high: Lengths are not sane at the end of function." );
+		VUL_DATATYPES_CUSTOM_ASSERT( length1 == 0 && length2 > 1 && "vul__sort_merge_high: Lengths are not sane at the end of function." );
 		memcpy( vul_vector_get( list, dest - ( length2 - 1 ) ), vul_vector_get( temp_list, 0 ), length2 * list->element_size );
 	}
 	vul_vector_destroy( temp_list );
@@ -826,9 +800,7 @@ static void vul__sort_merge_at( vul_vector *list, s32 (*comparator)( const void 
 	s32 k, b1, b2, l1, l2;
 
 	// Check that the merge is legal
-	assert( vul_vector_size( stack ) >= 2 
-			&& i >= 0
-			&& ( i == vul_vector_size( stack ) - 2 || i == vul_vector_size( stack ) - 3 )
+	VUL_DATATYPES_CUSTOM_ASSERT( vul_vector_size( stack ) >= 2 && i >= 0 && ( i == vul_vector_size( stack ) - 2 || i == vul_vector_size( stack ) - 3 )
 			&& "vul__sort_merge_at: Invalid stack index given for merge." );
 	
 	// Get run information
@@ -840,10 +812,7 @@ static void vul__sort_merge_at( vul_vector *list, s32 (*comparator)( const void 
 	l2 = r2->length;
 
 	// Check that things are sane
-	assert( r1->length > 0 
-			&& r2->length > 0
-			&& ( r1->base + r1->length ) == r2->base
-			&& "vul__sort_merge_at: Runs given for merge don't align." );
+	VUL_DATATYPES_CUSTOM_ASSERT( r1->length > 0 && r2->length > 0 && ( r1->base + r1->length ) == r2->base && "vul__sort_merge_at: Runs given for merge don't align." );
 
 	// Get combined run length and if i is 3rd last run, slide over the last run (which is not involved in this merge).
 	r1->length = r1->length + r2->length;
@@ -857,7 +826,7 @@ static void vul__sort_merge_at( vul_vector *list, s32 (*comparator)( const void 
 
 	// Find out where first element of second run goes in first run
 	k = vul__sort_gallop_right( vul_vector_get_const( list, b2 ), list, comparator, b1, l1, 0 );
-	assert( k >= 0 && "vul__sort_merge_at: vul__sort_gallop_right returned a sub-zero value" );
+	VUL_DATATYPES_CUSTOM_ASSERT( k >= 0 && "vul__sort_merge_at: vul__sort_gallop_right returned a sub-zero value" );
 	b1 += k;
 	l1 -= k;
 	if( l1 == 0 ) {
@@ -866,7 +835,7 @@ static void vul__sort_merge_at( vul_vector *list, s32 (*comparator)( const void 
 	
 	// Find out where the last element of the first run goes in second run
 	l2 = vul__sort_gallop_left( vul_vector_get_const( list, b1 + l1 - 1 ), list, comparator, b2, l2, l2 - 1 );
-	assert( l2 >= 0 && "vul__sort_merge_at: vul__sort_gallop_left returned a sub-zero value" );
+	VUL_DATATYPES_CUSTOM_ASSERT( l2 >= 0 && "vul__sort_merge_at: vul__sort_gallop_left returned a sub-zero value" );
 	if( l2 == 0 ) {
 		return; // Already in correct order
 	}
@@ -936,7 +905,7 @@ void vul_sort_vector_thynn( vul_vector *list, s32 (*comparator)( const void *a, 
 												 list->reallocator );
 
 	// Check range
-	assert( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_thynn: Range check failed" );
+	VUL_DATATYPES_CUSTOM_ASSERT( vul__sort_vector_check_range( list, low, high ) && "vul_sort_vector_thynn: Range check failed" );
 
 	// Trivial case
 	n = high - low;
@@ -1003,13 +972,13 @@ void vul_sort_vector_thynn( vul_vector *list, s32 (*comparator)( const void *a, 
 	}
 
 	// Check that low has converged to high
-	assert( low == high && "vul_sort_vector_thynn: Low and high have not converged." );
+	VUL_DATATYPES_CUSTOM_ASSERT( low == high && "vul_sort_vector_thynn: Low and high have not converged." );
 
 	// Force the remaining merges
 	vul__sort_force_merge_collapse( list, comparator, merge_stack );
 
 	// Check that stack has signle entry
-	assert( vul_vector_size( merge_stack ) == 1 && "vul_sort_vector_thynn: Stack size is not 1, merge not complete." );
+	VUL_DATATYPES_CUSTOM_ASSERT( vul_vector_size( merge_stack ) == 1 && "vul_sort_vector_thynn: Stack size is not 1, merge not complete." );
 
 	// Free the stack
 	vul_vector_destroy( merge_stack );

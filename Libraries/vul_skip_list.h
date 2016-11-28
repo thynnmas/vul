@@ -21,8 +21,12 @@
 #define VUL_SKIP_LIST_H
 
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
+
+#ifndef VUL_DATATYPES_CUSTOM_ASSERT
+#include <assert.h>
+#define VUL_DATATYPES_CUSTOM_ASSERT assert
+#endif
 
 #ifndef VUL_TYPES_H
 #include <stdint.h>
@@ -139,10 +143,10 @@ vul_skip_list *vul_skip_list_create( u32 data_size,
    s32 l;
 
    ret = ( vul_skip_list* )allocator( sizeof( vul_skip_list ) );
-   assert( ret != NULL ); // Make sure allocation didn't fail
+   VUL_DATATYPES_CUSTOM_ASSERT( ret != NULL ); // Make sure allocation didn't fail
    ret->levels = 1;
    ret->heads = ( vul_skip_list_element** )allocator( sizeof( vul_skip_list_element* ) );
-   assert( ret->heads != NULL ); // Make sure allocation didn't fail
+   VUL_DATATYPES_CUSTOM_ASSERT( ret->heads != NULL ); // Make sure allocation didn't fail
    ret->comparator = comparator;
    ret->data_size = data_size;
    ret->allocator = allocator;
@@ -181,7 +185,7 @@ void vul_skip_list_remove( vul_skip_list *list, vul_skip_list_element *e )
    s32 l;
    vul_skip_list_element *p, *h;
 
-   assert( e != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( e != NULL );
 
    // For every level
    for( l = list->levels - 1; l >= 0; --l )
@@ -216,7 +220,7 @@ vul_skip_list_element *vul_skip_list_insert( vul_skip_list *list, void *data )
    if( list == NULL || list->heads == NULL ) return NULL;
 
    el = ( vul_skip_list_element** )list->allocator( list->levels * sizeof( vul_skip_list_element* ) );
-   assert( el != NULL ); // Make sure allocation didn't fail
+   VUL_DATATYPES_CUSTOM_ASSERT( el != NULL ); // Make sure allocation didn't fail
 
    for( l = list->levels - 1; l >= 0; --l )
    {
@@ -233,14 +237,14 @@ vul_skip_list_element *vul_skip_list_insert( vul_skip_list *list, void *data )
 
    // Create our element
    ret = ( vul_skip_list_element* )list->allocator( sizeof( vul_skip_list_element ) );
-   assert( ret != NULL ); // Make sure allocation didn't fail
+   VUL_DATATYPES_CUSTOM_ASSERT( ret != NULL ); // Make sure allocation didn't fail
    ret->data = list->allocator( list->data_size );
-   assert( ret->data != NULL ); // Make sure allocation didn't fail
+   VUL_DATATYPES_CUSTOM_ASSERT( ret->data != NULL ); // Make sure allocation didn't fail
    memcpy( ret->data, data, list->data_size );
    ret->levels = 1;
    while( vul__skip_list_coin_flip( ) ) ++ret->levels;
    ret->nexts = ( vul_skip_list_element** )list->allocator( ret->levels * sizeof( vul_skip_list_element* ) );
-   assert( ret->nexts != NULL ); // Make sure allocation didn't fail
+   VUL_DATATYPES_CUSTOM_ASSERT( ret->nexts != NULL ); // Make sure allocation didn't fail
    /* @TODO: THIS IS NOT WORKING YET! */ assert( false && "Skip lists aren't correctly implemented here." );
    // Insert it at bottom level, and each above if coinflip is false
    for( l = ret->levels - 1; l >= 0; --l )

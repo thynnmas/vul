@@ -18,8 +18,12 @@
 #define VUL_LINKED_LIST_H
 
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
+
+#ifndef VUL_DATATYPES_CUSTOM_ASSERT
+#include <assert.h>
+#define VUL_DATATYPES_CUSTOM_ASSERT assert
+#endif
 
 #ifndef VUL_TYPES_H
 #include <stdint.h>
@@ -117,9 +121,9 @@ vul_list_element *vul__list_add_after( vul_list_element *e,
    vul_list_element *ret;
 
    ret = ( vul_list_element* )allocator( sizeof( vul_list_element ) );
-   assert( ret != NULL ); // Make sure malloc didn't fail
+   VUL_DATATYPES_CUSTOM_ASSERT( ret != NULL ); // Make sure malloc didn't fail
    ret->data = allocator( data_size );
-   assert( ret->data != NULL ); // Make sure malloc didn't fail
+   VUL_DATATYPES_CUSTOM_ASSERT( ret->data != NULL ); // Make sure malloc didn't fail
    ret->data_size = data_size;
    memcpy( ret->data, data, data_size );
 
@@ -145,7 +149,7 @@ vul_list_element *vul__list_add_after( vul_list_element *e,
 
 void vul_list_remove( vul_list_element *e, void ( *deallocator )( void *ptr ) )
 {
-   assert( e != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( e != NULL );
 
    if ( e->prev != NULL )
    {
@@ -163,7 +167,7 @@ void vul_list_remove( vul_list_element *e, void ( *deallocator )( void *ptr ) )
 
 vul_list_element *vul_list_find( vul_list_element *head, void *data, int (*comparator)( void *a, void *b ) )
 {
-   assert( head != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( head != NULL );
    
    // If the first element is bigger then what we want the spot we wish to return
    // is before the actual list, so we return null.
@@ -181,7 +185,7 @@ vul_list_element *vul_list_find( vul_list_element *head, void *data, int (*compa
 
 vul_list_element *vul_list_find_first( vul_list_element *head, void *data, int (*comparator)( void *a, void *b ) )
 {
-   assert( head != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( head != NULL );
    
    while( head->next != NULL // Return last element of the list if data is bigger than all elements, not null
          && comparator( data, head->next->data ) != 0 )  

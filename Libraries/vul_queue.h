@@ -21,8 +21,12 @@
 #define VUL_QUEUE_H
 
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
+
+#ifndef VUL_DATATYPES_CUSTOM_ASSERT
+#include <assert.h>
+#define VUL_DATATYPES_CUSTOM_ASSERT assert
+#endif
 
 #ifndef VUL_LINKED_LIST_H
 #include "vul_linked_list.h"
@@ -149,7 +153,7 @@ u32 vul_queue_size( vul_queue *q )
    vul__queue_buffer *buf;
    u32 count;
 
-   assert( q );
+   VUL_DATATYPES_CUSTOM_ASSERT( q );
    if( !q->first_root || !q->next_root ) {
       return 0;
    }
@@ -170,7 +174,7 @@ b32 vul_queue_is_empty( vul_queue *q )
 {
    vul__queue_buffer *bf, *bn;
 
-   assert( q );
+   VUL_DATATYPES_CUSTOM_ASSERT( q );
    if( !q->first_root || !q->next_root ) {
       return 1;
    }
@@ -206,7 +210,7 @@ void vul_queue_push( vul_queue *q, void *data )
 {
    vul__queue_buffer *buf, nbuf;
 
-   assert( q );
+   VUL_DATATYPES_CUSTOM_ASSERT( q );
    // If no next buffer, create it
    nbuf.next = 0;
    nbuf.first = 0;
@@ -243,7 +247,7 @@ void vul_queue_pop( vul_queue *q, void *out )
 {
    vul__queue_buffer *buf;
 
-   assert( q );
+   VUL_DATATYPES_CUSTOM_ASSERT( q );
    if( q->first_root ) {
       buf = ( vul__queue_buffer* )q->first_root->data;
       memcpy( out, buf->data + ( buf->first * q->data_size ), q->data_size );
@@ -274,7 +278,7 @@ void *vul_queue_peek( vul_queue *q )
 {
    vul__queue_buffer *buf;
 
-   assert( q );
+   VUL_DATATYPES_CUSTOM_ASSERT( q );
    if( q->first_root ) {
       buf = ( vul__queue_buffer* )q->first_root->data;
       return ( buf->data + ( buf->first * q->data_size ) );

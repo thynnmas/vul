@@ -29,7 +29,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include <assert.h>
 #if defined( VUL_WINDOWS )
 	#define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
@@ -46,6 +45,11 @@
 	#include <unistd.h>
 #else
 	vul needs an operating system defined.
+#endif
+
+#ifndef VUL_TIMER_CUSTOM_ASSERT
+#include <assert.h>
+#define VUL_TIMER_CUSTOM_ASSERT assert
 #endif
 
 #ifndef VUL_TYPES_H
@@ -146,6 +150,8 @@ void vul_timer_reset( vul_timer *c )
 	DWORD_PTR system_mask;
 	HANDLE thread;
 	DWORD_PTR old_mask;
+   
+   VUL_TIMER_CUSTOM_ASSERT( c );
 
 	GetProcessAffinityMask( GetCurrentProcess( ), &process_mask, &system_mask );
 
@@ -173,8 +179,12 @@ void vul_timer_reset( vul_timer *c )
 	SetThreadAffinityMask( thread, old_mask );
 	c->last_time = 0;
 #elif defined( VUL_LINUX )
+   VUL_TIMER_CUSTOM_ASSERT( c );
+
 	clock_gettime( CLOCK_REALTIME, &c->start );
 #elif defined( VUL_OSX )
+   VUL_TIMER_CUSTOM_ASSERT( c );
+
 	c->start = mach_absolute_time( );
 	mach_timebase_info( &c->timebase_info );
 #endif
@@ -185,7 +195,7 @@ vul_timer *vul_timer_create( )
 	vul_timer *c;
 
 	c = ( vul_timer* )malloc( sizeof( vul_timer ) );
-	assert( c != NULL ); // Make sure malloc didn't fail
+	VUL_TIMER_CUSTOM_ASSERT( c != NULL ); // Make sure malloc didn't fail
 	vul_timer_reset( c );
 
 	return c;
@@ -211,6 +221,8 @@ u64 vul_timer_get_millis( vul_timer *c )
 #endif
 	s32 ms_off;
 	LONGLONG adjust;
+   
+   VUL_TIMER_CUSTOM_ASSERT( c );
 
 	thread = GetCurrentThread( );
 	old_mask = SetThreadAffinityMask( thread, c->clock_mask );
@@ -239,10 +251,15 @@ u64 vul_timer_get_millis( vul_timer *c )
 	return ( u64 )new_ticks;
 #elif defined( VUL_LINUX )
 	struct timespec now;
-	clock_gettime( CLOCK_REALTIME, &now );
+   
+   VUL_TIMER_CUSTOM_ASSERT( c );
+	
+   clock_gettime( CLOCK_REALTIME, &now );
 	return ( ( now.tv_sec - c->start.tv_sec ) * 1000 )
 		+ ( ( now.tv_nsec - c->start.tv_nsec ) / 1000000 );
 #elif defined( VUL_OSX )
+   VUL_TIMER_CUSTOM_ASSERT( c );
+
 	u64 end = mach_absolute_time( );
 	u64 elapsed = end - c->start;
 	u64 nsec = elapsed * c->timebase_info.numer / c->timebase_info.denom;
@@ -266,6 +283,8 @@ u64 vul_timer_get_micros( vul_timer *c )
 	s32 ms_off;
 	LONGLONG adjust;
 	u64 new_micro;
+   
+   VUL_TIMER_CUSTOM_ASSERT( c );
 
 	thread = GetCurrentThread( );
 	old_mask = SetThreadAffinityMask( thread, c->clock_mask );
@@ -296,11 +315,16 @@ u64 vul_timer_get_micros( vul_timer *c )
 	return new_micro;
 #elif defined( VUL_LINUX )	
 	struct timespec now;
-	clock_gettime( CLOCK_REALTIME, &now );
+   
+   VUL_TIMER_CUSTOM_ASSERT( c );
+	
+   clock_gettime( CLOCK_REALTIME, &now );
 	return ( ( now.tv_sec - c->start.tv_sec ) * 1000000 )
 		   + ( now.tv_nsec - c->start.tv_nsec ) / 1000;
 #elif defined( VUL_OSX )
-	u64 end = mach_absolute_time( );
+   VUL_TIMER_CUSTOM_ASSERT( c );
+	
+   u64 end = mach_absolute_time( );
 	u64 elapsed = end - c->start;
 	u64 nsec = elapsed * c->timebase_info.numer / c->timebase_info.denom;
 	return nsec / 1000;
@@ -331,7 +355,7 @@ unsigned int vul_sleep( unsigned int milliseconds )
 	}
 	return 0;
 #else
-	assert( 0 && "vul_timer.h: OS not supported. Did you forget to specify an OS define?" );
+	VUL_TIMER_CUSTOM_ASSERT( 0 && "vul_timer.h: OS not supported. Did you forget to specify an OS define?" );
 #endif
 }
 

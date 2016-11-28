@@ -19,7 +19,6 @@
 #define VUL_STACK_H
 
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 
 #include "vul_types.h"

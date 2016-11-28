@@ -28,8 +28,12 @@
 #ifndef VUL_HASH_MAP_H
 #define VUL_HASH_MAP_H
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
+
+#ifndef VUL_DATATYPES_CUSTOM_ASSERT
+#include <assert.h>
+#define VUL_DATATYPES_CUSTOM_ASSERT assert
+#endif
 
 #ifndef VUL_TYPES_H
 #include <stdint.h>
@@ -248,8 +252,8 @@ static void vul__map_grow( vul_hash_map *map )
    map->entries = ( vul_map_element* )malloc( sizeof( vul_map_element ) * map->size );
    map->hashes = ( u32* )malloc( sizeof( u32 ) * map->size );
 
-   assert( map->entries );
-   assert( map->hashes );
+   VUL_DATATYPES_CUSTOM_ASSERT( map->entries );
+   VUL_DATATYPES_CUSTOM_ASSERT( map->hashes );
 
    map->mask = map->size - 1;
 
@@ -281,14 +285,14 @@ vul_hash_map *vul_map_create( u32 initial_size, f32 load_factor,
    vul_hash_map *map;
 
    map = ( vul_hash_map* )allocator( sizeof( vul_hash_map ) );
-   assert( map != NULL ); // Make sure allocation didn't fail
+   VUL_DATATYPES_CUSTOM_ASSERT( map != NULL ); // Make sure allocation didn't fail
    map->hash = hash_function;
    map->comparator = comparator;
    // @TODO(thynn): Support alignement in allocators?
    map->entries = ( vul_map_element* )malloc( sizeof( vul_map_element ) * initial_size );
    map->hashes = ( u32* )malloc( sizeof( u32 ) * initial_size );
-   assert( map->entries != NULL );
-   assert( map->hashes != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( map->entries != NULL );
+   VUL_DATATYPES_CUSTOM_ASSERT( map->hashes != NULL );
 
    map->key_size = key_size;
    map->value_size = value_size;
@@ -318,8 +322,8 @@ void *vul_map_insert( vul_hash_map *map, void *key, void *value )
    keycopy = malloc( map->key_size );
    valuecopy = malloc( map->value_size );
 
-   assert( keycopy );
-   assert( valuecopy );
+   VUL_DATATYPES_CUSTOM_ASSERT( keycopy );
+   VUL_DATATYPES_CUSTOM_ASSERT( valuecopy );
 
    memcpy( keycopy, key, map->key_size );
    memcpy( valuecopy, value, map->value_size );

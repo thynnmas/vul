@@ -21,9 +21,13 @@
 #define VUL_PRIORITY_HEAP_H
 
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 #include <math.h>
+
+#ifndef VUL_DATATYPES_CUSTOM_ASSERT
+#include <assert.h>
+#define VUL_DATATYPES_CUSTOM_ASSERT assert
+#endif
 
 #ifndef VUL_TYPES_H
 #include <stdint.h>
@@ -173,19 +177,29 @@ static vul__fheap_element *vul__fheap_merge_lists( vul_priority_heap *heap,
    } else if( e1 == NULL && e2 != NULL ) {
       return e2;
    } else {
-      vul__fheap_element *e1n = e1->next;
+      vul__fheap_element *e1n;
+      
+      VUL_DATATYPES_CUSTOM_ASSERT( e1 );
+      VUL_DATATYPES_CUSTOM_ASSERT( e2 );
+      e1n = e1->next;
       e1->next = e2->next;
       e1->next->prev = e1;
       e2->next = e1n;
       e2->next->prev = e2;
 
+      VUL_DATATYPES_CUSTOM_ASSERT( heap );
       return heap->comparator( e1->data, e2->data ) < 0 ? e1 : e2;
    }
 }
 
 static void *vul__fheap_enqueue( vul_priority_heap *heap, void *data )
 {
-   vul__fheap_element *element = ( vul__fheap_element* )heap->allocator( sizeof( vul__fheap_element ) );
+   vul__fheap_element *element;
+
+   VUL_DATATYPES_CUSTOM_ASSERT( heap );
+   VUL_DATATYPES_CUSTOM_ASSERT( heap->allocator );
+
+   element = ( vul__fheap_element* )heap->allocator( sizeof( vul__fheap_element ) );
    
    memset( element, 0, sizeof( vul__fheap_element ) );
    element->data = data;
@@ -204,11 +218,13 @@ static vul__fheap_element *vul__fheap_dequeue_min( vul_priority_heap *heap )
    u32 tovisitsize, treesize;
    vul__fheap_element *min_element, *current, **tovisit, **tree, *first;
 
-   assert( heap->size != 0 );
+   VUL_DATATYPES_CUSTOM_ASSERT( heap );
+   VUL_DATATYPES_CUSTOM_ASSERT( heap->size != 0 );
    
    heap->size -= 1;
 
    min_element = heap->min_element;
+   VUL_DATATYPES_CUSTOM_ASSERT( min_element );
 
    if( min_element->next == min_element ) {
       heap->min_element = NULL;
@@ -296,6 +312,8 @@ static vul__fheap_element *vul__fheap_dequeue_min( vul_priority_heap *heap )
 
 static void vul__fheap_cut_node( vul_priority_heap *heap, vul__fheap_element *element )
 {
+   VUL_DATATYPES_CUSTOM_ASSERT( heap );
+
    element->marked = 0;
 
    if( element->parent == NULL ) return;
@@ -331,6 +349,8 @@ static void vul__fheap_cut_node( vul_priority_heap *heap, vul__fheap_element *el
 
 static void vul__fheap_delete( vul_priority_heap *heap, vul__fheap_element *element )
 {
+   VUL_DATATYPES_CUSTOM_ASSERT( heap );
+
    /* If there's a parent, cut it */
    if( element->parent != NULL ) {
       vul__fheap_cut_node( heap, element );
@@ -350,8 +370,9 @@ vul_priority_heap *vul_priority_heap_create( u32 element_size,
 {
    vul_priority_heap *heap;
 
+   VUL_DATATYPES_CUSTOM_ASSERT( allocator );
    heap = ( vul_priority_heap* )allocator( sizeof( vul_priority_heap ) );
-   assert( heap );
+   VUL_DATATYPES_CUSTOM_ASSERT( heap );
    heap->element_size = element_size;
    heap->comparator = comparison_func;
    heap->allocator = allocator;
@@ -372,6 +393,7 @@ void vul_priority_heap_destroy( vul_priority_heap *heap )
    // @TODO(thynn): Do this more efficiently:
    // We have no need of preseved order on every delete and should
    // just march each heap, deleting everything we meet along the way!
+   VUL_DATATYPES_CUSTOM_ASSERT( heap );
    while( !vul_priority_heap_is_empty( heap ) ) {
       vul__fheap_element *e = vul__fheap_dequeue_min( heap );
       heap->deallocator( e->data );
@@ -382,6 +404,9 @@ void vul_priority_heap_destroy( vul_priority_heap *heap )
 
 void vul_priority_heap_push( vul_priority_heap *heap, void *data )
 {
+   VUL_DATATYPES_CUSTOM_ASSERT( heap );
+   VUL_DATATYPES_CUSTOM_ASSERT( heap->allocator );
+
    void *data_copy = heap->allocator( heap->element_size );
    memcpy( data_copy, data, heap->element_size );
 
@@ -390,7 +415,10 @@ void vul_priority_heap_push( vul_priority_heap *heap, void *data )
 
 void vul_priority_heap_pop( vul_priority_heap *heap, void *data_out )
 {
+   VUL_DATATYPES_CUSTOM_ASSERT( heap );
+
    vul__fheap_element *el = vul__fheap_dequeue_min( heap );
+   VUL_DATATYPES_CUSTOM_ASSERT( heap->el ); // @TODO(thynn): Fail graciously if there's nothing to pop?
    
    memcpy( data_out, el->data, heap->element_size );
 
@@ -400,17 +428,24 @@ void vul_priority_heap_pop( vul_priority_heap *heap, void *data_out )
 
 void *vul_priority_heap_peek( vul_priority_heap *heap )
 {
+   VUL_DATATYPES_CUSTOM_ASSERT( heap );
    return heap->min_element == NULL ? NULL : heap->min_element->data;
 }
 
 u32 vul_priority_heap_size( vul_priority_heap *heap )
 {
+   VUL_DATATYPES_CUSTOM_ASSERT( heap );
    return heap->size;
 }
 
 vul_priority_heap *vul_priority_heap_merge( vul_priority_heap *heap1, vul_priority_heap *heap2 )
 {
-   vul_priority_heap *res = ( vul_priority_heap* )heap1->allocator( sizeof( vul_priority_heap ) );
+   vul_priority_heap *res;
+
+   VUL_DATATYPES_CUSTOM_ASSERT( heap1 );
+   VUL_DATATYPES_CUSTOM_ASSERT( heap2 );
+
+   res = ( vul_priority_heap* )heap1->allocator( sizeof( vul_priority_heap ) );
 
    res->min_element = vul__fheap_merge_lists( heap1, heap1->min_element, heap2->min_element );
    res->size = heap1->size + heap2->size;

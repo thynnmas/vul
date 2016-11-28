@@ -37,8 +37,12 @@
 #define VUL_HASH_MAP_LINKED_LIST_H
 
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
+
+#ifndef VUL_DATATYPES_CUSTOM_ASSERT
+#include <assert.h>
+#define VUL_DATATYPES_CUSTOM_ASSERT assert
+#endif
 
 #ifndef VUL_LINKED_LIST_H
    #include "vul_linked_list.h"
@@ -148,14 +152,14 @@ vul_hash_map *vul_map_create( u32 bucket_count,
    u32 i;
 
    map = ( vul_hash_map* )allocator( sizeof( vul_hash_map ) );
-   assert( map != NULL ); // Make sure allocation didn't fail
+   VUL_DATATYPES_CUSTOM_ASSERT( map != NULL ); // Make sure allocation didn't fail
    map->bucket_count = bucket_count;
    map->hash = hash_function;
    map->comparator = comparator;
    map->buckets = ( vul_list_element** )allocator( sizeof( vul_list_element* ) * bucket_count );
    map->allocator = allocator;
    map->deallocator = deallocator;
-   assert( map->buckets != NULL ); // Make sure allocation didn't fail
+   VUL_DATATYPES_CUSTOM_ASSERT( map->buckets != NULL ); // Make sure allocation didn't fail
    for( i = 0; i < bucket_count; ++i )
    {
       map->buckets[ i ] = NULL;

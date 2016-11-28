@@ -22,9 +22,13 @@
 #define VUL_STABLE_RESIZEABLE_ARRAY_H
 
 #include <stdlib.h>
-#include <assert.h>
 #include <string.h>
 #include <math.h>
+
+#ifndef VUL_DATATYPES_CUSTOM_ASSERT
+#include <assert.h>
+#define VUL_DATATYPES_CUSTOM_ASSERT assert
+#endif
 
 #ifndef VUL_TYPES_H
 #include <stdint.h>
@@ -104,6 +108,11 @@ static void *vul__stable_vector_get_tiered( vul_svector *vec, u32 buffer, u32 in
 */
 void *vul_svector_get( vul_svector *vec, u32 index );
 /**
+ * Swap two elements at given indices.
+ * Uses allocator for temporary if larger than 1024 bytes.
+ */
+void vul_svector_swap( vul_svector *vec, u32 index0, u32 index1 );
+/**
 * Removes an element, swapping the last element into it's place.
 */
 void vul_svector_remove_swap( vul_svector *vec, u32 index );
@@ -166,10 +175,10 @@ vul_svector *vul_svector_create( u32 element_size,
 {
    vul_svector *ret;
 
-   assert( buffer_base_size != 0 );
+   VUL_DATATYPES_CUSTOM_ASSERT( buffer_base_size != 0 );
 
    ret = ( vul_svector* )allocator( sizeof( vul_svector ) );
-   assert( ret );
+   VUL_DATATYPES_CUSTOM_ASSERT( ret );
    ret->buffer_count = 0;
    ret->size = 0;
    ret->buffer_base_size = buffer_base_size;
@@ -185,7 +194,7 @@ void vul_svector_destroy( vul_svector *vec )
 {
    u32 i;
 
-   assert( vec );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec );
    for( i = 0; i < vec->buffer_count; ++i ) {
       vec->deallocator( vec->buffers[ i ] );
    }
@@ -197,7 +206,7 @@ void vul_svector_freemem( vul_svector *vec )
 {
    u32 i;
 
-   assert( vec );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec );
    for( i = 0; i < vec->buffer_count; ++i ) {
       vec->deallocator( vec->buffers[ i ] );
    }
@@ -239,17 +248,17 @@ void *vul_svector_append_empty( vul_svector *vec )
    u32 bi, ri;
    void **ret;
 
-   assert( vec );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec );
 
    // Calculate index
    bi = vul__stable_vector_calculate_buffer_index( vec->buffer_base_size, vec->size );
    ri = vul__stable_vector_calculate_relative_index( vec->buffer_base_size, bi, vec->size++ );
-   assert( bi <= vec->buffer_count ); // We can't skip a step...  
+   VUL_DATATYPES_CUSTOM_ASSERT( bi <= vec->buffer_count ); // We can't skip a step...  
 
    // Make sure we have room for the buffer
    if( bi == vec->buffer_count ) {
       ret = ( void** )realloc( vec->buffers, sizeof( void* ) * ++vec->buffer_count );
-      assert( ret );
+      VUL_DATATYPES_CUSTOM_ASSERT( ret );
       vec->buffers = ret;
       vec->buffers[ vec->buffer_count - 1 ] = NULL;
    }
@@ -258,7 +267,7 @@ void *vul_svector_append_empty( vul_svector *vec )
       vec->buffers[ bi ] = vec->allocator( ( u32 )pow( ( f32 )vec->buffer_base_size,
          ( s32 )bi + 1 ) * vec->element_size );
    }
-   assert( vec->buffers[ bi ] ); // This should always be valid at this point!
+   VUL_DATATYPES_CUSTOM_ASSERT( vec->buffers[ bi ] ); // This should always be valid at this point!
 
    return ( void* )( ( u8* )vec->buffers[ bi ] + ( ri * vec->element_size ) );
 }
@@ -282,8 +291,8 @@ void *vul_svector_get( vul_svector *vec, u32 index )
 {
    u32 bi, ri;
 
-   assert( vec );
-   assert( index < vec->size );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec );
+   VUL_DATATYPES_CUSTOM_ASSERT( index < vec->size );
 
    bi = vul__stable_vector_calculate_buffer_index( vec->buffer_base_size, index );
    ri = vul__stable_vector_calculate_relative_index( vec->buffer_base_size, bi, index );
@@ -291,11 +300,42 @@ void *vul_svector_get( vul_svector *vec, u32 index )
    return vul__stable_vector_get_tiered( vec, bi, ri );
 }
 
+void vul_svector_swap( vul_svector *vec, u32 index0, u32 index1 )
+{
+   u32 bi0, bi1, ri0, ri1;
+   void *p0, *p1;
+
+   VUL_DATATYPES_CUSTOM_ASSERT( vec );
+   VUL_DATATYPES_CUSTOM_ASSERT( index0 < vec->size );
+   VUL_DATATYPES_CUSTOM_ASSERT( index1 < vec->size );
+
+   bi0 = vul__stable_vector_calculate_buffer_index( vec->buffer_base_size, index0 );
+   bi1 = vul__stable_vector_calculate_buffer_index( vec->buffer_base_size, index1 );
+   ri0 = vul__stable_vector_calculate_relative_index( vec->buffer_base_size, bi0, index0 );
+   ri1 = vul__stable_vector_calculate_relative_index( vec->buffer_base_size, bi1, index1 );
+
+   p0 = vul__stable_vector_get_tiered( vec, bi0, ri0 );
+   p1 = vul__stable_vector_get_tiered( vec, bi1, ri1 );
+
+   if( vec->element_size < 1024 ) {
+      u8 tmp[ 1024 ];
+      memcpy( tmp, p0, vec->element_size );
+      memcpy( p0, p1,  vec->element_size );
+      memcpy( p1, tmp, vec->element_size );
+   } else {
+      u8 *tmp = ( u8* )vec->allocator( vec->element_size );
+      memcpy( tmp, p0, vec->element_size );
+      memcpy( p0, p1,  vec->element_size );
+      memcpy( p1, tmp, vec->element_size );
+      vec->deallocator( tmp );
+   }
+}
+
 void vul_svector_remove_swap( vul_svector *vec, u32 index )
 {
    void *rem, *rep;
 
-   assert( vec );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec );
    if( vec->size == 1 ) {
       --vec->size;
       return; // We don't deallocate down to zero.
@@ -324,7 +364,7 @@ void vul_svector_iterate( vul_svector *vec,
 {
    u32 i, ai, bi, bs;
 
-   assert( vec );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec );
 
    ai = 0;
    for( bi = 0; bi < vec->buffer_count; ++bi ) {
@@ -335,7 +375,7 @@ void vul_svector_iterate( vul_svector *vec,
 #endif
          func( ( void* )( ( u8* )vec->buffers[ bi ] + ( vec->element_size * i ) ), ai, func_data );
 #ifdef VUL_DEBUG
-         assert( addr == vec->buffers[ bi ] ); // Make sure we didn't alter the buffer (reallocate or free it)
+         VUL_DATATYPES_CUSTOM_ASSERT( addr == vec->buffers[ bi ] ); // Make sure we didn't alter the buffer (reallocate or free it)
 #endif
       }
    }
@@ -347,7 +387,7 @@ void *vul_svector_find( vul_svector *vec,
    u32 i, ai, bi, bs;
    void *current;
 
-   assert( vec );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec );
 
    ai = 0;
    for( bi = 0; bi < vec->buffer_count; ++bi ) {
@@ -364,13 +404,13 @@ void *vul_svector_find( vul_svector *vec,
 
 u32 vul_svector_size( vul_svector *vec )
 {
-   assert( vec );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec );
    return vec->size;
 }
 
 b32 vul_svector_is_empty( vul_svector *vec )
 {
-   assert( vec );
+   VUL_DATATYPES_CUSTOM_ASSERT( vec );
    return vec->size == 0;
 }
 

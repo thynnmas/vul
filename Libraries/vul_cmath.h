@@ -108,13 +108,13 @@ typedef struct m44 {
 extern "C" {
 #endif
    
-#define DEFINE_V2OP( name, op ) v2 name( const v2 a, const v2 b );
-#define DEFINE_V3OP( name, op ) v3 name( const v3 a, const v3 b );
-#define DEFINE_V4OP( name, op ) v4 name( const v4 a, const v4 b );
+#define DEFINE_V2OP( name, op ) v2 name( const v2 a, const v2 b )
+#define DEFINE_V3OP( name, op ) v3 name( const v3 a, const v3 b )
+#define DEFINE_V4OP( name, op ) v4 name( const v4 a, const v4 b )
 
-#define DEFINE_S2OP( name, op ) v2 name( const v2 a, const f32 c );
-#define DEFINE_S3OP( name, op ) v3 name( const v3 a, const f32 c );
-#define DEFINE_S4OP( name, op ) v4 name( const v4 a, const f32 c );
+#define DEFINE_S2OP( name, op ) v2 name( const v2 a, const f32 c )
+#define DEFINE_S3OP( name, op ) v3 name( const v3 a, const f32 c )
+#define DEFINE_S4OP( name, op ) v4 name( const v4 a, const f32 c )
 
    
 DEFINE_V2OP( vadd2, + );
@@ -363,31 +363,31 @@ extern "C" {
       return r;\
    }
 
-DEFINE_V2OP( vadd2, + );
-DEFINE_V2OP( vsub2, - );
-DEFINE_V2OP( vmul2, * );
-DEFINE_V2OP( vdiv2, / );
-DEFINE_V3OP( vadd3, + );
-DEFINE_V3OP( vsub3, - );
-DEFINE_V3OP( vmul3, * );
-DEFINE_V3OP( vdiv3, / );
-DEFINE_V4OP( vadd4, + );
-DEFINE_V4OP( vsub4, - );
-DEFINE_V4OP( vmul4, * );
-DEFINE_V4OP( vdiv4, / );
+DEFINE_V2OP( vadd2, + )
+DEFINE_V2OP( vsub2, - )
+DEFINE_V2OP( vmul2, * )
+DEFINE_V2OP( vdiv2, / )
+DEFINE_V3OP( vadd3, + )
+DEFINE_V3OP( vsub3, - )
+DEFINE_V3OP( vmul3, * )
+DEFINE_V3OP( vdiv3, / )
+DEFINE_V4OP( vadd4, + )
+DEFINE_V4OP( vsub4, - )
+DEFINE_V4OP( vmul4, * )
+DEFINE_V4OP( vdiv4, / )
 
-DEFINE_S2OP( vadds2, + );
-DEFINE_S2OP( vsubs2, - );
-DEFINE_S2OP( vmuls2, * );
-DEFINE_S2OP( vdivs2, / );
-DEFINE_S3OP( vadds3, + );
-DEFINE_S3OP( vsubs3, - );
-DEFINE_S3OP( vmuls3, * );
-DEFINE_S3OP( vdivs3, / );
-DEFINE_S4OP( vadds4, + );
-DEFINE_S4OP( vsubs4, - );
-DEFINE_S4OP( vmuls4, * );
-DEFINE_S4OP( vdivs4, / );
+DEFINE_S2OP( vadds2, + )
+DEFINE_S2OP( vsubs2, - )
+DEFINE_S2OP( vmuls2, * )
+DEFINE_S2OP( vdivs2, / )
+DEFINE_S3OP( vadds3, + )
+DEFINE_S3OP( vsubs3, - )
+DEFINE_S3OP( vmuls3, * )
+DEFINE_S3OP( vdivs3, / )
+DEFINE_S4OP( vadds4, + )
+DEFINE_S4OP( vsubs4, - )
+DEFINE_S4OP( vmuls4, * )
+DEFINE_S4OP( vdivs4, / )
 
 #undef DEFINE_V2OP
 #undef DEFINE_V3OP

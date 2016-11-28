@@ -87,7 +87,7 @@ vul_hash_map *vul_map_create( u32 initial_size, f32 load_factor,
  * are simply both in the map, which is probably not desired. To overwrite a value,
  * alter it by changing the value point to by vul_map_get for the key instead!
  */
-void vul_map_insert( vul_hash_map *map, void *key, void *value );
+void *vul_map_insert( vul_hash_map *map, void *key, void *value );
 /**
  * Deletes the element for the given key from the map. Returns true if
  * the element was deleted, false if none was found for the given key,
@@ -310,7 +310,7 @@ vul_hash_map *vul_map_create( u32 initial_size, f32 load_factor,
    return map;
 }
 
-void vul_map_insert( vul_hash_map *map, void *key, void *value )
+void *vul_map_insert( vul_hash_map *map, void *key, void *value )
 {
    u32 threshold;
    void *keycopy, *valuecopy;
@@ -329,6 +329,7 @@ void vul_map_insert( vul_hash_map *map, void *key, void *value )
       vul__map_grow( map );
    }
    vul__map_insert_helper( map, vul__map_hash_internal( map, key ), keycopy, valuecopy );
+   return valuecopy;
 }
 
 b32 vul_map_remove( vul_hash_map *map, const void *key )

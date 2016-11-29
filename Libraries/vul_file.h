@@ -210,6 +210,9 @@ vul_mmap_file vul_mmap( const char *path, void *base_addr, s32 prot, s32 flags,
       map_length = ( size_t )sb.st_size;
    }
    ret.map = mmap( base_addr, map_length, prot, flags, ret.fd, file_offset );
+   if( ret.map == ( void* )-1 ) {
+      ret.map = 0;
+   }
 #endif
    ret.length = map_length;
 

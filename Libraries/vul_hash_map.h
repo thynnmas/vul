@@ -177,6 +177,7 @@ static void vul__map_insert_helper( vul_hash_map *map, u32 hash, void *key, void
    u32 thash;
 
    pos = hash & map->mask;
+   dist = 0;
    while( 1 ) {
       if( map->hashes[ pos ] == 0 ) {
          // Slot was never used, use it

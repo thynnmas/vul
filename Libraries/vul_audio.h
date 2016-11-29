@@ -702,8 +702,7 @@ void vul__audio_mix( vul__audio_mixer *mixer )
 		// Handle looping
 		if( ( mixer->clips[ i ].current_offset / mixer->clips[ i ].channels ) == mixer->clips[ i ].sample_count && mixer->clips[ i ].looping ) {
 			s64 remaining = ( s64 )mixer->mixbuf_sample_count - ( s64 )sample_count;
-			for( u64 j = sample_count * mixer->channels; 
-             j < remaining * mixer->channels; ++j ) {
+			for( u64 j = sample_count * mixer->channels; ( s64 )j < remaining * mixer->channels; ++j ) {
 				for( u32 k = 0; k < min_channels; ++k ) {
 					ofs = j * mixer->clips[ i ].channels + k;
 					mixer->mixbuf[ j * mixer->channels + k ] += ( smx )( ( f64 )mixer->clips[ i ].samples[ ofs ] *
@@ -769,8 +768,8 @@ vul_audio_return vul__audio_callback_internal( vul_audio_device *dev )
 
 #ifdef VUL_WINDOWS
 
-#define DLLOAD( sym, lib, name )\
-	sym = ( void* )GetProcAddress( lib, name );\
+#define DLLOAD( fsym, sym, lib, name )\
+	sym = ( fsym )GetProcAddress( lib, name );\
 	if( sym == NULL ) {\
 		VUL__AUDIO_ERR( "Failed to load symbol %s from DLL.\n", name );\
 	}
@@ -790,9 +789,9 @@ vul_audio_return vul__audio_mixer_wait_and_lock( vul_audio_device *dev )
    return VUL_ERROR;
 }
 
-void vul__audio_mixer_release( vul_audio_device *dev )
+vul_audio_return vul__audio_mixer_release( vul_audio_device *dev )
 {
-   ReleaseMutex( dev->mixer_mutex );
+   return ReleaseMutex( dev->mixer_mutex ) ? VUL_OK : VUL_ERROR;
 }
 
 DWORD vul__audio_callback( LPVOID data )
@@ -815,15 +814,20 @@ DWORD vul__audio_callback( LPVOID data )
 // waveOut
 //
 
-MMRESULT ( *pWaveOutOpen )( LPHWAVEOUT, UINT_PTR, LPWAVEFORMATEX, DWORD_PTR, DWORD_PTR, DWORD );
-MMRESULT ( *pWaveOutPrepareHeader )( HWAVEOUT, LPWAVEHDR, UINT );
-MMRESULT ( *pWaveOutWrite )( HWAVEOUT, LPWAVEHDR, UINT );
-MMRESULT ( *pWaveOutUnprepareHeader )( HWAVEOUT, LPWAVEHDR, UINT );
-MMRESULT ( *pWaveOutClose )( HWAVEOUT );
+typedef MMRESULT ( *fnWaveOutOpen )( LPHWAVEOUT, UINT_PTR, LPWAVEFORMATEX, DWORD_PTR, DWORD_PTR, DWORD );
+typedef MMRESULT ( *fnWaveOutPrepareHeader )( HWAVEOUT, LPWAVEHDR, UINT );
+typedef MMRESULT ( *fnWaveOutWrite )( HWAVEOUT, LPWAVEHDR, UINT );
+typedef MMRESULT ( *fnWaveOutUnprepareHeader )( HWAVEOUT, LPWAVEHDR, UINT );
+typedef MMRESULT ( *fnWaveOutClose )( HWAVEOUT );
+
+fnWaveOutOpen pWaveOutOpen = 0;
+fnWaveOutPrepareHeader pWaveOutPrepareHeader = 0;
+fnWaveOutWrite pWaveOutWrite = 0;
+fnWaveOutUnprepareHeader pWaveOutUnprepareHeader = 0;
+fnWaveOutClose pWaveOutClose = 0;
 
 static vul_audio_return vul__audio_write_waveout( vul_audio_device *dev, void *samples, u32 sample_count )
 {
-   HRESULT res;
    b32 uploaded = 0;
    static b32 skip = 0; // @NOTE(thynn): This is a dirty hack to handle the case
                         // where we want to upload to both buffers before waiting
@@ -885,11 +889,11 @@ static vul_audio_return vul__audio_init_waveout( vul_audio_device *out, u32 fram
 	if( ( waveout = LoadLibrary( "winmm.dll" ) ) == NULL ) {
 		VUL__AUDIO_ERR( "Failed to load winmm.dll.\n" );
 	}
-	DLLOAD( pWaveOutOpen, waveout, "waveOutOpen" );
-	DLLOAD( pWaveOutPrepareHeader, waveout, "waveOutPrepareHeader" );
-	DLLOAD( pWaveOutWrite, waveout, "waveOutWrite" );
-	DLLOAD( pWaveOutUnprepareHeader, waveout, "waveOutUnprepareHeader" );
-	DLLOAD( pWaveOutClose, waveout, "waveOutClose" );
+	DLLOAD( fnWaveOutOpen, pWaveOutOpen, waveout, "waveOutOpen" );
+	DLLOAD( fnWaveOutPrepareHeader, pWaveOutPrepareHeader, waveout, "waveOutPrepareHeader" );
+	DLLOAD( fnWaveOutWrite, pWaveOutWrite, waveout, "waveOutWrite" );
+	DLLOAD( fnWaveOutUnprepareHeader, pWaveOutUnprepareHeader, waveout, "waveOutUnprepareHeader" );
+	DLLOAD( fnWaveOutClose, pWaveOutClose, waveout, "waveOutClose" );
 	
    out->device.waveout.event = CreateEvent( 0, FALSE, FALSE, 0 );
    if( !out->device.waveout.event ) {
@@ -949,6 +953,9 @@ vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_clos
 
    SetEvent( dev->close_event );
    res = WaitForSingleObject( dev->thread, INFINITE );
+   if( res != WAIT_OBJECT_0 ) {
+      VUL__AUDIO_ERR_NORETURN( "Failed to aquire access to the upload thread.\n" );
+   }
    CloseHandle( dev->thread );
    CloseHandle( dev->close_event );
    CloseHandle( dev->mixer_mutex );
@@ -1021,9 +1028,10 @@ vul_audio_return vul__audio_mixer_wait_and_lock( vul_audio_device *dev )
    return res == 0 ? VUL_OK : VUL_ERROR;
 }
 
-void vul__audio_mixer_release( vul_audio_device *dev )
+vul_audio_return vul__audio_mixer_release( vul_audio_device *dev )
 {
    int res = pthread_mutex_unlock( &dev->mixer_mutex );
+   return res == 0 ? VUL_OK : VUL_ERROR;
 }
 
 

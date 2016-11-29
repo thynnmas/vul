@@ -286,7 +286,7 @@ u32 vul_rng_tu_next_unsigned( vul_rng_tu *r )
    u32 x, val;
 
    VUL_RNGS_CUSTOM_ASSERT( r != NULL );
-   r->i = (r->i + 1) & VUL_RNG_TU_SEED_COUNT - 1;
+   r->i = ( r->i + 1 ) & ( VUL_RNG_TU_SEED_COUNT - 1 );
    t = VUL_RNG_TU_SEED_A * r->q[ r->i ] + r->c;
    r->c = ( u32 ) ( t >> 32 );
    x = ( u32 ) ( t + r->c );

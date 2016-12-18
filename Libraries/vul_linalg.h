@@ -70,6 +70,7 @@
  * 2016-10-09: 1.0.1 - Incorporated style tips, fixed C++ macro typo.
  * 2016-10-09: 1.0.2 - Added const qualifiers, removed unused helper functions (*vmul_add/_sub
  *                     and 1- and inf-norm for dense matrices).
+ * 2016-12-18: 1.0.3 - Removed unused variables
  *
  * ¹ If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
@@ -949,7 +950,6 @@ void vul_linalg_matrix_insert( vul_linalg_matrix *m,
                                const unsigned int r, const unsigned int c, const vul_linalg_real val )
 {
    int i, j, k, inserted;
-   int insidx;
    vul_linalg_matrix_row *e;
    
    // Overwrite, even if zero
@@ -1320,7 +1320,7 @@ static void vulb__sparse_mclean( vul_linalg_matrix *A )
 
 vul_linalg_matrix *vul_linalg_precondition_ilu0( const vul_linalg_matrix *A, const int c, const int r )
 {
-   vul_linalg_matrix *P, *LT, *U;
+   vul_linalg_matrix *P, *LT;
    vul_linalg_real v;
    int i, j, k, n;
 
@@ -1504,8 +1504,8 @@ vul_linalg_vector *vul_linalg_conjugate_gradient_sparse( const vul_linalg_matrix
                                                          const vul_linalg_real tolerance )
 {
    vul_linalg_vector *x, *r, *Ap, *p, *z;
-   vul_linalg_real rd, bd, rho, rho0, alpha, beta, tmp;
-   int i, j, k, idx, found;
+   vul_linalg_real rd, bd, rho, rho0, alpha, beta;
+   int i, j;
 
    x = vul_linalg_vector_create( 0, 0, 0 );
    r = vul_linalg_vector_create( 0, 0, 0 );
@@ -1892,8 +1892,8 @@ vul_linalg_vector *vul_linalg_lu_solve_sparse( const vul_linalg_matrix *LU,
                                                const vul_linalg_real tolerance )
 {
    vul_linalg_vector *x, *r, *y;
-   vul_linalg_real rd, rd2, sum;
-   int k, i, j, imax, iold;
+   vul_linalg_real rd, rd2;
+   int k;
 
    r = vul_linalg_vector_create( 0, 0, 0 );
    x = vul_linalg_vector_create( 0, 0, 0 );
@@ -1937,8 +1937,8 @@ void vul_linalg_cholesky_decomposition_sparse( vul_linalg_matrix **L,
                                                const int cols, const int rows )
 {
    vul_linalg_vector rowi, rowj;
-   vul_linalg_real sum, rd, rd2;
-   int i, j, ki, kj, k;
+   vul_linalg_real sum, rd;
+   int i, j, ki, kj;
 
    *L = vul_linalg_matrix_create( 0, 0, 0, 0 );
    *LT = vul_linalg_matrix_create( 0, 0, 0, 0 );
@@ -2042,7 +2042,7 @@ static void vul__linalg_givens_rotate_sparse( vul_linalg_matrix *A, const int c,
                                               const int i, const int j, const float cosine, const float sine,
                                               const int post_multiply )
 {
-   int k, ki, kj;
+   int k;
    vul_linalg_real G[ 4 ], v0, v1, vi, vj;
    vul_linalg_vector *ri, *rj;
 
@@ -2102,8 +2102,8 @@ static void vul__linalg_givens_rotate_sparse( vul_linalg_matrix *A, const int c,
 static void vul__linalg_qr_decomposition_givens_sparse( vul_linalg_matrix *Q, vul_linalg_matrix *R, 
                                                         const vul_linalg_matrix *A, const int c, const int r )
 {
-   int i, j, k;
-   vul_linalg_real theta, st, ct, G[ 4 ], v0, v1, *RA;
+   int i, j;
+   vul_linalg_real theta, st, ct, v0, v1;
 
    vulb__sparse_mcopy( R, A );
    vulb__sparse_mclear( Q );
@@ -2140,7 +2140,6 @@ void vul_linalg_qr_decomposition_sparse( vul_linalg_matrix **Q,
                                          const int cols, const int rows )
 {
    vul_linalg_matrix *QT;
-   vul_linalg_vector *x, *d;
 
    *Q = vul_linalg_matrix_create( 0, 0, 0, 0 );
    *R = vul_linalg_matrix_create( 0, 0, 0, 0 );
@@ -2243,7 +2242,7 @@ static vul_linalg_real vul__linalg_matrix_norm_as_single_column_sparse( const vu
 vul_linalg_matrix *vul_linalg_svd_basis_reconstruct_matrix_sparse( const vul_linalg_svd_basis_sparse *x, 
                                                                    const int n )
 {
-   int i, j, k, l;
+   int i, j, k;
    vul_linalg_matrix *M;
 
    M = vul_linalg_matrix_create( 0, 0, 0, 0 );
@@ -2377,7 +2376,7 @@ void vul_linalg_svd_sparse_qrlq( vul_linalg_svd_basis_sparse *out, int *rank,
 {
    vul_linalg_matrix *U0, *U1, *V0, *V1, *S0, *S1, *Sb, *Q, *tmp;
    vul_linalg_real err, e, f, scale;
-   int iter, n, i, j, k, ri, ci;
+   int iter, n, i, j, k;
 
    n = r > c ? r : c;
    U0 = vul_linalg_matrix_create( 0, 0, 0, 0 );
@@ -2491,10 +2490,10 @@ void vul_linalg_svd_sparse( vul_linalg_svd_basis_sparse *out, int *rank,
                             const vul_linalg_matrix *A,
                             const int c, const int r, const int itermax, const vul_linalg_real eps )
 {
-   vul_linalg_matrix *J, *U, *V, *G;
+   vul_linalg_matrix *U, *V, *G;
    vul_linalg_vector *omegas;
    vul_linalg_real f, t, vik, vjk, scale, max_diag, threshold;
-   int iter, n, m, i, j, k, ri, ci, nonzero;
+   int iter, n, m, i, j, k, nonzero;
 
    n = r > c ? r : c;
    m = r < c ? r : c;
@@ -3147,7 +3146,7 @@ void vul_linalg_lu_solve_dense( vul_linalg_real *out,
                                 const int max_iterations,
                                 const vul_linalg_real tolerance )
 {
-   vul_linalg_real *x, *r, *scale;
+   vul_linalg_real *x, *r;
    vul_linalg_real sum, rd, rd2;
    int i, j, k, imax, iold;
 
@@ -3240,7 +3239,7 @@ void vul_linalg_cholesky_solve_dense( vul_linalg_real *out,
 {
    vul_linalg_real *x, *r, *y;
    vul_linalg_real rd, rd2;
-   int i, j, k;
+   int k;
 
    r = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
    y = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * n );
@@ -3391,7 +3390,7 @@ void vul_linalg_successive_over_relaxation_dense( vul_linalg_real *out,
 
 void vul_linalg_svd_basis_reconstruct_matrix( vul_linalg_real *M, const vul_linalg_svd_basis *x, const int n )
 {
-   int i, j, k, l;
+   int i, j, k;
 
    if( !n ) {
       return;
@@ -3597,8 +3596,8 @@ static void vul__linalg_qr_decomposition_householder( vul_linalg_real *Q, vul_li
                                                       const vul_linalg_real *A, 
                                                       int c, int r, const int transpose )
 {
-   vul_linalg_real *u, *Qt, *Q0, *Q1, *R0, *R1, alpha, d;
-   int i, j, k, l, n;
+   vul_linalg_real *u, *Qt, *Q0, *Q1, *R0, *R1;
+   int i, k, n;
 
    if( transpose ) {
       i = c; c = r; r = i;
@@ -3688,8 +3687,8 @@ static void vul__linalg_qr_decomposition_givens( vul_linalg_real *Q, vul_linalg_
                                                  const vul_linalg_real *A, 
                                                  int c, int r, const int transpose )
 {
-   int i, j, k;
-   vul_linalg_real theta, st, ct, G[ 4 ], v0, v1, *RA;
+   int i, j;
+   vul_linalg_real theta, st, ct, v0, v1, *RA;
    
    RA = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * c );
 
@@ -3831,7 +3830,7 @@ void vul_linalg_svd_dense_qrlq( vul_linalg_svd_basis *out, int *rank,
                                 const int c, const int r, const int itermax, const vul_linalg_real eps )
 {
    vul_linalg_real *U0, *U1, *V0, *V1, *S0, *S1, *Sb, *Q, err, e, f, scale;
-   int iter, n, i, j, k, ri, ci;
+   int iter, n, i, j, k;
 
    n = r > c ? r : c;
    U0 = ( vul_linalg_real* )VUL_LINALG_ALLOC( sizeof( vul_linalg_real ) * r * r );
@@ -3950,8 +3949,8 @@ void vul_linalg_svd_dense( vul_linalg_svd_basis *out, int *rank,
                            const vul_linalg_real *A,
                            const int c, const int r, const int itermax, const vul_linalg_real eps )
 {
-   vul_linalg_real *J, *U, *V, *G, *omegas, f, scale, max_diag;
-   int iter, n, m, i, j, k, ri, ci, nonzero;
+   vul_linalg_real *U, *V, *G, *omegas, f, scale, max_diag;
+   int iter, n, m, i, j, k, nonzero;
 
    n = r > c ? r : c;
    m = r < c ? r : c;

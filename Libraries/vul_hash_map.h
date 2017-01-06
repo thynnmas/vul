@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
+ * Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain?
  *
  * This file describes a robin-hood hash map implementation.
  * The hash function used is given in the constructor, allowing this implementation

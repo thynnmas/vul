@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain¹
  *
  * This file describes generic vectors. Specializations for 2, 3 & 4 vectors of 
  * all reasonable float, fixed, int and uint types (not 128bit) are made.
@@ -25,7 +25,10 @@
 #include "vul_point.hpp"
 #include "vul_matrix.hpp"
 
+#ifndef VUL_MATH_ASSERT
 #include <assert.h>
+#define VUL_MATH_ASSERT assert
+#endif
 #include <cstring> // For memset
 
 namespace vul {
@@ -673,7 +676,7 @@ namespace vul {
       Vector< T, n > r;
       s32 i;
 
-      assert( m > n );
+      VUL_MATH_ASSERT( m > n );
       for( i = 0; i < n; ++i ) {
          r.data[ i ] = vec[ i ];
       }
@@ -792,14 +795,14 @@ namespace vul {
    template< typename T, s32 n >
    T& Vector< T, n >::operator[ ]( s32 i )
    {
-      assert( i < n );
+      VUL_MATH_ASSERT( i < n );
       return data[ i ];
    }
    
    template< typename T, s32 n >
    T const &Vector< T, n >::operator[ ]( s32 i ) const
    {
-      assert( i < n );
+      VUL_MATH_ASSERT( i < n );
       return data[ i ];
    }
 
@@ -1305,7 +1308,7 @@ namespace vul {
    template< typename T, s32 n_new, s32 n_old >
    const Vector< T, n_new > &truncate_cast( const Vector< T, n_old > &v )
    {
-      assert( n_new <= n_old );
+      VUL_MATH_ASSERT( n_new <= n_old );
       return reinterpret_cast< const Vector< T, n_new > & >( v.data );
    }
 }

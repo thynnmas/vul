@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain¹
  *
  * A vector math library for generic points. These are similar to the vectors
  * in vul_vector.h, but only define operations defined on points. Explicit
@@ -24,7 +24,11 @@
 #include "vul_types.hpp"
 
 #include <cstring> // For memset
+#ifndef VUL_MATH_ASSERT
 #include <assert.h>
+#define VUL_MATH_ASSERT assert
+#endif
+
 
 namespace vul {
    
@@ -413,13 +417,13 @@ namespace vul {
    template< typename T, s32 n >
    T &Point< T, n >::operator[ ]( s32 i )
    {
-      assert( i < n );
+      VUL_MATH_ASSERT( i < n );
       return data[ i ];
    }
    template< typename T, s32 n >
    T const &Point< T, n >::operator[ ]( s32 i ) const
    {
-      assert( i < n );
+      VUL_MATH_ASSERT( i < n );
       return data[ i ];
    }
 

@@ -1,5 +1,5 @@
 /*
-* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
+* Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain?
 *
 * This file describes a constraint satisfaciton solver using the an implementation
 * of the general arc consistency algorithm and vul_astar for a best-first

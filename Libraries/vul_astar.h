@@ -1,5 +1,5 @@
 /*
-* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
+* Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain?
 *
 * This file describes a generic A* implementation for any graph.
 * Define VUL_ASTAR_ALLOC and VUL_ASTAR_FREE to your own allocator

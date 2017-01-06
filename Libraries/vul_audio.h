@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain¹
  *
  * This file contains a low-level wrapper for a few different audio APIs.
  * Supported APIs by system (in order of attempts/fallback):

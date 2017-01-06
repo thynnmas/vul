@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
+ * Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain?
  *
  * This file contains functions to generate common 3D shapes for rendering.
  * Currently implemented:

@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
+ * Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain?
  *
  * This file contains tests for the linear solvers in vul_linear.hpp
  * It compares results against expected results based on offline math,

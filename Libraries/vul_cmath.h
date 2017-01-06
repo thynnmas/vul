@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
+ * Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain?
  *
  * This file contains 2-, 3- and 4-dimensional vector and matrix functions
  * for use in C. Matrices are column major (blame OpenGL), so the naming

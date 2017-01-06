@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain¹
  *
  * A matrix math library for generic matrices. Format inspired by 
  * http://www.reedbeta.com/blog/2013/12/28/on-vector-math-libraries/
@@ -24,7 +24,10 @@
 #ifndef VUL_MATRIX_HPP
 #define VUL_MATRIX_HPP
 
+#ifndef VUL_MATH_ASSERT
 #include <assert.h>
+#define VUL_MATH_ASSERT assert
+#endif
 
 #include "vul_types.hpp"
 
@@ -725,7 +728,7 @@ namespace vul {
 		Matrix< T, coln, rown > m;
 		s32 i, j;
 
-		assert( colo >= coln && rowo >= rown );
+		VUL_MATH_ASSERT( colo >= coln && rowo >= rown );
 
 		for( i = 0; i < coln; ++i ) {
 			for( j = 0; j < rown; ++j ) {
@@ -740,7 +743,7 @@ namespace vul {
 	{
 		s32 i, j;
 
-		assert( dstc >= srcc && dstr >= srcr );
+		VUL_MATH_ASSERT( dstc >= srcc && dstr >= srcr );
 
 		for( i = 0; i < srcc; ++i ) {
 			for( j = 0; j < srcr; ++j ) {
@@ -753,7 +756,7 @@ namespace vul {
 	{
 		s32 i, j;
 
-		assert( dstc >= srcc + firstcol && dstr >= srcr + firstrow );
+		VUL_MATH_ASSERT( dstc >= srcc + firstcol && dstr >= srcr + firstrow );
 
 		for( i = 0; i < srcc; ++i ) {
 			for( j = 0; j < srcr; ++j ) {
@@ -873,16 +876,16 @@ namespace vul {
 	template< typename T, s32 cols, s32 rows >
 	T &Matrix< T, cols, rows >::operator( )( s32 i, s32 j )
 	{
-		assert( i < cols );
-		assert( j < rows );
+		VUL_MATH_ASSERT( i < cols );
+		VUL_MATH_ASSERT( j < rows );
 		return data[ i ][ j ];
 	}
 		
 	template< typename T, s32 cols, s32 rows >
 	T const &Matrix< T, cols, rows >::operator( )( s32 i, s32 j ) const
 	{
-		assert( i < cols );
-		assert( j < rows );
+		VUL_MATH_ASSERT( i < cols );
+		VUL_MATH_ASSERT( j < rows );
 		return data[ i ][ j ];
 	}
 
@@ -1299,7 +1302,7 @@ namespace vul {
 				for( r = 0; r < n; ++r ) {
 					det += mat( c, r ) * adjugate.data[ r ][ c ];
 				}
-				assert( det != 0 && "vul::Matrix.inverse(): Determinant is zero, inverse is not defined!" );
+				VUL_MATH_ASSERT( det != 0 && "vul::Matrix.inverse(): Determinant is zero, inverse is not defined!" );
 			}
 		}
 		

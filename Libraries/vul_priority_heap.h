@@ -1,5 +1,5 @@
 /*
-* Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
+* Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain?
 *
 * This file describes a generic priority queue, implemented as a
 * fibonacci heap.

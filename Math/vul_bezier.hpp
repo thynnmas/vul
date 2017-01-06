@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
+ * Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain?
  *
  * Bezier curves. We support linear, quadratic and cubic bezier curves of
  * all data types that can be cast to/from floats. This file supplies
@@ -22,7 +22,10 @@
 
 #include "vul_point.hpp"
 #include <cstring>
+#ifndef VUL_MATH_ASSERT
 #include <assert.h>
+#define VUL_MATH_ASSERT assert
+#endif
 
 namespace vul {
 
@@ -54,7 +57,7 @@ namespace vul {
 									  Point< T, n > *pts, s32 pt_count,
 									  T step )
 	{
-		assert( pts );
+		VUL_MATH_ASSERT( pts );
 		for( s32 i = 0; i < pt_count - 1; ++i ) {
 			T d = norm( pts[ i + 1 ] - pts[ i ] );
 			for( T t = 0; t < d; t += step ) {
@@ -68,7 +71,7 @@ namespace vul {
 									Point< T, n > *pts, s32 pt_count,
 									T step )
 	{
-		assert( pts );
+		VUL_MATH_ASSERT( pts );
 		for( s32 i = 0; i < pt_count - 2; i += 2 ) {
 			T d = norm( pts[ i + 2 ] - pts[ i ] );
 			for( T t = 0; t < d; t += step ) {
@@ -85,7 +88,7 @@ namespace vul {
 									 Point< T, n > *pts, s32 pt_count,
 									 T step )
 	{
-		assert( pts );
+		VUL_MATH_ASSERT( pts );
 		for( s32 i = 0; i < pt_count - 3; i += 3 ) {
 			T d = norm( pts[ i + 3 ] - pts[ i ] );
 			for( T t = 0; t < d; t += step ) {

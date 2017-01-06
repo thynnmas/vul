@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain¹
+ * Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain¹
  *
  * This file describes a quaternion type that interfaces with the linear math
  * classes otherwise defined in this library. While any numeric type is in theory
@@ -658,13 +658,13 @@ namespace vul {
 	template< typename T >
 	T &Quaternion< T >::operator[ ]( s32 i )
 	{
-		assert( i < 4 );
+		VUL_MATH_ASSERT( i < 4 );
 		return data[ i ];
 	}
 	template< typename T >
 	T const &Quaternion< T >::operator[ ]( s32 i ) const
 	{
-		assert( i < 4 );
+		VUL_MATH_ASSERT( i < 4 );
 		return data[ i ];
 	}
 
@@ -870,7 +870,7 @@ namespace vul {
 		len = norm( q );
 
 		// Inverse is only valid for length != 0.
-		assert( len > static_cast< T >( 0.f ) );
+		VUL_MATH_ASSERT( len > static_cast< T >( 0.f ) );
 
 		invLen = static_cast< T >( 1.f ) / len;
 		r.data[ 0 ] = -q.x( ) * invLen;
@@ -966,7 +966,7 @@ namespace vul {
 		Vector< T, 3 > ret;
 		T x2, y2, z2, xy, xz, xw, yz, yw, zw;	
 
-		assert( dimension < 3 );
+		VUL_MATH_ASSERT( dimension < 3 );
 
 		T one, two;
 		one = static_cast< T >( 1.f );

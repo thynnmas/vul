@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
+ * Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain?
  *
  * This defines normal type operators on __m128 and __m256 which allow us
  * to write SOA simd code just like scalar code with Vector< __m128, n >-style.

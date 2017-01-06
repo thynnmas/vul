@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
+ * Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain?
  *
  * This file describes an alternative to the STL vector class. This is mostly 
  * based on Tom Forsyth's ArbitraryList found here: https://home.comcast.net/~tom_forsyth/blog.wiki.html

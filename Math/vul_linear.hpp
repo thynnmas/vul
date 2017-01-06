@@ -1,5 +1,5 @@
 /*
- * Villains' Utility Library - Thomas Martin Schmid, 2016. Public domain?
+ * Villains' Utility Library - Thomas Martin Schmid, 2017. Public domain?
  *
  * Some commonly useful linear system solvers (solvers of the linear system
  * Ax = b). The following solvers are supported:

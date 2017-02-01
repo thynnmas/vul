@@ -267,6 +267,16 @@ DEFINE_S44COMPWISE_OP( mmuls44, * )
 #undef DEFINE_S33COMPWISE_OP
 #undef DEFINE_S44COMPWISE_OP
 
+m22 mat22( const f32 a00, const f32 a01,
+			  const f32 a10, const f32 a11 );
+m33 mat33( const f32 a00, const f32 a01, const f32 a02,
+			  const f32 a10, const f32 a11, const f32 a12,
+			  const f32 a20, const f32 a21, const f32 a22 );
+m44 mat44( const f32 a00, const f32 a01, const f32 a02, const f32 a03,
+			  const f32 a10, const f32 a11, const f32 a12, const f32 a13,
+			  const f32 a20, const f32 a21, const f32 a22, const f32 a23,
+			  const f32 a30, const f32 a31, const f32 a32, const f32 a33 );
+
 m22 mcopy2( const m22 *m );
 m33 mcopy3( const m33 *m );
 m44 mcopy4( const m44 *m );
@@ -301,6 +311,11 @@ v2 vmulm2( const m22 *m, const v2 v );
 v3 vmulm3( const m33 *m, const v3 v );
 /* Right side matrix-vector multiplication */
 v4 vmulm4( const m44 *m, const v4 v );
+
+/* Create quaternion from 3x3 matrix */
+v4 quaternion_from_matrix( const m33 *m );
+/* Create a QTangent */
+v4 construct_qtangent( const v3 b, const v3 t, const v3 n );
 
 #ifdef __cplusplus
 }
@@ -1101,6 +1116,77 @@ v4 vmulm4( const m44 *m, const v4 v ) {
    r.z = m->a02 * v.x + m->a12 * v.y + m->a22 * v.z + m->a32 * v.w;
    r.w = m->a03 * v.x + m->a13 * v.y + m->a23 * v.z + m->a33 * v.w;
    return r;
+}
+
+v4 quaternion_from_matrix( const m33 *m )
+{
+   v4 q;
+   f32 t;
+
+   if( m->a22 < 0.f ) {
+      if( m->a00 > m->a11 ) {
+         t = 1.f + m->a00 - m->a11 - m->a22;
+         q.x = t;
+         q.y = m->a10 + m->a01;
+         q.z = m->a02 + m->a20;
+         q.w = m->a21 - m->a12;
+      } else {
+         t = 1.f - m->a00 + m->a11 - m->a22;
+         q.x = m->a10 + m->a01;
+         q.y = t;
+         q.z = m->a21 + m->a12;
+         q.w = m->a02 - m->a20;
+      }
+   } else {
+      if( m->a00 < -m->a11 ) {
+         t = 1.f - m->a00 - m->a11 + m->a22;
+         q.x = m->a02 + m->a20;
+         q.y = m->a21 + m->a12;
+         q.z = t;
+         q.w = m->a10 - m->a01;
+      } else {
+         t = 1.f + m->a00 + m->a11 + m->a22;
+         q.x = m->a21 - m->a12;
+         q.y = m->a02 - m->a20;
+         q.z = m->a10 - m->a01;
+         q.w = t;
+      }
+   }
+   q = vmuls4( q, 0.5f / sqrtf( t ) );
+   return q;
+}
+
+v4 construct_qtangent( const v3 b, const v3 t, const v3 n )
+{
+   m33 m;
+   v4 q;
+   f32 bias, renorm, scale, qs;
+
+   m = mat33( b.x, t.x, n.x,
+              b.y, t.y, n.y,
+              b.z, t.z, n.z );
+   scale = mdeterminant33( &m ) < 0.f ? -1.f : 1.f;
+   m.a20 *= scale;
+   m.a21 *= scale;
+   m.a22 *= scale;
+
+   q = vnormalize4( quaternion_from_matrix( &m ) );
+
+   bias = 1e-7;
+   renorm = sqrtf( 1.f - bias * bias );
+   if( -bias < q.w && q.w < bias ) {
+      q.w = q.w > 0.f ? bias : -bias;
+      q.x *= renorm;
+      q.y *= renorm;
+      q.z *= renorm;
+   }
+
+   qs = ( scale < 0.f && q.w > 0.f ) || ( scale > 0.f && q.w < 0.f )
+      ? -1.f : 1.f;
+
+   q = vmuls4( q, qs );
+
+   return q;
 }
 
 #ifdef __cplusplus

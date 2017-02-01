@@ -36,6 +36,7 @@ For more complete descriptions and instructions, see the comments at the top of 
 | vul_stable_array.h | Generic resizable array that does not reallocate on resize                   | &#9734; | | |
 | vul_stack.h | Generic stack                                                                       | &#9734; | vul_stable_array | Pointers to elements are stable |
 | vul_string.h | Some useful string functions (UTF8 & search/pattern matching (KMP))                | &#9872; | | UTF-8 functions are due stb.h |
+| vul_thread.h | OS-agnostic threads and mutexes                                                    | &#9888; | | Useful when you want to avoid the C++ stdlib, but required dynamic linking for pthreads on non-windows platforms |
 | vul_timer.h | OS-agnostic timer & sleep function                                                  | &#9734; | |  |
 | vul_types.h | Defines standard types in my favourable form                                        | &#9734; | | Useful if you like the form, horrible otherwise. |
 

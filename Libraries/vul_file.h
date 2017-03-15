@@ -121,6 +121,7 @@ extern "C" {
 vul_mmap_file vul_mmap( const char *path, void *base_addr, s32 prot, s32 flags, 
                         size_t file_offset, size_t map_length );
 b32 vul_munmap( vul_mmap_file file );
+b32 vul_mmap_flush( void *base, size_t len );
 char *vul_file_find_postfix( const char *filename );
 char *vul_file_name_without_path( const char *filename );
 b32 vul_file_fullpath( char *abs_path, size_t abs_path_max_len, const char *rel_path );
@@ -234,6 +235,19 @@ b32 vul_munmap( vul_mmap_file file )
 #else
    ret = munmap( file.map, file.length );
    ret |= close( file.fd );
+#endif
+   return ret;
+}
+
+b32 vul_mmap_flush( void *base, size_t len )
+{
+   s32 ret;
+#ifdef VUL_WINDOWS
+   ret = FlushViewOfFile( base, len ) ? 0 : GetLastError( );
+#else
+   // @TODO(thynn): Allow passing in these flags even if that complicates
+   // the API due to differences with windows?
+   ret = msync( base, len, MS_SYNC );
 #endif
    return ret;
 }

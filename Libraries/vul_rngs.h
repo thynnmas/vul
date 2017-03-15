@@ -10,7 +10,7 @@
  *                   is used to initialize. We use an alternate XorShift to advance the state.
  * -vul_rng_mt19937: Mersenne twister 19937.
  * -vul_rng_pcg32: See http://www.pcg-random.org/ @NOTE(thynn): The core of this is Apache 2.0 licenced, 
- *                 see the comment on the definition of vul_rng_pcg32_nex_unsigned)
+ *                 see the comment on the definition of vul_rng_pcg32_next_unsigned)
  *
  * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)

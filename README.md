@@ -17,6 +17,7 @@ For more complete descriptions and instructions, see the comments at the top of 
 | vul_cmath.h | C vector and matrix math library                                                    | &#9734; |  | Needs tests, but used a lot |
 | vul_csp.h | Constraint satisfaction problem solver using GAC                                      | &#9734; | vul_astar |  |
 | vul_distributions.h | Contains a halton series generator                                          | &#9872; |  | Intended to contain more distributions as the need arises |
+| vul_exploding_comment.h | Timed comments-as-macros. Compile-time error at set date (in debug).    | &#9872; |  | Requires C++11 (constexpr) |
 | vul_file.h | System-agnosting mmap and file change monitoring + some stb.h file-related functions | &#9872; | vul_string | Has seen some use, but has no tests. OS X file monitoring missing. |
 | vul_gl.h | Some minor GL helper functions (error printing and glu-matrix-likes)                   | &#9734; | | |
 | vul_hash_map.h | Generic C hash-map using Robin Hood hashing.                                     | &#9872; | | Has decent test coverage, but has seen limited use. |

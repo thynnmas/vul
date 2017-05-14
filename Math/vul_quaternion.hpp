@@ -145,6 +145,11 @@ namespace vul {
 	 */
 	template< typename T >
 	Quaternion< T > makeQuatFromMatrix( const Matrix< T, 3, 3 > &mat );
+   /**
+    * Construct a quaternion from a set of euler angles
+    */
+   template< typename T >
+   Quaternion< T > makeQuatFromEuler( const Vector< T, 3 > &angles );
 	// Special cases
 	/**
 	 * Create the zero-quaternion.
@@ -285,6 +290,12 @@ namespace vul {
 	 */
 	template< typename T >
 	Vector< T, 3 > extractAxis( const Quaternion< T > &q, u32 dimension );
+
+   /**
+    * Extracts the Euler angles from the quaternion
+    */
+   template< typename T >
+   Vector< T, 3 > euler_angles( const Quaternion< T > &q );
 
 	//----------------
 	// Definitions
@@ -506,6 +517,27 @@ namespace vul {
 		q *= pf / sqrt( t );
 		return q;
 	}
+   template< typename T >
+   Quaternion< T > makeQuatFromEuler( const Vector< T, 3 > &angles )
+   {
+      Quaternion< T > q;
+      T half;
+
+      half = T( 0.5f );
+      T cy = cos( angles[ 0 ] * half );
+      T sy = cos( angles[ 0 ] * half );
+      T cr = cos( angles[ 1 ] * half );
+      T sr = cos( angles[ 1 ] * half );
+      T cp = cos( angles[ 2 ] * half );
+      T sp = cos( angles[ 2 ] * half );
+      
+      q[ 0 ] = cy * cr * cp + sy * sr * sp;
+      q[ 1 ] = cy * sr * cp - sy * cr * sp;
+      q[ 2 ] = cy * cr * sp + sy * sr * cp;
+      q[ 3 ] = sy * cr * cp - cy * sr * sp;
+
+      return q;
+   }
 	// Special cases
 	template< typename T >
 	Quaternion< T > makeZero( )
@@ -1006,7 +1038,34 @@ namespace vul {
 
 		return normalize( ret );
 	}
+   
+   template< typename T >
+   Vector< T, 3 > euler_angles( const Quaternion< T > &q )
+   {
+      Vector< T, 3 > a;
+      T y2, one, two, t0, t1, t2, t3, t4;
+      
+      two = T( 2.f );
+      one = T( 1.f );
+      y2 = q[ 1 ] * q[ 1 ];
 
+      t0 = two * ( q[ 3 ] * q[ 0 ] + q[ 1 ] * q[ 2 ] );
+      t1 = one - two * ( q[ 0 ] * q[ 0 ] + y2 );
+      a[ 2 ] = atan2( t0, t1 );
+
+      t2 = two * ( q[ 3 ] * q[ 1 ] - q[ 2 ] * q[ 0 ] );
+      t2 = t2 > one ? one : t2;
+      t2 = t2 < -one ? -one : t2;
+      a[ 1 ] = asin( t2 );
+
+      t3 = two * ( q[ 3 ] * q[ 2 ] + q[ 0 ] * q[ 1 ] );
+      t4 = one - two * ( y2 + q[ 2 ] * q[ 2 ] );
+      a[ 0 ] = atan2( t3, t4 );
+
+      return a;
+   }
 }
+
+// @TODO(thynn): Add forward, left, up functions that construct only the column of the matrix we're interested in, and normalize it!
 
 #endif

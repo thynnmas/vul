@@ -193,6 +193,8 @@ namespace vul {
 	Matrix< T, cols, rows > makeMatrixFromRows( const Vector< T, cols > r[ rows ] );
 	template< typename T, s32 cols, s32 rows >
 	Matrix< T, cols, rows > makeMatrixFromColumns( const Vector< T, rows > c[ cols ] );
+	template< typename T >
+	Matrix< T, 3, 3 > makeMatrix33FromEuler( const Vector< T, 3 > &angles );
 	/**
 	 * Copies the top left coloXrowo matrix of mat into a new matrix of size
 	 * colXrown, essentially truncating the top left submatrix of mat into a
@@ -389,8 +391,18 @@ namespace vul {
 	 */
 	template< typename T, s32 cols, s32 rows >
 	Vector< T, cols > row( const Matrix< T, cols, rows > &mat, s32 n );
+   /**
+    * Returns the Euler angles from the given 3x3 matrix
+    */
+    template< typename T >
+    Vector< T, 3 > euler_angles( const Matrix< T, 3, 3 > &mat );
+	/**
+    * Returns an orthonormal basis constructed from a normal.
+    */
+    template< typename T >
+    Matrix< T, 3, 3 > orthonormal_basis( const Vector< T, 3 > &n );
+   
 
-	
 	/**
 	 * Describes the type of column or row that contains the most zeroes.
 	 * Used by vul_matrix_zero_helper.
@@ -722,6 +734,30 @@ namespace vul {
 
 		return m;
 	}
+	template< typename T >
+	Matrix< T, 3, 3 > makeMatrix33FromEuler( const Vector< T, 3 > &angles )
+   {
+      Matrix< T, 3, 3 > m;
+
+      T cy = cos( angles[ 0 ] );
+      T sy = sin( angles[ 0 ] );
+      T cr = cos( angles[ 1 ] );
+      T sr = sin( angles[ 1 ] );
+      T cp = cos( angles[ 2 ] );
+      T sp = sin( angles[ 2 ] );
+
+      m.data[ 0 ][ 0 ] = cy * cr;
+      m.data[ 0 ][ 1 ] = sy * sp - cy * sr * cp;
+      m.data[ 0 ][ 2 ] = cy * sr * sp + sy * cp;
+      m.data[ 1 ][ 0 ] = sr;
+      m.data[ 1 ][ 1 ] = cr * cp;
+      m.data[ 1 ][ 2 ] = -cr * sp;
+      m.data[ 2 ][ 0 ] = -sy * cr;
+      m.data[ 2 ][ 1 ] = sy * sr * cp + cy * sp;
+      m.data[ 2 ][ 2 ] = -sy * sr * sp + cy * cp;
+
+      return m;
+   }
 	template< typename T, s32 coln, s32 rown, s32 colo, s32 rowo >
 	Matrix< T, coln, rown > truncate( const Matrix< T, colo, rowo > &mat )
 	{
@@ -1419,6 +1455,42 @@ namespace vul {
 
 		return v;
 	}
+   template< typename T >
+   Vector< T, 3 > euler_angles( const Matrix< T, 3, 3 > &mat )
+   {
+      Vector< T, 3 > a;
+
+      a[ 0 ] = atan2(  mat.data[ 1 ][ 2 ], mat.data[ 2 ][ 2 ] );
+      a[ 1 ] = atan2( -mat.data[ 0 ][ 2 ], sqrt( mat.data[ 1 ][ 2 ] * mat.data[ 1 ][ 2 ]
+                                               + mat.data[ 2 ][ 2 ] * mat.data[ 2 ][ 2 ] ) );
+      a[ 2 ] = atan2( mat.data[ 0 ][ 1 ], mat.data[ 0 ][ 0 ] );
+
+      return a;
+   }
+   // Citation: Tom Duff, James Burgess, Per Christensen, Christophe Hery, Andrew Kensler, Max Liani, and Ryusuke Villemin, 
+   // Building an Orthonormal Basis, Revisited, Journal of Computer Graphics Techniques (JCGT), vol. 6, no. 1, 1-8, 2017
+   // Available online http://jcgt.org/published/0006/01/01/
+   template< typename T >
+   Matrix< T, 3, 3 > orthonormal_basis( const Vector< T, 3 > &n )
+   {
+      Vector< T, 3 > b1;
+      Vector< T, 3 > b2;
+
+      T one = T( 1.0f );
+      T sign = copysign( one, n[ 2 ]);
+      const T a = -one / ( sign + n[ 2 ] );
+      const T b = n[ 0 ] * n[ 1 ] * a;
+      
+      b1[ 0 ] = one + sign * n.x * n.x * a;
+      b1[ 1 ] = sign * b;
+      b1[ 2 ] = -sign * n.x;
+      b2[ 0 ] = b;
+      b2[ 1 ] = sign + n.y * n.y * a;
+      b2[ 2 ] = -n.y;
+
+      // @TODO(thynn): Write test for this
+      return makeMatrix33FromColumns( b1, b2, n ); // @TODO(thynn): Check handedness of this
+   }
 
 	// Helper function to speed up determinant calculation for large matrices
 	// Counts the number of zeros in each column & row, returning a the index 

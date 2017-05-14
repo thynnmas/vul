@@ -29,7 +29,7 @@
 //#define VUL_DEFINE
 
 /**
- * State of a vul_halton_parir
+ * State of a vul_halton
  */
 typedef struct vul_halton {
 	f32 value;
@@ -45,7 +45,7 @@ extern "C" {
  */
 vul_halton *vul_halton_series_create( u32 base1, u32 seed );
 /**
- * Destroy a vul_halton_pair state.
+ * Destroy a vul_halton state.
  */
 void vul_halton_series_destroy( vul_halton *r );
 /**

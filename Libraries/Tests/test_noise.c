@@ -32,7 +32,7 @@ int vul__test_noise_worley_2d( )
 	};
 	for( int y = 0; y < 256; ++y ) {
 		for( int x = 0; x < 256; ++x ) {
-			a[ y * 256 + x ] = vul_noise_worley_2d( x, y, 13, weights );
+			a[ y * 256 + x ] = vul_noise_worley_2d( x / 32.f, y / 32.f, 13, weights );
 		}
 	}
 

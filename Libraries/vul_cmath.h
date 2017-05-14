@@ -1189,6 +1189,22 @@ v4 construct_qtangent( const v3 b, const v3 t, const v3 n )
    return q;
 }
 
+m33 construct_orthonormal_basis( const v3 n )
+{
+   v3 b1, b2;
+
+   f32 sign = copysign( 1.f, n.z );
+   const f32 a = -1.f / ( sign + n.z );
+   const f32 b = n.x * n.y * a;
+
+   b1 = vec3( 1.f + sign * n.x * n.x * a, sign * b, -sign * n.x );
+   b2 = vec3( b, sign + n.y * n.y * a, -n.y );
+   
+   return mat33( b1.x, b2.x, n.x,
+                 b1.y, b2.y, n.y, 
+                 b1.z, b2.z, n.z );
+}
+
 #ifdef __cplusplus
 }
 #endif

@@ -6,6 +6,9 @@
  * was a bit of a hassle). They have been renamed to avoid collission if stb.h is
  * included.
  *
+ * Define VUL_FILE_NO_ALLOC to use a allocator-free API that takes a buffer
+ * instead of an allocator.
+ *
  * ? If public domain is not legally valid in your legal jurisdiction
  *   the MIT licence applies (see the LICENCE file)
  *
@@ -129,11 +132,18 @@ size_t vul_file_length( FILE *f );
 s32 vul_file_compare( FILE *f, FILE *g );
 s32 vul_file_equal( const char *s1, const char *s2 );
 s32 vul_file_exists( const char *filename );
+#ifdef VUL_FILE_NO_ALLOC
+// Buffer must have enough room for a temporary file name
+b32 vul_file_open( vul_file *f, const char *filename, const char *mode, void *buffer );
+s32 vul_file_close( vul_file *f, vul_file_keep keep );
+b32 vul_file_copy( char *src, char *dest );
+#else
 vul_file *vul_file_open( const char *filename, const char *mode, void* ( *allocator )( size_t ) );
 s32 vul_file_close( vul_file *f, vul_file_keep keep, void( *deallcator )( void* ) );
 b32 vul_file_copy( char *src, char *dest,
                    void* ( *allocator )( size_t ),
                    void( *deallcator )( void* ) );
+#endif
 vul_file_watch vul_file_monitor_change( const char *path );
 b32 vul_file_monitor_check( vul_file_watch w );
 b32 vul_file_monitor_stop( vul_file_watch w );
@@ -381,6 +391,190 @@ s32 vul_file_exists( const char *filename )
 #endif
 }
 
+#ifdef VUL_FILE_NO_ALLOC
+b32 vul_file_open( vul_file *f, const char *filename, const char *mode, void* buffer )
+{
+   size_t p, len;
+   char name_full[ 4096 ];
+   char temp_full[ sizeof( name_full ) + 12 ];
+#ifdef VUL_WINDOWS
+   s32 j;
+#endif
+
+   /* Handle the read-only case */
+   if( mode[ 0 ] != 'w' && !strchr( mode, '+' ) ) {
+      
+      /* Mark that we have no tempfile */
+      f->tmp_path = NULL;
+      f->path = NULL;
+
+      /* And open it */
+#ifdef VUL_WINDOWS
+      f->file = _wfopen( ( const wchar_t * )vul_wchar_from_utf8_large( filename ),
+                         ( const wchar_t * )vul_wchar_from_utf8_small( mode ) );
+#else
+      f->file = fopen( filename, mode );
+#endif
+      return VUL_TRUE;
+   }
+   
+   /* Save away full path */
+   name_full[ 0 ] = 0;
+   if( vul_file_fullpath( name_full, sizeof( name_full ), filename ) == 0 )
+      return VUL_FALSE;
+   
+   /* Try to generate a temporary file in the same directory */
+   len = strlen( name_full );
+   p = len - 1;
+   while( p > 0 && name_full[ p ] != '/' && name_full[ p ] != '\\'
+                && name_full[ p ] != ':' && name_full[ p ] != '~' )
+         --p;
+   ++p;
+
+   memcpy( temp_full, name_full, p );
+
+#ifdef VUL_WINDOWS
+   /* try multiple times to make a temporary file */
+   f->file = NULL;
+   for( j = 0; j < 32; ++j ) {
+      /* add a small random prefix */
+      char name[ 15 ], c1, c2, c3;
+      s32 r = rand() % RAND_MAX;
+      c1 = 'a' + ( r & 0xf );
+      c2 = 'a' + ( ( r & 0xf0 ) >> 4 );
+      c3 = 'a' + ( ( r & 0xf00 ) >> 8 );
+      sprintf( name, "vtmp%c%c%cXXXXXX", c1, c2, c3 );
+      name[ 14 ] = 0;
+      strcpy( temp_full + p, name );
+      if( _mktemp( temp_full ) == NULL ) {
+         continue;
+      }
+
+      f->file = fopen( temp_full, mode );
+      if( f->file != NULL ) {
+         break;
+      }
+   }
+#else
+   {
+      strcpy( temp_full + p, "vtmpXXXXXX" );
+      s32 fd = mkstemp( temp_full );
+      if( fd == -1 ) return VUL_FALSE;
+      f->file = fdopen( fd, mode );
+      if( f->file == NULL ) {
+         unlink( temp_full );
+         close( fd );
+         return VUL_FALSE;
+      }
+   }
+#endif
+   if( f->file != NULL ) {
+      /* Store the information */
+      f->path = ( char* )buffer;
+      memcpy( f->path, name_full, len );
+      f->path[ len ] = 0;
+
+      len = strlen( temp_full );
+      f->tmp_path = ( char* )buffer + len + 1;
+      memcpy( f->tmp_path, temp_full, len );
+      f->tmp_path[ len ] = 0;
+
+      /* And return the file */
+      return VUL_TRUE;
+   }
+
+   return VUL_FALSE;
+}
+
+s32 vul_file_close( vul_file *f, vul_file_keep keep )
+{
+   s32 ok = VUL_FALSE;
+   if( f->file == NULL ) {
+      return VUL_FALSE;
+   }
+
+   if( ferror( f->file ) )
+      keep = vul_file_keep_no;
+
+   fclose( f->file );
+
+   if( f->tmp_path == NULL ) {
+      return VUL_TRUE; // No temporary file to copy
+   }
+
+   if( keep == vul_file_keep_if_different ) {
+      // check if the files are identical
+      if( vul_file_equal( f->path, f->tmp_path ) ) {
+         keep = vul_file_keep_no;
+         ok = VUL_TRUE;  // report success if no change
+      }
+   }
+
+   if( keep != vul_file_keep_no ) {
+      if( vul_file_exists( f->path ) && remove( f->path ) ) {
+         // failed to delete old, so don't keep new
+         keep = vul_file_keep_no;
+      } else {
+#ifdef VUL_WINDOWS
+         vul_wchar btmp[ 4096 ], bp[ 4096 ];
+         vul_wchar_from_utf8( btmp, f->tmp_path, 4096 );
+         vul_wchar_from_utf8( bp, f->path, 4096 );
+         if( !_wrename( btmp, bp ) ) {
+#else
+         if( !rename( f->tmp_path, f->path ) ) {
+#endif
+            ok = VUL_TRUE;
+         } else {
+            keep = vul_file_keep_no;
+         }
+      }
+   }
+
+   if( keep == vul_file_keep_no )
+      remove( f->tmp_path );
+
+   return ok;
+}
+
+b32 vul_file_copy( char *src, char *dest )
+{
+   char buffer[ 1024 ];
+
+   FILE *f, *g;
+
+   /* If file already exists, do nothing */
+   if( vul_file_equal( src, dest ) ) return VUL_TRUE;
+
+   /* open file for reading */
+#ifdef VUL_WINDOWS
+   f = _wfopen( vul_wchar_from_utf8_large( src ), vul_wchar_from_utf8_small( "rb" ) );
+#else
+   f = fopen( src, "rb" );
+#endif
+   if( f == NULL ) return VUL_FALSE;
+
+   /* open file for writing */
+#ifdef VUL_WINDOWS
+   g = _wfopen( vul_wchar_from_utf8_large( src ), vul_wchar_from_utf8_small( "wb" ) );
+#else
+   g = fopen( src, "wb" );
+#endif
+   if( g == NULL ) {
+      fclose( f );
+      return VUL_FALSE;
+   }
+
+   while( !feof( f ) ) {
+      size_t n = fread( buffer, 1, 1024, f );
+      if( n != 0 )
+         fwrite( buffer, 1, n, g );
+   }
+
+   fclose( f );
+   fclose( g );
+   return VUL_TRUE;
+}
+#else
 vul_file *vul_file_open( const char *filename, const char *mode, void* ( *allocator )( size_t ) )
 {
    vul_file *f = ( vul_file* )allocator( sizeof( vul_file ) );
@@ -581,6 +775,7 @@ b32 vul_file_copy( char *src, char *dest,
    fclose( g );
    return VUL_TRUE;
 }
+#endif
 
 #include <errno.h>
 /* Blocking monitoring */

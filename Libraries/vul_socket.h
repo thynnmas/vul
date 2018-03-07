@@ -42,6 +42,8 @@
    #include <netinet/in.h>
 	#include <netinet/tcp.h>
 	#include <netdb.h>
+   #include <fcntl.h>
+   #include <errno.h>
 #elif defined( VUL_OSX )
 	#include <CoreFoundation/CoreFoundation.h>
 	#include <sys/types.h>
@@ -64,7 +66,6 @@ typedef struct vul_address {
 	struct sockaddr_in addr;
 #endif
 } vul_address;
-
 
 /**
  * Socket abstraction.
@@ -107,12 +108,21 @@ int vul_socket_send( vul_socket *s, vul_packet *p, unsigned int timeout_millis, 
  */
 int vul_socket_receive( vul_socket *s, vul_packet *p, unsigned int timeout_millis );
 /**
- * Binds to the given port, opens a listening socket.
+ * Receives a packet from a socket. Packet data is stored in the given
+ * buffer up to the max size value given.
+ * Includes an optional timeout value.
  */
-int vul_socket_listen( vul_socket *s, vul_address *a );
+int vul_socket_receive_inplace( vul_socket *s, vul_packet *p, 
+                                void *data, size_t max_bytes,
+                                unsigned int timeout_millis );
+/**
+ * Binds to the given port, opens a listening socket.
+ * Block specifies whether to make calls to accept on this socket blocking.
+ */
+int vul_socket_listen( vul_socket *s, vul_address *a, int blocking );
 /**
  * Accepts connections on the given port. Must be listening already,
- * so call vul_socket_liste( 'listen' ) first.
+ * so call vul_socket_listen( 'listen' ) first.
  */
 int vul_socket_accept( vul_socket *listen, vul_socket *ret );
 /**
@@ -129,10 +139,11 @@ int vul_socket_close_polite( vul_socket *s );
 int vul_socket_connect( vul_socket *s, vul_address *a );
 /**
  * Populate the given address struct with the given IP string and port.
+ * Set udp to non-zero to use UDP and not TCP.
  */
-int vul_socket_address_create( vul_address *a, const char *ip, unsigned short port );
+int vul_socket_address_create( vul_address *a, const char *ip, unsigned short port, int udp );
 /**
- * Destroy and address struct
+ * Destroy an address struct
  */
 void vul_socket_address_destroy( vul_address *a );
 #ifdef __cplusplus
@@ -175,7 +186,14 @@ int vul_socket_send( vul_socket *s, vul_packet *p, unsigned int timeout_millis, 
 	if( timeout_millis ) {
 		setsockopt( s->socket, SOL_SOCKET, SO_SNDTIMEO, ( char* )&timeout_millis, sizeof( unsigned int ) );
 	}
-	return send( s->socket, p->data, p->size_bytes, 0 );
+	if( send( s->socket, p->data, p->size_bytes, 0 ) ) {
+#ifdef VUL_WINDOWS
+      return WSAGetLastError( );
+#else
+      return errno;
+#endif
+   }
+   return 0;
 }
 
 int vul_socket_receive( vul_socket *s, vul_packet *p, unsigned int timeout_millis )
@@ -192,13 +210,13 @@ int vul_socket_receive( vul_socket *s, vul_packet *p, unsigned int timeout_milli
 		if( res > 0 ) {
 			if( !p->size_bytes ) {
 				p->size_bytes = res;
-				p->data = ( char* )malloc( p->size_bytes );
+				p->data = ( unsigned char* )malloc( p->size_bytes );
 				if( p->data == NULL ) return -1;
 				memcpy( p->data, buffer, res );
 			} else {
 				size_t oldsize = p->size_bytes;
 				p->size_bytes += res;
-				p->data = ( char* )realloc( p->data, p->size_bytes );
+				p->data = ( unsigned char* )realloc( p->data, p->size_bytes );
 				if( p->data == NULL ) return -1;
 				memcpy( p->data + oldsize, buffer, res );
 			}
@@ -216,8 +234,38 @@ int vul_socket_receive( vul_socket *s, vul_packet *p, unsigned int timeout_milli
 	} while ( res > 0 && res == VUL_SOCKET_DEFAULT_BUFFER_LENGTH );
 	return 0;
 }
+int vul_socket_receive_inplace( vul_socket *s, vul_packet *p, 
+                                void *data, size_t max_bytes,
+                                unsigned int timeout_millis )
+{
+	int res;
+	memset( p, 0, sizeof( vul_packet ) );
 
-int vul_socket_listen( vul_socket *s, vul_address *a )
+	if( timeout_millis ) {
+		setsockopt( s->socket, SOL_SOCKET, SO_RCVTIMEO, ( char* )&timeout_millis, sizeof( unsigned int ) );
+	}
+   res = recv( s->socket, data, max_bytes, 0 );
+   if( res > 0 ) {
+      p->data = data;
+      p->size_bytes = res;
+      if( res == max_bytes ) {
+         return 0xf1113d;
+      }
+   } else if( res == 0 ) {
+      // Socket closed!
+      return 0xc105ed;
+   } else {
+      // Error!
+#ifdef VUL_WINDOWS
+      return WSAGetLastError( );
+#else
+      return errno;
+#endif
+   }
+	return 0;
+}
+
+int vul_socket_listen( vul_socket *s, vul_address *a, int blocking )
 {
 	int ret;
 #ifdef VUL_WINDOWS
@@ -227,6 +275,16 @@ int vul_socket_listen( vul_socket *s, vul_address *a )
 		ret = WSAGetLastError( );
 		return ret;
 	}
+   /* Set to non-blocking if wanted */
+   if( !blocking ) {
+      unsigned long block = 1;
+      ret = ioctlsocket( s->socket, FIONBIO, &block );
+      if( ret == SOCKET_ERROR ) {
+         ret = WSAGetLastError( );
+         WSACleanup( );
+         return ret;
+      }
+   }
 	/* Bind first */
 	ret = bind( s->socket, a->addr->ai_addr, ( int )a->addr->ai_addrlen );
 	if( ret == SOCKET_ERROR ) {
@@ -248,6 +306,19 @@ int vul_socket_listen( vul_socket *s, vul_address *a )
 	if( s->socket < 0 ) {
 		return s->socket;
 	}
+   int flags = fcntl( s->socket, F_GETFL, 0 );
+   if( flags < 0 ) {
+      close( s->socket );
+      return flags;
+   }
+   if( !blocking ) {
+      flags |= SOCK_NONBLOCK;
+      ret = fcntl( s->socket, F_SETFL, flags );
+      if( ret < 0 ) {
+         close( s->socket );
+         return ret;
+      }
+   }
 	/* Bind first */
 	ret = bind( s->socket, ( struct sockaddr *)&a->addr, sizeof( a->addr ) );
 	if( ret < 0 ) {
@@ -308,8 +379,8 @@ int vul_socket_close_polite( vul_socket *s )
 
 int vul_socket_connect( vul_socket *s, vul_address *a )
 {
-	int ret;
 #ifdef VUL_WINDOWS
+	int ret;
 	s->socket = socket( a->addr->ai_family, a->addr->ai_socktype, a->addr->ai_protocol );
 	if( s->socket == INVALID_SOCKET ) {
 		ret = WSAGetLastError( );
@@ -332,15 +403,20 @@ int vul_socket_connect( vul_socket *s, vul_address *a )
 #endif
 }
 
-int vul_socket_address_create( vul_address *a, const char *ip, unsigned short port )
+int vul_socket_address_create( vul_address *a, const char *ip, unsigned short port, int udp )
 {
 #ifdef VUL_WINDOWS
 	char str[ 16 ];
 	
 	ZeroMemory( &a->hints, sizeof( a->hints ) );
 	a->hints.ai_family = AF_INET;
-	a->hints.ai_socktype = SOCK_STREAM;
-	a->hints.ai_protocol = IPPROTO_TCP;
+   if( udp ) {
+      a->hints.ai_socktype = SOCK_DGRAM;
+      a->hints.ai_protocol = IPPROTO_UDP;
+   } else {
+      a->hints.ai_socktype = SOCK_STREAM;
+      a->hints.ai_protocol = IPPROTO_TCP;
+   }
 	a->hints.ai_flags = AI_PASSIVE;
 	sprintf_s( str, 15, "%d", port );
 	return getaddrinfo( ip, str, &a->hints, &a->addr );	

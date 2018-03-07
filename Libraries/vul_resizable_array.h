@@ -405,7 +405,9 @@ void *vul_vector_resize( vul_vector *vec, u32 size, u32 free_zero, u32 alloc_exa
       VUL_DATATYPES_CUSTOM_ASSERT( vec->list != NULL ); // Make sure allocation didn't fail
    } else {
       VUL_DATATYPES_CUSTOM_ASSERT( vec->reserved_size > 0 );
+#ifdef VUL_WINDOWS
 #pragma warning(suppress: 6308) // We know it might leak, but the VUL_DATATYPES_CUSTOM_ASSERT will trigger if it does!
+#endif
       vec->list = ( u8* )vec->reallocator( vec->list, vec->element_size * new_size );
       VUL_DATATYPES_CUSTOM_ASSERT( vec->list != NULL ); // Make sure reallocation didn't fail
    }

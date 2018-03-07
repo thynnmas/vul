@@ -22,12 +22,14 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <math.h>
+#include <float.h>
 
 #ifndef VUL_TYPES_H
 #define f32 float
 #define f64 double
 #endif
-typedef size_t word;
+#define bword size_t
+#define word size_t
 
 typedef struct v2 {
    union {
@@ -73,7 +75,7 @@ typedef struct m22 {
       f32 A[ 4 ];
       struct {
          f32 a00, a01,
-            a10, a11;
+             a10, a11;
       };
       v2 c[ 2 ];
    };
@@ -103,6 +105,11 @@ typedef struct m44 {
       v4 c[ 4 ];
    };
 } m44;
+
+typedef struct aabb3 {
+   v3 mn;
+   v3 mx;
+} aabb3;
 
 #ifdef __cplusplus
 extern "C" {
@@ -170,6 +177,10 @@ f32 vnorm4( const v4 v );
 v2 vnormalize2( const v2 v );
 v3 vnormalize3( const v3 v );
 v4 vnormalize4( const v4 v );
+
+v2 vneg2( const v2 v );
+v3 vneg3( const v3 v );
+v4 vneg4( const v4 v );
 
 v2 vcross2( const v2 v );
 v3 vcross3( const v3 a, const v3 b );
@@ -312,10 +323,25 @@ v3 vmulm3( const m33 *m, const v3 v );
 /* Right side matrix-vector multiplication */
 v4 vmulm4( const m44 *m, const v4 v );
 
+/* Multiply two quaternions */
+v4 qmul( const v4 l, const v4 r );
+
 /* Create quaternion from 3x3 matrix */
 v4 quaternion_from_matrix( const m33 *m );
+/* Create 3x3 matrix from quaternion */
+m33 matrix_from_quaternion( const v4 q );
 /* Create a QTangent */
 v4 construct_qtangent( const v3 b, const v3 t, const v3 n );
+
+// 3D AABBs
+v3 center( const aabb3 *b );
+v3 extent( const aabb3 *b );
+bword inside( const aabb3 *b, const v3 pt, const f32 eps );
+bword contains( const aabb3 *outer, const aabb3 *inner );
+bword intersect( const aabb3 *a, const aabb3 *b );
+aabb3 unionize( const aabb3 *a, const aabb3 *b );
+bword inside_frustum( const aabb3 *a, v4 planes[ 6 ] );
+aabb3 transform( const aabb3 *a, const m44 *mat );
 
 #ifdef __cplusplus
 }
@@ -431,6 +457,10 @@ f32 vnorm4( const v4 v ) { return sqrtf( vdot4( v, v ) ); }
 v2 vnormalize2( const v2 v ) { return vmuls2( v, 1.f / vnorm2( v ) ); }
 v3 vnormalize3( const v3 v ) { return vmuls3( v, 1.f / vnorm3( v ) ); }
 v4 vnormalize4( const v4 v ) { return vmuls4( v, 1.f / vnorm4( v ) ); }
+
+v2 vneg2( const v2 v ) { return vec2( -v.x, -v.y ); }
+v3 vneg3( const v3 v ) { return vec3( -v.x, -v.y, -v.z ); }
+v4 vneg4( const v4 v ) { return vec4( -v.x, -v.y, -v.z, -v.w ); }
 
 v2 vcross2( const v2 v ) {
    v2 r;
@@ -1118,6 +1148,27 @@ v4 vmulm4( const m44 *m, const v4 v ) {
    return r;
 }
 
+v4 qmul( const v4 l, const v4 r ) {
+   v4 q;
+   q.x = l.w * r.x + l.x * r.w + l.y * r.z - l.z * r.y;
+   q.y = l.w * r.y - l.x * r.z + l.y * r.w + l.z * r.x;
+   q.z = l.w * r.z + l.x * r.y - l.y * r.x + l.z * r.w;
+   q.w = l.w * r.w - l.x * r.x - l.y * r.y - l.z * r.z;
+   return q;
+}
+
+v3 vrotq( const v4 q, const v3 v ) {
+   v3 uv, uuv;
+
+   uv = vcross3( *( v3* )&q, v );
+   uuv = vcross3( *( v3* )&q, uv );
+
+   uv = vmuls3( uv, q.w * 2.f );
+   uuv = vmuls3( uuv, 2.f );
+
+   return vadd3( v, vadd3( uv, uuv ) );
+}
+
 v4 quaternion_from_matrix( const m33 *m )
 {
    v4 q;
@@ -1154,6 +1205,36 @@ v4 quaternion_from_matrix( const m33 *m )
    }
    q = vmuls4( q, 0.5f / sqrtf( t ) );
    return q;
+}
+
+m33 matrix_from_quaternion( const v4 q )
+{
+   m33 m;
+   f32 x2, y2, z2, xy, xz, xw, yz, yw, zw;
+
+   x2 = q.x * q.x;
+   y2 = q.y * q.y;
+   z2 = q.z * q.z;
+   xy = q.x * q.y;
+   xz = q.x * q.z;
+   xw = q.x * q.w;
+   yz = q.y * q.z;
+   yw = q.y * q.w;
+   zw = q.z * q.w;
+
+   m.a00 = 1.f - 2.f * ( y2 + z2 );
+   m.a01 = 2.f * ( xy + zw );
+   m.a02 = 2.f * ( xz - yw );
+   
+   m.a10 = 2.f * ( xy - zw );
+   m.a11 = 1.f - 2.f * ( x2 + z2 );
+   m.a12 = 2.f * ( yz - xw );
+
+   m.a20 = 2.f * ( xz + yw );
+   m.a21 = 2.f * ( yz - xw );
+   m.a22 = 1.f - 2.f * ( x2 + y2 );
+
+   return m;
 }
 
 v4 construct_qtangent( const v3 b, const v3 t, const v3 n )
@@ -1205,6 +1286,93 @@ m33 construct_orthonormal_basis( const v3 n )
                  b1.z, b2.z, n.z );
 }
 
+v3 center( const aabb3 *b )
+{
+   return vmuls3( vadd3( b->mx, b->mn ), 0.5f );
+}
+
+v3 extent( const aabb3 *b )
+{
+   return  vmuls3( vsub3( b->mx, b->mn ), 0.5f );
+}
+
+bword inside( const aabb3 *b, const v3 pt, const f32 eps )
+{
+   v3 c = center( b );
+   v3 e = extent( b );
+   v3 dc = vsub3( pt, c );
+   return fabs( dc.x ) - fabs( e.x ) <= eps
+       && fabs( dc.y ) - fabs( e.y ) <= eps
+       && fabs( dc.z ) - fabs( e.z ) <= eps;
+}
+
+bword contains( const aabb3 *outer, const aabb3 *inner )
+{
+   return outer->mn.x <= inner->mn.x
+       && outer->mn.y <= inner->mn.y
+       && outer->mn.z <= inner->mn.z
+       && outer->mx.x >= inner->mx.x
+       && outer->mx.y >= inner->mx.y
+       && outer->mx.z >= inner->mx.z;
+}
+
+bword intersect( const aabb3 *a, const aabb3 *b )
+{
+   return a->mn.x <= b->mx.x
+       && a->mn.y <= b->mx.y
+       && a->mn.z <= b->mx.z
+       && a->mx.x >= b->mn.x
+       && a->mx.y >= b->mn.y
+       && a->mx.z >= b->mn.z;
+}
+
+aabb3 unionize( const aabb3 *a, const aabb3 *b )
+{
+   aabb3 r = { .mn = vmin3( a->mn, b->mn ),
+               .mx = vmax3( a->mx, b->mx ) };
+   return r;
+}
+
+bword inside_frustum( const aabb3 *a, v4 planes[ 6 ] )
+{
+   v3 c = center( a );
+   v3 e = extent( a );
+   for( size_t i = 0; i < 6; ++i ) {
+      v3 n = *( v3* )&planes[ i ];
+      if( vdot3( c, n ) + vdot3( e, vabs3( n ) ) > -planes[ i ].w ) {
+         return 1;
+      }
+   }
+   return 0;
+}
+
+aabb3 transform( const aabb3 *a, const m44 *mat )
+{
+   v4 corners[ 8 ] = {
+      vec4( a->mn.x, a->mn.y, a->mn.z, 1.f ),
+      vec4( a->mx.x, a->mx.y, a->mn.z, 1.f ),
+      vec4( a->mn.x, a->mx.y, a->mn.z, 1.f ),
+      vec4( a->mx.x, a->mn.y, a->mn.z, 1.f ),
+      vec4( a->mn.x, a->mn.y, a->mx.z, 1.f ),
+      vec4( a->mx.x, a->mx.y, a->mx.z, 1.f ),
+      vec4( a->mn.x, a->mx.y, a->mx.z, 1.f ),
+      vec4( a->mx.x, a->mn.y, a->mx.z, 1.f ),
+   };
+   
+   for( size_t i = 0; i < 8; ++i ) {
+      corners[ i ] = vmulm4( mat, corners[ i ] );
+   }
+
+   aabb3 r = { .mn = vec3( FLT_MAX, FLT_MAX, FLT_MAX ),
+               .mx = vec3( -FLT_MAX, -FLT_MAX, -FLT_MAX ) };
+   for( size_t i = 0; i < 8; ++i ) {
+      r.mn = vmin3( r.mn, *( v3* )&corners[ i ] );
+      r.mx = vmax3( r.mx, *( v3* )&corners[ i ] );
+   }
+
+   return r;
+}
+
 #ifdef __cplusplus
 }
 #endif
@@ -1215,3 +1383,6 @@ m33 construct_orthonormal_basis( const v3 n )
 #undef f32
 #undef f64
 #endif // VUL_TYPES_H
+
+#undef bword
+#undef word

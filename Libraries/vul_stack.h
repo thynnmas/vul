@@ -38,6 +38,7 @@ typedef vul_svector vul_stack;
 #define vul_stack_push vul_svector_append
 #define vul_stack_size vul_svector_size
 #define vul_stack_is_empty vul_svector_is_empty
+#define vul_stack_clear vul_svector_freemem
 
 #ifdef __cplusplus
 extern "C" {

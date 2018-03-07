@@ -5,7 +5,7 @@
  * Supported APIs by system (in order of attempts/fallback):
  *  - Linux: pulseaudio -> alsa -> oss @TODO(thynn): Test OSS support
  *  - OSX: CoreAudio
- *  - Windows: waveOut @TODO(thynn): XAudio2 and/or WASAPI
+ *  - Windows: waveOut @TODO(thynn): Windows Core Audio
  * @TODO(thynn): These two would probably be useful
  *  - Emscripten
  *  - Mobile: iOS & Android
@@ -198,7 +198,7 @@ extern "C" {
  * Stops the audio system (disconnects from the audio server), stops
  * the worker thread and frees all allocated memory.
  * ALSA and Pulse make use of the drain_before_close argument, which
- * drain it's internal audio buffers before shutting down (finish
+ * drain its internal audio buffers before shutting down (finish
  * playing any uploaded audio) if the argument is non-zero.
  */
 vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_close );
@@ -229,7 +229,7 @@ vul_audio_return vul_audio_destroy( vul_audio_device *dev, int drain_before_clos
  *  show as "vul_audio" "[description]".
  *
  * Remember to call vul_audio_destroy to stop the audio system, free
- * it's memory and stop the started thread!
+ * its memory and stop the started thread!
  */
 #if defined( VUL_WINDOWS ) || defined( VUL_OSX )
 vul_audio_return vul_audio_init( vul_audio_device *out, 
@@ -278,7 +278,7 @@ vul_audio_return vul_audio_clip_pause( vul_audio_device *dev, u64 id, b32 reset 
 
 /* 
  * Starts playback of the clip with the given identifier. If looping is set,
- * the clip is restarted when it's end is reached. If keep is set, the clip
+ * the clip is restarted when its end is reached. If keep is set, the clip
  * remains in the mixer's clip-list upon completion, otherwise it is deleted
  * (this is _default behavior_).
  */

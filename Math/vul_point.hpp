@@ -603,7 +603,7 @@ namespace vul {
       t1 = T( 1.f ) - t;
 
       for( i = 0; i < n; ++i ) {
-         v.data[ i ] = ( mini.data[ i ] * t ) + ( maxi.data[ i ] * t1 );
+         v.data[ i ] = ( mini.data[ i ] * t1 ) + ( maxi.data[ i ] * t );
       }
 
       return v;

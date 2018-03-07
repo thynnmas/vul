@@ -123,7 +123,7 @@ namespace vul {
    T lerp( T a, T b, T_t t )
    {
       T_t t1 = static_cast< T_t >( 1.f ) - t;
-      return a * t + b * t1;
+      return a * t1 + b * t;
    }
 }
 

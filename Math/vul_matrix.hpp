@@ -1192,7 +1192,7 @@ namespace vul {
 		t1 = static_cast< T >( 1.f ) - t;
 		for( i = 0; i < cols; ++i ) {
 			for( j = 0; j < rows; ++j ) {
-				m.data[ i ][ j ] = ( mini.data[ i ][ j ] * t ) + ( maxi.data[ i ][ j ] * t1 );
+				m.data[ i ][ j ] = ( mini.data[ i ][ j ] * t1 ) + ( maxi.data[ i ][ j ] * t );
 			}
 		}
 

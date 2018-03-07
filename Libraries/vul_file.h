@@ -133,7 +133,7 @@ s32 vul_file_compare( FILE *f, FILE *g );
 s32 vul_file_equal( const char *s1, const char *s2 );
 s32 vul_file_exists( const char *filename );
 #ifdef VUL_FILE_NO_ALLOC
-// Buffer must have enough room for a temporary file name
+// Buffer must have enough room for a temporary file name and full path name
 b32 vul_file_open( vul_file *f, const char *filename, const char *mode, void *buffer );
 s32 vul_file_close( vul_file *f, vul_file_keep keep );
 b32 vul_file_copy( char *src, char *dest );
@@ -165,6 +165,7 @@ b32 vul_file_monitor_stop( vul_file_watch w );
 #ifndef VUL_TYPES_H
 #define s32 int32_t
 #define u32 uint32_t
+#define u64 uint64_t
 #define b32 uint32_t
 #endif
 
@@ -474,8 +475,8 @@ b32 vul_file_open( vul_file *f, const char *filename, const char *mode, void* bu
       memcpy( f->path, name_full, len );
       f->path[ len ] = 0;
 
-      len = strlen( temp_full );
       f->tmp_path = ( char* )buffer + len + 1;
+      len = strlen( temp_full );
       memcpy( f->tmp_path, temp_full, len );
       f->tmp_path[ len ] = 0;
 
@@ -785,7 +786,7 @@ b32 vul_file_monitor_wait( const char* path )
 #ifdef VUL_LINUX
    int fd = inotify_init( );
    VUL_FILE_CUSTOM_ASSERT( fd );
-   int wd = inotify_add_watch( fd, path, IN_MODIFY );
+   int wd = inotify_add_watch( fd, path, IN_MODIFY | IN_CREATE | IN_DELETE);
    VUL_FILE_CUSTOM_ASSERT( wd );
    struct inotify_event e;
    int s;
@@ -823,12 +824,12 @@ vul_file_watch vul_file_monitor_change( const char *path )
    ret.fd = inotify_init1( IN_NONBLOCK );
    VUL_FILE_CUSTOM_ASSERT( ret.fd );
 
-   ret.wd = inotify_add_watch( ret.fd, path, IN_MODIFY );
+   ret.wd = inotify_add_watch( ret.fd, path, IN_MODIFY | IN_CREATE | IN_DELETE | IN_ATTRIB );
    VUL_FILE_CUSTOM_ASSERT( ret.wd );
 #elif VUL_OSX
    NOT IMPLEMENTED
 #elif VUL_WINDOWS
-   ret.h = FindFirstChangeNotification( path, FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE );
+   ret.h = FindFirstChangeNotification( path, FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE ); // @TODO(thynn): This is a directory-level API; either we need to split the path into dir + path & verify that changes we find are for the correct file, or we should try using SHChangeNotifyRegister 
    VUL_FILE_CUSTOM_ASSERT( ret.h );
 #else
    vul_file.h Error: Must specify OS
@@ -886,6 +887,7 @@ b32 vul_file_monitor_stop( vul_file_watch w )
 #ifndef VUL_TYPES_H
 #undef s32
 #undef u32
+#undef u64
 #undef b32
 #endif
 

@@ -370,7 +370,7 @@ static s32 vul__sort_count_ascend_run( vul_vector *list, s32 (*comparator)( cons
 		vul__sort_reverse_range( list, low, i );
 	} else {
 		// List is ascending, count ascending elements
-		while( i < high && comparator( vul_vector_get_const( list, i ), vul_vector_get_const( list, i - 1 ) ) <= 0 ) {
+		while( i < high && comparator( vul_vector_get_const( list, i ), vul_vector_get_const( list, i - 1 ) ) >= 0 ) {
 			++i;
 		}
 	}
@@ -445,7 +445,7 @@ static s32 vul__sort_gallop_right( const void *key, vul_vector *list, s32 (*comp
 	while( last_ofs < ofs )
 	{
 		tmp = last_ofs + ( ( ofs - last_ofs ) >> 1 );
-		if( comparator( key, vul_vector_get_const( list, base + tmp ) ) < 0 ) {
+		if( comparator( key, vul_vector_get_const( list, base + tmp ) ) >= 0 ) {
 			ofs = tmp;
 		} else {
 			last_ofs = tmp + 1;
@@ -465,11 +465,11 @@ static s32 vul__sort_gallop_left( const void *key, vul_vector *list, s32 (*compa
 
 	last_ofs = 0;
 	ofs = 1;
-	if( comparator( key, vul_vector_get_const( list, base + hint ) ) > 0 )
+	if( comparator( key, vul_vector_get_const( list, base + hint ) ) < 0 )
 	{
 		// Gallop right
 		max_ofs = length - hint;
-		while( ofs < max_ofs && comparator( key, vul_vector_get_const( list, base + hint + ofs ) ) > 0 )
+		while( ofs < max_ofs && comparator( key, vul_vector_get_const( list, base + hint + ofs ) ) < 0 )
 		{
 			last_ofs = ofs;
 			ofs = ( ofs << 1 ) + 1;
@@ -485,7 +485,7 @@ static s32 vul__sort_gallop_left( const void *key, vul_vector *list, s32 (*compa
 	} else {
 		// Gallop left
 		max_ofs = 1 + hint;
-		while( ofs < max_ofs && comparator( key, vul_vector_get_const( list, base + hint - ofs ) ) <= 0 )
+		while( ofs < max_ofs && comparator( key, vul_vector_get_const( list, base + hint - ofs ) ) >= 0 )
 		{
 			last_ofs = ofs;
 			ofs = ( ofs << 1 ) + 1;
@@ -509,7 +509,7 @@ static s32 vul__sort_gallop_left( const void *key, vul_vector *list, s32 (*compa
 	while( last_ofs < ofs )
 	{
 		tmp = last_ofs + ( ( ofs - last_ofs ) >> 1 );
-		if( comparator( key, vul_vector_get_const( list, base + tmp ) ) > 0 ) {
+		if( comparator( key, vul_vector_get_const( list, base + tmp ) ) < 0 ) {
 			last_ofs = tmp + 1;
 		} else {
 			ofs = tmp;

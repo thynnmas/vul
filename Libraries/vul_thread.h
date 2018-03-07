@@ -281,6 +281,33 @@ inline void vul_mutex_release( vul_mutex *m )
 #endif
 }
 
+// @TODO(thynn): getpid + gettid for all platforms!
+inline u64 vul_gettid( )
+{
+#ifdef VUL_WINDOWS
+   // #error "vul_thread.h: Not implemented yet!"
+   // @TODO(thynn): Actually implement this, this is HAX to test something!
+   return 0;
+#elif defined( VUL_OSX ) || defined( VUL_LINUX )
+   return ( u64 )pthread_self( );
+#else
+   #error "vul_thread.h: Unknown OS"
+#endif
+}
+
+inline u64 vul_getpid( )
+{
+#ifdef VUL_WINDOWS
+   // #error "vul_thread.h: Not implemented yet!"
+   // @TODO(thynn): Actually implement this, this is HAX to test something!
+   return 0;
+#elif defined( VUL_OSX ) || defined( VUL_LINUX )
+   return ( u64 )getpid( );
+#else
+   #error "vul_thread.h: Unknown OS"
+#endif
+}
+
 #ifdef __cplusplus
 }
 #endif

@@ -83,6 +83,10 @@ vul_hash_map *vul_map_create( u32 initial_size, f32 load_factor,
                               void *( *allocator )( size_t size ), 
                               void( *deallocator )( void *ptr ) );
 /**
+ * Clears the map.
+ */
+void vul_map_clear( vul_hash_map *map );
+/**
  * Inserts the given value and key into the map. Copies both values.
  * Lifetime is as long as it is in the map, and value pointer is constant
  * for lifetime.
@@ -250,8 +254,8 @@ static void vul__map_grow( vul_hash_map *map )
 
    map->size *= 2;
 
-   map->entries = ( vul_map_element* )malloc( sizeof( vul_map_element ) * map->size );
-   map->hashes = ( u32* )malloc( sizeof( u32 ) * map->size );
+   map->entries = ( vul_map_element* )map->allocator( sizeof( vul_map_element ) * map->size );
+   map->hashes = ( u32* )map->allocator( sizeof( u32 ) * map->size );
 
    VUL_DATATYPES_CUSTOM_ASSERT( map->entries );
    VUL_DATATYPES_CUSTOM_ASSERT( map->hashes );
@@ -290,8 +294,8 @@ vul_hash_map *vul_map_create( u32 initial_size, f32 load_factor,
    map->hash = hash_function;
    map->comparator = comparator;
    // @TODO(thynn): Support alignement in allocators?
-   map->entries = ( vul_map_element* )malloc( sizeof( vul_map_element ) * initial_size );
-   map->hashes = ( u32* )malloc( sizeof( u32 ) * initial_size );
+   map->entries = ( vul_map_element* )allocator( sizeof( vul_map_element ) * initial_size );
+   map->hashes = ( u32* )allocator( sizeof( u32 ) * initial_size );
    VUL_DATATYPES_CUSTOM_ASSERT( map->entries != NULL );
    VUL_DATATYPES_CUSTOM_ASSERT( map->hashes != NULL );
 
@@ -315,13 +319,34 @@ vul_hash_map *vul_map_create( u32 initial_size, f32 load_factor,
    return map;
 }
 
+static void vul__map_delete_element( vul_map_element *e, void *data )
+{
+   vul_hash_map *map = ( vul_hash_map* )data;
+   map->deallocator( e->key );
+   map->deallocator( e->value );
+}
+
+void vul_map_clear( vul_hash_map *map )
+{
+   // Deallocate keys and values in the elements
+   vul_map_iterate( map, vul__map_delete_element, map );
+
+   // Clear the meta-data
+   map->count = 0;
+   memset( map->hashes, 0, sizeof( u32 ) * map->size );
+#ifdef VUL_DEBUG
+   // If debug, zero the entries as well
+   memset( map->entries, 0, sizeof( vul_map_element ) * map->size );
+#endif
+}
+
 void *vul_map_insert( vul_hash_map *map, void *key, void *value )
 {
    u32 threshold;
    void *keycopy, *valuecopy;
 
-   keycopy = malloc( map->key_size );
-   valuecopy = malloc( map->value_size );
+   keycopy = map->allocator( map->key_size );
+   valuecopy = map->allocator( map->value_size );
 
    VUL_DATATYPES_CUSTOM_ASSERT( keycopy );
    VUL_DATATYPES_CUSTOM_ASSERT( valuecopy );

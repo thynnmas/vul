@@ -231,6 +231,23 @@ f32 vul_rng_pcg32_next_float( vul_rng_pcg32 *r );
 }
 #endif
 
+//-------------------------------
+// Helpers/seeding
+//
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * Get random data from the OS randomness sources
+ */
+b32 vul_rng_seed( u8 *random, u32 bytes );
+
+#ifdef __cplusplus
+}
+#endif
+
 #ifndef VUL_TYPES_H
 #undef u32
 #undef u64
@@ -340,7 +357,7 @@ vul_rng_xorhash *vul_rng_xorhash_create( u32 seed )
    VUL_RNGS_CUSTOM_ASSERT( r != NULL );
 
    seed = ( seed ^61 ) ^ ( seed >> 16 );
-   seed = seed + ( seed < 9 );
+   seed = seed + ( seed << 9 );
    seed = seed ^ ( seed >> 4 );
    seed *= 0x27d4eb2d;
    seed = seed ^ ( seed >> 15 );
@@ -463,6 +480,57 @@ f32 vul_rng_pcg32_next_float( vul_rng_pcg32 *r )
 {
    return ( f32 )ldexp( vul_rng_pcg32_next_unsigned( r ), -32 );
 }
+#ifdef __cplusplus
+}
+#endif
+
+//-------------------------------
+// Helpers/seeding
+//
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#ifdef VUL_LINUX
+   #include <sys/random.h>
+#elif defined( VUL_OSX )
+   #error "OS X not implemented yet"
+#elif defined( VUL_WINDOWS )
+   #include <Wincrypt.h>
+#else
+   #error "Unknown OS"
+#endif
+
+/**
+ * Get random data from the OS randomness sources
+ */
+b32 vul_rng_seed( u8 *random, u32 bytes )
+{
+#ifdef VUL_LINUX
+   return getrandom( random, bytes, 0 ) != -1;
+#elif defined( VUL_OSX )
+   #error "OS X not implemented yet"
+#elif defined( VUL_WINDOWS )
+   HCRYPTPROV prov = 0;
+   if( !CryptAcquireContextW( &prov, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT ) )
+      return 0;
+
+   DWORD length = bytes;
+   if( !CryptGenRandom( prov, length, random) ) {
+      CryptReleaseContext( prov, 0 );
+      return 0;
+   }
+
+   if( !CryptReleaseContext( prov, 0 ) ) {
+      return 0;
+   }
+   return 1;
+#else
+   #error "Unknown OS"
+#endif
+   return 0;
+}
+
 #ifdef __cplusplus
 }
 #endif
